@@ -1,0 +1,176 @@
+import {
+  SQUAD_SIZE,
+  PLATOON_SIZE,
+  COMPANY_SIZE,
+  REGIMENT_SIZE,
+  DIVISION_SIZE,
+  CORPS_SIZE,
+  FIELD_ARMY_SIZE,
+} from "./formations.js";
+import { armyPower } from "./units.js";
+// Approved game progression, independent of which grouped icons are on screen.
+export const RANK_DEFINITIONS = Object.freeze([
+  {
+    name: "이등병",
+    required: 0,
+    condition: "시작",
+    kind: "enlisted",
+    marks: 1,
+  },
+  {
+    name: "일병",
+    required: 4,
+    condition: "병사 4명",
+    kind: "enlisted",
+    marks: 2,
+  },
+  {
+    name: "상병",
+    required: 10,
+    condition: "병사 10명",
+    kind: "enlisted",
+    marks: 3,
+  },
+  {
+    name: "병장",
+    required: 15,
+    condition: "병사 15명",
+    kind: "enlisted",
+    marks: 4,
+  },
+  {
+    name: "하사",
+    required: SQUAD_SIZE,
+    condition: "1개 분대",
+    kind: "nco",
+    marks: 1,
+  },
+  {
+    name: "중사",
+    required: SQUAD_SIZE * 2,
+    condition: "2개 분대",
+    kind: "nco",
+    marks: 2,
+  },
+  {
+    name: "상사",
+    required: SQUAD_SIZE * 3,
+    condition: "3개 분대",
+    kind: "nco",
+    marks: 3,
+  },
+  {
+    name: "원사",
+    required: SQUAD_SIZE * 4,
+    condition: "4개 분대",
+    kind: "nco",
+    marks: 4,
+  },
+  {
+    name: "소위",
+    required: PLATOON_SIZE * 2,
+    condition: "2개 소대",
+    kind: "officer",
+    marks: 1,
+  },
+  {
+    name: "중위",
+    required: PLATOON_SIZE * 3,
+    condition: "3개 소대",
+    kind: "officer",
+    marks: 2,
+  },
+  {
+    name: "대위",
+    required: PLATOON_SIZE * 4,
+    condition: "4개 소대",
+    kind: "officer",
+    marks: 3,
+  },
+  {
+    name: "소령",
+    required: COMPANY_SIZE * 2,
+    condition: "2개 중대 · 하사 40명",
+    kind: "field",
+    marks: 1,
+  },
+  {
+    name: "중령",
+    required: COMPANY_SIZE * 4,
+    condition: "4개 중대",
+    kind: "field",
+    marks: 2,
+  },
+  {
+    name: "대령",
+    required: REGIMENT_SIZE,
+    condition: "1개 연대",
+    kind: "field",
+    marks: 3,
+  },
+  {
+    name: "준장",
+    required: REGIMENT_SIZE * 2,
+    condition: "2개 연대",
+    kind: "general",
+    marks: 1,
+  },
+  {
+    name: "소장",
+    required: DIVISION_SIZE,
+    condition: "1개 사단",
+    kind: "general",
+    marks: 2,
+  },
+  {
+    name: "중장",
+    required: CORPS_SIZE,
+    condition: "1개 군단",
+    kind: "general",
+    marks: 3,
+  },
+  {
+    name: "대장",
+    required: FIELD_ARMY_SIZE,
+    condition: "1개 야전군",
+    kind: "general",
+    marks: 4,
+  },
+]);
+export const RANKS = RANK_DEFINITIONS.map((r) => r.name);
+export const RANK_REQUIREMENTS = RANK_DEFINITIONS.map((r) => r.required);
+export const LAST_RANK = RANK_DEFINITIONS.length - 1;
+export function rankFor(count) {
+  for (let i = LAST_RANK; i > 0; i--)
+    if (count >= RANK_DEFINITIONS[i].required) return i;
+  return 0;
+}
+export const MAJOR_RANK = RANKS.indexOf("소령");
+export function rankForArmy(s) {
+  const byPower = rankFor(armyPower(s));
+  return (s.sergeants ?? 0) < 40 ? Math.min(byPower, MAJOR_RANK - 1) : byPower;
+}
+export function catalogVisible(s, unlockRank) {
+  return rankForArmy(s) >= RANKS.indexOf(unlockRank) - 1;
+}
+export function promotionProgress(s) {
+  const current = rankForArmy(s),
+    power = armyPower(s),
+    next = RANK_DEFINITIONS[current + 1];
+  if (!next)
+    return { text: "총 전력 " + power.toLocaleString("ko-KR"), ratio: 1 };
+  const gated = current + 1 === MAJOR_RANK;
+  return {
+    text:
+      "전력 " +
+      power.toLocaleString("ko-KR") +
+      " / " +
+      next.required.toLocaleString("ko-KR") +
+      (gated ? " · 하사 " + (s.sergeants ?? 0) + " / 40명" : ""),
+    ratio: Math.min(
+      1,
+      power / next.required,
+      gated ? (s.sergeants ?? 0) / 40 : 1,
+    ),
+  };
+}
