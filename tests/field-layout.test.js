@@ -108,7 +108,8 @@ test("small-screen layouts stay inside the troop area, sorted and non-overlappin
 });
 test("large saved armies load without discarding progress and remain finite", () => {
   const s = { ...army(MAX_SOLDIERS - 10), sergeants: 1, gold: 99999999 };
-  assert.deepEqual(parseSave(JSON.stringify(s)), s);
+  assert.deepEqual(parseSave(JSON.stringify(s)), { ...s,
+    earnedAchievements: ["squad", "platoon", "company", "battalion", "regiment", "division", "corps", "fieldArmy"] });
   assert.equal(parseSave(JSON.stringify({ ...s, sergeants: 2 })), null);
   assert.ok(Number.isSafeInteger(perTap(s)));
   assert.ok(Number.isSafeInteger(perSecond(s)));

@@ -135,7 +135,8 @@ test("v4 migration preserves troop balances and adds empty equipment", () => {
   delete old.equipment;
   assert.deepEqual(parseSave(JSON.stringify(old)), {
     ...old,
-    version: 7,
+    version: 8,
+    earnedAchievements: ["squad", "platoon", "company"],
     equipment: { artillery: null, tank: null, selfPropelled: null },
   });
 });

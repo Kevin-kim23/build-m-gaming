@@ -14,6 +14,7 @@ import {
   MAX_SOLDIERS,
 } from "../src/game.js";
 import { RANK_DEFINITIONS, LAST_RANK } from "../src/ranks.js";
+import { ACHIEVEMENTS } from "../src/achievements.js";
 const T = 1800000000000;
 test("starts with empty ground, then 50 taps can pay for the first soldier", () => {
   const s = freshState(T);
@@ -126,7 +127,8 @@ test("existing v3 soldiers and income survive the new formation and rank rules",
       sound: true,
     };
     const restored = parseSave(JSON.stringify(original));
-    assert.deepEqual(restored, original);
+    assert.deepEqual(restored, { ...original,
+      earnedAchievements: ACHIEVEMENTS.filter(a => a.required <= n).map(a => a.id) });
     assert.equal(perSecond(restored), n);
     assert.equal(perTap(restored), n * 10 + 1);
   }

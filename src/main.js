@@ -3,6 +3,7 @@ import { fmt } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
 import { createGameSession } from "./session.js";
 import { createBattleUI } from "./battle-ui.js";
+import { createAchievementUI } from "./achievement-ui.js";
 import { battleAccess } from "./battle.js";
 import "./style.css";
 import {
@@ -60,6 +61,7 @@ const zone = $("#tap-zone"),
   canvas = $("#field");
 const battleUI = createBattleUI(session);
 const armyPanels = createArmyPanels(session, gameAudio);
+const achievementUI = createAchievementUI(session);
 function update() {
   const power = armyPower(state),
     r = rank();
@@ -68,6 +70,7 @@ function update() {
   $("#sound").setAttribute("aria-checked", String(state.sound));
   if (rosterDirty) {
     rosterDirty = false;
+    achievementUI.sync();
     const deployed = deployedEquipment(state);
     setText("#rank-name", RANKS[r]);
     $(".rank-mark").innerHTML = insignia(r);

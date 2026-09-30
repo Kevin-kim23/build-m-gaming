@@ -3,6 +3,7 @@ import { UNITS, armyPower, troopIncome } from "./units.js";
 import { FIELD_ARMY_SIZE } from "./formations.js";
 import { STAGES } from "./battle-balance.js";
 import { COMMAND_BATON, commandBatonStatus } from "./personal-equipment.js";
+import { reconcileAchievements, validAchievementIds } from "./achievements.js";
 import {
   emptyEquipment,
   equipmentIncome,
@@ -89,8 +90,9 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
 }
 export function freshState(now = Date.now()) {
   return {
-    version: 7,
+    version: 8,
     battleCleared: 0,
+    earnedAchievements: [],
     gold: 0,
     taps: 0,
     soldiers: 0,
@@ -135,7 +137,8 @@ export function recruit(s, now = Date.now(), type = "soldier", quantity = 1) {
   s.gold -= cost;
   s[unit.field] = (s[unit.field] ?? 0) + quantity;
   const rank = rankForArmy(s);
-  return { ok: true, cost, rank, type, count: quantity, promoted: rank > previousRank };
+  const achievements = reconcileAchievements(s);
+  return { ok: true, cost, rank, type, count: quantity, achievements, promoted: rank > previousRank };
 }
 export function parseSave(raw, now = Date.now()) {
   try {
@@ -158,8 +161,9 @@ export function parseSave(raw, now = Date.now()) {
     }
     const integer = (x, max) => Number.isSafeInteger(x) && x >= 0 && x <= max;
     if (
-      ![3, 4, 5, 6, 7].includes(s.version) ||
+      ![3, 4, 5, 6, 7, 8].includes(s.version) ||
       (s.version >= 7 && !integer(s.battleCleared, STAGES.length)) ||
+      (s.version >= 8 && !validAchievementIds(s.earnedAchievements)) ||
       !integer(s.gold, MAX_GOLD) ||
       !integer(s.taps, Number.MAX_SAFE_INTEGER) ||
       !integer(s.soldiers, MAX_SOLDIERS) ||
@@ -172,8 +176,9 @@ export function parseSave(raw, now = Date.now()) {
     )
       return null;
     const migrated = {
-      version: 7,
+      version: 8,
       battleCleared: s.version >= 7 ? s.battleCleared : 0,
+      earnedAchievements: s.version >= 8 ? [...s.earnedAchievements] : [],
       gold: s.gold,
       taps: s.taps,
       soldiers: s.soldiers,
@@ -194,6 +199,7 @@ export function parseSave(raw, now = Date.now()) {
       if (gun)
         migrated.equipment[id] = { level: gun.level, deployed: gun.deployed };
     }
+    reconcileAchievements(migrated);
     return migrated;
   } catch {
     return null;

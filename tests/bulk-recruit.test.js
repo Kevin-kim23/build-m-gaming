@@ -129,12 +129,13 @@ test("cached batch prices do not cache changing gold or eligibility and refresh 
   assert.equal(recruitOffer(s, "soldier", 100).cost, cost);
 });
 
-test("existing version seven saves restore their derived baton without changing the save schema", async () => {
+test("existing version seven saves restore their derived baton without a separate baton save field", async () => {
   const { commandBatonStatus } = await import("../src/personal-equipment.js");
-  const original = { ...army(), battleCleared: 2, taps: 1234, gold: 987654321 };
+  const original = { ...army(), version: 7, battleCleared: 2, taps: 1234, gold: 987654321 };
   const restored = parseSave(JSON.stringify(original), T);
-  assert.deepEqual(restored, original);
-  assert.equal(restored.version, 7);
+  assert.deepEqual(restored, { ...original, version: 8,
+    earnedAchievements: ["squad", "platoon", "company", "battalion"] });
+  assert.equal(restored.version, 8);
   assert.equal(commandBatonStatus(restored).owned, true);
   assert.equal(Object.hasOwn(restored, "commandBaton"), false);
   const migrated = parseSave(JSON.stringify({ ...original, version: 6 }), T);

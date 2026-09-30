@@ -152,7 +152,8 @@ test("tank and SPG have independent ownership and upgrades through level ten", (
   setEquipmentDeployed(s, false, T, "tank");
   assert.equal(perSecond(s), base.passive + expected.passive + spg.passive);
   assert.equal(s.equipment.selfPropelled.deployed, true);
-  assert.deepEqual(parseSave(JSON.stringify(s)), s);
+  assert.deepEqual(parseSave(JSON.stringify(s)), { ...s,
+    earnedAchievements: ["squad", "platoon", "company", "battalion"] });
 });
 test("new troops and equipment do not earn income retroactively", () => {
   const s = state(640, 40);
@@ -175,7 +176,8 @@ test("v5 saves preserve artillery, balances and armies while adding empty new sl
   delete old.staffSergeants;
   assert.deepEqual(parseSave(JSON.stringify(old)), {
     ...old,
-    version: 7,
+    version: 8,
+    earnedAchievements: ["squad", "platoon", "company"],
     staffSergeants: 0,
     equipment: {
       artillery: old.equipment.artillery,

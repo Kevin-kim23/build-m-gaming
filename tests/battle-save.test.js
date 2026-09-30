@@ -2,15 +2,16 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, parseSave } from '../src/game.js';
 const T = 1800000000000;
-test('version seven adds battle progress while migrating real version six saves losslessly', () => {
+test('legacy version six saves gain empty battle progress without losing assets', () => {
   const old = { ...freshState(T), version: 6, gold: 1234567, soldiers: 880,
     sergeants: 40, staffSergeants: 3, taps: 777, sound: true,
     revision: 47, incomeRemainder: 789,
     equipment: { artillery: {level: 8, deployed: true}, tank: {level: 3, deployed: false}, selfPropelled: null } };
   delete old.battleCleared;
-  assert.equal(freshState(T).version, 7);
+  assert.equal(freshState(T).version, 8);
   assert.equal(freshState(T).battleCleared, 0);
-  assert.deepEqual(parseSave(JSON.stringify(old)), {...old, version: 7, battleCleared: 0});
+  assert.deepEqual(parseSave(JSON.stringify(old)), {...old, version: 8, battleCleared: 0,
+    earnedAchievements: ['squad', 'platoon', 'company', 'battalion']});
 });
 test('all ten cleared stages survive saving and corrupt battle progress is rejected', () => {
   for(let i=0;i<=10;i++) {
