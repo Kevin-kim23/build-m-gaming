@@ -2,6 +2,7 @@ import { rankForArmy, catalogVisible, RANKS } from "./ranks.js";
 import { UNITS, armyPower, troopIncome } from "./units.js";
 import { FIELD_ARMY_SIZE } from "./formations.js";
 import { STAGES } from "./battle-balance.js";
+import { COMMAND_BATON, commandBatonStatus } from "./personal-equipment.js";
 import {
   emptyEquipment,
   equipmentIncome,
@@ -42,24 +43,45 @@ export function unitCost(owned, type = "soldier") {
   // A steeper, predictable curve without exponential late-game price walls.
   return Math.min(MAX_GOLD, 100_000 + 30_000 * owned + 3_000 * owned * owned);
 }
-export function recruitOffer(s, type = "soldier") {
+function recruitUnit(type, quantity) {
   const unit = UNITS[type];
   if (!unit) throw new RangeError("Unknown recruit type");
+  if (quantity !== 1 && (quantity !== COMMAND_BATON.recruitAmount || type !== "soldier"))
+    throw new RangeError("Unsupported recruit quantity");
+  return unit;
+}
+// One bounded cache avoids summing a hundred prices on every UI update.
+let cachedSoldierCount = -1, cachedBatchCost = 0;
+function batchRecruitCost(owned) {
+  if (owned !== cachedSoldierCount) {
+    let cost = 0;
+    for (let i = 0; i < COMMAND_BATON.recruitAmount; i++) cost += unitCost(owned + i);
+    cachedSoldierCount = owned;
+    cachedBatchCost = cost;
+  }
+  // Do not cap the sum: a price above the wallet limit must remain unaffordable.
+  return cachedBatchCost;
+}
+export function recruitOffer(s, type = "soldier", quantity = 1) {
+  const unit = recruitUnit(type, quantity), bulk = quantity > 1;
   const power = armyPower(s),
-    cost = unitCost(s[unit.field] ?? 0, type);
-  const locked = rankForArmy(s) < RANKS.indexOf(unit.unlockRank);
+    owned = s[unit.field] ?? 0,
+    cost = bulk ? batchRecruitCost(owned) : unitCost(owned, type);
+  const baton = bulk ? commandBatonStatus(s) : null;
+  const locked = rankForArmy(s) < RANKS.indexOf(unit.unlockRank) || (bulk && !baton.owned);
   const reason = locked
     ? "locked"
-    : power + unit.power > MAX_SOLDIERS
+    : power + unit.power * quantity > MAX_SOLDIERS
       ? "limit"
       : s.gold < cost
         ? "gold"
         : null;
   return {
     unit,
-    visible: catalogVisible(s, unit.unlockRank),
+    visible: bulk ? baton.visible : catalogVisible(s, unit.unlockRank),
     cost,
-    owned: s[unit.field] ?? 0,
+    owned,
+    quantity,
     locked,
     reason,
     canBuy: reason === null,
@@ -102,17 +124,18 @@ export function tapGold(s, now = Date.now()) {
   s.taps++;
   return earned;
 }
-export function recruit(s, now = Date.now(), type = "soldier") {
+export function recruit(s, now = Date.now(), type = "soldier", quantity = 1) {
+  recruitUnit(type, quantity);
   accrue(s, now);
-  const offer = recruitOffer(s, type);
+  const offer = recruitOffer(s, type, quantity);
   if (!offer.canBuy)
     return { ok: false, reason: offer.reason, cost: offer.cost };
   const { cost, unit } = offer;
   const previousRank = rankForArmy(s);
   s.gold -= cost;
-  s[unit.field] = (s[unit.field] ?? 0) + 1;
+  s[unit.field] = (s[unit.field] ?? 0) + quantity;
   const rank = rankForArmy(s);
-  return { ok: true, cost, rank, type, promoted: rank > previousRank };
+  return { ok: true, cost, rank, type, count: quantity, promoted: rank > previousRank };
 }
 export function parseSave(raw, now = Date.now()) {
   try {
