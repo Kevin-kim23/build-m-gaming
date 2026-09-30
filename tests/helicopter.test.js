@@ -20,7 +20,7 @@ test("helicopter is hidden before lieutenant colonel, previews locked, buys once
   const s=army();s.gold=44_999_999;
   assert.equal(buyEquipment(s,T,'helicopter').reason,'gold');assert.equal(s.equipment.helicopter,null);
   s.gold=45_000_000;assert.equal(buyEquipment(s,T,'helicopter').ok,true);assert.equal(s.gold,0);
-  assert.deepEqual(s.equipment.helicopter,{level:0,deployed:true});
+  assert.deepEqual(s.equipment.helicopter,{level:0,deployed:true, count: 1 });
   assert.equal(buyEquipment(s,T,'helicopter').reason,'owned');
   const gated=army();gated.sergeants=39;assert.equal(buyEquipment(gated,T,'helicopter').reason,'locked');
 });
@@ -39,7 +39,7 @@ test("helicopter upgrades through ten levels, settles prior income, stores and r
   assert.deepEqual(equipmentStats(10,'helicopter'),{passive:75000,tap:450000});
   assert.equal(enhanceEquipment(s,T+1000,'helicopter').reason,'max');
   setEquipmentDeployed(s,false,T+1000,'helicopter');assert.equal(perSecond(s),base);assert.equal(perTap(s),tap);
-  assert.deepEqual(parseSave(JSON.stringify(s),T).equipment.helicopter,{level:10,deployed:false});
+  assert.deepEqual(parseSave(JSON.stringify(s),T).equipment.helicopter,{level:10,deployed:false, count: 1 });
   assert.equal(new Set(HELICOPTER_STAGES).size,11);
 });
 test("v9 saves retain schools and assets; old versions cannot inject helicopter and v10 validates it",()=>{
@@ -47,8 +47,8 @@ test("v9 saves retain schools and assets; old versions cannot inject helicopter 
   delete old.equipment.helicopter;
   old.equipment.tank={level:4,deployed:false};
   const loaded=parseSave(JSON.stringify(old),T);
-  assert.equal(loaded.version, 12);assert.equal(loaded.ncoSchoolLevel,5);assert.equal(loaded.lieutenants,2);
-  assert.deepEqual(loaded.equipment,{...old.equipment,helicopter:null});assert.equal(loaded.gold,old.gold);
+  assert.equal(loaded.version, 13);assert.equal(loaded.ncoSchoolLevel,5);assert.equal(loaded.lieutenants,2);
+  assert.deepEqual(loaded.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),helicopter:null});assert.equal(loaded.gold,old.gold);
   old.equipment.helicopter={level:10,deployed:true};
   assert.equal(parseSave(JSON.stringify(old),T).equipment.helicopter,null);
   for(const bad of [undefined,{}, {level:11,deployed:true},{level:1,deployed:1},{level:-1,deployed:true}]) {

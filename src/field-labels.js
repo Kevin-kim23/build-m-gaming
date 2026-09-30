@@ -9,13 +9,18 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
     text: item.name + (item.count > 1 ? " ×" + item.count : ""),
     labelWidth: item.boxWidth,
   }));
-  if (equipment.length > 1) labels.push(...equipment.map(item => ({
-    ...item, text: item.name, labelWidth: item.width, centered: true,
+  labels.push(...equipment.map(item => ({
+    ...item, text: item.name, labelWidth: item.width, centered: true, gearCount: item.count ?? 1,
   })));
   const elements = labels.map(item => {
     const label = document.createElement("span");
     label.className = "field-label";
     label.textContent = item.text;
+    if (item.gearCount) {
+      const count = document.createElement("span");
+      count.className = "field-equipment-count"; count.textContent = `[${item.gearCount.toLocaleString("ko-KR")}문]`;
+      label.append(count);
+    }
     label.style.left = `${item.x / width * 100}%`;
     label.style.top = `${(item.y + item.height + 1) / height * 100}%`;
     label.style.width = `${item.labelWidth / width * 100}%`;

@@ -1,6 +1,6 @@
 import { BATTLE_RULES, STAGES, battleAccess, equipmentCombatStats } from './battle.js';
 import { UNITS, armyPower } from './units.js';
-import { EQUIPMENT } from './equipment.js';
+import { EQUIPMENT, equipmentCount } from './equipment.js';
 import { FORMATIONS } from './formations.js';
 import { fmt } from './format.js';
 
@@ -27,8 +27,8 @@ export function preparationMarkup(state, stage, loadout) {
       return `<label class="deployment-unit"><span><b>${u.name}</b><small>보유 ${fmt(state[u.field])}명</small></span><input type="number" inputmode="numeric" min="0" max="${max}" step="1" value="${loadout.units[u.id]}" data-battle-unit="${u.id}" aria-label="${u.name} 출전 인원"><small>/ ${max}명</small></label>`;
     }).join('')}</div></section>
     <section class="deployment-section"><h3>출전 장비 <small>보유 장비 중 선택</small></h3><div class="deployment-gears">${Object.values(EQUIPMENT).filter(d => !!state.equipment[d.id]).map(d => {
-      const gun = state.equipment[d.id], combat = equipmentCombatStats(d.id, gun.level, armyPower(state));
-      return `<label class="deployment-gear"><input type="checkbox" data-battle-gear="${d.id}" ${loadout.equipment.includes(d.id) ? 'checked' : ''}><span><b>${d.name} <em>+${gun.level}</em></b><small>자동 공격 · ${fmt(Math.round(combat.damage))} 피해 / ${(combat.intervalMs / 1000).toFixed(2)}초</small></span></label>`;
+      const gun = state.equipment[d.id], combat = equipmentCombatStats(d.id, gun.level, armyPower(state), equipmentCount(state, d.id));
+      return `<label class="deployment-gear"><input type="checkbox" data-battle-gear="${d.id}" ${loadout.equipment.includes(d.id) ? 'checked' : ''}><span><b>${d.name} <em>+${gun.level}</em></b><small>[${fmt(equipmentCount(state, d.id))}문]</small><small>자동 공격 · ${fmt(Math.round(combat.damage))} 피해 / ${(combat.intervalMs / 1000).toFixed(2)}초</small></span></label>`;
     }).join('') || '<p class="battle-note">보유한 장비가 없습니다. 병력만으로도 출전할 수 있어요.</p>'}</div></section>
     <p class="battle-note">총 보유 전력이 높을수록 공격력도 성장합니다. 병력·장비는 소모되지 않으며 홈 배치 설정은 유지돼요. ${BATTLE_RULES.maxDurationMs / 60_000}분 안에 본부가 파괴되지 않으면 무승부입니다.</p>
     <p role="status" class="battle-message" id="battle-message"></p>

@@ -13,7 +13,7 @@ test('home labels remain separate from pixel-scaled artwork and refresh only wit
   const layer = {children:[],replaceChildren(...children){this.children=children;updates++;}};
   const canvas = {clientWidth:320,clientHeight:366,getContext:()=>context};
   const army = {...freshState(1),soldiers:10000,sergeants:300,staffSergeants:200};
-  for(const id of Object.keys(army.equipment)) army.equipment[id]={level:10,deployed:true};
+  for(const id of Object.keys(army.equipment).slice(0,4)) army.equipment[id]={level:10,deployed:true,count:1};
   try {
     drawScene(canvas,army,layer);
     assert.ok(layer.children.some(c=>c.textContent==='공격헬기'));
@@ -28,6 +28,11 @@ test('home labels remain separate from pixel-scaled artwork and refresh only wit
     assert.equal(layer.children.filter(c=>c.className==='field-school').length,2);
     assert.ok(layer.children.some(c=>c.innerHTML?.includes('부사관학교 Lv.5')));
     const afterSchools=updates;assert.equal(drawScene(canvas,army,layer),false);assert.equal(updates,afterSchools);
+    army.equipment.tank.count=2;drawScene(canvas,army,layer);
+    assert.equal(layer.children.find(c=>c.textContent==='전차').children[0].textContent,'[2문]');
+    for(const id of ['artillery','selfPropelled','helicopter'])army.equipment[id].deployed=false;
+    drawScene(canvas,army,layer);
+    assert.equal(layer.children.find(c=>c.textContent==='전차').children[0].textContent,'[2문]');
     drawScene(canvas,freshState(1),layer);assert.equal(layer.children.length,0);
   } finally {if(previous===undefined)delete globalThis.document;else globalThis.document=previous;}
 });

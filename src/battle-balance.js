@@ -1,5 +1,5 @@
 import { FORMATIONS, BATTALION_SIZE } from "./formations.js";
-import { EQUIPMENT } from "./equipment.js";
+import { EQUIPMENT, MAX_EQUIPMENT_COUNT } from "./equipment.js";
 
 export const BATTLE_RULES = Object.freeze({
   stepMs: 50,
@@ -53,7 +53,8 @@ export function infantryDamage(unit, count, totalPower) {
   return count * (0.12 + Math.sqrt(unit.power) * 0.07) * combatScale(totalPower);
 }
 
-export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE) {
+export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, count = 1) {
+  if (!Number.isSafeInteger(count) || count < 1 || count > MAX_EQUIPMENT_COUNT) throw new RangeError("Invalid equipment count");
   const type = EQUIPMENT[id];
   if (!type || !Number.isInteger(level) || level < 0 || level > type.maxLevel)
     throw new RangeError("Invalid battle equipment");
@@ -62,7 +63,7 @@ export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE) {
     intervalMs: 3000,
   };
   return {
-    damage: base.damage * (1 + level * 0.12) * combatScale(totalPower),
+    damage: count * base.damage * (1 + level * 0.12) * combatScale(totalPower),
     intervalMs: Math.max(
       BATTLE_RULES.stepMs,
       Math.round(base.intervalMs / (1 + level * 0.08) / BATTLE_RULES.stepMs) * BATTLE_RULES.stepMs,

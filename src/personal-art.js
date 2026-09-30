@@ -50,6 +50,9 @@ export function personalIcon(kind, level = 1) {
     rect(69,89,2,52,gold[1]);rect(72,93,2,43,gold[3]);
     for(let i=0;i<5;i++)rect(66+i*2,137,1,23-i%2*4,gold[(i%3)+1]);
     rect(66,133,11,6,gold[2]);rect(67,134,8,2,gold[4]);
+    if(level>=2){band(77,178,29,11);jewel(84,177);}
+    if(level>=3){flourish(83,116);rect(76,109,2,95,gold[2]);}
+    if(level>=4){band(74,17,35,10);jewel(85,16);rect(104,109,2,95,gold[3]);}
   } else {
     // Ebony baton: fluted highlights, engraved caps, level-two gold collars.
     rect(79,48,36,170,'#10191a');rect(81,48,30,170,'#1c2c2a');

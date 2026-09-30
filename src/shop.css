@@ -130,3 +130,9 @@
 .personal-item-art { width:112px; height:152px; background:radial-gradient(ellipse at center,#45503b,#17281f); }
 .command-baton-art { width:108px; height:144px; }
 @media(max-width:360px) { .personal-item-art { width:88px; height:120px; } .command-baton-art { width:84px; height:112px; } }
+
+.equipment-quantity { display:block; margin:4px 0; color:#dace99; font-size:12px; }
+.additional-purchase { margin-top:16px; padding-top:12px; border-top:1px solid #61714d; }
+.additional-purchase h4 { margin:0 0 8px; font-size:14px; }
+.additional-purchase p { font-size:11px; line-height:1.6; color:#c5d0b0; }
+.equipment-store [data-buy-equipment][hidden] { display:none; }

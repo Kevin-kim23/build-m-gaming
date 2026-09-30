@@ -113,7 +113,7 @@ function footerMarkup() {
 
 function fieldToolsMarkup() {
   return '<section class="field-tools" aria-label="장군 장비와 연병장 배경" hidden>' +
-    '<button class="home-sword" data-use-sword hidden>' + personalIcon('sword') + '<span data-sword-label>장군검 사용</span></button>' +
+    '<button class="home-sword" data-use-sword hidden>' + '<span data-sword-art>' + personalIcon('sword') + '</span>' + '<span data-sword-label>장군검 사용</span></button>' +
     '<div class="field-theme-picker"><span>연병장 배경</span><div role="group" aria-label="연병장 배경"><button data-field-theme="earth" aria-pressed="true">흙</button><button data-field-theme="concrete" aria-pressed="false">회색 시멘트</button></div></div></section>';
 }
 export function homeMarkup(state) {

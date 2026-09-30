@@ -170,7 +170,7 @@ function unitPositions(troops, side) {
 function signature(view) {
   return ["player", "enemy"].map((side) => {
     const s = view.sides[side];
-    return `${side}:${s.hq.id}:${Object.keys(UNITS).map((id) => s.troops?.[id] ?? 0).join(",")}:${s.equipment.map((g) => `${g.id}/${g.level}`).join(",")}`;
+    return `${side}:${s.hq.id}:${Object.keys(UNITS).map((id) => s.troops?.[id] ?? 0).join(",")}:${s.equipment.map((g) => `${g.id}/${g.level}/${g.count ?? 1}`).join(",")}`;
   }).join("|");
 }
 function createScene(view) {
@@ -191,6 +191,8 @@ function createScene(view) {
       points[side].equipment.push(p);
       c.save(); c.translate(p.x, p.y); if (enemy) c.rotate(Math.PI);
       c.drawImage(equipmentSprite(g.id, g.level, side), -28, -34, 56, 68); c.restore();
+      c.fillStyle = enemy ? "#efd1c0" : "#ebeedb"; c.font = "12px sans-serif"; c.textAlign = "center";
+      c.fillText(`[${g.count ?? 1}문]`, p.x, p.y + 45);
     });
   }
   return { canvas, points, key: signature(view) };

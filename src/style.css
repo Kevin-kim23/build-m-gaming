@@ -131,7 +131,7 @@ button:focus-visible {
   width: 100%;
   color: #233323;
   font: 600 10px/14px "Malgun Gothic", system-ui, sans-serif;
-  white-space: nowrap;
+  white-space: normal;
   text-align: center;
   letter-spacing: 0;
   text-shadow: 0 1px 1px #e3d9b7;
@@ -1678,3 +1678,6 @@ footer {
     font-size: 8px;
   }
 }
+
+.field-equipment-count { display:block; font-size:10px; line-height:12px; }
+.home-sword [data-sword-art] { display:flex; }

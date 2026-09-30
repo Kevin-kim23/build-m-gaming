@@ -1,4 +1,5 @@
 import { rankForArmy, RANKS, catalogVisible } from "./ranks.js";
+import { GENERAL_SWORD, generalSwordStatus } from './personal-equipment.js';
 export const HELICOPTER_STAGES = Object.freeze([
   "기본형", "기수 장갑", "로켓 포드", "꼬리날개 확장", "동체 장갑",
   "미사일 장착", "엔진 보강", "탐지 센서", "위장 패널", "통신 안테나", "최종 개량형",
@@ -52,6 +53,8 @@ export const EQUIPMENT = Object.freeze({
   }),
 });
 export const MAX_DEPLOYED_EQUIPMENT = 4;
+// Keep eight-hour income arithmetic within safe integers, even with every type at this bound.
+export const MAX_EQUIPMENT_COUNT = 100_000;
 export const ARTILLERY = EQUIPMENT.artillery;
 export const EQUIPMENT_STAGES = Object.freeze([
   "기본형",
@@ -82,6 +85,7 @@ export function equipmentStats(level, id = "artillery") {
 export const emptyEquipment = () =>
   Object.fromEntries(Object.keys(EQUIPMENT).map((id) => [id, null]));
 export const equipmentOf = (s, id = "artillery") => s.equipment?.[id] ?? null;
+export const equipmentCount = (s, id) => equipmentOf(s, id)?.count ?? (equipmentOf(s, id) ? 1 : 0);
 export const artilleryOf = (s) => equipmentOf(s);
 export const visibleEquipment = (s) =>
   Object.values(EQUIPMENT).filter(
@@ -100,7 +104,8 @@ export function equipmentIncome(s) {
   return deployedEquipment(s).reduce(
     (sum, d) => {
       const stats = equipmentStats(d.level, d.id);
-      return { passive: sum.passive + stats.passive, tap: sum.tap + stats.tap };
+      const count = equipmentCount(s, d.id);
+      return { passive: sum.passive + stats.passive * count, tap: sum.tap + stats.tap * count };
     },
     { passive: 0, tap: 0 },
   );
@@ -142,7 +147,22 @@ export function enhancementOffer(s, id = "artillery") {
         : null;
   return { cost, reason, canUpgrade: reason === null };
 }
-export function validEquipment(value, legacy = false, includeHelicopter = true, includeRocket = true) {
+export function additionalEquipmentCost(id) {
+  const d = equipmentType(id);
+  let cost = d.cost;
+  for (let level = 0; level < d.maxLevel; level++) cost += enhancementCost(level, id);
+  return cost;
+}
+export function additionalEquipmentOffer(s, id) {
+  const d = equipmentType(id), gun = equipmentOf(s, id), cost = additionalEquipmentCost(id);
+  const reason = !gun ? 'unowned'
+    : generalSwordStatus(s).level < GENERAL_SWORD.repeatPurchaseLevel ? 'locked'
+    : gun.level < d.maxLevel ? 'enhancement'
+    : equipmentCount(s, id) >= MAX_EQUIPMENT_COUNT ? 'limit'
+    : s.gold < cost ? 'gold' : null;
+  return { cost, reason, canBuy: reason === null };
+}
+export function validEquipment(value, legacy = false, includeHelicopter = true, includeRocket = true, requireCount = false) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   return (legacy ? ["artillery"] : Object.keys(EQUIPMENT).filter(id => (includeHelicopter || id !== "helicopter") && (includeRocket || id !== "rocketLauncher"))).every((id) => {
     if (!Object.hasOwn(value, id)) return false;
@@ -156,7 +176,9 @@ export function validEquipment(value, legacy = false, includeHelicopter = true, 
         Number.isInteger(g.level) &&
         g.level >= 0 &&
         g.level <= 10 &&
-        typeof g.deployed === "boolean"
+        typeof g.deployed === "boolean" &&
+        (!requireCount || (Number.isSafeInteger(g.count) && g.count >= 1 &&
+          g.count <= MAX_EQUIPMENT_COUNT && (g.count === 1 || g.level === EQUIPMENT[id].maxLevel)))
       )
     );
   });

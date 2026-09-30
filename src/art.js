@@ -273,7 +273,7 @@ export function drawScene(canvas, count = 0, labelLayer = null) {
   const deployed = deployedEquipment(army);
   const schools = ownedSchools(army);
   const key =
-    theme + ":" + fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level).join(":") + ":" + schools.map(s => s.id + s.level).join(":");
+    theme + ":" + fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level + "/" + (d.count ?? 1)).join(":") + ":" + schools.map(s => s.id + s.level).join(":");
   const width = Math.max(100, Math.round(canvas.clientWidth / 2)),
     height = Math.max(60, Math.round(canvas.clientHeight / 2));
   let cached = scenes.get(canvas);

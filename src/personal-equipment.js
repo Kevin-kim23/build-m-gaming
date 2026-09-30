@@ -6,12 +6,16 @@ export const COMMAND_BATON = Object.freeze({
 });
 export const GENERAL_SWORD = Object.freeze({
   id: "generalSword", name: "장군검", unlockRank: "준장", level: 1,
+  repeatPurchaseLevel: 2,
   durationMs: 30_000, cooldownMs: 600_000, tapMultiplier: 2,
 });
 export const BULK_RECRUIT = Object.freeze({
-  staffSergeant: Object.freeze({ level: 3, unlockRank: '준장' }),
   soldier: Object.freeze({ level: 1, unlockRank: COMMAND_BATON.unlockRank }),
   sergeant: Object.freeze({ level: 2, unlockRank: COMMAND_BATON.upgradeRank }),
+  staffSergeant: Object.freeze({ level: 3, unlockRank: '준장' }),
+  masterSergeant: Object.freeze({ level: 4, unlockRank: '소장' }),
+  sergeantMajor: Object.freeze({ level: 5, unlockRank: '중장' }),
+  lieutenant: Object.freeze({ level: 6, unlockRank: '대장' }),
 });
 // Both personal items are derived from actual rank, without duplicate saved rewards.
 export function commandBatonStatus(state) {
@@ -23,9 +27,10 @@ export function commandBatonStatus(state) {
   };
 }
 export function generalSwordStatus(state) {
-  const owned = rankForArmy(state) >= RANKS.indexOf(GENERAL_SWORD.unlockRank);
+  const rank = rankForArmy(state), firstRank = RANKS.indexOf(GENERAL_SWORD.unlockRank);
+  const owned = rank >= firstRank;
   return { visible: catalogVisible(state, GENERAL_SWORD.unlockRank), owned,
-    level: owned ? GENERAL_SWORD.level : 0 };
+    level: owned ? rank - firstRank + 1 : 0 };
 }
 export function bulkRecruitAccess(state, type) {
   const rule = BULK_RECRUIT[type];

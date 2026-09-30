@@ -11,6 +11,7 @@ import {
   equipmentPurchaseOffer,
   enhancementOffer,
   equipmentOf,
+  equipmentCount, additionalEquipmentOffer,
   EQUIPMENT,
   deployedEquipment, MAX_DEPLOYED_EQUIPMENT, deploymentOffer,
   validEquipment,
@@ -92,7 +93,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
 }
 export function freshState(now = Date.now()) {
   return {
-    version: 12,
+    version: 13,
     fieldTheme: 'earth',
     swordActivatedAt: null,
     ncoSchoolLevel: 0,
@@ -179,7 +180,7 @@ export function parseSave(raw, now = Date.now()) {
     }
     const integer = (x, max) => Number.isSafeInteger(x) && x >= 0 && x <= max;
     if (
-      ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(s.version) ||
+      ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].includes(s.version) ||
       (s.version >= 12 && (typeof s.fieldTheme !== 'string' || !Object.hasOwn(FIELD_THEMES, s.fieldTheme))) ||
       (s.version >= 11 && !(s.swordActivatedAt === null || integer(s.swordActivatedAt, 100_000_000_000_000))) ||
       (s.version >= 9 && (!integer(s.ncoSchoolLevel,5) || !integer(s.officerSchoolLevel,1) ||
@@ -192,14 +193,14 @@ export function parseSave(raw, now = Date.now()) {
       !integer(s.soldiers, MAX_SOLDIERS) ||
       (s.version >= 4 && !integer(s.sergeants, MAX_SOLDIERS / 10)) ||
       (s.version >= 6 && !integer(s.staffSergeants, MAX_SOLDIERS / 20)) ||
-      (s.version >= 5 && !validEquipment(s.equipment, s.version === 5, s.version >= 10, s.version >= 12)) ||
+      (s.version >= 5 && !validEquipment(s.equipment, s.version === 5, s.version >= 10, s.version >= 12, s.version >= 13)) ||
       !integer(s.lastAccrual, 100_000_000_000_000) ||
       !integer(s.incomeRemainder, 999) ||
       !integer(s.revision, Number.MAX_SAFE_INTEGER)
     )
       return null;
     const migrated = {
-      version: 12,
+      version: 13,
       fieldTheme: s.version >= 12 ? s.fieldTheme : 'earth',
       swordActivatedAt: s.version >= 11 ? s.swordActivatedAt : null,
       ncoSchoolLevel: s.version >= 9 ? s.ncoSchoolLevel : 0,
@@ -228,7 +229,7 @@ export function parseSave(raw, now = Date.now()) {
           ? s.equipment[id]
           : null;
       if (gun)
-        migrated.equipment[id] = { level: gun.level, deployed: gun.deployed };
+        migrated.equipment[id] = { level: gun.level, deployed: gun.deployed, count: s.version >= 13 ? gun.count : 1 };
     }
     if (deployedEquipment(migrated).length > MAX_DEPLOYED_EQUIPMENT) return null;
     reconcileAchievements(migrated);
@@ -256,7 +257,7 @@ export function buyEquipment(s, now = Date.now(), id = "artillery") {
   s.equipment = {
     ...emptyEquipment(),
     ...s.equipment,
-    [id]: { level: 0, deployed },
+    [id]: { level: 0, deployed, count: 1 },
   };
   return { ok: true, cost: offer.cost, deployed };
 }
@@ -267,6 +268,16 @@ export function enhanceEquipment(s, now = Date.now(), id = "artillery") {
   s.gold -= offer.cost;
   equipmentOf(s, id).level++;
   return { ok: true, cost: offer.cost, level: equipmentOf(s, id).level };
+}
+export function buyAdditionalEquipment(s, now = Date.now(), id = 'artillery') {
+  additionalEquipmentOffer(s, id); // Validate the identifier before settling income.
+  accrue(s, now);
+  const offer = additionalEquipmentOffer(s, id);
+  if (!offer.canBuy) return { ok: false, reason: offer.reason };
+  s.gold -= offer.cost;
+  const gun = equipmentOf(s, id);
+  gun.count = equipmentCount(s, id) + 1;
+  return { ok: true, cost: offer.cost, count: gun.count, level: gun.level, deployed: gun.deployed };
 }
 export function setEquipmentDeployed(
   s,

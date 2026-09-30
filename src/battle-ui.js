@@ -17,7 +17,7 @@ export function createBattleUI(session) {
   let stagesKey = '', preparationKey = '';
   const mapKey = () => `${session.state.battleCleared}:${battleAccess(session.state).unlocked}`;
   const armyKey = () => Object.values(UNITS).map(u => session.state[u.field]).join(':') + '|' +
-    Object.keys(EQUIPMENT).map(id => session.state.equipment[id]?.level ?? '-').join(':');
+    Object.keys(EQUIPMENT).map(id => session.state.equipment[id] ? `${session.state.equipment[id].level}/${session.state.equipment[id].count ?? 1}` : '-').join(':');
   const text = (selector, value) => {
     const node = $(selector), next = String(value);
     if (node && node.textContent !== next) node.textContent = next;

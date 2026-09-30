@@ -1,5 +1,5 @@
 import { UNITS, armyPower } from "./units.js";
-import { EQUIPMENT } from "./equipment.js";
+import { EQUIPMENT, equipmentCount } from "./equipment.js";
 import { FORMATIONS } from "./formations.js";
 import { RANKS, rankForArmy } from "./ranks.js";
 import { ENEMY_EQUIPMENT, BATTLE_RULES, STAGES, infantryDamage, equipmentCombatStats } from "./battle-balance.js";
@@ -44,9 +44,9 @@ function makeSide(formation, power, units, equipment, multiplier = 1) {
       damage: infantryDamage(u, units[u.id], power) * multiplier,
       lastShotMs: -1,
     })),
-    equipment: equipment.map(({ id, level }) => {
-      const stats = equipmentCombatStats(id, level, power);
-      return { id, level, ...stats, damage: stats.damage * multiplier, lastShotMs: -1, nextShotMs: stats.intervalMs };
+    equipment: equipment.map(({ id, level, count = 1 }) => {
+      const stats = equipmentCombatStats(id, level, power, count);
+      return { id, level, count, ...stats, damage: stats.damage * multiplier, lastShotMs: -1, nextShotMs: stats.intervalMs };
     }),
   };
 }
@@ -69,7 +69,7 @@ export function createBattle(state, stageId, input = defaultLoadout(state)) {
     remainderMs: 0, lastVolleyMs: -BATTLE_RULES.volleyCooldownMs,
     nextEnemyVolleyMs: BATTLE_RULES.enemyVolleyMs,
     player: makeSide(formation, power, loadout.units,
-      loadout.equipment.map((id) => ({ id, level: state.equipment[id].level }))),
+      loadout.equipment.map((id) => ({ id, level: state.equipment[id].level, count: equipmentCount(state, id) }))),
     enemy: makeSide(enemyFormation, stage.hqPower,
       Object.fromEntries(['soldier','sergeant','staffSergeant'].map((id) => [id, stage.enemyUnitCount])),
       ENEMY_EQUIPMENT.map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier),

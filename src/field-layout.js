@@ -106,7 +106,7 @@ export function layoutFieldEquipment(items, width, height) {
   return items.map((item, i) => ({
     ...item,
     x: Math.round(12 + i * (w + gap)),
-    y: Math.round(height - (items.length > 1 ? 23 : 12) - h),
+    y: Math.round(height - 23 - h),
     width: Math.floor(w),
     height: Math.floor(h),
   }));

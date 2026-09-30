@@ -1,4 +1,5 @@
-import { swordSkillStatus } from "./personal-equipment.js";
+import { personalIcon } from "./personal-art.js";
+import { swordSkillStatus, generalSwordStatus } from "./personal-equipment.js";
 const time = ms => {
   const seconds = Math.ceil(ms / 1000);
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
@@ -11,6 +12,10 @@ export function syncSwordControls(root, state, writable, now = Date.now()) {
     button.classList.toggle('skill-active', skill.active);
     const iconLabel = button.querySelector?.('[data-sword-label]');
     if (iconLabel) {
+      const art = button.querySelector('[data-sword-art]'), level = generalSwordStatus(state).level;
+      if (art?.dataset && art.dataset.level !== String(level)) {
+        art.innerHTML = personalIcon('sword', level); art.dataset.level = String(level);
+      }
       // Keep the icon and short visible label intact; status remains available to assistive technology.
       button.setAttribute('aria-label', skill.active ? '장군검 사용 중' : skill.remainingMs > 0 ? '장군검 재사용 대기 ' + time(skill.remainingMs) : '장군검 사용');
       continue;

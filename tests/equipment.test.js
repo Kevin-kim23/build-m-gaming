@@ -37,7 +37,7 @@ test("artillery unlocks at captain, costs exactly one million, and cannot be dup
   s.gold++;
   assert.equal(buyEquipment(s, T).ok, true);
   assert.equal(s.gold, 0);
-  assert.deepEqual(s.equipment.artillery, { level: 0, deployed: true });
+  assert.deepEqual(s.equipment.artillery, { level: 0, deployed: true, count: 1 });
   s.gold = 1_000_000;
   assert.equal(buyEquipment(s, T).reason, "owned");
   assert.equal(s.gold, 1_000_000);
@@ -112,7 +112,7 @@ test("saved equipment survives reload; offline income only settles once", () => 
   enhanceEquipment(s, T);
   setEquipmentDeployed(s, false, T);
   s = parseSave(JSON.stringify(s));
-  assert.deepEqual(s.equipment.artillery, { level: 1, deployed: false });
+  assert.deepEqual(s.equipment.artillery, { level: 1, deployed: false, count: 1 });
   setEquipmentDeployed(s, true, T);
   const before = s.gold;
   accrue(s, T + 3600000);
@@ -135,7 +135,7 @@ test("v4 migration preserves troop balances and adds empty equipment", () => {
   delete old.equipment;
   assert.deepEqual(parseSave(JSON.stringify(old)), {
     ...old,
-    version: 12, ncoSchoolLevel: 1,
+    version: 13, ncoSchoolLevel: 1,
     earnedAchievements: ["squad", "platoon", "company"],
     equipment: { artillery: null, tank: null, selfPropelled: null, helicopter: null, rocketLauncher: null },
   });
