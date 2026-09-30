@@ -20,3 +20,6 @@
 .region-brief .region-reward { grid-column:1/-1; margin:3px 0 0; color:#eddb95; font-size:12px; }
 @media(max-width:370px) { .atlas-controls { padding:4px; gap:6px; } .atlas-controls button { width:30px; height:32px; } .country-brief { padding:9px; gap:7px; } .country-brief h3 { font-size:16px; } .country-brief button { max-width:80px; } }
 @media(max-height:650px) { .atlas-coordinate { display:none; } }
+.atlas-next-country { display:flex; align-items:center; justify-content:center; gap:8px; flex:none; min-height:38px; padding:6px 10px; border:1px solid #c3b371; border-radius:6px; background:#43563a; color:#fff0bd; font-size:12px; font-weight:700; cursor:pointer; }
+.atlas-next-country span { font-size:22px; line-height:1; }
+.atlas-next-country:hover,.atlas-next-country:focus-visible { background:#596c45; outline:2px solid #f0df9c; outline-offset:1px; }

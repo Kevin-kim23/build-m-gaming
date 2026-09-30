@@ -124,3 +124,18 @@ test('supply support preserves the first-capital corps target with ordinary one-
     assert.equal(simulate(s,20).status,power>=81920?'victory':'defeat',String(power));
   }
 });
+
+test('completed country maps offer a direct northern route only to the next unlocked country',()=>{
+  for(const c of COUNTRIES){
+    assert.doesNotMatch(campaignMarkup({campaignCleared:c.lastStage-1},c.id,c.lastStage),/class="atlas-next-country"/);
+    const completed=campaignMarkup({...army(81920),campaignCleared:c.lastStage},c.id,c.firstStage);
+    if(c.index<3){
+      const next=COUNTRIES[c.index+1];
+      assert.match(completed,new RegExp('class="atlas-next-country" data-country="'+next.id+'"'));
+      assert.match(completed,new RegExp('다음 나라 · '+next.name));
+      assert.ok(completed.indexOf('class="atlas-next-country"')<completed.indexOf('class="atlas-window"'));
+      assert.match(completed,/다시 도전/);
+    }else assert.doesNotMatch(completed,/class="atlas-next-country"/);
+  }
+  assert.doesNotMatch(campaignMarkup({campaignCleared:80}),/class="atlas-next-country"/);
+});

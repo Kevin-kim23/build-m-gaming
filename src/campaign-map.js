@@ -10,6 +10,7 @@ import { fmt } from './format.js';
 
 export function campaignMarkup(state,countryId=null,selectedId=null){
   const country=COUNTRIES.find(c=>c.id===countryId),cleared=state.campaignCleared??0;
+  const nextCountry=country&&countryProgress(state,country.id).complete?COUNTRIES[country.index+1]:null;
   const selected=campaignStages.find(s=>s.id===selectedId&&s.countryId===countryId);
   const access=battleAccess(state);
   const countryButtons=COUNTRIES.map(c=>{
@@ -19,6 +20,7 @@ export function campaignMarkup(state,countryId=null,selectedId=null){
   return `<header class="battle-header"><div><small>CONQUEST · ${country?'REGIONAL MAP':'WORLD MAP'}</small><h2 id="battle-title">${country?country.name:CONTINENT.name+' 대륙'}</h2></div><button data-battle-close aria-label="전투 메뉴 닫기">×</button></header>
   <nav class="nation-tabs" aria-label="대륙의 국가">${countryButtons}</nav>
   <div class="atlas-toolbar"><button data-world ${country?'':'hidden'}>‹ 대륙으로</button><span>${country?country.terrain:'남쪽 해안에서 시작하는 대륙 정복'}</span><b>${country?countryProgress(state,country.id).cleared+'/20':Math.floor(cleared/20)+'/4'} 점령 · 수입 +${campaignBonusPercent(state)}%</b></div>
+  ${nextCountry?`<button class="atlas-next-country" data-country="${nextCountry.id}" aria-label="${nextCountry.name}으로 바로 이동"><span aria-hidden="true">↑</span> 다음 나라 · ${nextCountry.name}</button>`:''}
   <div class="atlas-window"><svg id="campaign-svg" role="group" aria-label="${country?country.name+'의 20개 지역 지도':CONTINENT.name+' 대륙 지도'}" xmlns="http://www.w3.org/2000/svg">${mapDefs()}${oceanArt()}
   ${COUNTRIES.map(c=>{
     const p=countryProgress(state,c.id),dim=country?c.id!==country.id:!p.unlocked;
