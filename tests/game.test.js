@@ -14,7 +14,7 @@ import {
   MAX_SOLDIERS,
 } from "../src/game.js";
 import { RANK_DEFINITIONS, LAST_RANK } from "../src/ranks.js";
-import { ACHIEVEMENTS } from "../src/achievements.js";
+import { FORMATION_ACHIEVEMENTS as ACHIEVEMENTS } from "../src/achievements.js";
 const T = 1800000000000;
 test("starts with empty ground, then 50 taps can pay for the first soldier", () => {
   const s = freshState(T);

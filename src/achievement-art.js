@@ -1,4 +1,5 @@
 import { ACHIEVEMENTS } from "./achievements.js";
+import { battleMedalSvg } from './battle-medal-art.js';
 
 // Original 96 × 112 pixel medals, sharing a compact 18 × 21 CSS-pixel shelf slot.
 const cache = new Map();
@@ -17,6 +18,11 @@ export function medalSvg(id) {
   if (cache.has(id)) return cache.get(id);
   const definition = ACHIEVEMENTS.find(item => item.id === id);
   if (!definition) throw new RangeError("Unknown achievement medal");
+  if (definition.category === 'battle') {
+    const svg = battleMedalSvg(definition.tier);
+    cache.set(id, svg);
+    return svg;
+  }
   const tier = definition.tier;
   const [ribbon, stripe, metal, shine] = palettes[tier];
   const pixels = [];

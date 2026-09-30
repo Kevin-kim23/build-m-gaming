@@ -10,6 +10,7 @@ import './battle.css';
 import './campaign.css';
 import { createCampaignMap } from './campaign-map.js';
 import { COUNTRIES } from './campaign.js';
+import { ACHIEVEMENTS } from './achievements.js';
 
 // Owns one dialog and one animation loop; the economic session stays separate.
 export function createBattleUI(session) {
@@ -143,11 +144,12 @@ export function createBattleUI(session) {
   function finish() {
     if (finalized) return;
     finalized = true; stop();
-    let copy = '병력과 장비는 그대로 유지됩니다. 보상은 아직 없습니다.';
+    let copy = '병력과 장비는 그대로 유지됩니다. 부대를 정비하고 다시 도전하세요.';
     if (battle.status === 'victory') {
       // Mark handled first: change() notifies the home UI synchronously.
       const result = session.change(s => recordBattleVictory(s, battle));
       copy = result?.ok ? (stageId === STAGES.length ? '아스테라 대륙의 모든 국가를 점령했어요!' : stageId % 20 === 0 ? `${COUNTRIES[Math.floor(stageId / 20)-1].name} 점령 완료! 다음 국가가 열렸어요.` : '지역 점령 완료! 다음 지역으로 진격할 수 있어요.') : '클리어 기록을 반영하지 못했어요. 작전 지도에서 확인해 주세요.';
+      if (result?.achievements?.length) copy += ` 훈장 획득: ${result.achievements.map(id => ACHIEVEMENTS.find(a => a.id === id).title).join(', ')}. 홈 도전과제에서 확인하세요.`;
     }
     overlay(battle.status === 'victory' ? '승리' : battle.status === 'defeat' ? '패배' : '무승부', copy, true);
     sync();

@@ -1,4 +1,5 @@
 import { STAGES, battleAccess } from './battle.js';
+import { reconcileAchievements } from './achievements.js';
 
 // Only finished victories advance the next stage. No gold or inventory changes.
 export function recordBattleVictory(state, battle) {
@@ -9,5 +10,5 @@ export function recordBattleVictory(state, battle) {
     return { ok: false, reason: 'invalid' };
   if (stage.id > cleared + 1) return { ok: false, reason: 'sequence' };
   state.campaignCleared = Math.max(cleared, stage.id);
-  return { ok: true, firstClear: stage.id > cleared };
+  return { ok: true, firstClear: stage.id > cleared, achievements: reconcileAchievements(state) };
 }

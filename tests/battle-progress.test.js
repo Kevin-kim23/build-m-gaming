@@ -5,10 +5,14 @@ import { FIELD_ARMY_SIZE } from '../src/formations.js';
 import { createBattle, fireVolley, advanceBattle } from '../src/battle.js';
 import { recordBattleVictory } from '../src/battle-progress.js';
 import { createGameSession } from '../src/session.js';
+import { reconcileAchievements } from '../src/achievements.js';
 
 const T = 1800000000000;
-const army = () => ({ ...freshState(T), soldiers: FIELD_ARMY_SIZE - 600,
-  sergeants: 40, staffSergeants: 10, gold: 1234567, taps: 123 });
+const army = () => {
+  const state = { ...freshState(T), soldiers: FIELD_ARMY_SIZE - 600,
+    sergeants: 40, staffSergeants: 10, gold: 1234567, taps: 123 };
+  reconcileAchievements(state); return state;
+};
 function win(state, stage = 1) {
   let battle = createBattle(state, stage);
   while(battle.status==='running'){battle=fireVolley(battle);battle=advanceBattle(battle,150);}
@@ -16,10 +20,10 @@ function win(state, stage = 1) {
   return battle;
 }
 
-test('a real victory records only stage progress without granting rewards or consuming troops', () => {
+test('a real victory records progress and its medal without changing gold or troops', () => {
   const state = army(), before = structuredClone(state), battle = win(state);
-  assert.deepEqual(recordBattleVictory(state, battle), { ok: true, firstClear: true });
-  assert.deepEqual(state, { ...before, campaignCleared: 1 });
+  assert.deepEqual(recordBattleVictory(state, battle), { ok: true, firstClear: true, achievements: ['firstVictory'] });
+  assert.deepEqual(state, { ...before, campaignCleared: 1, earnedAchievements: [...before.earnedAchievements, 'firstVictory'] });
   assert.equal(battle.enemy.hq.hp, 0);
   assert.ok(battle.player.hq.hp > 0);
 });
@@ -44,10 +48,10 @@ test('replayed victories are idempotent and stage progress cannot skip ahead or 
   assert.equal(recordBattleVictory(state, { ...first, stageId: 3 }).reason, 'sequence');
   assert.equal(state.campaignCleared, 0);
   recordBattleVictory(state, first);
-  assert.deepEqual(recordBattleVictory(state, first), { ok: true, firstClear: false });
+  assert.deepEqual(recordBattleVictory(state, first), { ok: true, firstClear: false, achievements: [] });
   recordBattleVictory(state, win(state, 2));
   assert.equal(state.campaignCleared, 2);
-  assert.deepEqual(recordBattleVictory(state, first), { ok: true, firstClear: false });
+  assert.deepEqual(recordBattleVictory(state, first), { ok: true, firstClear: false, achievements: [] });
   assert.equal(state.campaignCleared, 2);
 });
 
@@ -87,6 +91,8 @@ test('victory transaction immediately saves progress with a valid prior backup a
   const saved = parseSave(h.values.get(SAVE_KEY), T);
   const backup = parseSave(h.values.get(SAVE_KEY + '-backup'), T);
   assert.equal(saved.campaignCleared, 1);
+  assert.ok(saved.earnedAchievements.includes('firstVictory'));
+  assert.ok(!backup.earnedAchievements.includes('firstVictory'));
   assert.equal(backup.campaignCleared, 0);
   assert.equal(saved.gold, backup.gold);
   h.session.pause(); h.session.start();

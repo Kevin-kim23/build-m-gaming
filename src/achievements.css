@@ -132,6 +132,8 @@
   gap: 4px;
 }
 .achievement-card h3 { margin: 0; color: #e2e3cd; font-size: 14px; }
+.achievement-category { margin:14px 0 3px; font-size:12px; color:#e5cc8b; }
+.achievement-category-note { margin:0 0 3px; color:#abb69e; font-size:10px; line-height:1.6; }
 .achievement-status { color: #98ab90; font-size: 9px; white-space: nowrap; }
 .achievement-card.earned .achievement-status { color: #e1ca92; }
 .achievement-card-content > p { margin: 6px 0 9px; color: #a8b69b; font-size: 10px; line-height: 1.6; }

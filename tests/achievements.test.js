@@ -9,7 +9,7 @@ const state = (power) => ({ ...freshState(T), soldiers: power, gold: MAX_GOLD })
 const rules = () => import("../src/achievements.js");
 
 test("achievement definitions reuse all eight formation thresholds in ascending order", async () => {
-  const { ACHIEVEMENTS } = await rules();
+  const { FORMATION_ACHIEVEMENTS: ACHIEVEMENTS } = await rules();
   assert.deepEqual(ACHIEVEMENTS.map(a => a.id), ids);
   assert.deepEqual(ACHIEVEMENTS.map(a => a.title), ["분대장", "소대장", "중대장", "대대장", "연대장", "사단장", "군단장", "야전군사령관"]);
   ACHIEVEMENTS.forEach((a, tier) => {
@@ -21,7 +21,7 @@ test("achievement definitions reuse all eight formation thresholds in ascending 
 });
 
 test("each medal is awarded exactly at its formation boundary with no duplicate grants", async () => {
-  const { ACHIEVEMENTS, reconcileAchievements } = await rules();
+  const { FORMATION_ACHIEVEMENTS: ACHIEVEMENTS, reconcileAchievements } = await rules();
   for (const [index, a] of ACHIEVEMENTS.entries()) {
     const s = state(a.required - 1);
     assert.deepEqual(reconcileAchievements(s), ids.slice(0, index));

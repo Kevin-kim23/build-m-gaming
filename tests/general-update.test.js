@@ -92,7 +92,7 @@ test('home sword follows medals before field, preserves icon and short text thro
   assert.equal((html.match(/data-use-sword/g)||[]).length,1);
   assert.doesNotMatch(html,/30초 터치/);
   const label={textContent:'장군검 사용'},attrs={};
-  const button={querySelector:()=>label,setAttribute:(k,v)=>attrs[k]=v,classList:{toggle(){}},set textContent(v){throw Error('icon must not be removed');}};
+  const button={querySelector:selector=>selector==='[data-sword-label]'?label:null,setAttribute:(k,v)=>attrs[k]=v,classList:{toggle(){}},set textContent(v){throw Error('icon must not be removed');}};
   const root={querySelectorAll:()=>[button]},s=general();
   syncSwordControls(root,s,true,T);assert.equal(button.disabled,false);
   s.swordActivatedAt=T;syncSwordControls(root,s,true,T+1000);assert.equal(button.disabled,true);
