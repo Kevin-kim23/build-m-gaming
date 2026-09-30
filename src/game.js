@@ -3,7 +3,7 @@ import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
 import { schoolOffer, legacySchoolLevel } from "./schools.js";
 import { FIELD_ARMY_SIZE } from "./formations.js";
 import { STAGES } from "./battle-balance.js";
-import { COMMAND_BATON, commandBatonStatus } from "./personal-equipment.js";
+import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess } from "./personal-equipment.js";
 import { reconcileAchievements, validAchievementIds } from "./achievements.js";
 import {
   emptyEquipment,
@@ -43,30 +43,31 @@ export function unitCost(owned, type = "soldier") {
 function recruitUnit(type, quantity) {
   const unit = UNITS[type];
   if (!unit) throw new RangeError("Unknown recruit type");
-  if (quantity !== 1 && (quantity !== COMMAND_BATON.recruitAmount || type !== "soldier"))
+  if (quantity !== 1 && (quantity !== COMMAND_BATON.recruitAmount || !BULK_RECRUIT[type]))
     throw new RangeError("Unsupported recruit quantity");
   return unit;
 }
-// One bounded cache avoids summing a hundred prices on every UI update.
-let cachedSoldierCount = -1, cachedBatchCost = 0;
-function batchRecruitCost(owned) {
-  if (owned !== cachedSoldierCount) {
+// One cache entry per supported type: repeated UI updates never sum 100 prices again.
+const batchCosts = new Map();
+function batchRecruitCost(owned, type) {
+  let cached = batchCosts.get(type);
+  if (!cached || cached.owned !== owned) {
     let cost = 0;
-    for (let i = 0; i < COMMAND_BATON.recruitAmount; i++) cost += unitCost(owned + i);
-    cachedSoldierCount = owned;
-    cachedBatchCost = cost;
+    for (let i = 0; i < COMMAND_BATON.recruitAmount; i++) cost += unitCost(owned + i, type);
+    cached = { owned, cost };
+    batchCosts.set(type, cached);
   }
-  // Do not cap the sum: a price above the wallet limit must remain unaffordable.
-  return cachedBatchCost;
+  // Keep sums above the wallet limit unaffordable, rather than discounting them.
+  return cached.cost;
 }
 export function recruitOffer(s, type = "soldier", quantity = 1) {
   const unit = recruitUnit(type, quantity), bulk = quantity > 1;
   const power = armyPower(s),
     owned = s[unit.field] ?? 0,
-    cost = bulk ? batchRecruitCost(owned) : unitCost(owned, type);
-  const baton = bulk ? commandBatonStatus(s) : null;
+    cost = bulk ? batchRecruitCost(owned, type) : unitCost(owned, type);
+  const baton = bulk ? bulkRecruitAccess(s, type) : null;
   const access = unitAccess(s, unit);
-  const locked = !access.unlocked || (bulk && !baton.owned);
+  const locked = !access.unlocked || (bulk && !baton.unlocked);
   const reason = locked
     ? "locked"
     : power + unit.power * quantity > MAX_SOLDIERS
@@ -77,7 +78,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
   return {
     unit,
     visible: bulk ? baton.visible : access.visible,
-    requirement: access.requirement,
+    requirement: bulk && !baton.unlocked ? baton.requirement : access.requirement,
     cost,
     owned,
     quantity,

@@ -16,13 +16,13 @@ const expectedBatchCost = (owned) =>
 test("level one command baton is previewed at major and automatically owned from lieutenant colonel", async () => {
   const { COMMAND_BATON, commandBatonStatus } = await import("../src/personal-equipment.js");
   assert.deepEqual(COMMAND_BATON, {
-    id: "commandBaton", name: "지휘봉", unlockRank: "중령", level: 1, recruitAmount: 100,
+    id: "commandBaton", name: "지휘봉", unlockRank: "중령", upgradeRank: "대령", level: 1, maxLevel: 2, recruitAmount: 100,
   });
   assert.deepEqual(commandBatonStatus(army(639)), { visible: false, owned: false, level: 0 });
   assert.deepEqual(commandBatonStatus(army(640)), { visible: true, owned: false, level: 0 });
   assert.deepEqual(commandBatonStatus(army(1279)), { visible: true, owned: false, level: 0 });
   assert.deepEqual(commandBatonStatus(army(1280)), { visible: true, owned: true, level: 1 });
-  assert.deepEqual(commandBatonStatus(army(327680)), { visible: true, owned: true, level: 1 });
+  assert.deepEqual(commandBatonStatus(army(327680)), { visible: true, owned: true, level: 2 });
 });
 
 test("bulk recruitment cannot bypass rank or the forty-sergeant promotion requirement", () => {
@@ -105,7 +105,7 @@ test("bulk recruitment crosses the colonel threshold in one transaction and retu
 
 test("unsupported batch sizes and batch recruitment of other unit types fail before changing state", () => {
   for (const [type, quantity] of [["soldier", 0], ["soldier", 2], ["soldier", 99], ["soldier", 101],
-    ["soldier", "100"], ["soldier", NaN], ["sergeant", 100], ["staffSergeant", 100]]) {
+    ["soldier", "100"], ["soldier", NaN], ["staffSergeant", 100]]) {
     const s = army(), original = structuredClone(s);
     assert.throws(() => recruitOffer(s, type, quantity), RangeError);
     assert.throws(() => recruit(s, T + 1000, type, quantity), RangeError);

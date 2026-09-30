@@ -1,11 +1,10 @@
 import { fmt } from './format.js';
 import { coin, insignia } from './home-view.js';
 import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool } from './game.js';
-import { unitAccess } from './units.js';
 import { SCHOOLS } from './schools.js';
 import { renderSchools } from './school-panels.js';
 import { rankForArmy, LAST_RANK, promotionProgress } from './ranks.js';
-import { COMMAND_BATON, commandBatonStatus } from './personal-equipment.js';
+import { COMMAND_BATON, commandBatonStatus, generalSwordStatus, GENERAL_SWORD } from './personal-equipment.js';
 import { EQUIPMENT, equipmentOf, visibleEquipment } from './equipment.js';
 import { panelTabs, equipmentPanelMarkup, renderEquipmentStore, renderEquipmentPanel } from './equipment-panels.js';
 import { SHOP_CATEGORIES, shopMarkup } from './shop.js';
@@ -54,14 +53,15 @@ export function createArmyPanels(session, audio) {
       card.classList.toggle('locked', offer.locked);
       card.querySelector('[data-buy]').disabled = !offer.canBuy;
     }
-    const bulkButton = $('[data-buy-bulk]');
-    if (bulkButton) {
-      const offer = recruitOffer(s, 'soldier', COMMAND_BATON.recruitAmount);
-      text('[data-bulk-price]', fmt(offer.cost));
-      text('[data-bulk-label]', offer.reason === 'locked' ? '중령 진급 시 해금'
+    for (const bulkButton of dialog.querySelectorAll('[data-buy-bulk]')) {
+      const id = bulkButton.dataset.buyBulk, unit = UNITS[id];
+      const offer = recruitOffer(s, id, COMMAND_BATON.recruitAmount);
+      const scope = `[data-bulk-unit="${id}"]`;
+      text(`${scope} [data-bulk-price]`, fmt(offer.cost));
+      text(`${scope} [data-bulk-label]`, offer.reason === 'locked' ? `잠금 · ${offer.requirement}`
         : offer.reason === 'limit' ? `${COMMAND_BATON.recruitAmount}명 모집할 전력 여유 부족`
         : offer.reason === 'gold' ? `${fmt(offer.cost - s.gold)} G 부족`
-        : `일반병 ${COMMAND_BATON.recruitAmount}명 모집`);
+        : `${unit.name} ${COMMAND_BATON.recruitAmount}명 모집`);
       bulkButton.disabled = !offer.canBuy;
     }
     text('#shop-next', rank === LAST_RANK ? `${RANKS[rank]} 달성!`
@@ -115,7 +115,8 @@ export function createArmyPanels(session, audio) {
     lockPanel();
   }
   function buyUnit(id, quantity = 1) {
-    const hadBaton = commandBatonStatus(state()).owned;
+    const previousBatonLevel = commandBatonStatus(state()).level;
+    const hadSword = generalSwordStatus(state()).owned;
     const result = session.change(s => recruit(s, Date.now(), id, quantity));
     if (!result) return;
     if (result.ok) {
@@ -126,11 +127,13 @@ export function createArmyPanels(session, audio) {
     }
     if (!dialog.open || activePanel !== 'shop') return;
     const unit = UNITS[id];
-    const receivedBaton = !hadBaton && commandBatonStatus(state()).owned;
+    const batonLevel = commandBatonStatus(state()).level;
+    const receivedSword = !hadSword && generalSwordStatus(state()).owned;
     text('#shop-message', result.ok
       ? `${unit.name} ${result.count}명 합류!` + (result.promoted ? ` ${RANKS[result.rank]} 진급! 총 전력 ${fmt(armyPower(state()))}` : '')
-        + (receivedBaton ? ` ${COMMAND_BATON.name} Lv.${COMMAND_BATON.level} 자동 지급 · 일반병 ${COMMAND_BATON.recruitAmount}명 모집 해금!` : '')
-      : result.reason === 'locked' ? `${quantity > 1 ? COMMAND_BATON.unlockRank + ' 진급' : unitAccess(state(),unit).requirement + ' 건설'} 후 모집할 수 있어요.`
+        + (batonLevel > previousBatonLevel ? ` ${COMMAND_BATON.name} Lv.${batonLevel} 자동 지급 · ${batonLevel === 2 ? "하사" : "일반병"} ${COMMAND_BATON.recruitAmount}명 모집 해금!` : '')
+        + (receivedSword ? ` ${GENERAL_SWORD.name} Lv.1 자동 지급!` : '')
+      : result.reason === 'locked' ? `${recruitOffer(state(), id, quantity).requirement} 조건을 충족해야 모집할 수 있어요.`
       : result.reason === 'limit' ? '모집 인원만큼 전력 여유가 필요해요.' : '골드가 부족해요.');
     $('#shop-message')?.classList.toggle('promoted', !!result.promoted);
   }

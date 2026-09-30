@@ -74,6 +74,7 @@
   padding: 18px;
   background: linear-gradient(140deg, #374630, #27372c);
 }
+.personal-item + .personal-item { margin-top: 14px; }
 .personal-item-heading { display: flex; align-items: center; gap: 14px; }
 .personal-item-heading > div:last-child { min-width: 0; }
 .personal-item-art {

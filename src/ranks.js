@@ -9,6 +9,8 @@ import {
   FIELD_ARMY_SIZE,
 } from "./formations.js";
 import { armyPower } from "./units.js";
+export const GENERAL_MIN_SOLDIERS = 10_000;
+
 // Approved game progression, independent of which grouped icons are on screen.
 export const RANK_DEFINITIONS = Object.freeze([
   {
@@ -112,7 +114,7 @@ export const RANK_DEFINITIONS = Object.freeze([
   {
     name: "준장",
     required: REGIMENT_SIZE * 2,
-    condition: "2개 연대",
+    condition: `2개 연대 · 일반병 ${fmt(GENERAL_MIN_SOLDIERS)}명`,
     kind: "general",
     marks: 1,
   },
@@ -147,9 +149,12 @@ export function rankFor(count) {
   return 0;
 }
 export const MAJOR_RANK = RANKS.indexOf("소령");
+export const GENERAL_RANK = RANKS.indexOf("준장");
 export function rankForArmy(s) {
   const byPower = rankFor(armyPower(s));
-  return (s.sergeants ?? 0) < 40 ? Math.min(byPower, MAJOR_RANK - 1) : byPower;
+  return Math.min(byPower,
+    (s.sergeants ?? 0) < 40 ? MAJOR_RANK - 1 : LAST_RANK,
+    (s.soldiers ?? 0) < GENERAL_MIN_SOLDIERS ? GENERAL_RANK - 1 : LAST_RANK);
 }
 export function catalogVisible(s, unlockRank) {
   return rankForArmy(s) >= RANKS.indexOf(unlockRank) - 1;
@@ -161,17 +166,20 @@ export function promotionProgress(s) {
   if (!next)
     return { text: "총 전력 " + fmt(power), ratio: 1 };
   const gated = current + 1 === MAJOR_RANK;
+  const generalGate = current + 1 === GENERAL_RANK;
   return {
     text:
       "전력 " +
       fmt(power) +
       " / " +
       fmt(next.required) +
-      (gated ? " · 하사 " + (s.sergeants ?? 0) + " / 40명" : ""),
+      (gated ? " · 하사 " + (s.sergeants ?? 0) + " / 40명" : "") +
+      (generalGate ? ` · 일반병 ${fmt(s.soldiers ?? 0)} / ${fmt(GENERAL_MIN_SOLDIERS)}명` : ""),
     ratio: Math.min(
       1,
       power / next.required,
       gated ? (s.sergeants ?? 0) / 40 : 1,
+      generalGate ? (s.soldiers ?? 0) / GENERAL_MIN_SOLDIERS : 1,
     ),
   };
 }

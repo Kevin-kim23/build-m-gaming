@@ -1,10 +1,11 @@
+import { personalMarkup } from "./personal-panels.js";
 import { fmt } from "./format.js";
 import { equipmentStoreMarkup } from "./equipment-panels.js";
 import { UNITS, unitAccess } from "./units.js";
 import { schoolsMarkup } from "./school-panels.js";
 import { FORMATIONS } from "./formations.js";
 import { RANK_DEFINITIONS } from "./ranks.js";
-import { COMMAND_BATON, commandBatonStatus } from "./personal-equipment.js";
+import { COMMAND_BATON, bulkRecruitAccess } from "./personal-equipment.js";
 
 export const SHOP_CATEGORIES = Object.freeze([
   Object.freeze({ id: "recruit", name: "군대 모집" }),
@@ -13,18 +14,17 @@ export const SHOP_CATEGORIES = Object.freeze([
   Object.freeze({ id: "schools", name: "군사학교" }),
 ]);
 
-function bulkRecruitMarkup(coin) {
-  return `<section class="bulk-recruit" aria-label="일반병 일괄 모집">
+function bulkRecruitMarkup(coin, unit) {
+  return `<section class="bulk-recruit" data-bulk-unit="${unit.id}" aria-label="${unit.name} 일괄 모집">
     <div class="bulk-recruit-title"><b>${COMMAND_BATON.name} 효과</b><span>${COMMAND_BATON.recruitAmount}명 일괄 모집</span></div>
     <div class="price-line"><span>${COMMAND_BATON.recruitAmount}명 총비용</span><strong>${coin}<b data-bulk-price></b><small>G</small></strong></div>
-    <button class="buy bulk-buy" data-buy-bulk="soldier"><span data-bulk-label>일반병 ${COMMAND_BATON.recruitAmount}명 모집</span><span aria-hidden="true">＋</span></button>
+    <button class="buy bulk-buy" data-buy-bulk="${unit.id}"><span data-bulk-label>${unit.name} ${COMMAND_BATON.recruitAmount}명 모집</span><span aria-hidden="true">＋</span></button>
     <p class="unit-price-note">${COMMAND_BATON.recruitAmount}명을 차례로 모집하는 것과 같은 비용입니다.</p>
   </section>`;
 }
 
 // One shared card template; adding a unit does not duplicate purchase UI logic.
 function recruitmentMarkup(s, coin, insignia) {
-  const bulkAvailable = commandBatonStatus(s).owned;
   return `<div class="unit-list">${Object.values(UNITS)
     .filter((unit) => unitAccess(s, unit).visible)
     .map(
@@ -42,7 +42,7 @@ function recruitmentMarkup(s, coin, insignia) {
     <div class="price-line"><span>이번 모집 비용</span><strong>${coin}<b data-field="price"></b><small>G</small></strong></div>
     <button class="buy" data-buy="${unit.id}"><span data-field="label"></span><span aria-hidden="true">＋</span></button>
     <p class="unit-price-note">${unit.name} 모집 시에만 가격 상승</p>
-    ${unit.id === "soldier" && bulkAvailable ? bulkRecruitMarkup(coin) : ""}
+    ${bulkRecruitAccess(s, unit.id).unlocked ? bulkRecruitMarkup(coin, unit) : ""}
    </article>`,
     )
     .join("")}
@@ -63,35 +63,6 @@ function recruitmentMarkup(s, coin, insignia) {
      )
      .join("")}</div>
   </details>`;
-}
-
-// Original pixel geometry; no external image or insignia asset is used.
-function batonIcon() {
-  return `<svg class="command-baton-art" viewBox="0 0 96 96" role="img" aria-label="${COMMAND_BATON.name} 픽셀 그림" shape-rendering="crispEdges">
-    <path fill="#111f1966" d="M45 22h14v60H45zM39 76h26v8H39z"/>
-    <path fill="#283b32" d="M41 20h14v56H41z"/>
-    <path fill="#556953" d="M43 20h4v56h-4z"/>
-    <path fill="#192b25" d="M51 20h4v56h-4z"/>
-    <path fill="#a89056" d="M37 14h22v12H37zM37 70h22v10H37zM41 39h14v6H41z"/>
-    <path fill="#e9d398" d="M39 12h18v7H39zM39 70h18v4H39zM41 39h14v2H41z"/>
-    <path fill="#75653e" d="M37 22h22v4H37zM37 77h22v3H37z"/>
-    <path fill="#f6e5ac" d="M46 28h4v4h-4zM44 32h8v4h-8zM46 36h4v3h-4z"/>
-  </svg>`;
-}
-
-function personalMarkup(s) {
-  const status = commandBatonStatus(s);
-  if (!status.visible)
-    return '<p class="shop-category-empty">진급하면 새로운 개인 장비가 공개됩니다.</p>';
-  return `<article class="personal-item${status.owned ? "" : " locked"}" data-personal-equipment="${COMMAND_BATON.id}">
-    <div class="personal-item-heading"><div class="personal-item-art">${batonIcon()}</div>
-      <div><span class="item-class">지휘관 개인 장비</span><h3>${COMMAND_BATON.name} <small>Lv.${COMMAND_BATON.level}</small></h3><p class="personal-item-status">${status.owned ? "보유 중 · 중령 진급 보상" : "🔒 " + COMMAND_BATON.unlockRank + " 진급 시 자동 지급"}</p></div>
-    </div>
-    <div class="personal-item-effect"><strong>일반병 ${COMMAND_BATON.recruitAmount}명 한 번에 모집</strong><p>군대 모집에서 ${COMMAND_BATON.recruitAmount}명 모집 버튼을 사용할 수 있어요.<br>병사 모집에 필요한 골드는 별도로 지불합니다.</p></div>
-    ${status.owned
-      ? '<button class="personal-recruit-link" data-shop-category="recruit">군대 모집으로 이동 <span aria-hidden="true">→</span></button>'
-      : '<p class="personal-item-locked">진급 조건을 달성하면 자동으로 지급됩니다.</p>'}
-  </article>`;
 }
 
 export function shopMarkup(s, coin, insignia, category = "recruit") {
