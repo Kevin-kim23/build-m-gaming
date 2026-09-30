@@ -1,4 +1,5 @@
 import { UNIT_LIST } from "./units.js";
+import { RANK_DEFINITIONS } from "./ranks.js";
 import { medalShelfMarkup } from "./achievement-markup.js";
 export const coin =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10l5 5v10l-5 5H7l-5-5V7z" fill="#d9b55d"/><path d="M8 5h8l3 3v8l-3 3H8l-3-3V8z" fill="#e8cd84"/><path d="M14 8h-4v8h4v-4h-2" fill="none" stroke="#8a6932" stroke-width="2"/></svg>';
@@ -45,6 +46,7 @@ function fieldMarkup() {
   return `<button id="tap-zone" aria-label="화면 터치해서 골드 획득">
     <canvas id="field" aria-hidden="true">
     </canvas>
+    <span id="field-labels" aria-hidden="true"></span>
     <span class="formation-summary" id="formation-summary">
     </span>
     <span class="intro-copy">아직은, 빈 터.<small>골드를 모아 첫 병사를 맞이하세요.</small>
@@ -113,4 +115,13 @@ export function homeMarkup(state) {
   return `<main class="game">${headerMarkup(state)}${medalShelfMarkup()}${fieldMarkup()}${dockMarkup()}${footerMarkup()}</main>`;
 }
 
-export { rankInsignia as insignia } from "./rank-art.js";
+export function insignia(index) {
+  const r = RANK_DEFINITIONS[index];
+  return (
+    '<span class="insignia ' +
+    r.kind +
+    '">' +
+    "<i></i>".repeat(r.marks) +
+    "</span>"
+  );
+}

@@ -10,7 +10,6 @@ import { createAchievementUI } from "./achievement-ui.js";
 import { battleAccess } from "./battle.js";
 import "./style.css";
 import "./hud.css";
-import "./rank-art.css";
 import {
   SAVE_KEY,
   RANKS,
@@ -24,7 +23,6 @@ import {
 import { drawScene, drawFormationPortrait } from "./art.js";
 import { fieldSummary } from "./field-layout.js";
 import {
-  RANK_DEFINITIONS,
   LAST_RANK,
   rankForArmy,
   promotionProgress,
@@ -80,8 +78,6 @@ function update() {
     const deployed = deployedEquipment(state);
     setText("#rank-name", RANKS[r]);
     $(".rank-mark").innerHTML = insignia(r);
-    $(".rank-mark").dataset.rankKind = RANK_DEFINITIONS[r].kind;
-    $(".rank-mark").dataset.rankMarks = RANK_DEFINITIONS[r].marks;
     for (const unit of UNIT_LIST) {
       const owned=state[unit.field]??0;
       setText(`[data-home-count="${unit.id}"]`,fmt(owned));
@@ -102,7 +98,7 @@ function update() {
     const progress = promotionProgress(state);
     setText("#rank-progress", progress.text);
     $("#promotion-fill").style.width = progress.ratio * 100 + "%";
-    drawScene(canvas, state);
+    drawScene(canvas, state, $("#field-labels"));
   }
   const tap = perTap(state);
   setText("#tap-rate", "+" + fmt(tap) + " G");
@@ -163,7 +159,7 @@ window.addEventListener("storage", (event) => {
 let pendingResize = 0;
 const resizeObserver = new ResizeObserver(() => {
   cancelAnimationFrame(pendingResize);
-  pendingResize = requestAnimationFrame(() => drawScene(canvas, state));
+  pendingResize = requestAnimationFrame(() => drawScene(canvas, state, $("#field-labels")));
 });
 resizeObserver.observe(canvas);
 setInterval(() => {

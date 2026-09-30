@@ -1,3 +1,4 @@
+import { renderFieldLabels } from "./field-labels.js";
 import { artSurface, uniformDetails, ART_SCALE } from "./pixel-detail.js";
 import {
   fieldSummary,
@@ -263,7 +264,7 @@ export function drawFormationPortrait(canvas, id) {
 }
 export const drawRecruitPortrait = (canvas) =>
   drawFormationPortrait(canvas, "soldier");
-export function drawScene(canvas, count = 0) {
+export function drawScene(canvas, count = 0, labelLayer = null) {
   const army =
     typeof count === "number" ? { soldiers: count, sergeants: 0 } : count;
   const deployed = deployedEquipment(army);
@@ -298,21 +299,13 @@ export function drawScene(canvas, count = 0) {
       height - 34 - (deployed.length > 1 ? 68 : deployed.length ? 52 : 28),
     ),
   };
-  for (const item of layoutFieldArmy(army, area)) {
+  const armyItems = layoutFieldArmy(army, area);
+  const equipmentItems = layoutFieldEquipment(deployed, width, height);
+  for (const item of armyItems) {
     c.drawImage(sprite(item.id), item.x, item.y, item.width, item.height);
-    if (item.label) {
-      c.fillStyle = "#384e34";
-      c.font = '6px "Malgun Gothic",sans-serif';
-      c.textAlign = "left";
-      c.fillText(
-        item.name + (item.count > 1 ? " ×" + item.count : ""),
-        item.x,
-        item.y + item.height + 7,
-      );
-    }
   }
   // Equipment is parked from the left along the bottom of the same terrain.
-  for (const item of layoutFieldEquipment(deployed, width, height)) {
+  for (const item of equipmentItems) {
     drawEquipmentOnGround(
       c,
       item.level,
@@ -322,13 +315,8 @@ export function drawScene(canvas, count = 0) {
       item.height,
       item.id,
     );
-    if (deployed.length > 1) {
-      c.fillStyle = "#384e34";
-      c.font = '6px "Malgun Gothic",sans-serif';
-      c.textAlign = "center";
-      c.fillText(item.name, item.x + item.width / 2, item.y + item.height + 7);
-    }
   }
+  renderFieldLabels(labelLayer, armyItems, equipmentItems, width, height);
   scenes.set(canvas, { ...cached, key });
   return true;
 }

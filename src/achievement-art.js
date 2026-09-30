@@ -1,68 +1,94 @@
 import { ACHIEVEMENTS } from "./achievements.js";
 
-// Original 24 × 28 pixel insignia, not reproductions of real military medals.
+// Original 96 × 112 pixel medals, sharing a compact 18 × 21 CSS-pixel shelf slot.
 const cache = new Map();
 const palettes = [
-  ["#54765a", "#92ad79", "#976842", "#d4b181"],
-  ["#456478", "#8bacbd", "#8b9797", "#e0e5cc"],
-  ["#8e7446", "#d3b879", "#b78d37", "#ffe3a0"],
-  ["#526480", "#a1bfd1", "#a0aeb7", "#eff0d7"],
-  ["#52726c", "#8cb9a4", "#ae8949", "#eaddaa"],
-  ["#705573", "#b894bd", "#c39346", "#ffe4a6"],
-  ["#4b7480", "#8ac6ca", "#c8a151", "#fff0c3"],
-  ["#8f5452", "#dfa093", "#d9ad43", "#fff2b2"],
+  ["#30554b", "#83b69b", "#a86a40", "#edb77f"],
+  ["#284b6c", "#91b6d2", "#859da6", "#e1ece8"],
+  ["#80552d", "#dbb66b", "#b98c36", "#fff0aa"],
+  ["#35496e", "#9bacd0", "#a6b7bf", "#f2f4e5"],
+  ["#265a52", "#8ab8a0", "#b89449", "#fff0be"],
+  ["#59395e", "#ba99c4", "#be9751", "#fff1b8"],
+  ["#21566c", "#85bbcb", "#d2ab55", "#fff5c9"],
+  ["#742f39", "#d79985", "#d5a43c", "#fff4bb"],
 ];
-const rect = (x, y, w, h, color) =>
-  `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${color}"/>`;
 
 export function medalSvg(id) {
   if (cache.has(id)) return cache.get(id);
-  const definition = ACHIEVEMENTS.find((item) => item.id === id);
+  const definition = ACHIEVEMENTS.find(item => item.id === id);
   if (!definition) throw new RangeError("Unknown achievement medal");
-  const tier = definition.tier, [ribbon, stripe, metal, shine] = palettes[tier];
-  let pixels = rect(7, 0, 10, 7, ribbon) + rect(9, 7, 6, 4, ribbon);
-  pixels += rect(9, 0, 2, 7, stripe) + rect(14, 0, 1, 7, stripe);
-  if (tier >= 2) pixels += rect(7, 0, 10, 1, shine);
-  if (tier >= 4) pixels += rect(5, 0, 2, 8, ribbon) + rect(17, 0, 2, 8, ribbon);
-  if (tier >= 6) pixels += rect(5, 1, 2, 2, shine) + rect(17, 1, 2, 2, shine);
-  // Wings and wreaths grow within the same fixed footprint as rank increases.
-  if (tier >= 3) {
-    for (let n = 0; n < 3; n++) {
-      pixels += rect(n, 12 + n * 2, 5 - n, 2, n === 0 ? shine : metal);
-      pixels += rect(19 + n, 12 + n * 2, 5 - n, 2, n === 0 ? shine : metal);
+  const tier = definition.tier;
+  const [ribbon, stripe, metal, shine] = palettes[tier];
+  const pixels = [];
+  const r = (x,y,w,h,color) => pixels.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${color}"/>`);
+  const octagon = (x,y,w,h,cut,color) => {
+    r(x+cut,y,w-cut*2,h,color);
+    r(x,y+cut,w,h-cut*2,color);
+    r(x+cut/2,y+cut/2,w-cut,h-cut,color);
+  };
+  // Woven ribbon with folded lower corners, metal clasp and suspension ring.
+  r(28,2,40,30,"#182925"); r(30,3,36,29,ribbon);
+  r(30,32,36,3,ribbon); r(33,35,30,3,ribbon); r(38,38,20,3,ribbon);
+  for (let x=32;x<65;x+=3) r(x,5,1,26,stripe);
+  r(37,4,4,29,stripe); r(55,4,4,29,stripe);
+  r(30,3,36,2,shine); r(30,30,36,3,"#17292655");
+  r(28,1,40,3,metal); r(30,1,36,1,shine);
+  r(38,35,20,3,metal); r(40,35,16,1,shine);
+  octagon(42,38,12,13,4,"#25332d");
+  octagon(43,38,10,11,2,metal); r(46,40,4,6,"#21372c"); r(44,39,2,6,shine);
+  // Stepped rays and individually highlighted laurel leaves grow by award tier.
+  if (tier>=3) {
+    for(let n=0;n<4;n++) {
+      const reach=19-n*3, y=56+n*5;
+      r(24-reach,y,reach,4,metal); r(72,y,reach,4,metal);
+      r(24-reach,y,reach,1,shine); r(72,y,reach,1,shine);
     }
+    r(46,46,4,6,shine); r(46,100,4,6,metal);
   }
-  if (tier >= 4) {
-    for (let n = 0; n < 3; n++) {
-      pixels += rect(2 + n, 19 + n * 2, 2, 3, n % 2 ? shine : metal);
-      pixels += rect(20 - n, 19 + n * 2, 2, 3, n % 2 ? shine : metal);
+  if (tier>=4) {
+    for(let n=0;n<5;n++) {
+      const x=10+n*3,y=76+n*5;
+      for(const leafX of [x,90-x]) {
+        r(leafX,y,6,6,metal); r(leafX,y,4,2,shine);
+        r(leafX+1,y+2,1,3,"#796131");
+      }
     }
+    r(31,102,34,3,metal);r(34,102,28,1,shine);
   }
-  pixels += rect(9, 9, 6, 3, "#26372d") + rect(10, 9, 4, 2, metal);
-  pixels += rect(6, 12, 12, 12, "#24362e") + rect(4, 15, 16, 7, "#24362e");
-  pixels += rect(7, 12, 10, 13, metal) + rect(5, 15, 14, 7, metal);
-  pixels += rect(8, 13, 8, 2, shine) + rect(6, 16, 2, 4, shine);
-  pixels += rect(9, 15, 6, 7, ribbon);
-  if (tier === 0) {
-    pixels += rect(10, 17, 4, 2, shine);
-  } else if (tier < 3) {
-    pixels += rect(11, 15, 2, 7, shine) + rect(9, 17, 6, 3, shine);
-    if (tier === 2) pixels += rect(11, 18, 2, 1, metal);
+  if(tier>=6) {
+    r(4,50,4,8,shine);r(1,53,10,2,shine);
+    r(88,50,4,8,shine);r(85,53,10,2,shine);
+  }
+  // Faceted metal rim, recessed enamel and a distinct central command emblem.
+  octagon(20,49,56,54,16,"#182d26");
+  octagon(22,49,52,52,14,metal);
+  octagon(25,51,46,47,12,shine);
+  octagon(28,54,40,42,10,metal);
+  octagon(31,57,34,36,8,"#574f35");
+  octagon(33,58,30,32,8,ribbon);
+  r(38,59,20,2,stripe);r(34,65,2,18,stripe);
+  r(42,96,15,2,"#71532f");r(23,67,2,14,shine);
+  r(68,69,2,15,"#6d5838");
+  for(let n=0;n<4;n++) {
+    r(34+n*8,54,2,2,"#fff6d4"); r(34+n*8,93,2,2,metal);
+  }
+  if(tier<3) {
+    for(let n=0;n<=tier;n++) {
+      const y=68+n*5;
+      r(39,y,18,3,metal);r(40,y,16,1,shine);
+    }
   } else {
-    pixels += rect(11, 14, 2, 10, shine) + rect(8, 17, 8, 4, shine);
-    pixels += rect(10, 16, 4, 6, shine) + rect(11, 18, 2, 2, tier >= 6 ? stripe : metal);
+    r(46,64,4,22,shine);r(38,70,20,5,shine);
+    r(41,75,14,5,metal);r(40,80,5,4,shine);r(51,80,5,4,shine);
+    r(45,72,6,6,metal);r(46,72,3,3,"#fff9dc");
+    if(tier>=5){r(46,73,4,4,stripe);r(46,73,2,1,"#e9faff");}
   }
-  if (tier >= 5) pixels += rect(9, 25, 6, 2, metal) + rect(11, 26, 2, 2, shine);
-  if (tier === 7) {
-    pixels += rect(11, 4, 2, 5, shine) + rect(10, 5, 4, 2, shine);
-    pixels += rect(1, 9, 2, 2, shine) + rect(21, 9, 2, 2, shine);
+  if(tier===7) {
+    r(36,15,24,4,metal);r(38,19,20,3,shine);
+    for(const x of [37,46,55]){r(x,11,3,6,shine);r(x+1,10,1,1,"#fff9dc");}
+    r(44,105,8,4,metal);r(46,105,4,6,shine);
   }
-  // Fine inset engraving and ribbon threads retain the same compact medal footprint.
-  for(let x=8;x<17;x+=1.5)pixels+=rect(x,.5,.35,5,stripe);
-  pixels+=rect(8,23,8,.4,shine)+rect(5.5,16,.4,5,shine)+rect(17.5,16,.4,5,metal);
-  for(let i=0;i<=tier;i++)pixels+=rect(8+i,13,.45,.45,'#fff5d1');
-  pixels+=rect(10.5,16,1,.5,'#fff6d8')+rect(12.5,20,1,.5,'#645a38');
-  const svg = `<svg class="achievement-medal-svg" viewBox="0 0 24 28" aria-hidden="true" focusable="false" shape-rendering="crispEdges">${pixels}</svg>`;
-  cache.set(id, svg);
+  const svg = `<svg class="achievement-medal-svg" viewBox="0 0 96 112" aria-hidden="true" focusable="false" shape-rendering="crispEdges">${pixels.join("")}</svg>`;
+  cache.set(id,svg);
   return svg;
 }

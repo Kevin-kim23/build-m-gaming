@@ -12,12 +12,12 @@ test("all eight original medals are distinct, fit their shared pixel bounds and 
   assert.equal(new Set(svgs).size, 8);
   for (const [i, svg] of svgs.entries()) {
     assert.equal(svg, medalSvg(ACHIEVEMENTS[i].id));
-    assert.match(svg, /viewBox="0 0 24 28"/);
+    assert.match(svg, /viewBox="0 0 96 112"/);
     assert.match(svg, /aria-hidden="true"/);
     assert.doesNotMatch(svg, /\sid=|<image|<script|href=/);
     for (const rectangle of svg.matchAll(/<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)"/g)) {
       const [, x, y, w, h] = rectangle.map(Number);
-      assert.ok(x + w <= 24 && y + h <= 28, "pixel must fit both shelf and dialog art");
+      assert.ok(x + w <= 96 && y + h <= 112, "pixel must fit both shelf and dialog art");
     }
   }
   assert.throws(() => medalSvg("unknown"), RangeError);

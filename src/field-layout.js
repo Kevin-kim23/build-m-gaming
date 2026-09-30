@@ -35,7 +35,8 @@ function pack(items, area, factor) {
     const width = Math.max(1, Math.round(item.preferredWidth * factor));
     const height = Math.max(1, Math.round(item.preferredHeight * factor));
     const label = !UNITS[item.id] || item.count > 1 ? 9 : 0;
-    const boxWidth = Math.max(width, label ? 30 : width);
+    const labelText = item.name + (item.count > 1 ? " ×" + item.count : "");
+    const boxWidth = Math.max(width, label ? Math.max(30, labelText.length * 6) : width);
     if (x > area.x && x + boxWidth > area.x + area.width) {
       x = area.x;
       y += rowHeight + 5;

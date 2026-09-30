@@ -109,6 +109,19 @@ button:focus-visible {
   image-rendering: pixelated;
   pointer-events: none;
 }
+#field-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.field-label {
+  position: absolute;
+  color: #233323;
+  font: 600 11px/14px "Malgun Gothic", system-ui, sans-serif;
+  letter-spacing: 0;
+  white-space: nowrap;
+  text-shadow: 0 1px 1px #e3d9b7;
+}
 .intro-copy small {
   display: block;
   margin-top: 8px;
