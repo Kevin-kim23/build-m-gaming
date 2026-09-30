@@ -51,26 +51,25 @@ test('bulk sergeants accrue only old income and emit normal new income after pur
   assert.equal(recruit(s,T+1000,'sergeant',100).ok,true);
   assert.equal(s.gold,income);assert.equal(perSecond(s),income+5000);assert.equal(perTap(s),tap+30000);
 });
-test('all general ranks require ten thousand actual ordinary soldiers and existing sergeant gate',()=>{
-  for(const extra of [{},{staffSergeants:20000},{lieutenants:2000}]) {
-    const s={...army(9999),...extra};assert.equal(RANKS[rankForArmy(s)],'대령');
-    assert.equal(generalSwordStatus(s).owned,false);
-    assert.match(promotionProgress(s).text,/일반병 9,999 \/ 10,000명/);
-    assert.ok(promotionProgress(s).ratio<1);
+test('general ranks require 5000 soldiers, 300 sergeants and the unchanged power threshold',()=>{
+  for(const [soldiers,sergeants,staffSergeants] of [[4999,300,20000],[5000,299,20000],[5000,300,0],[7239,300,0]]) {
+    const s={...army(soldiers),sergeants,staffSergeants};assert.equal(RANKS[rankForArmy(s)],'대령');
+    assert.equal(generalSwordStatus(s).owned,false);assert.ok(promotionProgress(s).ratio<1);
+    assert.match(promotionProgress(s).text,/5,000명 · 하사 .*300명/);
   }
-  const s=army(9999),before=s.gold,result=recruit(s,T);
-  assert.equal(RANKS[result.rank],'준장');assert.equal(result.promoted,true);
-  assert.equal(s.soldiers,10000);assert.equal(s.gold,before-unitCost(9999));
-  assert.equal(generalSwordStatus(s).owned,true);assert.equal(commandBatonStatus(s).level,2);
-  s.sergeants=39;assert.equal(RANKS[rankForArmy(s)],'대위');assert.equal(generalSwordStatus(s).owned,false);
-  assert.equal(RANKS[rankForArmy({...army(10000),staffSergeants:504})],'소장');
+  const s={...army(7239),sergeants:300},result=recruit(s,T);
+  assert.equal(result.promoted,true);assert.equal(RANKS[result.rank],'준장');assert.equal(s.soldiers,7240);
+  assert.equal(generalSwordStatus(s).owned,true);
+  assert.equal(RANKS[rankForArmy({...army(5000),sergeants:300,staffSergeants:112})],'준장');
+  assert.equal(RANKS[rankForArmy({...army(5000),sergeants:300,staffSergeants:624})],'소장');
+  s.sergeants=39;assert.equal(RANKS[rankForArmy(s)],'대위');
 });
-test('sword is hidden until colonel, locked there, granted at brigadier and has no stat effects',()=>{
+test('sword is hidden until colonel, locked there, granted at brigadier and explains its active skill',()=>{
   assert.doesNotMatch(markup(army(880),'personal'),/장군검|general-sword-art/);
   const locked=markup(army(),'personal');assert.match(locked,/장군검/);assert.match(locked,/준장 진급 시 자동 지급/);
   assert.match(locked,/Lv.2/);assert.match(locked,/하사 100명 한 번에 모집/);
-  const s=army(10000),stats=[perSecond(s),perTap(s)],owned=markup(s,'personal');
-  assert.match(owned,/보유 중 · 준장 진급 보상/);assert.match(owned,/능력치 효과는 없습니다/);
+  const s={...army(10000),sergeants:300},stats=[perSecond(s),perTap(s)],owned=markup(s,'personal');
+  assert.match(owned,/보유 중 · 준장 진급 보상/);assert.match(owned,/30초 동안 홈 터치 골드 2배/);
   assert.deepEqual([perSecond(s),perTap(s)],stats);
   const recruits=markup(s,'recruit');
   for(const type of ['soldier','sergeant'])assert.equal((recruits.match(new RegExp(`data-buy-bulk="${type}"`,'g'))??[]).length,1);
@@ -83,8 +82,8 @@ test('existing saves retain assets and derive new gear without inventing seriali
   for(const field of ['soldiers','sergeants','staffSergeants','gold','equipment','ncoSchoolLevel'])assert.deepEqual(loaded[field],s[field]);
   assert.equal(RANKS[rankForArmy(loaded)],'대령');assert.equal(commandBatonStatus(loaded).level,2);
   assert.equal(generalSwordStatus(loaded).owned,false);
-  loaded.soldiers=10000;assert.equal(generalSwordStatus(parseSave(JSON.stringify(loaded),T)).owned,true);
-  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version,10);
+  loaded.soldiers=5000;loaded.sergeants=300;assert.equal(generalSwordStatus(parseSave(JSON.stringify(loaded),T)).owned,true);
+  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version,11);
 });
 test('100 sergeants save once with backup and survive session reload without double purchase',()=>{
   const initial=army();initial.gold=sum(40,'sergeant');

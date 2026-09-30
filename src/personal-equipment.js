@@ -6,6 +6,7 @@ export const COMMAND_BATON = Object.freeze({
 });
 export const GENERAL_SWORD = Object.freeze({
   id: "generalSword", name: "장군검", unlockRank: "준장", level: 1,
+  durationMs: 30_000, cooldownMs: 600_000, tapMultiplier: 2,
 });
 export const BULK_RECRUIT = Object.freeze({
   soldier: Object.freeze({ level: 1, unlockRank: COMMAND_BATON.unlockRank }),
@@ -31,4 +32,17 @@ export function bulkRecruitAccess(state, type) {
   const baton = commandBatonStatus(state);
   return { visible: baton.level >= rule.level, unlocked: baton.level >= rule.level,
     requirement: `지휘봉 Lv.${rule.level} · ${rule.unlockRank} 이상` };
+}
+
+// A single persisted start time defines both deadlines. A recorded later time cannot rewind.
+export function swordSkillStatus(state, now = Date.now()) {
+  const owned = generalSwordStatus(state).owned;
+  const at = state.swordActivatedAt ?? null;
+  const clock = Math.max(now, state.lastAccrual ?? 0);
+  const elapsed = at === null ? Infinity : Math.max(0, clock - at);
+  const active = owned && elapsed < GENERAL_SWORD.durationMs;
+  const remainingMs = at === null ? 0 : Math.max(0, GENERAL_SWORD.cooldownMs - elapsed);
+  return { owned, active, canUse: owned && remainingMs === 0,
+    activeMs: active ? GENERAL_SWORD.durationMs - elapsed : 0, remainingMs,
+    multiplier: active ? GENERAL_SWORD.tapMultiplier : 1 };
 }

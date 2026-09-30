@@ -3,7 +3,7 @@ import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
 import { schoolOffer, legacySchoolLevel } from "./schools.js";
 import { FIELD_ARMY_SIZE } from "./formations.js";
 import { STAGES } from "./battle-balance.js";
-import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess } from "./personal-equipment.js";
+import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus } from "./personal-equipment.js";
 import { reconcileAchievements, validAchievementIds } from "./achievements.js";
 import {
   emptyEquipment,
@@ -21,7 +21,8 @@ export const LEGACY_KEY = "budae-kiugi-tap-save-v2";
 export const MAX_GOLD = 1_000_000_000_000;
 export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
 export const MAX_SOLDIERS = FIELD_ARMY_SIZE * 4;
-export const perTap = (s) => 1 + troopIncome(s, "tap") + equipmentIncome(s).tap;
+export const perTap = (s, now = Date.now()) =>
+  (1 + troopIncome(s, "tap") + equipmentIncome(s).tap) * swordSkillStatus(s, now).multiplier;
 export const perSecond = (s) =>
   troopIncome(s, "passive") + equipmentIncome(s).passive;
 // Preserve early prices, but avoid exponential prices blocking battalion progression.
@@ -89,7 +90,8 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
 }
 export function freshState(now = Date.now()) {
   return {
-    version: 10,
+    version: 11,
+    swordActivatedAt: null,
     ncoSchoolLevel: 0,
     officerSchoolLevel: 0,
     battleCleared: 0,
@@ -125,10 +127,19 @@ export function accrue(s, now = Date.now()) {
 export function tapGold(s, now = Date.now()) {
   accrue(s, now);
   if (s.gold >= MAX_GOLD || s.taps >= Number.MAX_SAFE_INTEGER) return 0;
-  const earned = Math.min(perTap(s), MAX_GOLD - s.gold);
+  const earned = Math.min(perTap(s, now), MAX_GOLD - s.gold);
   s.gold += earned;
   s.taps++;
   return earned;
+}
+export function activateSword(s, now = Date.now()) {
+  if (!Number.isSafeInteger(now) || now < 0 || now > 100_000_000_000_000)
+    return { ok: false, reason: "time" };
+  accrue(s, now);
+  const skill = swordSkillStatus(s, now);
+  if (!skill.canUse) return { ok: false, reason: skill.owned ? "cooldown" : "locked" };
+  s.swordActivatedAt = Math.max(now, s.lastAccrual);
+  return { ok: true };
 }
 export function recruit(s, now = Date.now(), type = "soldier", quantity = 1) {
   recruitUnit(type, quantity);
@@ -165,7 +176,8 @@ export function parseSave(raw, now = Date.now()) {
     }
     const integer = (x, max) => Number.isSafeInteger(x) && x >= 0 && x <= max;
     if (
-      ![3, 4, 5, 6, 7, 8, 9, 10].includes(s.version) ||
+      ![3, 4, 5, 6, 7, 8, 9, 10, 11].includes(s.version) ||
+      (s.version >= 11 && !(s.swordActivatedAt === null || integer(s.swordActivatedAt, 100_000_000_000_000))) ||
       (s.version >= 9 && (!integer(s.ncoSchoolLevel,5) || !integer(s.officerSchoolLevel,1) ||
         (s.officerSchoolLevel>0 && s.ncoSchoolLevel!==5) ||
         !['masterSergeant','sergeantMajor','lieutenant'].every(id=>integer(s[UNITS[id].field],Math.floor(MAX_SOLDIERS/UNITS[id].power))))) ||
@@ -183,7 +195,8 @@ export function parseSave(raw, now = Date.now()) {
     )
       return null;
     const migrated = {
-      version: 10,
+      version: 11,
+      swordActivatedAt: s.version >= 11 ? s.swordActivatedAt : null,
       ncoSchoolLevel: s.version >= 9 ? s.ncoSchoolLevel : 0,
       officerSchoolLevel: s.version >= 9 ? s.officerSchoolLevel : 0,
       battleCleared: s.version >= 7 ? s.battleCleared : 0,

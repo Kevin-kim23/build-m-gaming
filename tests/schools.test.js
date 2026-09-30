@@ -36,15 +36,15 @@ test('construction checks gold, sequential levels and the maximum without partia
   assert.throws(()=>upgradeSchool(s,T,'unknown'),RangeError);
 });
 test('officer academy needs both NCO level five and actual major general rank',()=>{
-  const s={...wealthy(),soldiers:20080,sergeants:40,ncoSchoolLevel:4};
+  const s={...wealthy(),soldiers:17480,sergeants:300,ncoSchoolLevel:4};
   assert.equal(schoolOffer(s,'officer').visible,false);
   assert.equal(upgradeSchool(s,T,'officer').reason,'locked');
-  s.ncoSchoolLevel=5; s.soldiers=20079;
+  s.ncoSchoolLevel=5; s.soldiers=17479;
   assert.equal(schoolOffer(s,'officer').visible,true);
   assert.equal(upgradeSchool(s,T,'officer').reason,'locked');
   s.soldiers=327680; s.sergeants=39;
   assert.equal(upgradeSchool(s,T,'officer').reason,'locked');
-  s.soldiers=20080;s.sergeants=40;
+  s.soldiers=17480;s.sergeants=300;
   const before=s.gold; assert.equal(upgradeSchool(s,T,'officer').level,1);
   assert.equal(before-s.gold,150000000);
   assert.equal(recruitOffer(s,'lieutenant').locked,false);
@@ -87,7 +87,7 @@ test('v8 migration preserves assets and previously unlocked NCO access without g
     const old={...freshState(T),version:8,gold:4321,soldiers,sergeants,staffSergeants,battleCleared:3};
     old.ncoSchoolLevel=5;old.officerSchoolLevel=1;old.lieutenants=999;
     const s=parseSave(JSON.stringify(old),T);
-    assert.equal(s.version,10);assert.equal(s.ncoSchoolLevel,level);assert.equal(s.officerSchoolLevel,0);
+    assert.equal(s.version,11);assert.equal(s.ncoSchoolLevel,level);assert.equal(s.officerSchoolLevel,0);
     assert.equal(s.gold,4321);assert.equal(s.battleCleared,3);assert.equal(s.lieutenants,0);
     assert.equal(s.masterSergeants,0);assert.equal(s.sergeantMajors,0);
   }

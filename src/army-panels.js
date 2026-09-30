@@ -1,6 +1,7 @@
+import { syncSwordControls } from "./sword-controls.js";
 import { fmt } from './format.js';
 import { coin, insignia } from './home-view.js';
-import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool } from './game.js';
+import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool, activateSword } from './game.js';
 import { SCHOOLS } from './schools.js';
 import { renderSchools } from './school-panels.js';
 import { rankForArmy, LAST_RANK, promotionProgress } from './ranks.js';
@@ -38,6 +39,7 @@ export function createArmyPanels(session, audio) {
     text('#shop-gold', fmt(s.gold));
     if (category === 'equipment') renderEquipmentStore(s, dialog);
     if (category === 'schools') renderSchools(s, dialog);
+    if (category === 'personal') syncSwordControls(dialog, s, session.active);
     if (category !== 'recruit') return;
     for (const unit of Object.values(UNITS)) {
       const card = $(`[data-unit="${unit.id}"]`);
@@ -181,6 +183,10 @@ export function createArmyPanels(session, audio) {
     if (button.id === 'close-shop' || button.id === 'close-equipment') dialog.close();
     else if (button.dataset.panel) button.dataset.panel === 'shop' ? openShop() : openEquipment();
     else if (button.dataset.shopCategory) { openShop(button.dataset.shopCategory); $(`[data-shop-category="${category}"]`)?.focus({preventScroll:true}); }
+    else if (button.hasAttribute('data-use-sword')) {
+      const result = session.change(s => activateSword(s));
+      if (result?.ok) text('#shop-message', '30초 동안 홈 터치 골드가 2배! 홈으로 돌아가 사용하세요.');
+    }
     else if (button.dataset.buy) buyUnit(button.dataset.buy);
     else if (button.dataset.buyBulk) buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount);
     else if (button.dataset.buyEquipment) purchaseGun(button.dataset.buyEquipment);

@@ -86,6 +86,7 @@ function dockMarkup() {
     <i id="promotion-fill">
     </i>
     </div>
+    <button class="sword-skill-button" data-use-sword hidden>장군검 · 30초 터치 골드 2배</button>
     <nav class="home-tabs" aria-label="부대 메뉴">
     <button id="open-shop">${shopIcon}<span>상점</span>
     <i id="shop-dot" hidden>

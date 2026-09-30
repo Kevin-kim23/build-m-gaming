@@ -88,8 +88,8 @@ test("every approved promotion happens at its exact threshold without consuming 
   );
   for (let i = 1; i < RANK_DEFINITIONS.length; i++) {
     const n = RANK_DEFINITIONS[i].required - 1;
-    const sergeants = i >= 11 ? 40 : 0,
-      soldiers = RANK_DEFINITIONS[i].name === "준장" ? 9999 : n - sergeants * 10;
+    const sergeants = i >= 14 ? 300 : i >= 11 ? 40 : 0,
+      soldiers = n - sergeants * 10;
     const s = {
       ...freshState(T),
       soldiers,

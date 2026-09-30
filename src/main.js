@@ -1,3 +1,4 @@
+import { syncSwordControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
 import { UNIT_LIST, unitAccess } from "./units.js";
 import { schoolOffer } from "./schools.js";
@@ -16,6 +17,7 @@ import {
   armyPower,
   recruitOffer,
   perTap,
+  activateSword,
   perSecond,
 } from "./game.js";
 import { drawScene, drawFormationPortrait } from "./art.js";
@@ -84,12 +86,6 @@ function update() {
     setText("#formation-summary", fieldSummary(state));
     $("#formation-summary").hidden = power === 0;
     setText("#passive-rate", "+" + fmt(perSecond(state)) + " G");
-    setText("#tap-rate", "+" + fmt(perTap(state)) + " G");
-    setText("#tap-hint-rate", "한 번에 +" + fmt(perTap(state)) + " G");
-    zone.setAttribute(
-      "aria-label",
-      "화면 터치해서 골드 " + perTap(state) + " 획득",
-    );
     zone.classList.toggle("has-recruits", power > 0);
     zone.classList.toggle("has-equipment", deployed.length > 0);
     zone.classList.toggle("has-multiple-equipment", deployed.length > 1);
@@ -104,6 +100,11 @@ function update() {
     $("#promotion-fill").style.width = progress.ratio * 100 + "%";
     drawScene(canvas, state);
   }
+  const tap = perTap(state);
+  setText("#tap-rate", "+" + fmt(tap) + " G");
+  setText("#tap-hint-rate", "한 번에 +" + fmt(tap) + " G");
+  zone.setAttribute("aria-label", "화면 터치해서 골드 " + tap + " 획득");
+  syncSwordControls(document.querySelector('.home-dock'), state, session.active);
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
     ["nco","officer"].some(id=>schoolOffer(state,id).canBuy) ||
@@ -127,6 +128,7 @@ zone.addEventListener("click", (event) => {
   tapFeedback(zone, $("#gold"), event, amount);
   gameAudio.tap(state.sound);
 });
+$(".home-dock [data-use-sword]").onclick = () => session.change(s => activateSword(s));
 $("#sound").onclick = async () => {
   await session.change((s) => {
     s.sound = !s.sound;
