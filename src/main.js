@@ -22,6 +22,7 @@ import {
 } from "./game.js";
 import { drawScene, drawFormationPortrait } from "./art.js";
 import { fieldSummary } from "./field-layout.js";
+import { ownedSchools } from "./field-schools.js";
 import {
   LAST_RANK,
   rankForArmy,
@@ -86,7 +87,7 @@ function update() {
     setText("#formation-summary", fieldSummary(state));
     $("#formation-summary").hidden = power === 0;
     setText("#passive-rate", "+" + fmt(perSecond(state)) + " G");
-    zone.classList.toggle("has-recruits", power > 0);
+    zone.classList.toggle("has-recruits", power > 0 || ownedSchools(state).length > 0);
     zone.classList.toggle("has-equipment", deployed.length > 0);
     zone.classList.toggle("has-multiple-equipment", deployed.length > 1);
     setText(

@@ -1,3 +1,4 @@
+import { ownedSchools, layoutFieldSchools } from "./field-schools.js";
 import { renderFieldLabels } from "./field-labels.js";
 import { artSurface, uniformDetails, ART_SCALE } from "./pixel-detail.js";
 import {
@@ -268,8 +269,9 @@ export function drawScene(canvas, count = 0, labelLayer = null) {
   const army =
     typeof count === "number" ? { soldiers: count, sergeants: 0 } : count;
   const deployed = deployedEquipment(army);
+  const schools = ownedSchools(army);
   const key =
-    fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level).join(":");
+    fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level).join(":") + ":" + schools.map(s => s.id + s.level).join(":");
   const width = Math.max(100, Math.round(canvas.clientWidth / 2)),
     height = Math.max(60, Math.round(canvas.clientHeight / 2));
   let cached = scenes.get(canvas);
@@ -290,17 +292,19 @@ export function drawScene(canvas, count = 0, labelLayer = null) {
   c.setTransform(ART_SCALE,0,0,ART_SCALE,0,0);
   c.clearRect(0, 0, width, height);
   c.drawImage(cached.ground, 0, 0);
+  const equipmentItems = layoutFieldEquipment(deployed, width, height);
+  const schoolItems = layoutFieldSchools(schools, equipmentItems, width, height);
   const area = {
     x: 13,
     y: 34,
     width: width - 26,
     height: Math.max(
       16,
-      height - 34 - (deployed.length > 1 ? 68 : deployed.length ? 52 : 28),
+      schoolItems.length ? schoolItems[0].y - 34 - 8 :
+        height - 34 - (deployed.length > 1 ? 68 : deployed.length ? 52 : 28),
     ),
   };
   const armyItems = layoutFieldArmy(army, area);
-  const equipmentItems = layoutFieldEquipment(deployed, width, height);
   for (const item of armyItems) {
     c.drawImage(sprite(item.id), item.x, item.y, item.width, item.height);
   }
@@ -316,7 +320,7 @@ export function drawScene(canvas, count = 0, labelLayer = null) {
       item.id,
     );
   }
-  renderFieldLabels(labelLayer, armyItems, equipmentItems, width, height);
+  renderFieldLabels(labelLayer, armyItems, equipmentItems, width, height, schoolItems);
   scenes.set(canvas, { ...cached, key });
   return true;
 }
