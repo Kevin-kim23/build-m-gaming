@@ -65,7 +65,7 @@ export function createGameAudio(
       stop();
       play(enabled, (t) => {
         const p = promotionProfile(rank),
-          melody = [392, 494, 587, 784, 988, 1175, 1568];
+          melody = [392, 494, 587, 784, 988, 1175, 1568, 2093];
         for (let i = 0; i < p.notes; i++)
           tone(melody[i], t + i * 0.14, 0.3, p.volume * 0.5, "triangle");
         const end = t + p.notes * 0.14;

@@ -1,0 +1,49 @@
+.promotion-layer.is-general::backdrop { background:radial-gradient(ellipse at 50% 42%,#283d30eb,#08120ff5 75%); animation:general-backdrop var(--promotion-duration) both; }
+.general-promotion { position:relative; width:min(560px,calc(100vw - 12px)); padding:32px 0 100px; text-align:center; isolation:isolate; animation:general-arrival var(--promotion-duration) both; }
+.general-eyebrow { position:relative; z-index:2; margin:0; color:#b9af8d; font:10px/1.6 Georgia,serif; letter-spacing:5px; }
+.general-honor { margin:10px 0 0; color:#f4dda0; font-size:15px; letter-spacing:8px; text-indent:8px; }
+.general-emblem { display:block; position:relative; z-index:2; width:100%; height:auto; margin:-8px 0 -25px; overflow:visible; filter:drop-shadow(0 8px 12px #020907a0); }
+.general-wing { transform-origin:280px 185px; animation:general-wing-unfold 1.5s .15s cubic-bezier(.15,.75,.2,1) both; }
+.general-crest { transform-origin:300px 173px; animation:general-crest-rise 1.2s .1s both; }
+.general-rank-stars { animation:general-star-glow 1.6s .7s both; }
+.general-title { position:relative; z-index:3; }
+.general-rule { display:flex; align-items:center; justify-content:center; gap:15px; color:#c9a564; margin:0 0 12px; font-size:12px; }
+.general-rule i { width:50px; height:1px; background:linear-gradient(90deg,transparent,#d8b873,transparent); }
+.general-title h2 { margin:0; color:#ffe6a9; font-size:clamp(36px,9vw,52px); line-height:1.1; letter-spacing:12px; text-indent:12px; text-shadow:0 2px 0 #785025,0 0 25px #d9b35a40; }
+.general-title h2 span { display:block; margin:13px 0 0; font-size:12px; line-height:1.5; letter-spacing:5px; text-indent:5px; color:#e2ce9b; font-weight:500; }
+.general-caption { color:#9fae9d; margin:18px 12px 0; font-size:11px; line-height:1.7; letter-spacing:.6px; }
+.general-aura { pointer-events:none; position:absolute; z-index:0; top:7%; left:8%; width:84%; aspect-ratio:1; background:radial-gradient(circle,#edc66a28 0,#edc66a0c 35%,transparent 68%); animation:general-aura 4s .2s both; }
+.general-orbit { position:absolute; pointer-events:none; z-index:0; width:64%; aspect-ratio:1; left:18%; top:11%; border:1px solid #ddc88820; border-radius:50%; box-shadow:0 0 0 13px #d6b76d06,0 0 0 30px #d6b76d04; animation:general-orbit 2s .3s both; }
+.general-salute { position:absolute; z-index:4; width:22%; bottom:106px; pointer-events:none; }
+.general-salute.left { left:0; }
+.general-salute.right { right:0; transform:scaleX(-1); }
+.general-salute svg { display:block; width:100%; overflow:visible; }
+.salute-barrel { animation:salute-recoil var(--salvo-interval) var(--salute-delay) var(--salvos) both; }
+.salute-shot { position:absolute; left:78%; top:20%; width:1px; height:1px; }
+.salute-flash { position:absolute; left:-13px; top:-23px; width:46px; height:37px; background:radial-gradient(ellipse at 30% 70%,#fffef0 15%,#fff1a1 38%,#e9ac4a 70%,transparent); clip-path:polygon(0 90%,12% 40%,38% 55%,53% 0,65% 37%,100% 15%,77% 68%,96% 89%,42% 81%); transform-origin:10% 90%; animation:salute-flash .36s var(--shot-delay) both; }
+.salute-smoke { position:absolute; left:-4px; top:-15px; width:31px; height:27px; border-radius:50%; background:radial-gradient(ellipse,#ede4c399,#9dafa260 45%,transparent 72%); animation:salute-smoke 1.15s var(--shot-delay) both; }
+.salute-ember { position:absolute; width:3px; height:8px; border-radius:2px; background:#ffe5a1; box-shadow:0 0 5px #eeb552; animation:salute-ember .85s var(--shot-delay) ease-out both; }
+.general-dust { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:1; }
+.general-dust i { position:absolute; left:var(--dust-x); top:70%; width:2px; height:3px; background:#e8cb81; border-radius:50%; animation:general-dust 3.4s var(--dust-delay) ease-out both; }
+.general-continue { position:relative; z-index:5; margin-top:30px; padding:10px 20px; border:1px solid #a58c555c; border-radius:3px; background:#16271e99; color:#beaf87; font-size:10px; letter-spacing:1px; cursor:pointer; }
+.general-continue:hover { border-color:#dfc580; color:#fff0bc; background:#344934; }
+.general-continue:focus-visible { outline:2px solid #e7ca85; outline-offset:4px; }
+.general-continue span { margin-left:10px; }
+@keyframes general-arrival { 0%{opacity:0;transform:translateY(12px) scale(.96)} 12%,89%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-8px) scale(1.02)} }
+@keyframes general-backdrop { 0%,100%{opacity:0} 9%,89%{opacity:1} }
+@keyframes general-wing-unfold { 0%{opacity:0;transform:rotate(28deg) scaleX(.08)} 68%{opacity:1;transform:rotate(-3deg) scaleX(1.02)} 100%{opacity:1;transform:rotate(0) scaleX(1)} }
+@keyframes general-crest-rise { from{opacity:0;transform:translateY(20px) scale(.75)} to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes general-star-glow { 0%{opacity:.2;filter:drop-shadow(0 0 0 #ffe4a4)} 50%{opacity:1;filter:drop-shadow(0 0 7px #ffe4a4)} 100%{opacity:1;filter:drop-shadow(0 0 2px #ffe4a480)} }
+@keyframes general-aura { from{opacity:0;transform:scale(.6)} 45%{opacity:1;transform:scale(1.05)} to{opacity:.7;transform:scale(1.12)} }
+@keyframes general-orbit { from{opacity:0;transform:scale(.7)} to{opacity:1;transform:scale(1)} }
+@keyframes salute-recoil { 0%,7%,100%{transform:translate(0,0)} 16%{transform:translate(-7px,5px)} 62%{transform:translate(0,0)} }
+@keyframes salute-flash { 0%{opacity:0;transform:scale(.2)} 12%{opacity:1;transform:scale(1)} 46%{opacity:.7;transform:scale(.75)} 100%{opacity:0;transform:scale(.3)} }
+@keyframes salute-smoke { 0%{opacity:0;transform:translate(0,0) scale(.4)} 18%{opacity:.8} 100%{opacity:0;transform:translate(35px,-55px) scale(2.8)} }
+@keyframes salute-ember { 0%{opacity:0;transform:translate(0,0) rotate(0)} 12%{opacity:1} 100%{opacity:0;transform:translate(var(--flight-x),var(--flight-y)) rotate(var(--spark-turn)) scale(.2)} }
+@keyframes general-dust { 0%{opacity:0;transform:translate(0,0)} 25%{opacity:.7} 100%{opacity:0;transform:translate(var(--dust-drift),-170px)} }
+@media(max-width:360px) { .general-promotion{padding-top:20px;padding-bottom:65px} .general-salute{bottom:103px;width:21%} .general-caption{font-size:10px} .general-emblem{margin-bottom:-10px} }
+@media(max-height:540px) and (min-width:540px) { .general-promotion{width:410px;padding:4px 0 10px} .general-emblem{width:80%;margin:-20px auto -42px} .general-eyebrow{font-size:8px} .general-honor{margin:4px 0;font-size:11px} .general-title h2{font-size:32px} .general-caption{margin-top:7px} .general-continue{margin-top:12px} .general-salute{bottom:40px;width:23%} }
+@media(prefers-reduced-motion:reduce) {
+  .promotion-layer.is-general::backdrop,.general-promotion,.general-wing,.general-crest,.general-rank-stars,.general-aura,.general-orbit,.salute-barrel { animation:none; }
+  .salute-shot,.general-dust,.general-aura { display:none; }
+}

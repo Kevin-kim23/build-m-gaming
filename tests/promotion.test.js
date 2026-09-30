@@ -4,11 +4,11 @@ import { promotionProfile } from "../src/promotion.js";
 import { createGameAudio } from "../src/audio.js";
 import { LAST_RANK } from "../src/ranks.js";
 
-test("higher ranks have larger ceremonies and louder bounded fanfares, all lasting 3 seconds", () => {
+test("higher ranks retain bounded fanfares and give generals a longer dedicated ceremony", () => {
   let previous = promotionProfile(1);
   for (let rank = 1; rank <= LAST_RANK; rank++) {
     const current = promotionProfile(rank);
-    assert.equal(current.duration, 3000);
+    assert.equal(current.duration, current.generalTier ? 5000 + current.generalTier * 300 : 3000);
     assert.ok(current.volume < 0.15);
     assert.ok(current.width <= 360);
     if (rank > 1) {
@@ -25,7 +25,8 @@ function audioFixture() {
     gains = [];
   const param = () => ({
     peaks: [],
-    setValueAtTime() {},
+    values: [],
+    setValueAtTime(value) { this.values.push(value); },
     exponentialRampToValueAtTime(value) {
       this.peaks.push(value);
     },
@@ -95,4 +96,12 @@ test("a new fanfare cancels earlier voices and higher ranks produce greater gain
   assert.ok(earlier.every((o) => o.disconnected && o.stops === 0));
   high.audio.stop();
   assert.ok(high.oscillators.every((o) => o.disconnected));
+});
+
+test('all general fanfares have a finite frequency for every scheduled note',()=>{
+  for(let rank=1;rank<=LAST_RANK;rank++){
+    const f=audioFixture();f.audio.promotion(rank,true);
+    assert.ok(f.oscillators.every(o=>o.frequency.values.every(Number.isFinite)),`rank ${rank} must not schedule an undefined pitch`);
+    assert.equal(f.oscillators.length,promotionProfile(rank).notes+3);
+  }
 });

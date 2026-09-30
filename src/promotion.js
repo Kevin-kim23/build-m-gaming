@@ -1,8 +1,14 @@
-import { RANKS, LAST_RANK } from "./ranks.js";
+import { RANKS, LAST_RANK, RANK_DEFINITIONS } from "./ranks.js";
+import { generalPromotionMarkup } from './general-promotion.js';
 export function promotionProfile(rank) {
-  const level = Math.max(1, Math.min(LAST_RANK, rank));
+  const level = Number.isInteger(rank) ? Math.max(1, Math.min(LAST_RANK, rank)) : 1;
+  const generalTier = RANK_DEFINITIONS[level].kind === 'general' ? RANK_DEFINITIONS[level].marks : 0;
   return {
-    duration: 3000,
+    duration: generalTier ? 5000 + generalTier * 300 : 3000,
+    generalTier,
+    salvos: generalTier ? generalTier + 2 : 0,
+    salvoInterval: 600,
+    saluteDelay: 850,
     width: 220 + level * 8,
     medal: 66 + level * 3,
     volume:
@@ -30,14 +36,19 @@ export function showPromotion(rank, insignia) {
         timer = undefined;
       }
     });
+    layer.addEventListener('click', event => {
+      if (event.target.closest('[data-dismiss-promotion]')) hidePromotion();
+    });
     document.body.appendChild(layer);
   }
   clearTimeout(timer);
   const p = promotionProfile(rank);
+  layer.classList.toggle('is-general', p.generalTier > 0);
+  layer.setAttribute('aria-label', `${RANKS[rank]} ${p.generalTier ? '장성 진급식' : '진급 축하'}`);
   layer.style.setProperty("--promotion-width", p.width + "px");
   layer.style.setProperty("--medal-size", p.medal + "px");
   layer.style.setProperty("--promotion-duration", p.duration + "ms");
-  layer.innerHTML = `<div class="promotion-stage" data-rank="${rank}">
+  layer.innerHTML = p.generalTier ? generalPromotionMarkup(rank, p) : `<div class="promotion-stage" data-rank="${rank}">
   <div class="promotion-halo" aria-hidden="true"></div>
   <div class="promotion-wing left">${wing}</div><div class="promotion-wing right">${wing}</div>
   <div class="promotion-sparks" aria-hidden="true">${Array.from({ length: p.sparks }, (_, i) => `<i style="--angle:${(i / p.sparks) * 360}deg;--distance:${72 + (i % 3) * 15}px;--delay:${(i % 4) * 0.08}s"></i>`).join("")}</div>
