@@ -1,3 +1,4 @@
+import { artSurface, uniformDetails, ART_SCALE } from "./pixel-detail.js";
 import {
   fieldSummary,
   layoutFieldArmy,
@@ -64,6 +65,8 @@ function terrain(w, h) {
     r(c, x, y, 4, 2, "#b4ae91");
     r(c, x + 1, y - 1, 2, 1, "#c6bfa0");
   }
+  // Border stones, drainage and grass tufts, kept away from the army's center.
+  for(let y=18;y<h-12;y+=12){r(c,8,y,2,7,'#81826b');r(c,8,y,1,7,'#b1af8b');r(c,w-10,y,2,7,'#81826b');}
   return canvas;
 }
 function soldier(c) {
@@ -119,7 +122,14 @@ function shell(c, x, y, w, h) {
   r(c, x - 2, y - 3, w + 4, 6, "#465b46");
   r(c, x, y - 7, w, 5, "#667756");
   r(c, x + 2, y - 7, w - 4, 2, "#9aa17a");
+  facadeDetail(c,x,y,w,h);
   for (let i = 5; i < w - 2; i += 7) r(c, x + i, y - 5, 1, 4, "#4c6648");
+}
+function facadeDetail(c,x,y,w,h) {
+  const p=(a,b,d,e,color)=>{c.fillStyle=color;c.fillRect(a,b,d,e);};
+  for(let yy=y+5;yy<y+h-4;yy+=4)for(let xx=x+3;xx<x+w-5;xx+=7){p(xx,yy,4,.33,'#738369');p(xx+4,yy, .33,3,'#95a184');}
+  p(x+1,y+1,.5,h-6,'#d3d3ad');p(x+w-3,y,1,h-4,'#3c5646');
+  for(let xx=x+5;xx<x+w-6;xx+=10){p(xx,y-5,5,2,'#405a48');p(xx,y-5,5,.4,'#b6c5a3');}
 }
 function windowPane(c, x, y, w = 5, h = 5) {
   r(c, x - 1, y - 1, w + 2, h + 2, "#586953");
@@ -127,6 +137,7 @@ function windowPane(c, x, y, w = 5, h = 5) {
   r(c, x, y, w, 1, "#c8dac6");
   r(c, x, y, 1, h, "#abc3b2");
   r(c, x + 1, y + 1, 2, 2, "#89ada6");
+  c.fillStyle="#dce1b9";c.fillRect(x+w/2,y,.35,h);c.fillRect(x,y+h/2,w,.35);
 }
 function door(c, x, y) {
   r(c, x, y, 5, 8, "#3d5143");
@@ -207,9 +218,7 @@ function sprite(id) {
   if (sprites.has(id)) return sprites.get(id);
   const type = UNITS[id] ?? FORMATIONS.find((item) => item.id === id);
   if (!type) throw new Error(`Unknown formation sprite: ${id}`);
-  const canvas = document.createElement("canvas");
-  canvas.width = type.width;
-  canvas.height = type.height;
+  const canvas = artSurface(type.width, type.height);
   const c = canvas.getContext("2d");
   if (id === "soldier") soldier(c);
   else if (UNITS[id]) {
@@ -225,6 +234,7 @@ function sprite(id) {
       } else for(let i=0;i<u.schoolLevel;i++)r(c,7,12+i*2,5,1,"#e7c679");
     }
   } else building(c, id);
+  if (UNITS[id]) uniformDetails(c,id);
   sprites.set(id, canvas);
   return canvas;
 }
@@ -234,9 +244,9 @@ export function drawFormationPortrait(canvas, id) {
   c.clearRect(0, 0, canvas.width, canvas.height);
   c.imageSmoothingEnabled = false;
   const scale = Math.max(
-    0.5,
+    0.01,
     Math.min(
-      UNITS[id] ? 3 : 1,
+      UNITS[id] ? 3 / ART_SCALE : 1 / ART_SCALE,
       (canvas.width - 12) / asset.width,
       (canvas.height - 12) / asset.height,
     ),
@@ -270,12 +280,13 @@ export function drawScene(canvas, count = 0) {
   )
     return false;
   if (!cached || cached.width !== width || cached.height !== height) {
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = width * ART_SCALE;
+    canvas.height = height * ART_SCALE;
     cached = { width, height, ground: terrain(width, height) };
   }
   const c = canvas.getContext("2d");
   c.imageSmoothingEnabled = false;
+  c.setTransform(ART_SCALE,0,0,ART_SCALE,0,0);
   c.clearRect(0, 0, width, height);
   c.drawImage(cached.ground, 0, 0);
   const area = {

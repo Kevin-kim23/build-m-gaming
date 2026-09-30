@@ -74,7 +74,7 @@ test("four deployed equipment silhouettes fit narrow home fields",()=>{
 });
 test("helicopter preview changes each enhancement and reuses the cached sprite",()=>{
   const previous=globalThis.document;let created=0;const surfaces=[];
-  const make=()=>{const ops=[];const ctx={fillRect(...args){ops.push([this.fillStyle,...args]);},clearRect(){},drawImage(){}};const canvas={width:220,height:124,getContext:()=>ctx,ops};surfaces.push(canvas);return canvas;};
+  const make=()=>{const ops=[];const ctx={setTransform(){},fillRect(...args){ops.push([this.fillStyle,...args]);},clearRect(){},drawImage(){}};const canvas={width:220,height:124,getContext:()=>ctx,ops};surfaces.push(canvas);return canvas;};
   globalThis.document={createElement(){created++;return make();}};
   try {
     const target=make(), signatures=[];

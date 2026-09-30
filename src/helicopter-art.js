@@ -1,12 +1,14 @@
+import { artSurface, vehicleDetails } from "./pixel-detail.js";
 // Original fictional helicopter, drawn from rectangles. Callers cache by level/side.
 const painter = c => (x, y, w, h, color) => {
   c.fillStyle = color;
   c.fillRect(x, y, w, h);
 };
 export function helicopterSprite(level) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 110; canvas.height = 62;
-  const r = painter(canvas.getContext("2d"));
+  const canvas = artSurface(110,62), c = canvas.getContext("2d");
+  // Mirror geometry once at sprite creation; previews and home share the cached result.
+  const mirrored = {set fillStyle(value){c.fillStyle=value;},fillRect(x,y,w,h){c.fillRect(110-x-w,y,w,h);}};
+  const r = painter(mirrored);
   const dark = "#304b49", body = "#668979", light = "#b6cbb0";
   r(14, 53, 80, 3, "#253c3544");
   r(17, 47, 4, 6, dark); r(60, 45, 4, 8, dark);
@@ -35,6 +37,7 @@ export function helicopterSprite(level) {
   if (level >= 9) { r(55, 11, 2, 15, light); r(53, 12, 6, 2, body); }
   if (level >= 10) { r(26, 23, 28, 2, "#e8cf83"); r(32, 37, 3, 6, "#e8cf83"); }
   for (let n = 0; n < level; n++) r(7 + n * 4, 59, 3, 2, "#d6c68c");
+  vehicleDetails(mirrored,"helicopter",level);
   return canvas;
 }
 export function drawOverheadHelicopter(c, level, p) {

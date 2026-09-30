@@ -1,3 +1,4 @@
+import { artSurface, vehicleDetails } from "./pixel-detail.js";
 import { helicopterSprite } from "./helicopter-art.js";
 import { equipmentStats } from "./equipment.js";
 const sprites = new Map(),
@@ -11,9 +12,7 @@ function sprite(level, id = "artillery") {
     sprites.set(key, vehicle);
     return vehicle;
   }
-  const c = document.createElement("canvas");
-  c.width = 110;
-  c.height = 62;
+  const c = artSurface(110,62);
   const x = c.getContext("2d"),
     r = (a, b, w, h, color) => {
       x.fillStyle = color;
@@ -94,6 +93,7 @@ function sprite(level, id = "artillery") {
   }
   // Visible upgrade ticks also distinguish every adjacent level.
   for (let n = 0; n < level; n++) r(7 + n * 4, 59, 3, 2, "#d6c68c");
+  vehicleDetails(x,id,level);
   sprites.set(key, c);
   return c;
 }
@@ -108,7 +108,7 @@ export function drawEquipmentOnGround(
   id = "artillery",
 ) {
   const asset = sprite(level, id);
-  ctx.drawImage(asset, 0, 0, asset.width, 58, x, y, width, height);
+  ctx.drawImage(asset, 0, 0, asset.width, asset.height * 58 / 62, x, y, width, height);
 }
 export function drawEquipment(canvas, level, id = "artillery") {
   const key = id + ":" + level + ":" + canvas.width + ":" + canvas.height;
@@ -136,9 +136,7 @@ export function drawEquipment(canvas, level, id = "artillery") {
 
 // Original tracked silhouettes: compact turret for tank, tall rear casemate and long barrel for SPG.
 function vehicleSprite(level, id) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 110;
-  canvas.height = 62;
+  const canvas = artSurface(110,62);
   const c = canvas.getContext("2d");
   const r = (x, y, w, h, color) => {
     c.fillStyle = color;
@@ -206,5 +204,6 @@ function vehicleSprite(level, id) {
     r(68, ty + 3, 14, 2, "#dac37d");
   }
   for (let n = 0; n < level; n++) r(7 + n * 4, 59, 3, 2, "#d6c68c");
+  vehicleDetails(c,id,level);
   return canvas;
 }

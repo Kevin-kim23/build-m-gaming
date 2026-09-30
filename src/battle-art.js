@@ -1,3 +1,4 @@
+import { artSurface, ART_SCALE, overheadDetails } from "./pixel-detail.js";
 import { drawOverheadHelicopter } from "./helicopter-art.js";
 import { UNITS } from "./units.js";
 
@@ -15,9 +16,7 @@ function rect(c, x, y, w, h, color) {
   c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
 }
 function surface(w, h) {
-  const canvas = document.createElement("canvas");
-  canvas.width = w; canvas.height = h;
-  return canvas;
+  return artSurface(w,h);
 }
 function emblem(c, x, y, side, size = 1) {
   const p = palettes[side];
@@ -82,6 +81,9 @@ function infantrySprite(id, side) {
     for(let i=0;i<unit.schoolLevel;i++)rect(c,3+i*2,10,1,2,unit.school==='officer'?'#edf2dd':'#edd092');
     if(unit.school==='officer')rect(c,5,2,3,1,'#edf2dd');
   }
+  c.fillStyle=p.light;c.fillRect(4,5,3,.5);c.fillRect(3,9,2,.5);
+  c.fillStyle=p.dark;c.fillRect(5.5,4.5,.5,.5);c.fillRect(8,8,.5,5);
+  c.fillStyle='#d5cca6';c.fillRect(5,12,.5,.5);c.fillRect(9,12,.5,.5);
   sprites.set(key, canvas);
   return canvas;
 }
@@ -122,6 +124,7 @@ function equipmentSprite(id, level, side) {
   }
   if (level >= 4) rect(c, 24, 5, 8, 3, p.body);
   if (level >= 7) { rect(c, 38, 10, 1, 23, p.light); rect(c, 36, 11, 5, 2, p.flag); }
+  overheadDetails(c,id,level,p);
   emblem(c, 25, 47, side);
   sprites.set(key, canvas);
   return canvas;
@@ -144,6 +147,8 @@ function headquartersSprite(id, side) {
   rect(c, w + 7, 0, 2, 25, p.dark); rect(c, w + 9, 1, 8, 7, p.flag);
   if (side === "enemy") rect(c, w - 5, h - 16, 8, 12, p.dark);
   else rect(c, -0, h - 13, 9, 8, p.light);
+  for(let x=8;x<w-8;x+=8){c.fillStyle=p.light;c.fillRect(x,8,4,.5);c.fillStyle=p.dark;c.fillRect(x,h-6,4,1);}
+  for(let y=15;y<h-10;y+=7){c.fillStyle=p.light;c.fillRect(w-10,y,3,2);c.fillStyle=p.dark;c.fillRect(w-9,y+.5,2,.5);}
   sprites.set(key, canvas);
   return canvas;
 }
@@ -172,17 +177,17 @@ function createScene(view) {
     const s = view.sides[side], enemy = side === "enemy", y = enemy ? 76 : H - 76;
     const hq = headquartersSprite(s.hq.id, side);
     rect(c, W / 2 - 65, y - 34, 130, 69, enemy ? "#ba8b8226" : "#4f7b6326");
-    c.drawImage(hq, Math.round(W / 2 - hq.width / 2), Math.round(y - hq.height / 2));
+    c.drawImage(hq, Math.round(W / 2 - hq.width / ART_SCALE / 2), Math.round(y - hq.height / ART_SCALE / 2), hq.width / ART_SCALE, hq.height / ART_SCALE);
     points[side] = { hq: { x: W / 2, y }, infantry: unitPositions(s.troops, side), equipment: [] };
     for (const p of points[side].infantry) {
       c.save(); c.translate(p.x, p.y); if (enemy) c.rotate(Math.PI);
-      c.drawImage(infantrySprite(p.id, side), -7, -9); c.restore();
+      c.drawImage(infantrySprite(p.id, side), -7, -9, 14, 19); c.restore();
     }
     s.equipment.forEach((g, i) => {
       const p = { id: g.id, x: (W / (s.equipment.length + 1)) * (i + 1), y: enemy ? 145 : H - 145 };
       points[side].equipment.push(p);
       c.save(); c.translate(p.x, p.y); if (enemy) c.rotate(Math.PI);
-      c.drawImage(equipmentSprite(g.id, g.level, side), -28, -34); c.restore();
+      c.drawImage(equipmentSprite(g.id, g.level, side), -28, -34, 56, 68); c.restore();
     });
   }
   return { canvas, points, key: signature(view) };
@@ -238,7 +243,7 @@ export function drawBattle(canvas, view) {
   let scene = scenes.get(canvas);
   if (!scene || scene.key !== signature(view)) { scene = createScene(view); scenes.set(canvas, scene); }
   c.setTransform(pixelW / W, 0, 0, pixelH / H, 0, 0); c.imageSmoothingEnabled = false;
-  c.drawImage(scene.canvas, 0, 0);
+  c.drawImage(scene.canvas, 0, 0, W, H);
   for (const effect of (view.effects ?? []).slice(-40)) fire(c, scene, effect, view.elapsed);
   health(c, view.sides.enemy.hq, "enemy"); health(c, view.sides.player.hq, "player");
 }

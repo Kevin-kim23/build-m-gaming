@@ -57,6 +57,11 @@ export function medalSvg(id) {
     pixels += rect(11, 4, 2, 5, shine) + rect(10, 5, 4, 2, shine);
     pixels += rect(1, 9, 2, 2, shine) + rect(21, 9, 2, 2, shine);
   }
+  // Fine inset engraving and ribbon threads retain the same compact medal footprint.
+  for(let x=8;x<17;x+=1.5)pixels+=rect(x,.5,.35,5,stripe);
+  pixels+=rect(8,23,8,.4,shine)+rect(5.5,16,.4,5,shine)+rect(17.5,16,.4,5,metal);
+  for(let i=0;i<=tier;i++)pixels+=rect(8+i,13,.45,.45,'#fff5d1');
+  pixels+=rect(10.5,16,1,.5,'#fff6d8')+rect(12.5,20,1,.5,'#645a38');
   const svg = `<svg class="achievement-medal-svg" viewBox="0 0 24 28" aria-hidden="true" focusable="false" shape-rendering="crispEdges">${pixels}</svg>`;
   cache.set(id, svg);
   return svg;
