@@ -1,5 +1,6 @@
+import { autoTouchStatus } from "./personal-equipment.js";
 import { canChooseFieldTheme, fieldTheme, setFieldTheme } from './field-theme.js';
-import { syncSwordControls } from "./sword-controls.js";
+import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
 import { UNIT_LIST, unitAccess } from "./units.js";
 import { schoolOffer } from "./schools.js";
@@ -20,6 +21,7 @@ import {
   recruitOffer,
   perTap,
   activateSword,
+  activateAutoTouch,
   perSecond,
 } from "./game.js";
 import { drawScene, drawFormationPortrait } from "./art.js";
@@ -113,6 +115,7 @@ function update() {
   setText("#tap-hint-rate", "한 번에 +" + fmt(tap) + " G");
   zone.setAttribute("aria-label", "화면 터치해서 골드 " + tap + " 획득");
   syncSwordControls(document.querySelector('.field-tools'), state, session.active);
+  syncRevolverControls(document.querySelector('.field-tools'), state, session.active);
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
     ["nco","officer"].some(id=>schoolOffer(state,id).canBuy) ||
@@ -137,6 +140,7 @@ zone.addEventListener("click", (event) => {
   gameAudio.tap(state.sound);
 });
 $(".field-tools [data-use-sword]").onclick = () => session.change(s => activateSword(s));
+$(".field-tools [data-use-revolver]").onclick = () => session.change(s => activateAutoTouch(s));
 document.querySelector('.field-theme-picker').addEventListener('click', event => {
   const button = event.target.closest('[data-field-theme]');
   if (button && !button.disabled) session.change(s => setFieldTheme(s, button.dataset.fieldTheme));
@@ -174,9 +178,12 @@ const resizeObserver = new ResizeObserver(() => {
   pendingResize = requestAnimationFrame(() => drawScene(canvas, state, $("#field-labels")));
 });
 resizeObserver.observe(canvas);
+// One clock; automatic payouts use elapsed 300 ms boundaries, not timer counts.
+let lastTick = 0;
 setInterval(() => {
-  if (!document.hidden) session.tick();
-}, 1000);
+  const now = Date.now(), delay = autoTouchStatus(state, now).active ? 300 : 1000;
+  if (!document.hidden && now - lastTick >= delay) { lastTick = now; session.tick(); }
+}, 100);
 document
   .querySelectorAll("[data-home-unit]")
   .forEach((c) => drawFormationPortrait(c, c.dataset.homeUnit));

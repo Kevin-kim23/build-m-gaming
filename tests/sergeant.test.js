@@ -113,7 +113,7 @@ test("v3 migration preserves the entire old progress and adds zero sergeants", (
   };
   delete old.sergeants;
   const migrated = parseSave(JSON.stringify(old));
-  assert.deepEqual(migrated, { ...old, version: 15, sergeants: 0,
+  assert.deepEqual(migrated, { ...old, version: 16, sergeants: 0,
     earnedAchievements: ["squad", "platoon"] });
   const mixed = { ...migrated, sergeants: 9 };
   assert.deepEqual(parseSave(JSON.stringify(mixed)), mixed);

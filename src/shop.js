@@ -1,4 +1,3 @@
-import { personalMarkup } from "./personal-panels.js";
 import { fmt } from "./format.js";
 import { equipmentStoreMarkup } from "./equipment-panels.js";
 import { UNITS, unitAccess } from "./units.js";
@@ -10,7 +9,6 @@ import { COMMAND_BATON, bulkRecruitAccess } from "./personal-equipment.js";
 export const SHOP_CATEGORIES = Object.freeze([
   Object.freeze({ id: "recruit", name: "군대 모집" }),
   Object.freeze({ id: "equipment", name: "장비 구매" }),
-  Object.freeze({ id: "personal", name: "개인 장비" }),
   Object.freeze({ id: "schools", name: "군사학교" }),
 ]);
 
@@ -71,7 +69,7 @@ export function shopMarkup(s, coin, insignia, category = "recruit") {
     ? recruitmentMarkup(s, coin, insignia)
     : selected === "equipment"
       ? equipmentStoreMarkup(s) || '<p class="shop-category-empty">진급하면 새로운 장비가 공개됩니다.</p>'
-      : selected === "schools" ? schoolsMarkup(s) : personalMarkup(s);
+      : schoolsMarkup(s);
   return `<div class="sheet-grip"></div>
   <div class="shop-header"><div><small>SUPPLY OFFICE</small><h2 id="modal-title">상점</h2></div><button id="close-shop" aria-label="상점 닫기">×</button></div>
   <div class="shop-wallet"><span>보유 골드</span><strong>${coin}<b id="shop-gold"></b><small>G</small></strong></div>

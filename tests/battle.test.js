@@ -98,12 +98,12 @@ test("all ten enhancements increase both damage and automatic attack speed", () 
     let previous = equipmentCombatStats(id, 0);
     for (let level = 1; level <= 10; level++) {
       const current = equipmentCombatStats(id, level);
-      assert.ok(current.damage > previous.damage);
+      assert.ok((current.healing ?? current.damage) > (previous.healing ?? previous.damage));
       assert.ok(current.intervalMs < previous.intervalMs);
       previous = current;
     }
   }
-  assert.throws(() => equipmentCombatStats("tank", 11), RangeError);
+  assert.throws(() => equipmentCombatStats("tank", 21), RangeError);
   const colonel = createBattle(army(5120), 3), general = createBattle(army(10240), 3);
   assert.equal(colonel.player.hq.hp * 2, general.player.hq.hp);
   assert.equal(general.player.units[0].damage, colonel.player.units[0].damage * 2);

@@ -1,3 +1,4 @@
+import { personalMarkup } from "../src/personal-panels.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { freshState } from "../src/game.js";
@@ -7,7 +8,7 @@ import { COMMAND_BATON } from "../src/personal-equipment.js";
 const state = (power, sergeants = 40) => ({
   ...freshState(1_800_000_000_000), soldiers: power - sergeants * 10, sergeants,
 });
-const markup = (s, category) => shopMarkup(s, "", () => "", category);
+const markup = (s, category) => category === "personal" ? personalMarkup(s) : shopMarkup(s, "", () => "", category);
 
 test("shop shows just the selected category and shares one wallet, title and live message", () => {
   const s = state(1280);

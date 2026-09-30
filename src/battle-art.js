@@ -1,6 +1,8 @@
 import { artSurface, ART_SCALE, overheadDetails } from "./pixel-detail.js";
 import { drawOverheadRocket } from './rocket-art.js';
 import { drawOverheadHelicopter } from "./helicopter-art.js";
+import { drawOverheadAircraft } from './aircraft-art.js';
+import { overheadEnhancement } from './enhancement-art.js';
 import { UNITS } from "./units.js";
 import { officerDetails } from './officer-art.js';
 
@@ -95,7 +97,9 @@ function equipmentSprite(id, level, side) {
   if (sprites.has(key)) return sprites.get(key);
   const canvas = surface(56, 68), c = canvas.getContext("2d"), p = palettes[side];
   rect(c, 12, 30, 36, 31, "#22392c44");
-  if (id === "rocketLauncher") {
+  if (id === 'transport' || id === 'fighter') {
+    drawOverheadAircraft(c,level,p,id);overheadEnhancement(c,level);sprites.set(key,canvas);return canvas;
+  } else if (id === "rocketLauncher") {
     drawOverheadRocket(c, level, p);
   } else if (id === "helicopter") {
     drawOverheadHelicopter(c, level, p);
@@ -130,6 +134,7 @@ function equipmentSprite(id, level, side) {
   if (level >= 4) rect(c, 24, 5, 8, 3, p.body);
   if (level >= 7) { rect(c, 38, 10, 1, 23, p.light); rect(c, 36, 11, 5, 2, p.flag); }
   overheadDetails(c,id,level,p);
+  overheadEnhancement(c,level);
   emblem(c, 25, 47, side);
   sprites.set(key, canvas);
   return canvas;
@@ -193,7 +198,8 @@ function createScene(view) {
       const p = { id: g.id, x: (W / (s.equipment.length + 1)) * (i + 1), y: enemy ? 145 : H - 145 };
       points[side].equipment.push(p);
       c.save(); c.translate(p.x, p.y); if (enemy) c.rotate(Math.PI);
-      c.drawImage(equipmentSprite(g.id, g.level, side), -28, -34, 56, 68); c.restore();
+      const width=Math.min(56,W/(s.equipment.length+1)-4),height=width*68/56;
+      c.drawImage(equipmentSprite(g.id, g.level, side), -width/2, -height/2, width, height); c.restore();
       c.fillStyle = enemy ? "#efd1c0" : "#ebeedb"; c.font = "12px sans-serif"; c.textAlign = "center";
       c.fillText(`[${g.count ?? 1}문]`, p.x, p.y + 45);
     });
@@ -214,12 +220,12 @@ function fire(c, scene, effect, elapsed) {
   const age = elapsed - effect.at, infantry = effect.kind === "infantry" || Object.hasOwn(UNITS, effect.kind);
   const duration = infantry ? 280 : 560;
   if (age < 0 || age >= duration || !scene.points[effect.side]) return;
-  const source = scene.points[effect.side], target = scene.points[effect.side === "player" ? "enemy" : "player"].hq;
+  const source = scene.points[effect.side], healing=effect.kind==='transport', target = healing ? source.hq : scene.points[effect.side === "player" ? "enemy" : "player"].hq;
   const shooters = infantry
     ? source.infantry.filter((p) => effect.kind === "infantry" || effect.kind === p.id)
     : source.equipment.filter((p) => p.id === effect.kind);
   const progress = Math.min(1, age / (duration * 0.76));
-  const color = effect.side === "player" ? "#ffe4a0" : "#ffd1bd";
+  const color = healing ? '#a8f0bd' : effect.side === "player" ? "#ffe4a0" : "#ffd1bd";
   c.save();
   for (let i = 0; i < shooters.length; i++) {
     const p = shooters[i], offset = (i % 5 - 2) * 3;

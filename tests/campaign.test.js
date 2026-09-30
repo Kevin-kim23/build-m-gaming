@@ -17,7 +17,7 @@ function army(power,level=8,copies=1){
   const shortage=GENERAL_MIN_SOLDIERS-(power-armyPower(state));
   if(shortage>0){const strongest=roster.at(-1);state[strongest.field]-=Math.ceil(shortage/strongest.power);}
   state.soldiers=power-armyPower(state);
-  for(const [i,id]of Object.keys(EQUIPMENT).entries())state.equipment[id]={level,count:copies,deployed:i>0};
+  for(const [i,id]of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'].entries())state.equipment[id]={level,count:copies,deployed:i>0};
   return state;
 }
 function simulate(state,id,taps=2){
@@ -74,7 +74,7 @@ test('legacy combat records are preserved without skipping any new conquest regi
   for(const version of [7,8,9,10,11,12,13,14]){
     const old={...freshState(T),version,battleCleared:10,campaignCleared:80,gold:1234567,soldiers:5000,sergeants:300};
     const migrated=parseSave(JSON.stringify(old),T);assert.ok(migrated);
-    assert.equal(migrated.version,15);assert.equal(migrated.battleCleared,10);assert.equal(migrated.campaignCleared,0);
+    assert.equal(migrated.version,16);assert.equal(migrated.battleCleared,10);assert.equal(migrated.campaignCleared,0);
     assert.equal(migrated.gold,old.gold);assert.equal(migrated.soldiers,old.soldiers);
   }
   for(const cleared of [0,19,20,39,40,59,60,79,80]){
@@ -107,5 +107,13 @@ test('region UI exposes all twenty regions, lock reasons, replay, next-country a
     assert.match(html,new RegExp(c.names[19]));assert.match(html,/최종 수도전/);assert.match(html,/진격 준비/);
     assert.doesNotMatch(html,/undefined|NaN/);
     for(const control of ['data-world','data-zoom="in"','data-zoom="out"','data-locate'])assert.ok(html.includes(control));
+  }
+});
+
+test('supply support preserves the first-capital corps target with ordinary one-copy investment',()=>{
+  for(const power of [20480,40960,61440,81920]){
+    const s=army(power);s.equipment.transport={level:8,count:1,deployed:false};
+    if(power>=81920)s.equipment.fighter={level:8,count:1,deployed:false};
+    assert.equal(simulate(s,20).status,power>=81920?'victory':'defeat',String(power));
   }
 });

@@ -105,8 +105,8 @@ test("old version seven assets migrate intact and receive currently earned medal
   const { version, earnedAchievements, ...assets } = restored;
   const { version: oldVersion, ...oldAssets } = old;
   assert.equal(oldVersion, 7);
-  assert.equal(version, 15);
-  assert.deepEqual(assets, {...oldAssets,ncoSchoolLevel:2,equipment:{...Object.fromEntries(Object.entries(oldAssets.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),helicopter:null,rocketLauncher:null}});
+  assert.equal(version, 16);
+  assert.deepEqual(assets, {...oldAssets,ncoSchoolLevel:2,equipment:{...Object.fromEntries(Object.entries(oldAssets.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),helicopter:null,rocketLauncher:null,transport:null,fighter:null}});
   assert.deepEqual(earnedAchievements, ids.slice(0, 4));
   assert.equal(SAVE_KEY, "budae-kiugi-recruits-v3");
 });
@@ -115,12 +115,12 @@ test("all legacy save versions gain medals from preserved power without trusting
   for (const version of [3, 4, 5, 6, 7]) {
     const old = { ...state(80), version, earnedAchievements: ["fieldArmy"] };
     const restored = parseSave(JSON.stringify(old), T);
-    assert.equal(restored.version, 15);
+    assert.equal(restored.version, 16);
     assert.deepEqual(restored.earnedAchievements, ["squad", "platoon"]);
     assert.equal(restored.gold, MAX_GOLD);
   }
   const v2 = parseSave(JSON.stringify({ version: 2, gold: 50, taps: 50, rank: 0, sound: false }), T);
-  assert.equal(v2.version, 15);
+  assert.equal(v2.version, 16);
   assert.deepEqual(v2.earnedAchievements, []);
 });
 

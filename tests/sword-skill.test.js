@@ -34,7 +34,7 @@ test('reload, offline income and clock rollback cannot extend or resurrect a sav
 });
 test('schema ten gains unused skill; schema eleven validates and preserves timestamps',()=>{
   const old={...general(),version:10};delete old.swordActivatedAt;
-  const migrated=parseSave(JSON.stringify(old),T);assert.equal(migrated.version, 15);assert.equal(migrated.swordActivatedAt,null);
+  const migrated=parseSave(JSON.stringify(old),T);assert.equal(migrated.version, 16);assert.equal(migrated.swordActivatedAt,null);
   assert.equal(migrated.gold,old.gold);assert.equal(migrated.sergeants,300);
   old.swordActivatedAt=T;assert.equal(parseSave(JSON.stringify(old),T).swordActivatedAt,null);
   for(const bad of [undefined,-1,1.5,'12',{},100000000000001]) {

@@ -17,7 +17,7 @@ export function preparationMarkup(state, stage, loadout) {
     }).join('')}</div></section>
     <section class="deployment-section"><h3>출전 장비 <small>보유 장비 중 선택</small></h3><div class="deployment-gears">${Object.values(EQUIPMENT).filter(d => !!state.equipment[d.id]).map(d => {
       const gun = state.equipment[d.id], combat = equipmentCombatStats(d.id, gun.level, armyPower(state), equipmentCount(state, d.id));
-      return `<label class="deployment-gear"><input type="checkbox" data-battle-gear="${d.id}" ${loadout.equipment.includes(d.id) ? 'checked' : ''}><span><b>${d.name} <em>+${gun.level}</em></b><small>[${fmt(equipmentCount(state, d.id))}문]</small><small>자동 공격 · ${fmt(Math.round(combat.damage))} 피해 / ${(combat.intervalMs / 1000).toFixed(2)}초</small></span></label>`;
+      return `<label class="deployment-gear"><input type="checkbox" data-battle-gear="${d.id}" ${loadout.equipment.includes(d.id) ? 'checked' : ''}><span><b>${d.name} <em>+${gun.level}</em></b><small>[${fmt(equipmentCount(state, d.id))}문]</small><small>${combat.healing ? `보급 지원 · 본부 ${fmt(Math.round(combat.healing))} 회복` : `자동 공격 · ${fmt(Math.round(combat.damage))} 피해`} / ${(combat.intervalMs / 1000).toFixed(2)}초</small></span></label>`;
     }).join('') || '<p class="battle-note">보유한 장비가 없습니다. 병력만으로도 출전할 수 있어요.</p>'}</div></section>
     <p class="battle-note">본부 체력은 총 보유 전력과 같으며 공격력도 함께 성장합니다. 병력·장비는 소모되지 않으며 홈 배치 설정은 유지돼요. ${BATTLE_RULES.maxDurationMs / 60_000}분 안에 본부가 파괴되지 않으면 무승부입니다.</p>
     <p role="status" class="battle-message" id="battle-message"></p>

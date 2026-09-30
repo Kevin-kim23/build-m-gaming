@@ -1,3 +1,4 @@
+import { personalMarkup } from "../src/personal-panels.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { freshState, recruit, recruitOffer, unitCost, parseSave, perSecond, perTap, MAX_GOLD, MAX_SOLDIERS, SAVE_KEY } from "../src/game.js";
@@ -7,7 +8,7 @@ import { shopMarkup } from "../src/shop.js";
 import { createGameSession } from "../src/session.js";
 const T=1800000000000;
 const army=(soldiers=4720)=>({...freshState(T),soldiers,sergeants:40,ncoSchoolLevel:1,gold:MAX_GOLD});
-const markup=(s,category)=>shopMarkup(s,'',()=>'',category);
+const markup=(s,category)=>category==='personal'?personalMarkup(s):shopMarkup(s,'',()=>'',category);
 const sum=(count,type)=>Array.from({length:100},(_,i)=>unitCost(count+i,type)).reduce((a,b)=>a+b,0);
 
 test('colonel baton level two adds sergeant batches but preserves soldier batches and school locks',()=>{
@@ -69,7 +70,7 @@ test('sword is hidden until colonel, locked there, granted at brigadier and expl
   const locked=markup(army(),'personal');assert.match(locked,/장군검/);assert.match(locked,/준장 진급 시 자동 지급/);
   assert.match(locked,/Lv.2/);assert.match(locked,/하사 100명 한 번에 모집/);
   const s={...army(10000),sergeants:300},stats=[perSecond(s),perTap(s)],owned=markup(s,'personal');
-  assert.match(owned,/보유 중 · 준장 진급 보상/);assert.match(owned,/30초 동안 홈 터치 골드 2배/);
+  assert.match(owned,/보유 중 · 진급 보상/);assert.match(owned,/30초 동안 터치 골드 2배/);
   assert.deepEqual([perSecond(s),perTap(s)],stats);
   const recruits=markup(s,'recruit');
   for(const type of ['soldier','sergeant','staffSergeant'])assert.equal((recruits.match(new RegExp(`data-buy-bulk="${type}"`,'g'))??[]).length,1);
@@ -83,7 +84,7 @@ test('existing saves retain assets and derive new gear without inventing seriali
   assert.equal(RANKS[rankForArmy(loaded)],'대령');assert.equal(commandBatonStatus(loaded).level,2);
   assert.equal(generalSwordStatus(loaded).owned,false);
   loaded.soldiers=5000;loaded.sergeants=300;assert.equal(generalSwordStatus(parseSave(JSON.stringify(loaded),T)).owned,true);
-  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version, 15);
+  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version, 16);
 });
 test('100 sergeants save once with backup and survive session reload without double purchase',()=>{
   const initial=army();initial.gold=sum(40,'sergeant');

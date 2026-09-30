@@ -23,7 +23,7 @@ test('rocket launcher previews only at colonel and requires actual brigadier ran
   assert.equal(buyEquipment(s,T,'rocketLauncher').reason,'owned');
 });
 test('fifth purchase goes to storage, swaps require freeing a slot, no income from stored gear',()=>{
-  const s=general();for(const id of Object.keys(EQUIPMENT))assert.equal(buyEquipment(s,T,id).ok,true);
+  const s=general();for(const id of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'])assert.equal(buyEquipment(s,T,id).ok,true);
   assert.equal(deployedEquipment(s).length,4);assert.equal(s.equipment.rocketLauncher.deployed,false);
   const before=perSecond(s);
   assert.equal(setEquipmentDeployed(s,true,T,'rocketLauncher').reason,'capacity');assert.equal(perSecond(s),before);
@@ -48,11 +48,11 @@ test('rocket upgrades settle old income and all ten levels persist while stored'
 });
 test('v11 migration preserves assets and cooldown, grants neither rocket nor concrete; current saves reject corrupt saves',()=>{
   const old={...general(),version:11,battleCleared:3,swordActivatedAt:T-5000};
-  for(const id of Object.keys(EQUIPMENT).filter(id=>id!=='rocketLauncher'))old.equipment[id]={level:7,deployed:true};
+  for(const id of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'].filter(id=>id!=='rocketLauncher'))old.equipment[id]={level:7,deployed:true};
   delete old.equipment.rocketLauncher;delete old.fieldTheme;
   const next=parseSave(JSON.stringify(old),T);
   for(const key of ['gold','soldiers','sergeants','ncoSchoolLevel','battleCleared','swordActivatedAt'])assert.equal(next[key],old[key]);
-  assert.deepEqual(next.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),rocketLauncher:null});assert.equal(next.fieldTheme,'earth');assert.equal(next.version, 15);
+  assert.deepEqual(next.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),rocketLauncher:null});assert.equal(next.fieldTheme,'earth');assert.equal(next.version, 16);
   old.fieldTheme='concrete';old.equipment.rocketLauncher={level:10,deployed:true};
   assert.equal(parseSave(JSON.stringify(old),T).equipment.rocketLauncher,null);
   for(const theme of [undefined,null,'invalid',{}])assert.equal(parseSave(JSON.stringify({...next,fieldTheme:theme}),T),null);

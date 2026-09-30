@@ -4,7 +4,8 @@ import { NEW_OFFICER_GRADES } from './officer-progression.js';
 import { schoolOffer, legacySchoolLevel } from "./schools.js";
 import { FIELD_ARMY_SIZE } from "./formations.js";
 import { STAGES } from "./battle-balance.js";
-import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus } from "./personal-equipment.js";
+import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, AUTO_TOUCH, GENERAL_SWORD, generalSwordDuration } from "./personal-equipment.js";
+import { settleAutoTouch } from './auto-touch.js';
 import { reconcileAchievements, validAchievementIds } from "./achievements.js";
 import {
   emptyEquipment,
@@ -94,9 +95,12 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
 }
 export function freshState(now = Date.now()) {
   return {
-    version: 15,
+    version: 16,
     fieldTheme: 'earth',
     swordActivatedAt: null,
+    swordDurationMs: GENERAL_SWORD.durationMs,
+    autoTouchActivatedAt: null,
+    autoTouchTicks: 0,
     ncoSchoolLevel: 0,
     officerSchoolLevel: 0,
     battleCleared: 0,
@@ -124,12 +128,16 @@ export function accrue(s, now = Date.now()) {
   const wholeSeconds = Math.floor(elapsed / 1000);
   const income = perSecond(s);
   const fraction = s.incomeRemainder + (elapsed % 1000) * income;
-  const earned = wholeSeconds * income + Math.floor(fraction / 1000);
+  const room = MAX_GOLD - s.gold;
+  const earned = wholeSeconds > 0 && income >= Math.ceil(room / wholeSeconds)
+    ? room : wholeSeconds * income + Math.floor(fraction / 1000);
   const actual = Math.min(earned, MAX_GOLD - s.gold);
   s.gold += actual;
   s.incomeRemainder = s.gold === MAX_GOLD ? 0 : fraction % 1000;
   s.lastAccrual = now;
-  return actual;
+  const automatic = settleAutoTouch(s, now, 1 + troopIncome(s, 'tap') + equipmentIncome(s).tap, MAX_GOLD);
+  if (s.gold === MAX_GOLD) s.incomeRemainder = 0;
+  return actual + automatic;
 }
 export function tapGold(s, now = Date.now()) {
   accrue(s, now);
@@ -146,7 +154,16 @@ export function activateSword(s, now = Date.now()) {
   const skill = swordSkillStatus(s, now);
   if (!skill.canUse) return { ok: false, reason: skill.owned ? "cooldown" : "locked" };
   s.swordActivatedAt = Math.max(now, s.lastAccrual);
+  s.swordDurationMs = generalSwordDuration(s);
   return { ok: true };
+}
+export function activateAutoTouch(s, now = Date.now()) {
+  if (!Number.isSafeInteger(now) || now < 0 || now > 100_000_000_000_000) return {ok:false,reason:'time'};
+  accrue(s,now);
+  const skill=autoTouchStatus(s,now);
+  if(!skill.canUse)return {ok:false,reason:skill.owned?'cooldown':'locked'};
+  s.autoTouchActivatedAt=Math.max(now,s.lastAccrual);s.autoTouchTicks=0;
+  return {ok:true};
 }
 export function recruit(s, now = Date.now(), type = "soldier", quantity = 1) {
   recruitUnit(type, quantity);
@@ -183,7 +200,10 @@ export function parseSave(raw, now = Date.now()) {
     }
     const integer = (x, max) => Number.isSafeInteger(x) && x >= 0 && x <= max;
     if (
-      ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].includes(s.version) ||
+      ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].includes(s.version) ||
+      (s.version >= 16 && (!(s.autoTouchActivatedAt === null || integer(s.autoTouchActivatedAt, s.lastAccrual)) ||
+        ![30000,40000,50000,60000].includes(s.swordDurationMs) ||
+        !integer(s.autoTouchTicks, AUTO_TOUCH.durationMs/AUTO_TOUCH.intervalMs) || (s.autoTouchActivatedAt === null && s.autoTouchTicks !== 0))) ||
       (s.version >= 15 && !integer(s.campaignCleared, STAGES.length)) ||
       (s.version >= 14 && !NEW_OFFICER_GRADES.every(unit=>integer(s[unit.field],Math.floor(MAX_SOLDIERS/unit.power)))) ||
       (s.version >= 12 && (typeof s.fieldTheme !== 'string' || !Object.hasOwn(FIELD_THEMES, s.fieldTheme))) ||
@@ -198,16 +218,19 @@ export function parseSave(raw, now = Date.now()) {
       !integer(s.soldiers, MAX_SOLDIERS) ||
       (s.version >= 4 && !integer(s.sergeants, MAX_SOLDIERS / 10)) ||
       (s.version >= 6 && !integer(s.staffSergeants, MAX_SOLDIERS / 20)) ||
-      (s.version >= 5 && !validEquipment(s.equipment, s.version === 5, s.version >= 10, s.version >= 12, s.version >= 13)) ||
+      (s.version >= 5 && !validEquipment(s.equipment, s.version === 5, s.version >= 10, s.version >= 12, s.version >= 13, s.version >= 16)) ||
       !integer(s.lastAccrual, 100_000_000_000_000) ||
       !integer(s.incomeRemainder, 999) ||
       !integer(s.revision, Number.MAX_SAFE_INTEGER)
     )
       return null;
     const migrated = {
-      version: 15,
+      version: 16,
       fieldTheme: s.version >= 12 ? s.fieldTheme : 'earth',
       swordActivatedAt: s.version >= 11 ? s.swordActivatedAt : null,
+      swordDurationMs: s.version >= 16 ? s.swordDurationMs : GENERAL_SWORD.durationMs,
+      autoTouchActivatedAt: s.version >= 16 ? s.autoTouchActivatedAt : null,
+      autoTouchTicks: s.version >= 16 ? s.autoTouchTicks : 0,
       ncoSchoolLevel: s.version >= 9 ? s.ncoSchoolLevel : 0,
       officerSchoolLevel: s.version >= 9 ? s.officerSchoolLevel : 0,
       battleCleared: s.version >= 7 ? s.battleCleared : 0,
@@ -232,7 +255,7 @@ export function parseSave(raw, now = Date.now()) {
     if (s.version < 9) migrated.ncoSchoolLevel = legacySchoolLevel(migrated);
     for (const id of Object.keys(EQUIPMENT)) {
       const gun =
-        s.version >= 5 && (s.version >= 6 || id === "artillery") && (id !== "helicopter" || s.version >= 10) && (id !== "rocketLauncher" || s.version >= 12)
+        s.version >= 5 && (s.version >= 6 || id === "artillery") && (id !== "helicopter" || s.version >= 10) && (id !== "rocketLauncher" || s.version >= 12) && s.version >= (EQUIPMENT[id].introducedVersion ?? 0)
           ? s.equipment[id]
           : null;
       if (gun)

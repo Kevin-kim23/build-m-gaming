@@ -1,8 +1,7 @@
 import { personalIcon } from "./personal-art.js";
-import { RANKS, rankForArmy, GENERAL_MIN_SOLDIERS, GENERAL_MIN_SERGEANTS, GENERAL_RANK, RANK_REQUIREMENTS } from "./ranks.js";
-import { fmt } from "./format.js";
+import { RANKS, rankForArmy } from "./ranks.js";
 import { UNITS } from "./units.js";
-import { COMMAND_BATON, BULK_RECRUIT, commandBatonStatus, GENERAL_SWORD, generalSwordStatus } from "./personal-equipment.js";
+import { COMMAND_BATON, BULK_RECRUIT, commandBatonStatus, GENERAL_SWORD, generalSwordStatus, generalSwordDuration, DIVISION_FLAG, GENERAL_REVOLVER, divisionFlagStatus, generalRevolverStatus } from "./personal-equipment.js";
 
 function batonMarkup(s) {
   const status = commandBatonStatus(s);
@@ -20,16 +19,25 @@ function batonMarkup(s) {
 }
 
 
+function rewardCard(item, status, icon, effect, button = '') {
+  if (!status.visible) return '';
+  return `<article class="personal-item${status.owned?'':' locked'}" data-personal-equipment="${item.id}">
+    <div class="personal-item-heading"><div class="personal-item-art">${personalIcon(icon,status.level||1)}</div>
+    <div><span class="item-class">장군 개인 장비</span><h3>${item.name} <small>Lv.${status.level||1}</small></h3>
+    <p class="personal-item-status">${status.owned?'보유 중 · 진급 보상':'🔒 '+item.unlockRank+' 진급 시 자동 지급'}</p></div></div>
+    <div class="personal-item-effect">${effect}</div>${status.owned?button:'<p class="personal-item-locked">진급하면 자동 지급됩니다.</p>'}</article>`;
+}
 export function personalMarkup(s) {
-  const baton = commandBatonStatus(s), sword = generalSwordStatus(s);
-  if (!baton.visible && !sword.visible)
-    return '<p class="shop-category-empty">진급하면 새로운 개인 장비가 공개됩니다.</p>';
-  const swordCard = !sword.visible ? "" : `<article class="personal-item${sword.owned ? "" : " locked"}" data-personal-equipment="${GENERAL_SWORD.id}">
-    <div class="personal-item-heading"><div class="personal-item-art">${personalIcon("sword", sword.level || 1)}</div>
-      <div><span class="item-class">장군 개인 장비</span><h3>장군검 <small>Lv.${sword.level || 1}</small></h3>
-      <p class="personal-item-status">${sword.owned ? "보유 중 · " + RANKS[rankForArmy(s)] + " 진급 보상" : "🔒 준장 진급 시 자동 지급"}</p></div>
-    </div><div class="personal-item-effect"><strong>30초 동안 홈 터치 골드 2배</strong><p>사용 시점부터 10분 뒤 재사용합니다.<br>방치 수입과 전투에는 적용되지 않습니다.</p><strong>Lv.${GENERAL_SWORD.repeatPurchaseLevel} · 10강 장비 추가 구매</strong><p>최초 구매비와 10강까지 강화비 합계로 1문씩 추가합니다.<br>추가 장비도 10강 유지 · 문마다 수입과 전투 공격력 합산<br>같은 종류는 연병장 한 칸에 함께 배치합니다.<br>준장 Lv.1 → 소장 Lv.2 → 중장 Lv.3 → 대장 Lv.4</p></div>
-    ${sword.owned ? '<button class="sword-skill-button" data-use-sword>장군검 · 30초 터치 골드 2배</button>' : `<p class="personal-item-locked">총 전력 ${fmt(RANK_REQUIREMENTS[GENERAL_RANK])} 이상 · 일반병 ${fmt(GENERAL_MIN_SOLDIERS)}명 · 하사 ${GENERAL_MIN_SERGEANTS}명 필요</p>`}
-  </article>`;
-  return (baton.visible ? batonMarkup(s) : "") + swordCard;
+  const baton=commandBatonStatus(s), sword=generalSwordStatus(s), flag=divisionFlagStatus(s), revolver=generalRevolverStatus(s);
+  if (![baton,sword,flag,revolver].some(item=>item.visible)) return '<p class="shop-category-empty">진급하면 새로운 개인 장비가 공개됩니다.</p>';
+  return (baton.visible?batonMarkup(s):'')
+    + rewardCard(GENERAL_SWORD,sword,'sword',
+      `<strong>${generalSwordDuration(s)/1000}초 동안 터치 골드 2배</strong><p>사용 시점부터 10분 뒤 재사용합니다.<br>준장 Lv.1 30초 → 소장 Lv.2 40초<br>중장 Lv.3 50초 → 대장 Lv.4 60초<br>홈 터치와 리볼버 자동 터치에 적용됩니다.<br>방치 수입과 전투에는 적용되지 않습니다.</p>`,
+      '<button class="sword-skill-button" data-use-sword>장군검 사용</button>')
+    + rewardCard(DIVISION_FLAG,flag,'flag',
+      '<strong>Lv.1 · 10강 이상 장비 추가 구매</strong><p>최초 구매비와 현재 단계까지의 강화비 합계로 1문씩 추가합니다. 현재 강화 단계 유지 · 같은 종류 한 칸 · 문마다 효과 합산</p><strong>Lv.2 · 최대 20강 해금</strong><p>소장 Lv.1 → 중장 Lv.2<br>보유한 같은 종류 전체를 함께 강화하며 강화비도 보유 문수만큼 지불합니다. 11강부터 금장과 빛나는 장식이 추가됩니다.</p>',
+      '<button class="personal-recruit-link" data-equipment-category="military">군사 장비 관리 →</button>')
+    + rewardCard(GENERAL_REVOLVER,revolver,'revolver',
+      '<strong>Lv.1 · 1분 동안 0.3초마다 자동 터치 골드</strong><p>사용 시점부터 30분 뒤 재사용합니다.<br>현재 터치 보상으로 총 200회 지급합니다.<br>장군검 사용 중에는 자동 터치도 2배입니다.<br>전투 자동 사격과는 별개이며, 재접속해도 남은 지급분만 정산합니다.</p>',
+      '<button class="sword-skill-button" data-use-revolver>자동 터치 시작 · 1분</button>');
 }

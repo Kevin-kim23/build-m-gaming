@@ -6,9 +6,27 @@ export const COMMAND_BATON = Object.freeze({
 });
 export const GENERAL_SWORD = Object.freeze({
   id: "generalSword", name: "장군검", unlockRank: "준장", level: 1,
-  repeatPurchaseLevel: 2,
-  durationMs: 30_000, cooldownMs: 600_000, tapMultiplier: 2,
+  durationMs: 30_000, durationStepMs: 10_000, cooldownMs: 600_000, tapMultiplier: 2,
 });
+export const DIVISION_FLAG = Object.freeze({ id:'divisionFlag', name:'사단기', unlockRank:'소장', maxLevel:2 });
+export const GENERAL_REVOLVER = Object.freeze({ id:'generalRevolver', name:'장군 리볼버', unlockRank:'중장', maxLevel:1 });
+const rewardStatus = (state, item) => {
+  const rank=rankForArmy(state), first=RANKS.indexOf(item.unlockRank), owned=rank>=first;
+  return { visible:catalogVisible(state,item.unlockRank), owned, level:owned?Math.min(item.maxLevel,rank-first+1):0 };
+};
+export const divisionFlagStatus = state => rewardStatus(state,DIVISION_FLAG);
+export const generalRevolverStatus = state => rewardStatus(state,GENERAL_REVOLVER);
+export const generalSwordDuration = state => GENERAL_SWORD.durationMs + Math.max(0,generalSwordStatus(state).level-1)*GENERAL_SWORD.durationStepMs;
+export const AUTO_TOUCH = Object.freeze({ durationMs: 60_000, cooldownMs: 1_800_000, intervalMs: 300 });
+export function autoTouchStatus(state, now = Date.now()) {
+  const owned = generalRevolverStatus(state).owned;
+  const at = state.autoTouchActivatedAt ?? null;
+  const elapsed = at === null ? Infinity : Math.max(0, Math.max(now, state.lastAccrual ?? 0) - at);
+  const active = owned && elapsed < AUTO_TOUCH.durationMs;
+  const remainingMs = Math.max(0, AUTO_TOUCH.cooldownMs - elapsed);
+  return { owned, active, canUse: owned && remainingMs === 0, remainingMs,
+    activeMs: active ? AUTO_TOUCH.durationMs - elapsed : 0 };
+}
 export const BULK_RECRUIT = Object.freeze({
   soldier: Object.freeze({ level: 1, unlockRank: COMMAND_BATON.unlockRank }),
   sergeant: Object.freeze({ level: 2, unlockRank: COMMAND_BATON.upgradeRank }),
@@ -17,7 +35,7 @@ export const BULK_RECRUIT = Object.freeze({
   sergeantMajor: Object.freeze({ level: 5, unlockRank: '중장' }),
   lieutenant: Object.freeze({ level: 6, unlockRank: '대장' }),
 });
-// Both personal items are derived from actual rank, without duplicate saved rewards.
+// All personal items are derived from actual rank, without duplicate saved rewards.
 export function commandBatonStatus(state) {
   const rank = rankForArmy(state);
   const owned = rank >= RANKS.indexOf(COMMAND_BATON.unlockRank);
@@ -46,9 +64,10 @@ export function swordSkillStatus(state, now = Date.now()) {
   const at = state.swordActivatedAt ?? null;
   const clock = Math.max(now, state.lastAccrual ?? 0);
   const elapsed = at === null ? Infinity : Math.max(0, clock - at);
-  const active = owned && elapsed < GENERAL_SWORD.durationMs;
+  const durationMs = at === null ? generalSwordDuration(state) : (state.swordDurationMs ?? GENERAL_SWORD.durationMs);
+  const active = owned && elapsed < durationMs;
   const remainingMs = at === null ? 0 : Math.max(0, GENERAL_SWORD.cooldownMs - elapsed);
   return { owned, active, canUse: owned && remainingMs === 0,
-    activeMs: active ? GENERAL_SWORD.durationMs - elapsed : 0, remainingMs,
+    activeMs: active ? durationMs - elapsed : 0, remainingMs, durationMs,
     multiplier: active ? GENERAL_SWORD.tapMultiplier : 1 };
 }

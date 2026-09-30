@@ -1,11 +1,11 @@
-import { syncSwordControls } from "./sword-controls.js";
+import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { fmt } from './format.js';
 import { coin, insignia } from './home-view.js';
-import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, buyAdditionalEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool, activateSword } from './game.js';
+import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, buyAdditionalEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool, activateSword, activateAutoTouch } from './game.js';
 import { SCHOOLS } from './schools.js';
 import { renderSchools } from './school-panels.js';
 import { rankForArmy, LAST_RANK, promotionProgress } from './ranks.js';
-import { COMMAND_BATON, BULK_RECRUIT, commandBatonStatus, generalSwordStatus, GENERAL_SWORD } from './personal-equipment.js';
+import { COMMAND_BATON, BULK_RECRUIT, commandBatonStatus, generalSwordStatus, GENERAL_SWORD, generalSwordDuration, divisionFlagStatus, generalRevolverStatus } from './personal-equipment.js';
 import { EQUIPMENT, equipmentOf, visibleEquipment, deploymentOffer } from './equipment.js';
 import { panelTabs, equipmentPanelMarkup, renderEquipmentStore, renderEquipmentPanel } from './equipment-panels.js';
 import { SHOP_CATEGORIES, shopMarkup } from './shop.js';
@@ -19,6 +19,7 @@ export function createArmyPanels(session, audio) {
   const dialog = document.querySelector('#modal');
   const $ = selector => dialog.querySelector(selector);
   let activePanel = 'shop', category = 'recruit', activeEquipment = 'artillery';
+  let equipmentCategory = 'military', equipmentRank = -1;
   let shopRank = -1, catalogRank = -1, equipmentCatalogKey = '';
   let ncoLevel = -1, officerLevel = -1;
   const state = () => session.state;
@@ -39,7 +40,6 @@ export function createArmyPanels(session, audio) {
     text('#shop-gold', fmt(s.gold));
     if (category === 'equipment') renderEquipmentStore(s, dialog);
     if (category === 'schools') renderSchools(s, dialog);
-    if (category === 'personal') syncSwordControls(dialog, s, session.active);
     if (category !== 'recruit') return;
     for (const unit of Object.values(UNITS)) {
       const card = $(`[data-unit="${unit.id}"]`);
@@ -98,27 +98,35 @@ export function createArmyPanels(session, audio) {
     dialog.scrollTop = 0;
     lockPanel();
   }
-  function openEquipment(id = activeEquipment) {
+  function openEquipment(id = activeEquipment, nextCategory = equipmentCategory) {
+    equipmentCategory = nextCategory;
+    equipmentRank = rankForArmy(state());
     const items = visibleEquipment(state());
     activeEquipment = items.some(d => d.id === id) ? id : (items[0]?.id ?? null);
     equipmentCatalogKey = items.map(d => d.id).join(':');
     activePanel = 'equipment';
-    dialog.innerHTML = panelTabs('equipment') + equipmentPanelMarkup(state(), activeEquipment);
+    dialog.innerHTML = panelTabs('equipment') + equipmentPanelMarkup(state(), activeEquipment, equipmentCategory);
     if (!dialog.open) dialog.showModal();
-    renderEquipmentPanel(state(), dialog, activeEquipment);
+    updateEquipment();
     dialog.scrollTop = 0;
     lockPanel();
+  }
+  function updateEquipment() {
+    renderEquipmentPanel(state(), dialog, activeEquipment);
+    syncSwordControls(dialog, state(), session.active);
+    syncRevolverControls(dialog, state(), session.active);
   }
   function sync() {
     if (!dialog.open) return;
     if (activePanel === 'shop') updateShop();
-    else if (equipmentCatalogKey !== visibleEquipment(state()).map(d => d.id).join(':')) openEquipment();
-    else renderEquipmentPanel(state(), dialog, activeEquipment);
+    else if (equipmentRank !== rankForArmy(state()) || equipmentCatalogKey !== visibleEquipment(state()).map(d => d.id).join(':')) openEquipment();
+    else updateEquipment();
     lockPanel();
   }
   function buyUnit(id, quantity = 1) {
     const previousBatonLevel = commandBatonStatus(state()).level;
     const previousSwordLevel = generalSwordStatus(state()).level;
+    const previousFlagLevel = divisionFlagStatus(state()).level, previousRevolver = generalRevolverStatus(state()).owned;
     const result = session.change(s => recruit(s, Date.now(), id, quantity));
     if (!result) return;
     if (result.ok) {
@@ -135,7 +143,9 @@ export function createArmyPanels(session, audio) {
     text('#shop-message', result.ok
       ? `${unit.name} ${result.count}명 합류!` + (result.promoted ? ` ${RANKS[result.rank]} 진급! 총 전력 ${fmt(armyPower(state()))}` : '')
         + (batonLevel > previousBatonLevel ? ` ${COMMAND_BATON.name} Lv.${batonLevel} 자동 지급 · ${newBulk.length ? newBulk.join("·") + " " + COMMAND_BATON.recruitAmount + "명 모집 해금!" : "계급 성장 완료!"}` : '')
-        + (swordLevel > previousSwordLevel ? ` ${GENERAL_SWORD.name} Lv.${swordLevel} ${previousSwordLevel ? "성장" : "자동 지급"}!${previousSwordLevel < GENERAL_SWORD.repeatPurchaseLevel && swordLevel >= GENERAL_SWORD.repeatPurchaseLevel ? " 10강 장비 추가 구매 해금!" : ""}` : '')
+        + (swordLevel > previousSwordLevel ? ` ${GENERAL_SWORD.name} Lv.${swordLevel} ${previousSwordLevel ? "성장" : "자동 지급"}!` : '')
+        + (divisionFlagStatus(state()).level > previousFlagLevel ? ` 사단기 Lv.${divisionFlagStatus(state()).level} 지급!` : '')
+        + (!previousRevolver && generalRevolverStatus(state()).owned ? ' 장군 리볼버 지급 · 자동 터치 해금!' : '')
       : result.reason === 'locked' ? `${recruitOffer(state(), id, quantity).requirement} 조건을 충족해야 모집할 수 있어요.`
       : result.reason === 'limit' ? '모집 인원만큼 전력 여유가 필요해요.' : '골드가 부족해요.');
     $('#shop-message')?.classList.toggle('promoted', !!result.promoted);
@@ -155,7 +165,7 @@ export function createArmyPanels(session, audio) {
     if (result.ok) audio.recruit(state().sound);
     text(activePanel === 'equipment' ? '#equipment-message' : '#shop-message', result.ok
       ? `${EQUIPMENT[id].name} [${fmt(result.count)}문] · +${result.level}강 유지 · ${result.deployed ? '같은 칸에 합류!' : '보관함에 합류!'}`
-      : result.reason === 'locked' ? '장군검 Lv.2부터 추가 구매할 수 있어요.'
+      : result.reason === 'locked' ? '소장 · 사단기 Lv.1부터 추가 구매할 수 있어요.'
       : result.reason === 'enhancement' ? '먼저 10강까지 강화하세요.'
       : result.reason === 'gold' ? '골드가 부족해요.' : '추가 구매 조건을 확인하세요.');
   }
@@ -173,7 +183,7 @@ export function createArmyPanels(session, audio) {
     if (result.ok) audio.recruit(state().sound);
     if (dialog.open && activePanel === 'equipment' && activeEquipment === id) text('#equipment-message', result.ok
       ? `${EQUIPMENT[id].name} +${result.level}강 완료!`
-      : result.reason === 'max' ? '최대 10강입니다.'
+      : result.reason === 'max' ? '현재 계급의 최대 강화입니다. 사단기 Lv.2부터 20강까지 확장됩니다.'
       : result.reason === 'unowned' ? '장비를 먼저 구매하세요.' : '골드가 부족해요.');
   }
   function toggleEquipment() {
@@ -195,16 +205,21 @@ export function createArmyPanels(session, audio) {
     if (button.id === 'close-shop' || button.id === 'close-equipment') dialog.close();
     else if (button.dataset.panel) button.dataset.panel === 'shop' ? openShop() : openEquipment();
     else if (button.dataset.shopCategory) { openShop(button.dataset.shopCategory); $(`[data-shop-category="${category}"]`)?.focus({preventScroll:true}); }
+    else if (button.dataset.equipmentCategory) openEquipment(activeEquipment, button.dataset.equipmentCategory);
+    else if (button.hasAttribute('data-use-revolver')) {
+      const result = session.change(s => activateAutoTouch(s));
+      if (result?.ok) text('#equipment-message', '1분 동안 0.3초마다 자동 터치 골드를 받습니다.');
+    }
     else if (button.hasAttribute('data-use-sword')) {
       const result = session.change(s => activateSword(s));
-      if (result?.ok) text('#shop-message', '30초 동안 홈 터치 골드가 2배! 홈으로 돌아가 사용하세요.');
+      if (result?.ok) text('#equipment-message', `${generalSwordDuration(state())/1000}초 동안 터치 골드가 2배입니다!`);
     }
     else if (button.dataset.buy) buyUnit(button.dataset.buy);
     else if (button.dataset.buyBulk) buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount);
     else if (button.dataset.buyAdditional) purchaseAdditionalGun(button.dataset.buyAdditional);
     else if (button.dataset.buyEquipment) purchaseGun(button.dataset.buyEquipment);
     else if (button.dataset.upgradeSchool) buildSchool(button.dataset.upgradeSchool);
-    else if (button.dataset.manageEquipment) openEquipment(button.dataset.manageEquipment);
+    else if (button.dataset.manageEquipment) openEquipment(button.dataset.manageEquipment, 'military');
     else if (button.dataset.selectEquipment) openEquipment(button.dataset.selectEquipment);
     else if (button.id === 'equipment-to-shop') openShop('equipment');
     else if (button.id === 'enhance-equipment') upgradeGun();

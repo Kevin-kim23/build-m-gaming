@@ -1,6 +1,8 @@
+import { generalRewardIcon } from './general-reward-art.js';
 // Original high-density pixel geometry. The reference informs colors/materials only.
 const icons = new Map();
 export function personalIcon(kind, level = 1) {
+  if (kind === 'flag' || kind === 'revolver') return generalRewardIcon(kind, level);
   const key = `${kind}:${level}`;
   if (icons.has(key)) return icons.get(key);
   const pixels = [], rect = (x,y,w,h,c) => pixels.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`);

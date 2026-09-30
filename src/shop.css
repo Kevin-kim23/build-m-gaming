@@ -4,7 +4,7 @@
   top: 56px;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 5px;
   margin: 16px 0 0;
   padding: 4px;
@@ -136,3 +136,9 @@
 .additional-purchase h4 { margin:0 0 8px; font-size:14px; }
 .additional-purchase p { font-size:11px; line-height:1.6; color:#c5d0b0; }
 .equipment-store [data-buy-equipment][hidden] { display:none; }
+
+.equipment-categories { grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:18px; }
+.equipment-role { color:#c9d9be; font-size:12px; text-align:center; }
+.equipment-select { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
+.equipment-select button { min-width:0; word-break:keep-all; }
+.equipment-select button span { display:block; margin-top:4px; color:#dfd6ad; }

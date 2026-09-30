@@ -17,6 +17,8 @@ export const STAGES = campaignStages;
 export const ENEMY_EQUIPMENT = Object.freeze(["artillery", "tank", "selfPropelled"]);
 
 const weaponBase = Object.freeze({
+  transport: { damage:0, healing:6, intervalMs:5000 },
+  fighter: { damage:96, intervalMs:2600 },
   rocketLauncher: { damage: 48, intervalMs: 4200 },
   helicopter: { damage: 16, intervalMs: 1800 },
   artillery: { damage: 11, intervalMs: 2800 },
@@ -45,6 +47,7 @@ export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, cou
   };
   return {
     damage: count * base.damage * (1 + level * 0.12) * combatScale(totalPower),
+    ...(base.healing ? { healing:count*base.healing*(1+level*.12)*combatScale(totalPower) } : {}),
     intervalMs: Math.max(
       BATTLE_RULES.stepMs,
       Math.round(base.intervalMs / (1 + level * 0.08) / BATTLE_RULES.stepMs) * BATTLE_RULES.stepMs,

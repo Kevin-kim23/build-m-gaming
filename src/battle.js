@@ -82,9 +82,11 @@ function cloneSide(side) {
 function cloneBattle(battle) {
   return { ...battle, player: cloneSide(battle.player), enemy: cloneSide(battle.enemy) };
 }
-function settle(battle, playerDamage, enemyDamage) {
+function settle(battle, playerDamage, enemyDamage, playerHealing = 0, enemyHealing = 0) {
   battle.enemy.hq.hp = Math.max(0, battle.enemy.hq.hp - playerDamage);
   battle.player.hq.hp = Math.max(0, battle.player.hq.hp - enemyDamage);
+  if(battle.player.hq.hp>0)battle.player.hq.hp=Math.min(battle.player.hq.maxHp,battle.player.hq.hp+playerHealing);
+  if(battle.enemy.hq.hp>0)battle.enemy.hq.hp=Math.min(battle.enemy.hq.maxHp,battle.enemy.hq.hp+enemyHealing);
   if (!battle.enemy.hq.hp && !battle.player.hq.hp) battle.status = "draw";
   else if (!battle.enemy.hq.hp) battle.status = "victory";
   else if (!battle.player.hq.hp) battle.status = "defeat";
@@ -99,14 +101,15 @@ function volley(side, now) {
   return damage;
 }
 function equipmentFire(side, now) {
-  let damage = 0;
+  let damage = 0, healing = 0;
   for (const gun of side.equipment) {
     if (now < gun.nextShotMs) continue;
     gun.lastShotMs = now;
     gun.nextShotMs += gun.intervalMs;
     damage += gun.damage;
+    healing += gun.healing ?? 0;
   }
-  return damage;
+  return { damage, healing };
 }
 
 export function fireVolley(battle) {
@@ -126,13 +129,14 @@ export function advanceBattle(battle, deltaMs) {
   while (next.remainderMs >= BATTLE_RULES.stepMs && next.status === "running") {
     next.remainderMs -= BATTLE_RULES.stepMs;
     next.elapsedMs += BATTLE_RULES.stepMs;
-    const playerDamage = equipmentFire(next.player, next.elapsedMs);
-    let enemyDamage = equipmentFire(next.enemy, next.elapsedMs);
+    const playerFire = equipmentFire(next.player, next.elapsedMs);
+    const enemyFire = equipmentFire(next.enemy, next.elapsedMs);
+    let enemyDamage = enemyFire.damage;
     if (next.elapsedMs >= next.nextEnemyVolleyMs) {
       enemyDamage += volley(next.enemy, next.elapsedMs);
       next.nextEnemyVolleyMs += BATTLE_RULES.enemyVolleyMs;
     }
-    settle(next, playerDamage, enemyDamage);
+    settle(next, playerFire.damage, enemyDamage, playerFire.healing, enemyFire.healing);
   }
   return next;
 }
