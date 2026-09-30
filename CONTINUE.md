@@ -177,3 +177,7 @@ transport는 소장450,000,000G 보급 회복, fighter는 중장1,500,000,000G �
 ## 0.27.1 다음 국가 바로 이동
 
 campaign-map.js의 atlas-next-country 버튼은 현재 국가 완료 여부와 COUNTRIES 순서로 계산하며 기존 data-country 이동/420ms 카메라 전환을 재사용합니다. 지도 바깥 위쪽에 두어 지역명을 가리지 않습니다. 저장 형식16 유지.
+
+## 0.27.2 이전 국가 바로 이동
+
+campaign-map.js의 atlas-previous-country는 현재 국가의 이전 국가가 점령 완료되었을 때 지도 바깥 아래에 표시합니다. 기존 data-country 처리로 이전 수도에 복귀하며 저장·수입·전투 난이도 변경은 없습니다.

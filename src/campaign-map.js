@@ -11,6 +11,7 @@ import { fmt } from './format.js';
 export function campaignMarkup(state,countryId=null,selectedId=null){
   const country=COUNTRIES.find(c=>c.id===countryId),cleared=state.campaignCleared??0;
   const nextCountry=country&&countryProgress(state,country.id).complete?COUNTRIES[country.index+1]:null;
+  const previousCountry=country&&country.index>0&&cleared>=country.firstStage-1?COUNTRIES[country.index-1]:null;
   const selected=campaignStages.find(s=>s.id===selectedId&&s.countryId===countryId);
   const access=battleAccess(state);
   const countryButtons=COUNTRIES.map(c=>{
@@ -36,6 +37,7 @@ export function campaignMarkup(state,countryId=null,selectedId=null){
     <circle class="region-touch" cx="${x}" cy="${y}" r="36"/>${stage.capital?settlement(x,y-15,true):''}<circle class="region-badge" cx="${x}" cy="${y}" r="21"/><text class="region-number" x="${x}" y="${y+7}">${done?'✓':String(r.number).padStart(2,'0')}</text><text class="region-label" x="${x}" y="${y+44}">${stage.name}</text></g>`;
   }).join(''):''}</svg>
   <div class="atlas-compass" aria-hidden="true">N<span>↑</span></div></div>
+  ${previousCountry?`<button class="atlas-previous-country" data-country="${previousCountry.id}" aria-label="${previousCountry.name}으로 바로 내려가기"><span aria-hidden="true">↓</span> 이전 나라 · ${previousCountry.name}</button>`:''}
   <div class="atlas-controls" aria-label="지도 조작">
     <div class="atlas-pan" role="group" aria-label="지도 이동"><button data-pan="left" aria-label="지도 서쪽으로 이동">←</button><button data-pan="up" aria-label="지도 북쪽으로 이동">↑</button><button data-locate aria-label="현재 진격 지역으로 이동">◎</button><button data-pan="down" aria-label="지도 남쪽으로 이동">↓</button><button data-pan="right" aria-label="지도 동쪽으로 이동">→</button></div>
     <div class="atlas-zoom"><button data-zoom="in" aria-label="지도 확대">＋</button><button data-zoom="out" aria-label="지도 축소">−</button></div>

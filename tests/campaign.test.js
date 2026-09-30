@@ -139,3 +139,20 @@ test('completed country maps offer a direct northern route only to the next unlo
   }
   assert.doesNotMatch(campaignMarkup({campaignCleared:80}),/class="atlas-next-country"/);
 });
+
+test('upper countries provide a southern route to the conquered previous country, including while unfinished',()=>{
+  for(const c of COUNTRIES){
+    for(const cleared of [c.firstStage-1,c.lastStage]){
+      const html=campaignMarkup({...army(81920),campaignCleared:cleared},c.id,c.firstStage);
+      const route=html.match(/<button class="atlas-previous-country"[^>]*>[\s\S]*?<\/button>/)?.[0];
+      if(c.index===0){assert.equal(route,undefined);continue;}
+      const previous=COUNTRIES[c.index-1];
+      assert.ok(route,`${c.id} after ${cleared} clears needs a return route`);
+      assert.ok(route.includes(`data-country="${previous.id}"`));
+      assert.ok(route.includes(`이전 나라 · ${previous.name}`));
+      assert.ok(html.indexOf(route)>html.indexOf('</svg>\n  <div class="atlas-compass"'));
+    }
+  }
+  assert.ok(!campaignMarkup({campaignCleared:80}).includes('class="atlas-previous-country"'));
+  assert.ok(!campaignMarkup({campaignCleared:19},'veloc',21).includes('class="atlas-previous-country"'));
+});
