@@ -15,6 +15,7 @@ export { RANKS, RANK_REQUIREMENTS, rankFor } from "./ranks.js";
 export const SAVE_KEY = "budae-kiugi-recruits-v3";
 export const LEGACY_KEY = "budae-kiugi-tap-save-v2";
 export const MAX_GOLD = 1_000_000_000_000;
+export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
 export const MAX_SOLDIERS = FIELD_ARMY_SIZE * 4;
 export const perTap = (s) => 1 + troopIncome(s, "tap") + equipmentIncome(s).tap;
 export const perSecond = (s) =>
@@ -79,7 +80,7 @@ export function freshState(now = Date.now()) {
   };
 }
 export function accrue(s, now = Date.now()) {
-  const elapsed = Math.max(0, Math.floor(now - s.lastAccrual));
+  const elapsed = Math.min(MAX_OFFLINE_MS, Math.max(0, Math.floor(now - s.lastAccrual)));
   if (!elapsed) return 0;
   const wholeSeconds = Math.floor(elapsed / 1000);
   const income = perSecond(s);

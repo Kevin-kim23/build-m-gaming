@@ -1,3 +1,4 @@
+import { fmt } from "./format.js";
 import {
   SQUAD_SIZE,
   PLATOON_SIZE,
@@ -158,14 +159,14 @@ export function promotionProgress(s) {
     power = armyPower(s),
     next = RANK_DEFINITIONS[current + 1];
   if (!next)
-    return { text: "총 전력 " + power.toLocaleString("ko-KR"), ratio: 1 };
+    return { text: "총 전력 " + fmt(power), ratio: 1 };
   const gated = current + 1 === MAJOR_RANK;
   return {
     text:
       "전력 " +
-      power.toLocaleString("ko-KR") +
+      fmt(power) +
       " / " +
-      next.required.toLocaleString("ko-KR") +
+      fmt(next.required) +
       (gated ? " · 하사 " + (s.sergeants ?? 0) + " / 40명" : ""),
     ratio: Math.min(
       1,

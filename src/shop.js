@@ -1,3 +1,4 @@
+import { fmt } from "./format.js";
 import { equipmentStoreMarkup } from "./equipment-panels.js";
 import { UNITS } from "./units.js";
 import { FORMATIONS } from "./formations.js";
@@ -32,7 +33,7 @@ export function shopMarkup(s, coin, insignia) {
   <p class="strength-note">진급·편제: 하사 1명 = 전력 10${catalogVisible(s, "소령") ? " · 중사 1명 = 전력 20" : ""}<br>모집 가격은 병력 종류별로 따로 증가합니다.</p>
   <p id="shop-message" role="status" aria-live="polite"></p>
   <section class="shop-ranks"><div class="shop-ranks-title"><b>전력이 쌓이면, 계급도 올라갑니다</b><small>조건 달성 시 자동 진급</small></div>
-   <div class="rank-steps">${RANK_DEFINITIONS.map((r, i) => `<div class="rank-step" data-rank="${i}">${insignia(i)}<b>${r.name}</b><small>전력 ${r.required.toLocaleString("ko-KR")}</small><em>${i >= 4 ? r.condition : ""}</em></div>`).join("")}</div><p id="shop-next"></p>
+   <div class="rank-steps">${RANK_DEFINITIONS.map((r, i) => `<div class="rank-step" data-rank="${i}">${insignia(i)}<b>${r.name}</b><small>전력 ${fmt(r.required)}</small><em>${i >= 4 ? r.condition : ""}</em></div>`).join("")}</div><p id="shop-next"></p>
   </section>
   <details class="formation-guide"><summary>분대부터 야전군까지 · 편제 안내</summary><p>총 전력으로 묶어 표시합니다. 실제 보유 인원은 그대로입니다. 대위부터 분대 이상, 대대부터 소대 이상, 연대부터 중대 이상, 사단부터 대대 이상, 군단부터 연대 이상, 야전군부터 사단 이상만 연병장에 표시합니다. 공간이 부족하면 같은 편제를 수량으로 묶습니다.</p>
    <div class="formation-guide-grid">${FORMATIONS.filter(
@@ -42,7 +43,7 @@ export function shopMarkup(s, coin, insignia) {
      .reverse()
      .map(
        (f) =>
-         `<div><canvas data-formation="${f.id}" width="96" height="82" role="img" aria-label="${f.name} 건물 아이콘"></canvas><b>${f.name}</b><span>전력 ${f.size.toLocaleString("ko-KR")}</span></div>`,
+         `<div><canvas data-formation="${f.id}" width="96" height="82" role="img" aria-label="${f.name} 건물 아이콘"></canvas><b>${f.name}</b><span>전력 ${fmt(f.size)}</span></div>`,
      )
      .join("")}</div>
   </details>`;

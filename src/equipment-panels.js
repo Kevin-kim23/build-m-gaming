@@ -1,3 +1,4 @@
+import { fmt } from "./format.js";
 import {
   EQUIPMENT,
   EQUIPMENT_STAGES,
@@ -8,7 +9,7 @@ import {
   visibleEquipment,
 } from "./equipment.js";
 import { drawEquipment } from "./equipment-art.js";
-const fmt = (n) => n.toLocaleString("ko-KR");
+
 const text = (root, id, value) => {
   const node = root.querySelector("#" + id);
   if (node && node.textContent !== value) node.textContent = value;
