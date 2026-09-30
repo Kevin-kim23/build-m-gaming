@@ -7,7 +7,7 @@ import { createBattle, advanceBattle, defaultLoadout, equipmentCombatStats } fro
 import { layoutFieldEquipment } from "../src/field-layout.js";
 import { drawEquipment } from "../src/equipment-art.js";
 const T = 1800000000000;
-const army = (power=5120) => ({...freshState(T), soldiers:power-400, sergeants:40, ncoSchoolLevel:2, gold:MAX_GOLD, battleCleared:10});
+const army = (power=5120) => ({...freshState(T), soldiers:power-400, sergeants:40, ncoSchoolLevel:2, gold:MAX_GOLD, campaignCleared:80});
 
 test("helicopter is hidden before lieutenant colonel, previews locked, buys once at colonel",()=>{
   assert.equal(equipmentPurchaseOffer(army(640),'helicopter').visible,false);
@@ -47,7 +47,7 @@ test("v9 saves retain schools and assets; old versions cannot inject helicopter 
   delete old.equipment.helicopter;
   old.equipment.tank={level:4,deployed:false};
   const loaded=parseSave(JSON.stringify(old),T);
-  assert.equal(loaded.version, 14);assert.equal(loaded.ncoSchoolLevel,5);assert.equal(loaded.lieutenants,2);
+  assert.equal(loaded.version, 15);assert.equal(loaded.ncoSchoolLevel,5);assert.equal(loaded.lieutenants,2);
   assert.deepEqual(loaded.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),helicopter:null});assert.equal(loaded.gold,old.gold);
   old.equipment.helicopter={level:10,deployed:true};
   assert.equal(parseSave(JSON.stringify(old),T).equipment.helicopter,null);

@@ -94,12 +94,13 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
 }
 export function freshState(now = Date.now()) {
   return {
-    version: 14,
+    version: 15,
     fieldTheme: 'earth',
     swordActivatedAt: null,
     ncoSchoolLevel: 0,
     officerSchoolLevel: 0,
     battleCleared: 0,
+    campaignCleared: 0,
     earnedAchievements: [],
     gold: 0,
     taps: 0,
@@ -182,14 +183,15 @@ export function parseSave(raw, now = Date.now()) {
     }
     const integer = (x, max) => Number.isSafeInteger(x) && x >= 0 && x <= max;
     if (
-      ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].includes(s.version) ||
+      ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].includes(s.version) ||
+      (s.version >= 15 && !integer(s.campaignCleared, STAGES.length)) ||
       (s.version >= 14 && !NEW_OFFICER_GRADES.every(unit=>integer(s[unit.field],Math.floor(MAX_SOLDIERS/unit.power)))) ||
       (s.version >= 12 && (typeof s.fieldTheme !== 'string' || !Object.hasOwn(FIELD_THEMES, s.fieldTheme))) ||
       (s.version >= 11 && !(s.swordActivatedAt === null || integer(s.swordActivatedAt, 100_000_000_000_000))) ||
       (s.version >= 9 && (!integer(s.ncoSchoolLevel,5) || !integer(s.officerSchoolLevel,s.version >= 14 ? 5 : 1) ||
         (s.officerSchoolLevel>0 && s.ncoSchoolLevel!==5) ||
         !['masterSergeant','sergeantMajor','lieutenant'].every(id=>integer(s[UNITS[id].field],Math.floor(MAX_SOLDIERS/UNITS[id].power))))) ||
-      (s.version >= 7 && !integer(s.battleCleared, STAGES.length)) ||
+      (s.version >= 7 && !integer(s.battleCleared, 10)) ||
       (s.version >= 8 && !validAchievementIds(s.earnedAchievements)) ||
       !integer(s.gold, MAX_GOLD) ||
       !integer(s.taps, Number.MAX_SAFE_INTEGER) ||
@@ -203,12 +205,13 @@ export function parseSave(raw, now = Date.now()) {
     )
       return null;
     const migrated = {
-      version: 14,
+      version: 15,
       fieldTheme: s.version >= 12 ? s.fieldTheme : 'earth',
       swordActivatedAt: s.version >= 11 ? s.swordActivatedAt : null,
       ncoSchoolLevel: s.version >= 9 ? s.ncoSchoolLevel : 0,
       officerSchoolLevel: s.version >= 9 ? s.officerSchoolLevel : 0,
       battleCleared: s.version >= 7 ? s.battleCleared : 0,
+      campaignCleared: s.version >= 15 ? s.campaignCleared : 0,
       earnedAchievements: s.version >= 8 ? [...s.earnedAchievements] : [],
       gold: s.gold,
       taps: s.taps,

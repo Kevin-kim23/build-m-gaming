@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, parseSave, SAVE_KEY } from '../src/game.js';
 import { FIELD_ARMY_SIZE } from '../src/formations.js';
-import { createBattle, fireVolley } from '../src/battle.js';
+import { createBattle, fireVolley, advanceBattle } from '../src/battle.js';
 import { recordBattleVictory } from '../src/battle-progress.js';
 import { createGameSession } from '../src/session.js';
 
@@ -10,7 +10,8 @@ const T = 1800000000000;
 const army = () => ({ ...freshState(T), soldiers: FIELD_ARMY_SIZE - 600,
   sergeants: 40, staffSergeants: 10, gold: 1234567, taps: 123 });
 function win(state, stage = 1) {
-  const battle = fireVolley(createBattle(state, stage));
+  let battle = createBattle(state, stage);
+  while(battle.status==='running'){battle=fireVolley(battle);battle=advanceBattle(battle,150);}
   assert.equal(battle.status, 'victory');
   return battle;
 }
@@ -18,7 +19,7 @@ function win(state, stage = 1) {
 test('a real victory records only stage progress without granting rewards or consuming troops', () => {
   const state = army(), before = structuredClone(state), battle = win(state);
   assert.deepEqual(recordBattleVictory(state, battle), { ok: true, firstClear: true });
-  assert.deepEqual(state, { ...before, battleCleared: 1 });
+  assert.deepEqual(state, { ...before, campaignCleared: 1 });
   assert.equal(battle.enemy.hq.hp, 0);
   assert.ok(battle.player.hq.hp > 0);
 });
@@ -34,31 +35,31 @@ test('unfinished, defeated and simultaneous-destruction results never advance pr
   ];
   for (const result of rejected) {
     assert.equal(recordBattleVictory(state, result).ok, false);
-    assert.equal(state.battleCleared, 0);
+    assert.equal(state.campaignCleared, 0);
   }
 });
 
 test('replayed victories are idempotent and stage progress cannot skip ahead or move backwards', () => {
   const state = army(), first = win(state);
   assert.equal(recordBattleVictory(state, { ...first, stageId: 3 }).reason, 'sequence');
-  assert.equal(state.battleCleared, 0);
+  assert.equal(state.campaignCleared, 0);
   recordBattleVictory(state, first);
   assert.deepEqual(recordBattleVictory(state, first), { ok: true, firstClear: false });
   recordBattleVictory(state, win(state, 2));
-  assert.equal(state.battleCleared, 2);
+  assert.equal(state.campaignCleared, 2);
   assert.deepEqual(recordBattleVictory(state, first), { ok: true, firstClear: false });
-  assert.equal(state.battleCleared, 2);
+  assert.equal(state.campaignCleared, 2);
 });
 
 test('recording a victory rechecks the actual rank gate and known stage identity', () => {
   const state = army(), victory = win(state);
   state.sergeants = 39;
   assert.equal(recordBattleVictory(state, victory).ok, false);
-  assert.equal(state.battleCleared, 0);
+  assert.equal(state.campaignCleared, 0);
   state.sergeants = 40;
-  for (const stageId of [0, 11, 1.5, '1', undefined]) {
+  for (const stageId of [0, 81, 1.5, '1', undefined]) {
     assert.equal(recordBattleVictory(state, { ...victory, stageId }).ok, false);
-    assert.equal(state.battleCleared, 0);
+    assert.equal(state.campaignCleared, 0);
   }
 });
 
@@ -85,11 +86,11 @@ test('victory transaction immediately saves progress with a valid prior backup a
   assert.deepEqual(h.writes, [SAVE_KEY + '-backup', SAVE_KEY]);
   const saved = parseSave(h.values.get(SAVE_KEY), T);
   const backup = parseSave(h.values.get(SAVE_KEY + '-backup'), T);
-  assert.equal(saved.battleCleared, 1);
-  assert.equal(backup.battleCleared, 0);
+  assert.equal(saved.campaignCleared, 1);
+  assert.equal(backup.campaignCleared, 0);
   assert.equal(saved.gold, backup.gold);
   h.session.pause(); h.session.start();
-  assert.equal(h.session.state.battleCleared, 1);
+  assert.equal(h.session.state.campaignCleared, 1);
   h.session.pause();
 });
 
@@ -97,12 +98,12 @@ test('failed victory save preserves pending progress and retries without duplica
   const h = savedSession(), victory = win(h.session.state);
   h.storage.fail = true;
   h.session.change((state) => recordBattleVictory(state, victory));
-  assert.equal(h.session.state.battleCleared, 1);
-  assert.equal(parseSave(h.values.get(SAVE_KEY), T).battleCleared, 0);
+  assert.equal(h.session.state.campaignCleared, 1);
+  assert.equal(parseSave(h.values.get(SAVE_KEY), T).campaignCleared, 0);
   assert.ok(h.errors.includes('save.write'));
   h.storage.fail = false;
   assert.equal(h.session.flush(), true);
-  assert.equal(parseSave(h.values.get(SAVE_KEY), T).battleCleared, 1);
+  assert.equal(parseSave(h.values.get(SAVE_KEY), T).campaignCleared, 1);
   const gold = h.session.state.gold;
   assert.equal(h.session.change((state) => recordBattleVictory(state, victory)).firstClear, false);
   assert.equal(h.session.state.gold, gold);

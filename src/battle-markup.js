@@ -1,26 +1,15 @@
-import { BATTLE_RULES, STAGES, battleAccess, equipmentCombatStats } from './battle.js';
+import { BATTLE_RULES, equipmentCombatStats } from './battle.js';
 import { UNITS, armyPower } from './units.js';
 import { EQUIPMENT, equipmentCount } from './equipment.js';
 import { FORMATIONS } from './formations.js';
 import { fmt } from './format.js';
 
-export const ENEMY_NATION = STAGES[0].enemyName;
 const header = (eyebrow, title) => `<header class="battle-header"><div><small>${eyebrow}</small><h2 id="battle-title">${title}</h2></div><button data-battle-close aria-label="전투 메뉴 닫기">×</button></header>`;
-export function stagesMarkup(state) {
-  const access = battleAccess(state), cleared = state.battleCleared ?? 0;
-  return header('작전 지도', '전투') + `
-    <div class="battle-brief"><span class="enemy-seal" aria-hidden="true">◆</span><div><b>${ENEMY_NATION}</b><p>가상 국가 · 상대 본부를 먼저 무너뜨리세요.</p></div><strong>${cleared}<small> / ${STAGES.length}</small></strong></div>
-    ${!access.unlocked ? '<p class="battle-lock">🔒 중령 진급 후 출전할 수 있어요.</p>' : '<p class="battle-note">클리어한 작전은 다시 도전할 수 있어요. 전투 보상은 아직 없습니다.</p>'}
-    <div class="stage-list">${STAGES.map((stage) => {
-      const locked = !access.unlocked || stage.id > cleared + 1;
-      return `<button class="stage-card ${stage.id <= cleared ? 'cleared' : ''}" data-stage="${stage.id}" ${locked ? 'disabled' : ''}>
-        <span class="stage-number">${String(stage.id).padStart(2, '0')}</span><span><b>${stage.name}</b><small>적 본부 ${fmt(stage.hqPower)} HP · ${stage.recommendedRank} 권장</small></span><em>${stage.id <= cleared ? '완료 ✓' : locked ? '잠금' : '출전 준비 →'}</em></button>`;
-    }).join('')}</div><p class="battle-session-note" data-battle-session></p>`;
-}
+export { campaignMarkup as stagesMarkup } from './campaign-map.js';
 export function preparationMarkup(state, stage, loadout) {
   const hq = FORMATIONS.find((f) => armyPower(state) >= f.size);
-  return header(`STAGE ${String(stage.id).padStart(2,'0')}`, stage.name) + `
-    <div class="battle-matchup"><div><small>우리 본부</small><b>${hq.name}</b><span>${fmt(hq.size)} HP</span></div><i>VS</i><div><small>${ENEMY_NATION}</small><b>${stage.name.replace(/ 전투.*/, '')}</b><span>${fmt(stage.hqPower)} HP</span></div></div>
+  return header(`${stage.enemyName} · 지역 ${String(stage.region).padStart(2,'0')}`, stage.name) + `
+    <div class="battle-matchup"><div><small>우리 본부</small><b>${hq.name}</b><span>${fmt(armyPower(state))} HP</span></div><i>VS</i><div><small>${stage.enemyName}</small><b>${stage.capital?'수도 사령부':'지역 사령부'}</b><span>${fmt(stage.hqPower)} HP</span></div></div>
     <section class="deployment-section"><h3>출전 병력 <small>병종마다 최대 ${BATTLE_RULES.maxUnitsPerType}명</small></h3><p class="battle-note">터치 한 번에 선택한 병력 전원이 사격합니다.</p>
     <div class="deployment-units">${Object.values(UNITS).filter(u => (state[u.field] ?? 0) > 0).map(u => {
       const max = Math.min(BATTLE_RULES.maxUnitsPerType, state[u.field]);
@@ -30,13 +19,13 @@ export function preparationMarkup(state, stage, loadout) {
       const gun = state.equipment[d.id], combat = equipmentCombatStats(d.id, gun.level, armyPower(state), equipmentCount(state, d.id));
       return `<label class="deployment-gear"><input type="checkbox" data-battle-gear="${d.id}" ${loadout.equipment.includes(d.id) ? 'checked' : ''}><span><b>${d.name} <em>+${gun.level}</em></b><small>[${fmt(equipmentCount(state, d.id))}문]</small><small>자동 공격 · ${fmt(Math.round(combat.damage))} 피해 / ${(combat.intervalMs / 1000).toFixed(2)}초</small></span></label>`;
     }).join('') || '<p class="battle-note">보유한 장비가 없습니다. 병력만으로도 출전할 수 있어요.</p>'}</div></section>
-    <p class="battle-note">총 보유 전력이 높을수록 공격력도 성장합니다. 병력·장비는 소모되지 않으며 홈 배치 설정은 유지돼요. ${BATTLE_RULES.maxDurationMs / 60_000}분 안에 본부가 파괴되지 않으면 무승부입니다.</p>
+    <p class="battle-note">본부 체력은 총 보유 전력과 같으며 공격력도 함께 성장합니다. 병력·장비는 소모되지 않으며 홈 배치 설정은 유지돼요. ${BATTLE_RULES.maxDurationMs / 60_000}분 안에 본부가 파괴되지 않으면 무승부입니다.</p>
     <p role="status" class="battle-message" id="battle-message"></p>
-    <div class="battle-actions"><button data-battle-back>작전 지도</button><button class="battle-primary" id="battle-start">전투 시작</button></div>
+    <div class="battle-actions"><button data-battle-back>지역 지도</button><button class="battle-primary" id="battle-start">전투 시작</button></div>
     <p class="battle-session-note" data-battle-session></p>`;
 }
 export function battlefieldMarkup(battle) {
-  return header(`STAGE ${String(battle.stageId).padStart(2,'0')} · ${ENEMY_NATION}`, battle.stageName) + `
+  return header(`STAGE ${String(battle.stageId).padStart(2,'0')} · ${battle.enemyName}`, battle.stageName) + `
     <div class="battle-toolbar"><span>본부를 먼저 파괴하세요</span><b id="battle-time">0:00</b><button id="battle-pause">일시정지</button></div>
     <div class="battle-arena"><button id="battle-field" aria-label="전원 사격"><canvas id="battle-canvas" width="360" height="560" aria-hidden="true"></canvas></button>
     <div class="battle-overlay" id="battle-overlay" hidden><div><small id="battle-result-tag"></small><h3 id="battle-result-title"></h3><p id="battle-result-copy"></p><button class="battle-primary" id="battle-resume">전투 계속</button><div id="battle-result-actions" hidden><button data-battle-retry>다시 도전</button><button data-battle-back>작전 지도</button></div></div></div></div>

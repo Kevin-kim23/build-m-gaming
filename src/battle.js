@@ -53,7 +53,7 @@ function makeSide(formation, power, units, equipment, multiplier = 1) {
 
 export function createBattle(state, stageId, input = defaultLoadout(state)) {
   const stage = STAGES.find((s) => s.id === stageId);
-  const cleared = state.battleCleared ?? 0;
+  const cleared = state.campaignCleared ?? 0;
   if (!stage || !battleAccess(state).unlocked || !Number.isInteger(cleared) || cleared < 0 ||
       cleared > STAGES.length || stage.id > cleared + 1)
     throw new RangeError("Battle is locked");
@@ -63,14 +63,14 @@ export function createBattle(state, stageId, input = defaultLoadout(state)) {
   if (!Object.values(loadout.units).some(Boolean) && !loadout.equipment.length)
     throw new RangeError("Battle deployment is empty");
   const power = armyPower(state), formation = FORMATIONS.find((f) => f.size <= power);
-  const enemyFormation = FORMATIONS.find((f) => f.id === stage.formationId);
+  const enemyFormation = {...FORMATIONS.find((f) => f.id === stage.formationId),size:stage.hqPower};
   return {
-    stageId, stageName: stage.name, status: "running", elapsedMs: 0,
+    stageId, stageName: stage.name, enemyName:stage.enemyName, countryId:stage.countryId, status: "running", elapsedMs: 0,
     remainderMs: 0, lastVolleyMs: -BATTLE_RULES.volleyCooldownMs,
     nextEnemyVolleyMs: BATTLE_RULES.enemyVolleyMs,
-    player: makeSide(formation, power, loadout.units,
+    player: makeSide({...formation,size:power}, power, loadout.units,
       loadout.equipment.map((id) => ({ id, level: state.equipment[id].level, count: equipmentCount(state, id) }))),
-    enemy: makeSide(enemyFormation, stage.hqPower,
+    enemy: makeSide(enemyFormation, stage.enemyPower,
       Object.fromEntries(['soldier','sergeant','staffSergeant'].map((id) => [id, stage.enemyUnitCount])),
       ENEMY_EQUIPMENT.map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier),
   };

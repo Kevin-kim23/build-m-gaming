@@ -1,21 +1,25 @@
 import { STAGES, battleAccess, defaultLoadout, normalizeLoadout, createBattle, advanceBattle, fireVolley } from './battle.js';
 import { recordBattleVictory } from './battle-progress.js';
 import { drawBattle } from './battle-art.js';
-import { stagesMarkup, preparationMarkup, battlefieldMarkup } from './battle-markup.js';
+import { preparationMarkup, battlefieldMarkup } from './battle-markup.js';
 import { reportError } from './diagnostics.js';
 import { fmt } from './format.js';
 import { UNITS } from './units.js';
 import { EQUIPMENT } from './equipment.js';
 import './battle.css';
+import './campaign.css';
+import { createCampaignMap } from './campaign-map.js';
+import { COUNTRIES } from './campaign.js';
 
 // Owns one dialog and one animation loop; the economic session stays separate.
 export function createBattleUI(session) {
   const dialog = document.querySelector('#battle-modal');
   const $ = (selector) => dialog.querySelector(selector);
+  const campaignMap = createCampaignMap(dialog,()=>session.state);
   let mode = 'stages', stageId = 1, loadout = null, battle = null;
   let raf = 0, lastFrame = 0, paused = false, finalized = false;
   let stagesKey = '', preparationKey = '';
-  const mapKey = () => `${session.state.battleCleared}:${battleAccess(session.state).unlocked}`;
+  const mapKey = () => `${session.state.campaignCleared}:${armyKey()}:${battleAccess(session.state).unlocked}`;
   const armyKey = () => Object.values(UNITS).map(u => session.state[u.field]).join(':') + '|' +
     Object.keys(EQUIPMENT).map(id => session.state.equipment[id] ? `${session.state.equipment[id].level}/${session.state.equipment[id].count ?? 1}` : '-').join(':');
   const text = (selector, value) => {
@@ -24,23 +28,24 @@ export function createBattleUI(session) {
   };
   function stop() { cancelAnimationFrame(raf); raf = 0; lastFrame = 0; }
   function close() {
-    stop(); battle = null;
+    stop(); campaignMap.stop(); battle = null;
     if (dialog.open) dialog.close();
   }
-  function showStages() {
+  function showStages(countryId = campaignMap.countryId) {
     stop(); battle = null; mode = 'stages';
     stagesKey = mapKey();
-    dialog.innerHTML = stagesMarkup(session.state);
+    campaignMap.show(countryId);
     dialog.classList.remove('in-battle');
     dialog.scrollTop = 0;
     sync();
   }
   function prepare(id = stageId) {
     const state = session.state;
-    if (!battleAccess(state).unlocked || id > (state.battleCleared ?? 0) + 1) return;
+    if (!battleAccess(state).unlocked || id > (state.campaignCleared ?? 0) + 1) return;
     const stage = STAGES.find(s => s.id === id);
     if (!stage) return;
-    stop(); battle = null; stageId = id; mode = 'prepare';
+    stop(); campaignMap.stop(); battle = null; stageId = id; mode = 'prepare';
+    dialog.classList.remove('in-campaign');
     preparationKey = armyKey();
     loadout = normalizeLoadout(state, loadout ?? defaultLoadout(state));
     dialog.innerHTML = preparationMarkup(state, stage, loadout);
@@ -67,7 +72,7 @@ export function createBattleUI(session) {
       reportError('battle.start', error);
       text('#battle-message', '출전 조건이 바뀌었어요. 작전 지도로 돌아가 다시 준비해 주세요.'); return;
     }
-    stop(); mode = 'battle'; paused = false; finalized = false;
+    stop(); campaignMap.stop(); mode = 'battle'; paused = false; finalized = false;
     dialog.innerHTML = battlefieldMarkup(battle);
     dialog.classList.add('in-battle'); dialog.scrollTop = 0;
     paint(); sync(); schedule();
@@ -142,7 +147,7 @@ export function createBattleUI(session) {
     if (battle.status === 'victory') {
       // Mark handled first: change() notifies the home UI synchronously.
       const result = session.change(s => recordBattleVictory(s, battle));
-      copy = result?.ok ? (stageId === STAGES.length ? '모든 작전을 클리어했어요! 보상은 아직 없습니다.' : '다음 작전이 열렸어요. 보상은 아직 없습니다.') : '클리어 기록을 반영하지 못했어요. 작전 지도에서 확인해 주세요.';
+      copy = result?.ok ? (stageId === STAGES.length ? '아스테라 대륙의 모든 국가를 점령했어요!' : stageId % 20 === 0 ? `${COUNTRIES[Math.floor(stageId / 20)-1].name} 점령 완료! 다음 국가가 열렸어요.` : '지역 점령 완료! 다음 지역으로 진격할 수 있어요.') : '클리어 기록을 반영하지 못했어요. 작전 지도에서 확인해 주세요.';
     }
     overlay(battle.status === 'victory' ? '승리' : battle.status === 'defeat' ? '패배' : '무승부', copy, true);
     sync();
@@ -157,7 +162,7 @@ export function createBattleUI(session) {
     text('[data-battle-session]', session.status);
     if (mode === 'prepare' && $('#battle-start')) $('#battle-start').disabled = !session.active;
     if (mode === 'stages') {
-      const cleared = session.state.battleCleared ?? 0, access = battleAccess(session.state);
+      const cleared = session.state.campaignCleared ?? 0, access = battleAccess(session.state);
       dialog.querySelectorAll('[data-stage]').forEach(button => { button.disabled = !access.unlocked || Number(button.dataset.stage) > cleared + 1; });
     }
     if (mode === 'battle') {
@@ -167,11 +172,12 @@ export function createBattleUI(session) {
   }
   function open() {
     if (!battleAccess(session.state).visible) return;
-    showStages(); dialog.showModal(); sync();
+    dialog.classList.add('in-campaign'); dialog.showModal(); showStages(null); sync();
   }
   dialog.addEventListener('click', event => {
-    const target = event.target.closest('button');
-    if (!target || target.disabled) return;
+    const target = event.target.closest('button,[data-country],[data-region]');
+    if (!target || target.disabled || target.getAttribute('aria-disabled')==='true') return;
+    if (mode==='stages' && campaignMap.handle(target)) return;
     if (target.hasAttribute('data-battle-close')) close();
     else if (target.hasAttribute('data-stage')) prepare(Number(target.dataset.stage));
     else if (target.hasAttribute('data-battle-back')) showStages();
@@ -181,7 +187,11 @@ export function createBattleUI(session) {
     else if (target.id === 'battle-pause') suspend();
     else if (target.id === 'battle-resume') resume();
   });
+  dialog.addEventListener('keydown', event => {
+    const target=event.target.closest('g[data-country],g[data-region]');
+    if(target && ['Enter',' '].includes(event.key)){event.preventDefault();campaignMap.handle(target);}
+  });
   dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
-  dialog.addEventListener('close', () => { stop(); battle = null; document.querySelector('#open-battle')?.focus(); });
+  dialog.addEventListener('close', () => { stop(); campaignMap.stop(); battle = null; document.querySelector('#open-battle')?.focus(); });
   return {open, sync, suspend};
 }

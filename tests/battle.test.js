@@ -9,7 +9,7 @@ import {
 
 function army(power = 1280, level = 3) {
   return { ...freshState(1000), soldiers: power - 600, sergeants: 40, staffSergeants: 10,
-    battleCleared: 10,
+    campaignCleared: 80,
     equipment: Object.fromEntries(["artillery", "tank", "selfPropelled"].map((id) => [id, { level, deployed: true }])),
   };
 }
@@ -35,15 +35,15 @@ test("battle menu appears at private first class and entry uses the sergeant-gat
   assert.throws(() => createBattle(bypass, 1), RangeError);
 });
 
-test("ten stages contain two battles for each formation and enforce sequential progress", () => {
-  assert.equal(STAGES.length, 10);
-  assert.deepEqual(STAGES.map((s) => s.name), ["대대 전투1", "대대 전투2", "연대 전투1", "연대 전투2", "사단 전투1", "사단 전투2", "군단 전투1", "군단 전투2", "야전군 전투1", "야전군 전투2"]);
-  const s = { ...army(), battleCleared: 0 };
+test("eighty conquest regions enforce sequential progress across four countries", () => {
+  assert.equal(STAGES.length, 80);
+  assert.equal(new Set(STAGES.map(s=>s.name)).size,80);
+  const s = { ...army(), campaignCleared: 0 };
   assert.equal(createBattle(s, 1).stageId, 1);
   assert.throws(() => createBattle(s, 2), RangeError);
-  assert.throws(() => createBattle(s, 11), RangeError);
+  assert.throws(() => createBattle(s, 81), RangeError);
   assert.throws(() => createBattle(s, "1"), RangeError);
-  s.battleCleared = 1;
+  s.campaignCleared = 1;
   assert.equal(createBattle(s, 2).stageId, 2);
 });
 
@@ -62,8 +62,8 @@ test("deployment clamps actual headcounts and rejects unknown or unowned equipme
   assert.throws(() => createBattle(army(), 1, { units: {}, equipment: [] }), RangeError);
 });
 
-test("each headquarters has exactly the largest single formation's power as HP", () => {
-  for (const [power, hp] of [[1280, 1280], [5120, 5120], [10240, 5120], [20480, 20480], [81920, 81920], [327680, 327680]]) {
+test("campaign headquarters HP grows continuously with total army power", () => {
+  for (const [power, hp] of [[1280, 1280], [5120, 5120], [10240, 10240], [20480, 20480], [81920, 81920], [327680, 327680]]) {
     const b = createBattle(army(power), 1);
     assert.equal(b.player.hq.hp, hp);
     assert.equal(b.player.hq.maxHp, hp);
@@ -105,7 +105,7 @@ test("all ten enhancements increase both damage and automatic attack speed", () 
   }
   assert.throws(() => equipmentCombatStats("tank", 11), RangeError);
   const colonel = createBattle(army(5120), 3), general = createBattle(army(10240), 3);
-  assert.equal(colonel.player.hq.hp, general.player.hq.hp);
+  assert.equal(colonel.player.hq.hp * 2, general.player.hq.hp);
   assert.equal(general.player.units[0].damage, colonel.player.units[0].damage * 2);
   assert.equal(general.player.equipment[0].damage, colonel.player.equipment[0].damage * 2);
 });
@@ -144,13 +144,9 @@ test("simultaneous headquarters destruction draws and a finished battle cannot f
   assert.equal(advanceBattle(done, 250), done);
 });
 
-test("representative forces win their tier but cannot skip to a four-times-larger headquarters", () => {
-  for (const [power, level, stage] of [[1280, 0, 1], [1280, 4, 2], [5120, 5, 3], [10240, 4, 4], [20480, 5, 5], [20480, 8, 6], [81920, 7, 7], [81920, 10, 8], [327680, 9, 9], [327680, 10, 10]]) {
-    assert.equal(simulate(army(power, level), stage).status, "victory", `power=${power} +${level} stage=${stage}`);
-  }
-  for (const [power, stage] of [[1280, 3], [5120, 5], [20480, 7], [81920, 9]])
-    assert.equal(simulate(army(power, 10), stage, 3).status, "defeat");
-  assert.equal(simulate(army(1280, 0), 1, 0).status, "defeat");
+test("conquest opening requires a developed army and cannot be won by the old entry force", () => {
+  assert.equal(simulate(army(327680,10),1).status,'victory');
+  assert.equal(simulate(army(1280,10),1,6).status,'defeat');
 });
 
 test("the three-minute limit ends a surviving battle as a draw", () => {

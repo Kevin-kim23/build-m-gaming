@@ -13,29 +13,21 @@ function inputTag(markup, attribute, id) {
   return markup.match(new RegExp(`<input\\b[^>]*${attribute}="${id}"[^>]*>`))?.[0];
 }
 
-test('early battle preview lists every stage but offers no playable entry before lieutenant colonel', () => {
-  const privateFirstClass = { ...freshState(1000), soldiers: 4 };
-  const markup = stagesMarkup(privateFirstClass), cards = stageCards(markup);
-  assert.equal(cards.length, 10);
-  assert.deepEqual(cards.map(c => c.id), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-  assert.ok(cards.every(c => c.disabled));
-  assert.match(markup, /중령 진급 후 출전/);
-  assert.match(cards[0].content, /대대 전투1/);
-  assert.match(cards[9].content, /야전군 전투2/);
-  assert.match(markup, /가상 국가/);
-  assert.doesNotMatch(markup, /undefined|NaN/);
+test('continent preview shows four nations, three locked, and map movement controls',()=>{
+ const html=stagesMarkup({...freshState(0),soldiers:4});
+ assert.match(html,/아스테라 대륙/);assert.equal((html.match(/class="nation-tab /g)??[]).length,4);
+ assert.equal((html.match(/class="country-hit locked"/g)??[]).length,3);
+ for(const d of ['up','down','left','right'])assert.match(html,new RegExp('data-pan="'+d+'"'));
+ assert.doesNotMatch(html,/undefined|NaN/);
 });
-
-test('stage map allows cleared-stage replays and only the next uncleared stage', () => {
-  const newCards = stageCards(stagesMarkup(army()));
-  assert.deepEqual(newCards.filter(c => !c.disabled).map(c => c.id), [1]);
-  const markup = stagesMarkup(army({ battleCleared: 2 })), progressed = stageCards(markup);
-  assert.deepEqual(progressed.filter(c => !c.disabled).map(c => c.id), [1, 2, 3]);
-  assert.ok(progressed.slice(0, 2).every(c => /완료/.test(c.content)));
-  assert.doesNotMatch(progressed[2].content, /완료/);
-  assert.ok(progressed.slice(3).every(c => /잠금/.test(c.content)));
-  assert.doesNotMatch(markup, /중령 진급 후 출전/);
-  assert.match(markup, /보상은 아직 없습니다/);
+test('country preview exposes twenty regions but only a sequential ready action',()=>{
+ const state=army({campaignCleared:2});
+ const html=stagesMarkup(state,'serdin',3);
+ assert.equal((html.match(/class="region-hit /g)??[]).length,20);
+ assert.ok(stageCards(html).find(c=>c.id===3&&!c.disabled));
+ assert.ok(stageCards(stagesMarkup(state,'serdin',4))[0].disabled);
+ assert.ok(stageCards(stagesMarkup({...freshState(0),soldiers:4},'serdin',1))[0].disabled);
+ assert.match(stagesMarkup(state,'serdin',1),/다시 도전/);
 });
 
 test('deployment shows actual owned troop limits and includes stored equipment without inventing units', () => {
@@ -50,7 +42,7 @@ test('deployment shows actual owned troop limits and includes stored equipment w
   assert.match(inputTag(markup, 'data-battle-gear', 'artillery'), /\bchecked\b/);
   assert.equal(inputTag(markup, 'data-battle-gear', 'tank'), undefined);
   assert.equal(inputTag(markup, 'data-battle-gear', 'selfPropelled'), undefined);
-  assert.match(markup, /1,280 HP/);
+  assert.match(markup, /1,282 HP/);
   assert.match(markup, /병력·장비는 소모되지 않으며 홈 배치 설정은 유지/);
   assert.doesNotMatch(markup, /undefined|NaN/);
 });
