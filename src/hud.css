@@ -46,29 +46,28 @@
 
 .field-tools { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:3px 23px 7px; flex-shrink:0; }
 .field-tools[hidden], .home-sword[hidden] { display:none; }
-.home-sword { display:grid; justify-items:center; gap:1px; min-width:72px; padding:2px 6px; background:#314034; border:1px solid #7d805a; border-radius:7px; font-size:10px; cursor:pointer; }
-.home-sword svg { width:27px; height:36px; }
-.home-sword:disabled { opacity:.5; cursor:default; }
-.home-sword.skill-active { opacity:1; border-color:#e4cd84; background:#51563b; }
-.sword-clock { display:grid; place-items:center; position:relative; width:48px; height:48px; }
+.home-skills { display:flex; align-items:center; gap:4px; }
+.home-skill { box-sizing:border-box; display:grid; justify-items:center; align-content:center; grid-template-rows:36px 12px; width:64px; height:56px; flex-shrink:0; padding:2px 4px; gap:1px; background:#314034; color:#d8debd; border:1px solid #7d805a; border-radius:7px; font-size:9px; line-height:12px; cursor:pointer; }
+.home-skill[hidden] { display:none; }
+.home-skill:disabled { opacity:.6; cursor:default; }
+.home-skill.skill-active { opacity:1; border-color:#e4cd84; background:#51563b; }
+.sword-clock { display:grid; place-items:center; position:relative; width:36px; height:36px; }
+.home-sword [data-sword-art] svg { width:24px; height:32px; }
 .home-sword .sword-clock-ring { position:absolute; inset:0; width:100%; height:100%; fill:none; stroke:#f6d67c; stroke-width:2.5; }
-.home-sword .sword-clock-ring[hidden], .home-sword [data-sword-time][hidden] { display:none; }
+.home-sword .sword-clock-ring[hidden], .home-skill [data-sword-time][hidden], .home-skill [data-revolver-time][hidden] { display:none; }
 .sword-clock-track { stroke:#262e24; }
-.home-sword [data-sword-time] { position:absolute; bottom:0; padding:1px 4px; border-radius:4px; background:#243127; color:#fff1ba; font-size:10px; line-height:12px; font-weight:800; font-variant-numeric:tabular-nums; }
-.home-sword.skill-active [data-sword-art] { transform:translateY(-3px); }
-@media(max-width:360px),(max-height:650px) { .sword-clock { width:40px; height:40px; } }
+.home-skill [data-sword-time], .home-skill [data-revolver-time] { position:absolute; bottom:0; padding:0 2px; border-radius:3px; background:#243127; color:#fff1ba; font-size:9px; line-height:12px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.home-sword.skill-active [data-sword-art] { transform:translateY(-2px); }
+.revolver-mini-art { display:flex; align-items:center; }
+.home-revolver .revolver-mini-art svg { width:36px; height:27px; }
 .field-theme-picker { display:grid; gap:5px; font-size:10px; color:#aebba7; }
 .field-theme-picker > div { display:flex; gap:5px; }
 .field-theme-picker button { min-height:32px; padding:5px 10px; border:1px solid #64745e; border-radius:6px; background:#29382c; color:#c4ccba; font-size:10px; cursor:pointer; }
 .field-theme-picker button[aria-pressed="true"] { background:#536149; color:#f0e5bc; border-color:#b7b481; }
 .deployment-count { font-size:11px; line-height:1.7; color:#bbc7ad; }
-@media(max-width:360px),(max-height:650px) { .field-tools { padding-inline:16px; padding-bottom:4px; } .home-sword svg { height:28px; width:21px; } }
+@media(max-width:360px),(max-height:650px) { .field-tools { padding-inline:16px; padding-bottom:4px; } }
 @media(max-width:360px) { .field-school-name { white-space:normal; word-break:keep-all; font-size:9px; line-height:12px; } }
 
-.home-revolver { display:grid; justify-items:center; width:84px; flex-shrink:0; padding:3px; gap:2px; border:1px solid #687b88; border-radius:7px; background:#2c3e48; color:#d4e3dc; font-size:10px; line-height:13px; cursor:pointer; }
-.home-revolver[hidden] { display:none; }
-.revolver-mini-art { display:flex; height:36px; }
-.revolver-mini-art svg { width:27px; height:36px; }
-.home-revolver:disabled { opacity:.5; cursor:default; }
-.home-revolver.skill-active { opacity:1; border-color:#a7d5e1; background:#38525c; }
-@media(max-width:360px) { .field-tools { gap:6px; } .home-revolver { width:76px; font-size:9px; } .field-theme-picker button { padding-inline:6px; } }
+@media(max-width:360px) { .field-tools { gap:8px; } .field-theme-picker button { padding-inline:6px; } }
+
+#campaign-income-bonus { margin-left:4px; color:#e0ce91; font-size:9px; white-space:nowrap; }

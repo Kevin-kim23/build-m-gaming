@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { COUNTRIES,countryProgress,campaignStages } from '../src/campaign.js';
-import { countryRegions,inside,clampCamera,countryCamera } from '../src/campaign-geometry.js';
+import { countryRegions,inside,clampCamera,countryCamera,campaignHomeCamera } from '../src/campaign-geometry.js';
 import { campaignMarkup } from '../src/campaign-map.js';
 import { freshState,parseSave,MAX_SOLDIERS } from '../src/game.js';
 import { UNITS,armyPower } from '../src/units.js';
@@ -10,6 +10,13 @@ import { createBattle,advanceBattle,fireVolley } from '../src/battle.js';
 import { recordBattleVictory } from '../src/battle-progress.js';
 import { RANKS,rankForArmy,GENERAL_MIN_SOLDIERS } from '../src/ranks.js';
 const T=1_800_000_000_000;
+test('wide landscape maps start centered on the next country after width clamping',()=>{
+  for(const aspect of [3,3.8,5])for(const cleared of [20,40]){
+    const camera=campaignHomeCamera(cleared,aspect),country=COUNTRIES[cleared/20];
+    assert.ok(Math.abs(camera.y+camera.height/2-country.label[1])<1);
+    assert.ok(camera.width<=2600);assert.equal(camera.width/camera.height,aspect);
+  }
+});
 function army(power,level=8,copies=1){
   const state={...freshState(T),soldiers:0,sergeants:300,campaignCleared:80,ncoSchoolLevel:5,officerSchoolLevel:power>=655360?5:power>=327680?4:power>=20480?3:0};
   const roster=Object.values(UNITS).slice(2,power>=655360?10:power>=327680?9:power>=20480?8:5);

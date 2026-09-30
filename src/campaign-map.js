@@ -1,5 +1,7 @@
+import { campaignBonusPercent, REGION_INCOME_PERCENT } from './campaign-rewards.js';
+import { countryBriefMarkup, updateCountryBrief } from './campaign-brief.js';
 import { COUNTRIES,CONTINENT,countryProgress,campaignStages } from './campaign.js';
-import { countryRegions,polygonPath,clampCamera,countryCamera } from './campaign-geometry.js';
+import { countryRegions,polygonPath,clampCamera,countryCamera,campaignHomeCamera } from './campaign-geometry.js';
 import { mapDefs,oceanArt,countryLand,nationalLand,settlement } from './campaign-art.js';
 import { battleAccess } from './battle.js';
 import { armyPower } from './units.js';
@@ -16,7 +18,7 @@ export function campaignMarkup(state,countryId=null,selectedId=null){
   }).join('');
   return `<header class="battle-header"><div><small>CONQUEST · ${country?'REGIONAL MAP':'WORLD MAP'}</small><h2 id="battle-title">${country?country.name:CONTINENT.name+' 대륙'}</h2></div><button data-battle-close aria-label="전투 메뉴 닫기">×</button></header>
   <nav class="nation-tabs" aria-label="대륙의 국가">${countryButtons}</nav>
-  <div class="atlas-toolbar"><button data-world ${country?'':'hidden'}>‹ 대륙으로</button><span>${country?country.terrain:'남쪽 해안에서 시작하는 대륙 정복'}</span><b>${country?countryProgress(state,country.id).cleared+'/20':Math.floor(cleared/20)+'/4'} 점령</b></div>
+  <div class="atlas-toolbar"><button data-world ${country?'':'hidden'}>‹ 대륙으로</button><span>${country?country.terrain:'남쪽 해안에서 시작하는 대륙 정복'}</span><b>${country?countryProgress(state,country.id).cleared+'/20':Math.floor(cleared/20)+'/4'} 점령 · 수입 +${campaignBonusPercent(state)}%</b></div>
   <div class="atlas-window"><svg id="campaign-svg" role="group" aria-label="${country?country.name+'의 20개 지역 지도':CONTINENT.name+' 대륙 지도'}" xmlns="http://www.w3.org/2000/svg">${mapDefs()}${oceanArt()}
   ${COUNTRIES.map(c=>{
     const p=countryProgress(state,c.id),dim=country?c.id!==country.id:!p.unlocked;
@@ -24,17 +26,20 @@ export function campaignMarkup(state,countryId=null,selectedId=null){
   }).join('')}
   ${country?nationalLand(country,cleared,selected?.id):COUNTRIES.map(c=>{
     const p=countryProgress(state,c.id),[x,y]=c.label;
-    return `<g data-country="${c.id}" class="country-hit ${p.unlocked?'available':'locked'}" role="button" tabindex="${p.unlocked?0:-1}" aria-disabled="${!p.unlocked}" aria-label="${c.name}${p.unlocked?' 지도 열기':' 잠금'}"><path d="${polygonPath(c.polygon)}" class="country-outline"/>${settlement(x,y-70,true)}<text class="country-label" x="${x}" y="${y}">${c.name}</text><text class="country-subtitle" x="${x}" y="${y+37}">${p.complete?'점령 완료':p.unlocked?'20개 지역 · '+fmt(c.powers[19])+' 전력 목표':'🔒 '+COUNTRIES[c.index-1]?.name+' 점령 후 해금'}</text><text class="country-motto" x="${x}" y="${y+70}">${c.title}</text></g>`;
+    return `<g data-country="${c.id}" class="country-hit ${p.unlocked?'available':'locked'}" role="button" tabindex="${p.unlocked?0:-1}" aria-disabled="${!p.unlocked}" aria-label="${c.name}${p.unlocked?' 지도 열기':' 잠금'}"><path d="${polygonPath(c.polygon)}" class="country-outline"/>${settlement(x,y-70,true)}<text class="country-label" x="${x}" y="${y}">${c.name}</text></g>`;
   }).join('')}
   ${country?countryRegions(country.id).map(r=>{
     const stage=campaignStages[r.id-1],done=r.id<=cleared,next=r.id===cleared+1,[x,y]=r.point;
     return `<g class="region-hit ${done?'occupied':next?'frontier':'locked'} ${r.id===selected?.id?'selected':''}" data-region="${r.id}" role="button" tabindex="0" aria-label="${String(r.number).padStart(2,'0')} ${stage.name} · ${done?'점령 완료':next?'진격 가능':'미점령'} · 권장 전력 ${fmt(stage.recommendedPower)}">
     <circle class="region-touch" cx="${x}" cy="${y}" r="36"/>${stage.capital?settlement(x,y-15,true):''}<circle class="region-badge" cx="${x}" cy="${y}" r="21"/><text class="region-number" x="${x}" y="${y+7}">${done?'✓':String(r.number).padStart(2,'0')}</text><text class="region-label" x="${x}" y="${y+44}">${stage.name}</text></g>`;
   }).join(''):''}</svg>
-  <div class="atlas-compass" aria-hidden="true">N<span>↑</span></div><div class="atlas-pan" role="group" aria-label="지도 이동"><button data-pan="up" aria-label="지도 북쪽으로 이동">↑</button><div><button data-pan="left" aria-label="지도 서쪽으로 이동">←</button><button data-locate aria-label="현재 진격 지역으로 이동">◎</button><button data-pan="right" aria-label="지도 동쪽으로 이동">→</button></div><button data-pan="down" aria-label="지도 남쪽으로 이동">↓</button></div>
-  <div class="atlas-zoom"><button data-zoom="in" aria-label="지도 확대">＋</button><button data-zoom="out" aria-label="지도 축소">−</button></div><div class="atlas-coordinate" aria-live="polite" id="map-position"></div></div>
-  ${country?`<section class="region-brief" aria-label="선택한 지역"><div><small>${selected?.capital?'최종 수도전':'REGION '+String(selected?.region??1).padStart(2,'0')}</small><h3>${selected?.name??'지역을 선택하세요'}</h3><p>권장 전력 <strong>${fmt(selected?.recommendedPower??0)}</strong> · 내 전력 ${fmt(armyPower(state))}</p></div><button class="battle-primary" data-stage="${selected?.id??country.firstStage}" ${!access.unlocked||!selected||selected.id>cleared+1?'disabled':''}>${!access.unlocked?'중령부터 출전':selected?.id<=cleared?'다시 도전':selected?.id===cleared+1?'진격 준비 →':'이전 지역 점령 필요'}</button><p class="region-strategy">${selected?.capital?(selected.id===80?'마지막 수도 점령으로 대륙 정복이 완료됩니다. ':'수도를 점령하면 다음 국가가 열립니다. '):''}병종별 10명 · 장비 자동 공격 · 병력 소모 없음</p></section>`:
-  `<div class="atlas-guide"><b>01부터 북쪽으로 진격</b><span>국가를 누르면 20개 지역으로 확대됩니다.<br>화살표로 탐색 · 어두운 국가는 이전 국가 점령 후 해금</span></div>`}
+  <div class="atlas-compass" aria-hidden="true">N<span>↑</span></div></div>
+  <div class="atlas-controls" aria-label="지도 조작">
+    <div class="atlas-pan" role="group" aria-label="지도 이동"><button data-pan="left" aria-label="지도 서쪽으로 이동">←</button><button data-pan="up" aria-label="지도 북쪽으로 이동">↑</button><button data-locate aria-label="현재 진격 지역으로 이동">◎</button><button data-pan="down" aria-label="지도 남쪽으로 이동">↓</button><button data-pan="right" aria-label="지도 동쪽으로 이동">→</button></div>
+    <div class="atlas-zoom"><button data-zoom="in" aria-label="지도 확대">＋</button><button data-zoom="out" aria-label="지도 축소">−</button></div>
+  </div><div class="atlas-coordinate" aria-live="polite" id="map-position"></div>
+  ${country?`<section class="region-brief" aria-label="선택한 지역"><div><small>${selected?.capital?'최종 수도전':'REGION '+String(selected?.region??1).padStart(2,'0')}</small><h3>${selected?.name??'지역을 선택하세요'}</h3><p>권장 전력 <strong>${fmt(selected?.recommendedPower??0)}</strong> · 내 전력 ${fmt(armyPower(state))}</p></div><button class="battle-primary" data-stage="${selected?.id??country.firstStage}" ${!access.unlocked||!selected||selected.id>cleared+1?'disabled':''}>${!access.unlocked?'중령부터 출전':selected?.id<=cleared?'다시 도전':selected?.id===cleared+1?'진격 준비 →':'이전 지역 점령 필요'}</button><p class="region-reward">${selected?.id<=cleared?"점령 보너스 획득 완료":"최초 점령 보상"} · 초당 수입 +${REGION_INCOME_PERCENT}%</p><p class="region-strategy">${selected?.capital?(selected.id===80?'마지막 수도 점령으로 대륙 정복이 완료됩니다. ':'수도를 점령하면 다음 국가가 열립니다. '):''}병종별 10명 · 장비 자동 공격 · 병력 소모 없음</p></section>`:
+  countryBriefMarkup()}
   <p class="battle-session-note" data-battle-session></p>`;
 }
 
@@ -47,6 +52,13 @@ export function createCampaignMap(dialog,getState){
     camera=clampCamera(next);
     dialog.querySelector('#campaign-svg')?.setAttribute('viewBox',`${camera.x} ${camera.y} ${camera.width} ${camera.height}`);
     const position=dialog.querySelector('#map-position'),label=(camera.y+camera.height/2<800?'북부':camera.y+camera.height/2<1650?'중부':'남부')+' · 화살표로 이동';if(position&&position.textContent!==label)position.textContent=label;
+    if(!countryId){
+      const center=camera.y+camera.height/2;
+      const focus=COUNTRIES.reduce((nearest,c)=>Math.abs(c.label[1]-center)<Math.abs(nearest.label[1]-center)?c:nearest);
+      updateCountryBrief(dialog,getState(),focus);
+      const scale=camera.width/Math.max(1,dialog.querySelector('.atlas-window').clientWidth);
+      dialog.querySelector('#campaign-svg').style.setProperty('--country-label-size',Math.max(37,scale*17)+'px');
+    }
     const limits={up:camera.y<=-99,down:camera.y+camera.height>=2579,left:camera.x<=-319,right:camera.x+camera.width>=1319};
     dialog.querySelectorAll('[data-pan]').forEach(b=>{b.disabled=limits[b.dataset.pan];});
   }
@@ -58,8 +70,7 @@ export function createCampaignMap(dialog,getState){
     animation=requestAnimationFrame(frame);
   }
   function homeCamera(){
-    const focus=COUNTRIES[Math.min(3,Math.floor((getState().campaignCleared??0)/20))],ratio=aspect(),width=Math.max(1150,1250*ratio);
-    return clampCamera({width,height:width/ratio,x:500-width/2,y:focus.label[1]-width/ratio/2});
+    return campaignHomeCamera(getState().campaignCleared??0,aspect());
   }
   function nationalCamera(country){
     const full=countryCamera(country,aspect());

@@ -47,3 +47,7 @@ export function countryCamera(country,aspect){
   const b=bounds(country.polygon),width=Math.max(b.width+85,(b.height+100)*aspect);
   return clampCamera({x:b.x+b.width/2-width/2,y:b.y+b.height/2-width/aspect/2,width,height:width/aspect});
 }
+export function campaignHomeCamera(cleared,aspect){
+  const focus=COUNTRIES[Math.min(3,Math.floor(cleared/20))],width=Math.min(2600,Math.max(1150,1250*aspect));
+  return clampCamera({width,height:width/aspect,x:500-width/2,y:focus.label[1]-width/aspect/2});
+}

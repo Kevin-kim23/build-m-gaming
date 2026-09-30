@@ -6,6 +6,7 @@ import { FIELD_ARMY_SIZE } from "./formations.js";
 import { STAGES } from "./battle-balance.js";
 import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, AUTO_TOUCH, GENERAL_SWORD, generalSwordDuration } from "./personal-equipment.js";
 import { settleAutoTouch } from './auto-touch.js';
+import { withCampaignIncome } from './campaign-rewards.js';
 import { reconcileAchievements, validAchievementIds } from "./achievements.js";
 import {
   emptyEquipment,
@@ -29,7 +30,7 @@ export const MAX_SOLDIERS = FIELD_ARMY_SIZE * 4;
 export const perTap = (s, now = Date.now()) =>
   (1 + troopIncome(s, "tap") + equipmentIncome(s).tap) * swordSkillStatus(s, now).multiplier;
 export const perSecond = (s) =>
-  troopIncome(s, "passive") + equipmentIncome(s).passive;
+  withCampaignIncome(s, troopIncome(s, "passive") + equipmentIncome(s).passive);
 // Preserve early prices, but avoid exponential prices blocking battalion progression.
 export const recruitCost = (count) => {
   const earlyPrice = 50 * 1.2 ** count;

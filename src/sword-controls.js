@@ -42,6 +42,14 @@ export function syncRevolverControls(root,state,writable,now=Date.now()) {
   for(const button of root.querySelectorAll('[data-use-revolver]')){
     button.hidden=!skill.owned;button.disabled=!writable||!skill.canUse;
     button.classList.toggle('skill-active',skill.active);
+    if(button.querySelector('[data-revolver-label]')){
+      const timer=button.querySelector('[data-revolver-time]');
+      timer.hidden=skill.remainingMs===0;
+      const remaining=skill.active?`${Math.ceil(skill.activeMs/1000)}초`:time(skill.remainingMs);
+      if(timer.textContent!==remaining)timer.textContent=remaining;
+      button.setAttribute('aria-label',skill.active?`리볼버 사용 중 · ${Math.ceil(skill.activeMs/1000)}초 남음`:skill.remainingMs>0?`리볼버 재사용 대기 ${time(skill.remainingMs)}`:'리볼버 사용');
+      continue;
+    }
     const label=skill.active?`자동 터치 중 · ${Math.ceil(skill.activeMs/1000)}초`:skill.remainingMs>0?`자동 터치 · 재사용 ${time(skill.remainingMs)}`:'자동 터치 시작 · 1분';
     const target=button.querySelector('[data-revolver-label]')??button;
     if(target.textContent!==label)target.textContent=label;

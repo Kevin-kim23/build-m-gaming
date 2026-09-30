@@ -27,7 +27,8 @@ test("helicopter is hidden before lieutenant colonel, previews locked, buys once
 test("helicopter upgrades through ten levels, settles prior income, stores and restores",()=>{
   const s=army(), base=perSecond(s), tap=perTap(s);s.gold=900_000_000;
   buyEquipment(s,T+1000,'helicopter');assert.equal(s.gold,900_000_000+base-45_000_000);
-  assert.equal(perSecond(s),base+25000);assert.equal(perTap(s),tap+150000);
+  // This fixture has all 80 regions, so the deployed helicopter also earns +80%.
+  assert.equal(perSecond(s),base+45000);assert.equal(perTap(s),tap+150000);
   assert.equal(enhancementCost(0,'helicopter'),11_250_000);
   for(let level=0;level<10;level++) {
     const previous=equipmentCombatStats('helicopter',level), balance=s.gold;
