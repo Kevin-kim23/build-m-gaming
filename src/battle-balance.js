@@ -36,6 +36,7 @@ export const STAGES = Object.freeze(
 export const ENEMY_EQUIPMENT = Object.freeze(["artillery", "tank", "selfPropelled"]);
 
 const weaponBase = Object.freeze({
+  rocketLauncher: { damage: 48, intervalMs: 4200 },
   helicopter: { damage: 16, intervalMs: 1800 },
   artillery: { damage: 11, intervalMs: 2800 },
   tank: { damage: 12, intervalMs: 1900 },

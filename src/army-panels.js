@@ -5,8 +5,8 @@ import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, enhanceEq
 import { SCHOOLS } from './schools.js';
 import { renderSchools } from './school-panels.js';
 import { rankForArmy, LAST_RANK, promotionProgress } from './ranks.js';
-import { COMMAND_BATON, commandBatonStatus, generalSwordStatus, GENERAL_SWORD } from './personal-equipment.js';
-import { EQUIPMENT, equipmentOf, visibleEquipment } from './equipment.js';
+import { COMMAND_BATON, BULK_RECRUIT, commandBatonStatus, generalSwordStatus, GENERAL_SWORD } from './personal-equipment.js';
+import { EQUIPMENT, equipmentOf, visibleEquipment, deploymentOffer } from './equipment.js';
 import { panelTabs, equipmentPanelMarkup, renderEquipmentStore, renderEquipmentPanel } from './equipment-panels.js';
 import { SHOP_CATEGORIES, shopMarkup } from './shop.js';
 import { drawFormationPortrait } from './art.js';
@@ -28,7 +28,7 @@ export function createArmyPanels(session, audio) {
   };
   function lockPanel() {
     const toggle = $('#toggle-equipment');
-    if (toggle) toggle.disabled = !session.active;
+    if (toggle) toggle.disabled = !session.active || !deploymentOffer(state(), activeEquipment).canDeploy;
     if (session.active) return;
     dialog.querySelectorAll('[data-buy], [data-buy-bulk], [data-buy-equipment], [data-upgrade-school], #enhance-equipment')
       .forEach(button => { button.disabled = true; });
@@ -130,10 +130,11 @@ export function createArmyPanels(session, audio) {
     if (!dialog.open || activePanel !== 'shop') return;
     const unit = UNITS[id];
     const batonLevel = commandBatonStatus(state()).level;
+    const newBulk = Object.entries(BULK_RECRUIT).filter(([,rule]) => rule.level > previousBatonLevel && rule.level <= batonLevel).map(([id]) => UNITS[id].name);
     const receivedSword = !hadSword && generalSwordStatus(state()).owned;
     text('#shop-message', result.ok
       ? `${unit.name} ${result.count}명 합류!` + (result.promoted ? ` ${RANKS[result.rank]} 진급! 총 전력 ${fmt(armyPower(state()))}` : '')
-        + (batonLevel > previousBatonLevel ? ` ${COMMAND_BATON.name} Lv.${batonLevel} 자동 지급 · ${batonLevel === 2 ? "하사" : "일반병"} ${COMMAND_BATON.recruitAmount}명 모집 해금!` : '')
+        + (batonLevel > previousBatonLevel ? ` ${COMMAND_BATON.name} Lv.${batonLevel} 자동 지급 · ${newBulk.length ? newBulk.join("·") + " " + COMMAND_BATON.recruitAmount + "명 모집 해금!" : "계급 성장 완료!"}` : '')
         + (receivedSword ? ` ${GENERAL_SWORD.name} Lv.1 자동 지급!` : '')
       : result.reason === 'locked' ? `${recruitOffer(state(), id, quantity).requirement} 조건을 충족해야 모집할 수 있어요.`
       : result.reason === 'limit' ? '모집 인원만큼 전력 여유가 필요해요.' : '골드가 부족해요.');
@@ -144,7 +145,7 @@ export function createArmyPanels(session, audio) {
     if (!result) return;
     if (result.ok) audio.recruit(state().sound);
     if (dialog.open && activePanel === 'shop') text('#shop-message', result.ok
-      ? `${EQUIPMENT[id].name} 구매·배치 완료!`
+      ? `${EQUIPMENT[id].name} 구매 완료! ${result.deployed ? "연병장에 배치했습니다." : "배치 4대가 가득 차 보관함으로 보냈습니다."}`
       : result.reason === 'locked' ? `${EQUIPMENT[id].unlockRank} 진급 후 구매할 수 있어요.`
       : result.reason === 'owned' ? '이미 보유한 장비입니다.' : '골드가 부족해요.');
   }
@@ -168,6 +169,7 @@ export function createArmyPanels(session, audio) {
   function toggleEquipment() {
     const id = activeEquipment;
     const result = session.change(s => setEquipmentDeployed(s, !equipmentOf(s, id)?.deployed, Date.now(), id));
+    if (result?.reason === 'capacity') text('#equipment-message', '연병장은 최대 4대입니다. 다른 장비를 먼저 보관하세요.');
     if (result?.ok && dialog.open && activePanel === 'equipment' && activeEquipment === id)
       text('#equipment-message', EQUIPMENT[id].name + (result.deployed ? ' 배치 완료!' : ' 보관 완료! 강화는 유지됩니다.'));
   }

@@ -1,3 +1,4 @@
+import { personalIcon } from './personal-art.js';
 import { UNIT_LIST } from "./units.js";
 import { RANK_DEFINITIONS } from "./ranks.js";
 import { medalShelfMarkup } from "./achievement-markup.js";
@@ -87,7 +88,6 @@ function dockMarkup() {
     <i id="promotion-fill">
     </i>
     </div>
-    <button class="sword-skill-button" data-use-sword hidden>장군검 · 30초 터치 골드 2배</button>
     <nav class="home-tabs" aria-label="부대 메뉴">
     <button id="open-shop">${shopIcon}<span>상점</span>
     <i id="shop-dot" hidden>
@@ -111,8 +111,13 @@ function footerMarkup() {
     </footer>`;
 }
 
+function fieldToolsMarkup() {
+  return '<section class="field-tools" aria-label="장군 장비와 연병장 배경" hidden>' +
+    '<button class="home-sword" data-use-sword hidden>' + personalIcon('sword') + '<span data-sword-label>장군검 사용</span></button>' +
+    '<div class="field-theme-picker"><span>연병장 배경</span><div role="group" aria-label="연병장 배경"><button data-field-theme="earth" aria-pressed="true">흙</button><button data-field-theme="concrete" aria-pressed="false">회색 시멘트</button></div></div></section>';
+}
 export function homeMarkup(state) {
-  return `<main class="game">${headerMarkup(state)}${medalShelfMarkup()}${fieldMarkup()}${dockMarkup()}${footerMarkup()}</main>`;
+  return `<main class="game">${headerMarkup(state)}${medalShelfMarkup()}${fieldToolsMarkup()}${fieldMarkup()}${dockMarkup()}${footerMarkup()}</main>`;
 }
 
 export function insignia(index) {

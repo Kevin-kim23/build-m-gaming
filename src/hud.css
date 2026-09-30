@@ -43,3 +43,17 @@
 @media (prefers-reduced-motion: reduce) {
   .gold-counter strong.pop { animation: none; }
 }
+
+.field-tools { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:3px 23px 7px; flex-shrink:0; }
+.field-tools[hidden], .home-sword[hidden] { display:none; }
+.home-sword { display:grid; justify-items:center; gap:1px; min-width:72px; padding:2px 6px; background:#314034; border:1px solid #7d805a; border-radius:7px; font-size:10px; cursor:pointer; }
+.home-sword svg { width:27px; height:36px; }
+.home-sword:disabled { opacity:.5; cursor:default; }
+.home-sword.skill-active { opacity:1; border-color:#e4cd84; background:#51563b; }
+.field-theme-picker { display:grid; gap:5px; font-size:10px; color:#aebba7; }
+.field-theme-picker > div { display:flex; gap:5px; }
+.field-theme-picker button { min-height:32px; padding:5px 10px; border:1px solid #64745e; border-radius:6px; background:#29382c; color:#c4ccba; font-size:10px; cursor:pointer; }
+.field-theme-picker button[aria-pressed="true"] { background:#536149; color:#f0e5bc; border-color:#b7b481; }
+.deployment-count { font-size:11px; line-height:1.7; color:#bbc7ad; }
+@media(max-width:360px),(max-height:650px) { .field-tools { padding-inline:16px; padding-bottom:4px; } .home-sword svg { height:28px; width:21px; } }
+@media(max-width:360px) { .field-school-name { white-space:normal; word-break:keep-all; font-size:9px; line-height:12px; } }

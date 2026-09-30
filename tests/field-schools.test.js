@@ -24,3 +24,18 @@ test('campuses fit narrow fields above zero to four weapons and below packed arm
     assert.ok(army.every(item=>item.y+item.boxHeight<schools[0].y));
   }
 });
+
+test('short general fields keep army labels beside the campus and above all four vehicles', async () => {
+  const { fieldArmyArea } = await import('../src/field-schools.js');
+  for(const width of [160,195,240]) for(const height of [100,120,140]) for(const officer of [0,1]) {
+    const gear=layoutFieldEquipment(Array.from({length:4},()=>({})),width,height);
+    const schools=layoutFieldSchools(ownedSchools({ncoSchoolLevel:5,officerSchoolLevel:officer}),gear,width,height);
+    const area=fieldArmyArea(schools,gear,width,height);
+    const army=layoutFieldArmy({soldiers:12440},area);
+    assert.ok(army.length>0);
+    for(const item of army) {
+      assert.ok(item.y+item.boxHeight < gear[0].y);
+      for(const school of schools)assert.ok(item.x>=school.x+school.width+4 || item.y+item.boxHeight<school.y);
+    }
+  }
+});

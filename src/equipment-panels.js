@@ -1,6 +1,7 @@
 import { fmt } from "./format.js";
 import {
   EQUIPMENT,
+  MAX_DEPLOYED_EQUIPMENT, deployedEquipment, deploymentOffer,
   EQUIPMENT_STAGES,
   equipmentOf,
   equipmentStats,
@@ -20,7 +21,7 @@ export function panelTabs(mode) {
 export function equipmentStoreMarkup(s) {
   const items = visibleEquipment(s);
   if (!items.length) return "";
-  return `<section class="equipment-store"><h3>장비 구매</h3>${items.map((d) => `<article class="unit-card" data-equipment="${d.id}" aria-label="${d.name} 구매"><div class="equipment-store-head"><canvas data-gun-preview width="220" height="124" role="img" aria-label="${d.name}"></canvas><div><span class="item-class">${d.unlockRank} 해금 · 1대 보유</span><h3>${d.name}</h3><p>초당 +${fmt(d.passive)} G<br>터치 +${fmt(d.tap)} G</p></div></div><p data-gear-status class="unit-unlock"></p><div class="price-line"><span>구매 비용</span><strong>${fmt(d.cost)} <small>G</small></strong></div><button class="buy" data-buy-equipment="${d.id}"></button><button class="equipment-link" data-manage-equipment="${d.id}" hidden>장비 탭에서 강화·관리</button><p class="unit-price-note">구매 즉시 배치 · 장비 탭에서 최대 10강</p></article>`).join("")}</section>`;
+  return `<section class="equipment-store"><h3>장비 구매</h3>${items.map((d) => `<article class="unit-card" data-equipment="${d.id}" aria-label="${d.name} 구매"><div class="equipment-store-head"><canvas data-gun-preview width="220" height="124" role="img" aria-label="${d.name}"></canvas><div><span class="item-class">${d.unlockRank} 해금 · 1대 보유</span><h3>${d.name}</h3><p>초당 +${fmt(d.passive)} G<br>터치 +${fmt(d.tap)} G</p></div></div><p data-gear-status class="unit-unlock"></p><div class="price-line"><span>구매 비용</span><strong>${fmt(d.cost)} <small>G</small></strong></div><button class="buy" data-buy-equipment="${d.id}"></button><button class="equipment-link" data-manage-equipment="${d.id}" hidden>장비 탭에서 강화·관리</button><p class="unit-price-note">빈자리에 자동 배치 · 4대가 차면 보관 · 최대 10강</p></article>`).join("")}</section>`;
 }
 export function renderEquipmentStore(s, root) {
   root.querySelectorAll("[data-equipment]").forEach((card) => {
@@ -58,12 +59,13 @@ export function equipmentPanelMarkup(s, id) {
     );
   return (
     head +
-    `<nav class="equipment-select" aria-label="관리할 장비">${items.map((item) => `<button data-select-equipment="${item.id}" aria-pressed="${id === item.id}">${item.name}</button>`).join("")}</nav><article class="equipment-detail"><div class="equipment-detail-title"><h3>${d.name} <b id="equipment-level"></b></h3><span id="equipment-deployed"></span></div><div class="equipment-preview"><canvas data-gun-preview width="440" height="248" role="img" aria-label="${d.name} 외형"></canvas></div><p id="equipment-stage"></p><div class="enhancement-steps" aria-label="강화 단계">${Array.from({ length: 10 }, (_, i) => `<i data-level="${i + 1}"></i>`).join("")}</div><p id="equipment-empty"></p><button class="buy" id="equipment-to-shop">상점에서 ${d.name} 구매</button><div id="owned-equipment" hidden><div class="equipment-stats"><span>초당 보너스 <b id="equipment-passive"></b></span><span>터치 보너스 <b id="equipment-tap"></b></span></div><button class="equipment-deploy" id="toggle-equipment"></button><p class="unit-price-note">배치 중에만 골드 보너스 적용 · 보관해도 강화 유지</p><section class="enhancement-box"><h4 id="enhancement-title"></h4><p id="enhancement-next"></p><p id="enhancement-appearance"></p><div class="price-line"><span>강화 비용</span><strong id="enhancement-cost"></strong></div><button class="buy" id="enhance-equipment"></button><p class="unit-price-note">성공률 100% · 최대 10강 · 강화 실패·파괴 없음</p></section></div></article><p id="equipment-message" role="status" aria-live="polite"></p>`
+    `<p class="deployment-count" id="deployment-count"></p><nav class="equipment-select" aria-label="관리할 장비">${items.map((item) => `<button data-select-equipment="${item.id}" aria-pressed="${id === item.id}">${item.name}</button>`).join("")}</nav><article class="equipment-detail"><div class="equipment-detail-title"><h3>${d.name} <b id="equipment-level"></b></h3><span id="equipment-deployed"></span></div><div class="equipment-preview"><canvas data-gun-preview width="440" height="248" role="img" aria-label="${d.name} 외형"></canvas></div><p id="equipment-stage"></p><div class="enhancement-steps" aria-label="강화 단계">${Array.from({ length: 10 }, (_, i) => `<i data-level="${i + 1}"></i>`).join("")}</div><p id="equipment-empty"></p><button class="buy" id="equipment-to-shop">상점에서 ${d.name} 구매</button><div id="owned-equipment" hidden><div class="equipment-stats"><span>초당 보너스 <b id="equipment-passive"></b></span><span>터치 보너스 <b id="equipment-tap"></b></span></div><button class="equipment-deploy" id="toggle-equipment"></button><p class="unit-price-note">배치 중에만 골드 보너스 적용 · 보관해도 강화 유지</p><section class="enhancement-box"><h4 id="enhancement-title"></h4><p id="enhancement-next"></p><p id="enhancement-appearance"></p><div class="price-line"><span>강화 비용</span><strong id="enhancement-cost"></strong></div><button class="buy" id="enhance-equipment"></button><p class="unit-price-note">성공률 100% · 최대 10강 · 강화 실패·파괴 없음</p></section></div></article><p id="equipment-message" role="status" aria-live="polite"></p>`
   );
 }
 export function renderEquipmentPanel(s, root, id) {
   text(root, "equipment-gold", fmt(s.gold));
   if (!root.querySelector("#equipment-level")) return;
+  text(root, "deployment-count", `연병장 ${deployedEquipment(s).length} / ${MAX_DEPLOYED_EQUIPMENT}대 배치 · 교체하려면 먼저 1대를 보관하세요.`);
   const d = EQUIPMENT[id],
     gun = equipmentOf(s, id),
     offer = enhancementOffer(s, id),
@@ -102,11 +104,12 @@ export function renderEquipmentPanel(s, root, id) {
   text(
     root,
     "toggle-equipment",
-    gun.deployed ? "보관하기" : "연병장에 배치하기",
+    gun.deployed ? "보관하기" : deploymentOffer(s, id).reason === "capacity" ? "4대 배치 중 · 다른 장비를 먼저 보관하세요" : "연병장에 배치하기",
   );
   root
     .querySelector("#toggle-equipment")
     .setAttribute("aria-pressed", String(gun.deployed));
+  root.querySelector("#toggle-equipment").disabled = !deploymentOffer(s, id).canDeploy;
   const max = offer.reason === "max",
     next = max ? stats : equipmentStats(level + 1, id);
   text(

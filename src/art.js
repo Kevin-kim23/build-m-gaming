@@ -1,4 +1,5 @@
-import { ownedSchools, layoutFieldSchools } from "./field-schools.js";
+import { fieldTheme, concreteTerrain } from './field-theme.js';
+import { ownedSchools, layoutFieldSchools, fieldArmyArea } from "./field-schools.js";
 import { renderFieldLabels } from "./field-labels.js";
 import { artSurface, uniformDetails, ART_SCALE } from "./pixel-detail.js";
 import {
@@ -268,10 +269,11 @@ export const drawRecruitPortrait = (canvas) =>
 export function drawScene(canvas, count = 0, labelLayer = null) {
   const army =
     typeof count === "number" ? { soldiers: count, sergeants: 0 } : count;
+  const theme = fieldTheme(army);
   const deployed = deployedEquipment(army);
   const schools = ownedSchools(army);
   const key =
-    fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level).join(":") + ":" + schools.map(s => s.id + s.level).join(":");
+    theme + ":" + fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level).join(":") + ":" + schools.map(s => s.id + s.level).join(":");
   const width = Math.max(100, Math.round(canvas.clientWidth / 2)),
     height = Math.max(60, Math.round(canvas.clientHeight / 2));
   let cached = scenes.get(canvas);
@@ -282,10 +284,10 @@ export function drawScene(canvas, count = 0, labelLayer = null) {
     cached.key === key
   )
     return false;
-  if (!cached || cached.width !== width || cached.height !== height) {
+  if (!cached || cached.width !== width || cached.height !== height || cached.theme !== theme) {
     canvas.width = width * ART_SCALE;
     canvas.height = height * ART_SCALE;
-    cached = { width, height, ground: terrain(width, height) };
+    cached = { width, height, theme, ground: theme === "concrete" ? concreteTerrain(width, height) : terrain(width, height) };
   }
   const c = canvas.getContext("2d");
   c.imageSmoothingEnabled = false;
@@ -294,16 +296,7 @@ export function drawScene(canvas, count = 0, labelLayer = null) {
   c.drawImage(cached.ground, 0, 0);
   const equipmentItems = layoutFieldEquipment(deployed, width, height);
   const schoolItems = layoutFieldSchools(schools, equipmentItems, width, height);
-  const area = {
-    x: 13,
-    y: 34,
-    width: width - 26,
-    height: Math.max(
-      16,
-      schoolItems.length ? schoolItems[0].y - 34 - 8 :
-        height - 34 - (deployed.length > 1 ? 68 : deployed.length ? 52 : 28),
-    ),
-  };
+  const area = fieldArmyArea(schoolItems, equipmentItems, width, height);
   const armyItems = layoutFieldArmy(army, area);
   for (const item of armyItems) {
     c.drawImage(sprite(item.id), item.x, item.y, item.width, item.height);

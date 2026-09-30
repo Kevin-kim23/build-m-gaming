@@ -135,9 +135,9 @@ test("v4 migration preserves troop balances and adds empty equipment", () => {
   delete old.equipment;
   assert.deepEqual(parseSave(JSON.stringify(old)), {
     ...old,
-    version: 11, ncoSchoolLevel: 1,
+    version: 12, ncoSchoolLevel: 1,
     earnedAchievements: ["squad", "platoon", "company"],
-    equipment: { artillery: null, tank: null, selfPropelled: null, helicopter: null },
+    equipment: { artillery: null, tank: null, selfPropelled: null, helicopter: null, rocketLauncher: null },
   });
 });
 test("invalid equipment saves are rejected instead of loading impossible bonuses", () => {

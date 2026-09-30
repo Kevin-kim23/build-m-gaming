@@ -12,8 +12,10 @@ import {
   enhancementOffer,
   equipmentOf,
   EQUIPMENT,
+  deployedEquipment, MAX_DEPLOYED_EQUIPMENT, deploymentOffer,
   validEquipment,
 } from "./equipment.js";
+import { FIELD_THEMES } from './field-theme.js';
 export { UNITS, armyPower } from "./units.js";
 export { RANKS, RANK_REQUIREMENTS, rankFor } from "./ranks.js";
 export const SAVE_KEY = "budae-kiugi-recruits-v3";
@@ -90,7 +92,8 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
 }
 export function freshState(now = Date.now()) {
   return {
-    version: 11,
+    version: 12,
+    fieldTheme: 'earth',
     swordActivatedAt: null,
     ncoSchoolLevel: 0,
     officerSchoolLevel: 0,
@@ -176,7 +179,8 @@ export function parseSave(raw, now = Date.now()) {
     }
     const integer = (x, max) => Number.isSafeInteger(x) && x >= 0 && x <= max;
     if (
-      ![3, 4, 5, 6, 7, 8, 9, 10, 11].includes(s.version) ||
+      ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(s.version) ||
+      (s.version >= 12 && (typeof s.fieldTheme !== 'string' || !Object.hasOwn(FIELD_THEMES, s.fieldTheme))) ||
       (s.version >= 11 && !(s.swordActivatedAt === null || integer(s.swordActivatedAt, 100_000_000_000_000))) ||
       (s.version >= 9 && (!integer(s.ncoSchoolLevel,5) || !integer(s.officerSchoolLevel,1) ||
         (s.officerSchoolLevel>0 && s.ncoSchoolLevel!==5) ||
@@ -188,14 +192,15 @@ export function parseSave(raw, now = Date.now()) {
       !integer(s.soldiers, MAX_SOLDIERS) ||
       (s.version >= 4 && !integer(s.sergeants, MAX_SOLDIERS / 10)) ||
       (s.version >= 6 && !integer(s.staffSergeants, MAX_SOLDIERS / 20)) ||
-      (s.version >= 5 && !validEquipment(s.equipment, s.version === 5, s.version >= 10)) ||
+      (s.version >= 5 && !validEquipment(s.equipment, s.version === 5, s.version >= 10, s.version >= 12)) ||
       !integer(s.lastAccrual, 100_000_000_000_000) ||
       !integer(s.incomeRemainder, 999) ||
       !integer(s.revision, Number.MAX_SAFE_INTEGER)
     )
       return null;
     const migrated = {
-      version: 11,
+      version: 12,
+      fieldTheme: s.version >= 12 ? s.fieldTheme : 'earth',
       swordActivatedAt: s.version >= 11 ? s.swordActivatedAt : null,
       ncoSchoolLevel: s.version >= 9 ? s.ncoSchoolLevel : 0,
       officerSchoolLevel: s.version >= 9 ? s.officerSchoolLevel : 0,
@@ -219,12 +224,13 @@ export function parseSave(raw, now = Date.now()) {
     if (s.version < 9) migrated.ncoSchoolLevel = legacySchoolLevel(migrated);
     for (const id of Object.keys(EQUIPMENT)) {
       const gun =
-        s.version >= 5 && (s.version >= 6 || id === "artillery") && (id !== "helicopter" || s.version >= 10)
+        s.version >= 5 && (s.version >= 6 || id === "artillery") && (id !== "helicopter" || s.version >= 10) && (id !== "rocketLauncher" || s.version >= 12)
           ? s.equipment[id]
           : null;
       if (gun)
         migrated.equipment[id] = { level: gun.level, deployed: gun.deployed };
     }
+    if (deployedEquipment(migrated).length > MAX_DEPLOYED_EQUIPMENT) return null;
     reconcileAchievements(migrated);
     return migrated;
   } catch {
@@ -245,13 +251,14 @@ export function buyEquipment(s, now = Date.now(), id = "artillery") {
   accrue(s, now);
   const offer = equipmentPurchaseOffer(s, id);
   if (!offer.canBuy) return { ok: false, reason: offer.reason };
+  const deployed = deployedEquipment(s).length < MAX_DEPLOYED_EQUIPMENT;
   s.gold -= offer.cost;
   s.equipment = {
     ...emptyEquipment(),
     ...s.equipment,
-    [id]: { level: 0, deployed: true },
+    [id]: { level: 0, deployed },
   };
-  return { ok: true, cost: offer.cost };
+  return { ok: true, cost: offer.cost, deployed };
 }
 export function enhanceEquipment(s, now = Date.now(), id = "artillery") {
   accrue(s, now);
@@ -271,6 +278,7 @@ export function setEquipmentDeployed(
   const gun = equipmentOf(s, id);
   if (!gun) return { ok: false, reason: "unowned" };
   if (typeof deployed !== "boolean") return { ok: false, reason: "invalid" };
+  if (deployed && !deploymentOffer(s, id).canDeploy) return { ok: false, reason: 'capacity' };
   gun.deployed = deployed;
   return { ok: true, deployed };
 }

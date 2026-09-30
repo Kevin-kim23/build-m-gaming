@@ -8,9 +8,9 @@ test('legacy version six saves gain empty battle progress without losing assets'
     revision: 47, incomeRemainder: 789,
     equipment: { artillery: {level: 8, deployed: true}, tank: {level: 3, deployed: false}, selfPropelled: null } };
   delete old.battleCleared;
-  assert.equal(freshState(T).version, 11);
+  assert.equal(freshState(T).version, 12);
   assert.equal(freshState(T).battleCleared, 0);
-  assert.deepEqual(parseSave(JSON.stringify(old)), {...old, version: 11, ncoSchoolLevel: 2, battleCleared: 0, equipment: {...old.equipment, helicopter: null},
+  assert.deepEqual(parseSave(JSON.stringify(old)), {...old, version: 12, ncoSchoolLevel: 2, battleCleared: 0, equipment: {...old.equipment, helicopter: null, rocketLauncher: null},
     earnedAchievements: ['squad', 'platoon', 'company', 'battalion']});
 });
 test('all ten cleared stages survive saving and corrupt battle progress is rejected', () => {

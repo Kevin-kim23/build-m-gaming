@@ -1,3 +1,4 @@
+import { rocketSprite } from './rocket-art.js';
 import { artSurface, vehicleDetails } from "./pixel-detail.js";
 import { helicopterSprite } from "./helicopter-art.js";
 import { equipmentStats } from "./equipment.js";
@@ -8,7 +9,7 @@ function sprite(level, id = "artillery") {
   const key = id + ":" + level;
   if (sprites.has(key)) return sprites.get(key);
   if (id !== "artillery") {
-    const vehicle = id === "helicopter" ? helicopterSprite(level) : vehicleSprite(level, id);
+    const vehicle = id === "rocketLauncher" ? rocketSprite(level) : id === "helicopter" ? helicopterSprite(level) : vehicleSprite(level, id);
     sprites.set(key, vehicle);
     return vehicle;
   }

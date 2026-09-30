@@ -72,9 +72,9 @@ test('sword is hidden until colonel, locked there, granted at brigadier and expl
   assert.match(owned,/보유 중 · 준장 진급 보상/);assert.match(owned,/30초 동안 홈 터치 골드 2배/);
   assert.deepEqual([perSecond(s),perTap(s)],stats);
   const recruits=markup(s,'recruit');
-  for(const type of ['soldier','sergeant'])assert.equal((recruits.match(new RegExp(`data-buy-bulk="${type}"`,'g'))??[]).length,1);
-  assert.equal((recruits.match(/data-bulk-price/g)??[]).length,2);
-  assert.doesNotMatch(recruits,/data-buy-bulk="staffSergeant"/);
+  for(const type of ['soldier','sergeant','staffSergeant'])assert.equal((recruits.match(new RegExp(`data-buy-bulk="${type}"`,'g'))??[]).length,1);
+  assert.equal((recruits.match(/data-bulk-price/g)??[]).length,3);
+  assert.match(recruits,/data-buy-bulk="staffSergeant"/);
 });
 test('existing saves retain assets and derive new gear without inventing serialized items',()=>{
   const s=army(9999);s.staffSergeants=1000;s.equipment.helicopter={level:8,deployed:false};
@@ -83,7 +83,7 @@ test('existing saves retain assets and derive new gear without inventing seriali
   assert.equal(RANKS[rankForArmy(loaded)],'대령');assert.equal(commandBatonStatus(loaded).level,2);
   assert.equal(generalSwordStatus(loaded).owned,false);
   loaded.soldiers=5000;loaded.sergeants=300;assert.equal(generalSwordStatus(parseSave(JSON.stringify(loaded),T)).owned,true);
-  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version,11);
+  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version, 12);
 });
 test('100 sergeants save once with backup and survive session reload without double purchase',()=>{
   const initial=army();initial.gold=sum(40,'sergeant');

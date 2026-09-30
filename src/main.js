@@ -1,3 +1,4 @@
+import { canChooseFieldTheme, fieldTheme, setFieldTheme } from './field-theme.js';
 import { syncSwordControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
 import { UNIT_LIST, unitAccess } from "./units.js";
@@ -101,11 +102,16 @@ function update() {
     $("#promotion-fill").style.width = progress.ratio * 100 + "%";
     drawScene(canvas, state, $("#field-labels"));
   }
+  $('.field-tools').hidden = !canChooseFieldTheme(state);
+  for (const button of document.querySelectorAll('[data-field-theme]')) {
+    button.disabled = !session.active;
+    button.setAttribute('aria-pressed', String(fieldTheme(state) === button.dataset.fieldTheme));
+  }
   const tap = perTap(state);
   setText("#tap-rate", "+" + fmt(tap) + " G");
   setText("#tap-hint-rate", "한 번에 +" + fmt(tap) + " G");
   zone.setAttribute("aria-label", "화면 터치해서 골드 " + tap + " 획득");
-  syncSwordControls(document.querySelector('.home-dock'), state, session.active);
+  syncSwordControls(document.querySelector('.field-tools'), state, session.active);
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
     ["nco","officer"].some(id=>schoolOffer(state,id).canBuy) ||
@@ -129,7 +135,11 @@ zone.addEventListener("click", (event) => {
   tapFeedback(zone, $("#gold"), event, amount);
   gameAudio.tap(state.sound);
 });
-$(".home-dock [data-use-sword]").onclick = () => session.change(s => activateSword(s));
+$(".field-tools [data-use-sword]").onclick = () => session.change(s => activateSword(s));
+document.querySelector('.field-theme-picker').addEventListener('click', event => {
+  const button = event.target.closest('[data-field-theme]');
+  if (button && !button.disabled) session.change(s => setFieldTheme(s, button.dataset.fieldTheme));
+});
 $("#sound").onclick = async () => {
   await session.change((s) => {
     s.sound = !s.sound;

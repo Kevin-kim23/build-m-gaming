@@ -3,6 +3,7 @@ export const HELICOPTER_STAGES = Object.freeze([
   "기본형", "기수 장갑", "로켓 포드", "꼬리날개 확장", "동체 장갑",
   "미사일 장착", "엔진 보강", "탐지 센서", "위장 패널", "통신 안테나", "최종 개량형",
 ]);
+export const ROCKET_STAGES = Object.freeze(['기본 발사차','차체 장갑','발사관 보강','안정 지지대','방호 패널','탄약 적재함','사격 통제기','탐지 센서','위장 장갑','통신 안테나','최종 개량형']);
 export const EQUIPMENT = Object.freeze({
   artillery: Object.freeze({
     id: "artillery",
@@ -43,7 +44,14 @@ export const EQUIPMENT = Object.freeze({
     passive: 25000, tap: 150000, passiveStep: 5000, tapStep: 30000,
     stages: HELICOPTER_STAGES,
   }),
+  rocketLauncher: Object.freeze({
+    id: 'rocketLauncher', name: '다연장 로켓포', unlockRank: '준장',
+    cost: 150_000_000, maxLevel: 10,
+    passive: 75000, tap: 450000, passiveStep: 15000, tapStep: 90000,
+    stages: ROCKET_STAGES,
+  }),
 });
+export const MAX_DEPLOYED_EQUIPMENT = 4;
 export const ARTILLERY = EQUIPMENT.artillery;
 export const EQUIPMENT_STAGES = Object.freeze([
   "기본형",
@@ -83,6 +91,11 @@ export const deployedEquipment = (s) =>
   Object.values(EQUIPMENT)
     .filter((d) => equipmentOf(s, d.id)?.deployed)
     .map((d) => ({ ...d, ...equipmentOf(s, d.id) }));
+export function deploymentOffer(s, id) {
+  const gun = equipmentOf(s, id);
+  const reason = !gun ? 'unowned' : !gun.deployed && deployedEquipment(s).length >= MAX_DEPLOYED_EQUIPMENT ? 'capacity' : null;
+  return { canDeploy: reason === null, reason };
+}
 export function equipmentIncome(s) {
   return deployedEquipment(s).reduce(
     (sum, d) => {
@@ -129,9 +142,9 @@ export function enhancementOffer(s, id = "artillery") {
         : null;
   return { cost, reason, canUpgrade: reason === null };
 }
-export function validEquipment(value, legacy = false, includeHelicopter = true) {
+export function validEquipment(value, legacy = false, includeHelicopter = true, includeRocket = true) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  return (legacy ? ["artillery"] : Object.keys(EQUIPMENT).filter(id => includeHelicopter || id !== "helicopter")).every((id) => {
+  return (legacy ? ["artillery"] : Object.keys(EQUIPMENT).filter(id => (includeHelicopter || id !== "helicopter") && (includeRocket || id !== "rocketLauncher"))).every((id) => {
     if (!Object.hasOwn(value, id)) return false;
     const g = value[id];
     return (

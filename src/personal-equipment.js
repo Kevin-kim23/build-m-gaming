@@ -9,6 +9,7 @@ export const GENERAL_SWORD = Object.freeze({
   durationMs: 30_000, cooldownMs: 600_000, tapMultiplier: 2,
 });
 export const BULK_RECRUIT = Object.freeze({
+  staffSergeant: Object.freeze({ level: 3, unlockRank: '준장' }),
   soldier: Object.freeze({ level: 1, unlockRank: COMMAND_BATON.unlockRank }),
   sergeant: Object.freeze({ level: 2, unlockRank: COMMAND_BATON.upgradeRank }),
 });

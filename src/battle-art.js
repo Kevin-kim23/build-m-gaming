@@ -1,4 +1,5 @@
 import { artSurface, ART_SCALE, overheadDetails } from "./pixel-detail.js";
+import { drawOverheadRocket } from './rocket-art.js';
 import { drawOverheadHelicopter } from "./helicopter-art.js";
 import { UNITS } from "./units.js";
 
@@ -92,7 +93,9 @@ function equipmentSprite(id, level, side) {
   if (sprites.has(key)) return sprites.get(key);
   const canvas = surface(56, 68), c = canvas.getContext("2d"), p = palettes[side];
   rect(c, 12, 30, 36, 31, "#22392c44");
-  if (id === "helicopter") {
+  if (id === "rocketLauncher") {
+    drawOverheadRocket(c, level, p);
+  } else if (id === "helicopter") {
     drawOverheadHelicopter(c, level, p);
   } else if (id === "artillery") {
     rect(c, 15, 42, 5, 20, p.dark); rect(c, 36, 42, 5, 20, p.dark);

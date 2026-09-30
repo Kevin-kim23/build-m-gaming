@@ -11,7 +11,7 @@ function batonMarkup(s) {
     <div class="personal-item-heading"><div class="personal-item-art">${personalIcon("baton", status.level)}</div>
       <div><span class="item-class">지휘관 개인 장비</span><h3>${COMMAND_BATON.name} <small>Lv.${status.level || 1}</small></h3><p class="personal-item-status">${status.owned ? ("보유 중 · " + RANKS[rankForArmy(s)] + " 진급 보상") : "🔒 " + COMMAND_BATON.unlockRank + " 진급 시 자동 지급"}</p></div>
     </div>
-    <div class="personal-item-effect"><strong>일반병 ${COMMAND_BATON.recruitAmount}명 한 번에 모집${status.level >= 2 ? `<br>하사 ${COMMAND_BATON.recruitAmount}명 한 번에 모집` : ""}</strong><p>중령 Lv.1부터 계급마다 지휘봉 레벨이 1씩 올라갑니다.<br>군대 모집에서 ${COMMAND_BATON.recruitAmount}명 모집 버튼을 사용할 수 있어요.<br>모집에 필요한 골드는 별도로 지불합니다.${status.level < 2 ? "<br>대령 진급 시 Lv.2 · 하사 100명 모집 추가" : "<br>하사 모집은 부사관학교 Lv.1도 필요합니다."}</p></div>
+    <div class="personal-item-effect"><strong>일반병 ${COMMAND_BATON.recruitAmount}명 한 번에 모집${status.level >= 2 ? `<br>하사 ${COMMAND_BATON.recruitAmount}명 한 번에 모집` : ""}${status.level >= 3 ? `<br>중사 ${COMMAND_BATON.recruitAmount}명 한 번에 모집` : ""}</strong><p>중령 Lv.1부터 계급마다 지휘봉 레벨이 1씩 올라갑니다.<br>군대 모집에서 ${COMMAND_BATON.recruitAmount}명 모집 버튼을 사용할 수 있어요.<br>모집에 필요한 골드는 별도로 지불합니다.${status.level < 2 ? "<br>대령 진급 시 Lv.2 · 하사 100명 모집 추가" : "<br>하사 모집은 부사관학교 Lv.1, 중사는 Lv.2가 필요합니다.<br>준장 Lv.3부터 중사 100명 모집 추가"}</p></div>
     ${status.owned
       ? '<button class="personal-recruit-link" data-shop-category="recruit">군대 모집으로 이동 <span aria-hidden="true">→</span></button>'
       : '<p class="personal-item-locked">진급 조건을 달성하면 자동으로 지급됩니다.</p>'}
