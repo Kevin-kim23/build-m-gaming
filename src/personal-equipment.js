@@ -2,7 +2,7 @@ import { catalogVisible, rankForArmy, RANKS } from "./ranks.js";
 
 export const COMMAND_BATON = Object.freeze({
   id: "commandBaton", name: "지휘봉", unlockRank: "중령",
-  upgradeRank: "대령", level: 1, maxLevel: 2, recruitAmount: 100,
+  upgradeRank: "대령", level: 1, maxLevel: RANKS.length - RANKS.indexOf("중령"), recruitAmount: 100,
 });
 export const GENERAL_SWORD = Object.freeze({
   id: "generalSword", name: "장군검", unlockRank: "준장", level: 1,
@@ -18,7 +18,7 @@ export function commandBatonStatus(state) {
   const owned = rank >= RANKS.indexOf(COMMAND_BATON.unlockRank);
   return {
     visible: catalogVisible(state, COMMAND_BATON.unlockRank), owned,
-    level: !owned ? 0 : rank >= RANKS.indexOf(COMMAND_BATON.upgradeRank) ? 2 : 1,
+    level: !owned ? 0 : rank - RANKS.indexOf(COMMAND_BATON.unlockRank) + 1,
   };
 }
 export function generalSwordStatus(state) {

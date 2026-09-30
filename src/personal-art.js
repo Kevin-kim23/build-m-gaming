@@ -62,6 +62,11 @@ export function personalIcon(kind, level = 1) {
     flourish(80,202);flourish(98,202);
     if(level>=2){band(77,151,39,12);band(77,177,39,10);jewel(91,76);
       rect(71,45,3,16,gold[3]);rect(119,45,3,16,gold[2]);}
+    // Successive command ranks add engraved leaves, mounts and a crest.
+    if(level>=3){flourish(88,167);rect(76,66,2,82,gold[2]);}
+    if(level>=4){flourish(88,91);rect(115,66,2,82,gold[3]);}
+    if(level>=5){band(77,118,39,6);band(77,140,39,6);jewel(91,52);}
+    if(level>=6){band(78,26,37,12);jewel(91,26);rect(73,198,2,22,gold[4]);rect(119,198,2,22,gold[2]);}
     rect(79,224,33,3,gold[0]);rect(84,227,23,2,gold[2]);
   }
   const name=kind==='sword'?'장군검':'지휘봉';
