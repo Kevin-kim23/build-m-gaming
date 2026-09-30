@@ -1,3 +1,4 @@
+import { drawOverheadHelicopter } from "./helicopter-art.js";
 import { UNITS } from "./units.js";
 
 // Original overhead pixel art. The controller owns the animation clock.
@@ -89,7 +90,9 @@ function equipmentSprite(id, level, side) {
   if (sprites.has(key)) return sprites.get(key);
   const canvas = surface(56, 68), c = canvas.getContext("2d"), p = palettes[side];
   rect(c, 12, 30, 36, 31, "#22392c44");
-  if (id === "artillery") {
+  if (id === "helicopter") {
+    drawOverheadHelicopter(c, level, p);
+  } else if (id === "artillery") {
     rect(c, 15, 42, 5, 20, p.dark); rect(c, 36, 42, 5, 20, p.dark);
     rect(c, 10, 58, 10, 4, p.body); rect(c, 36, 58, 10, 4, p.body);
     rect(c, 7, 33, 8, 14, "#293934"); rect(c, 41, 33, 8, 14, "#293934");

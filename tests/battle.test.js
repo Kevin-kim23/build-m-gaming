@@ -10,7 +10,7 @@ import {
 function army(power = 1280, level = 3) {
   return { ...freshState(1000), soldiers: power - 600, sergeants: 40, staffSergeants: 10,
     battleCleared: 10,
-    equipment: Object.fromEntries(Object.keys(EQUIPMENT).map((id) => [id, { level, deployed: true }])),
+    equipment: Object.fromEntries(["artillery", "tank", "selfPropelled"].map((id) => [id, { level, deployed: true }])),
   };
 }
 function simulate(state, stageId, tapsPerSecond = 2, loadout) {
@@ -72,7 +72,7 @@ test("each headquarters has exactly the largest single formation's power as HP",
     const b = createBattle(army(), stage.id);
     assert.equal(b.enemy.hq.maxHp, stage.hqPower);
     assert.equal(b.enemy.hq.id, stage.formationId);
-    assert.equal(b.enemy.equipment.length, Object.keys(EQUIPMENT).length);
+    assert.equal(b.enemy.equipment.length, 3);
   }
 });
 

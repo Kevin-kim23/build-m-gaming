@@ -1,4 +1,8 @@
 import { rankForArmy, RANKS, catalogVisible } from "./ranks.js";
+export const HELICOPTER_STAGES = Object.freeze([
+  "기본형", "기수 장갑", "로켓 포드", "꼬리날개 확장", "동체 장갑",
+  "미사일 장착", "엔진 보강", "탐지 센서", "위장 패널", "통신 안테나", "최종 개량형",
+]);
 export const EQUIPMENT = Object.freeze({
   artillery: Object.freeze({
     id: "artillery",
@@ -32,6 +36,12 @@ export const EQUIPMENT = Object.freeze({
     tap: 50000,
     passiveStep: 1600,
     tapStep: 10000,
+  }),
+  helicopter: Object.freeze({
+    id: "helicopter", name: "공격헬기", unlockRank: "대령",
+    cost: 45_000_000, maxLevel: 10,
+    passive: 25000, tap: 150000, passiveStep: 5000, tapStep: 30000,
+    stages: HELICOPTER_STAGES,
   }),
 });
 export const ARTILLERY = EQUIPMENT.artillery;
@@ -119,9 +129,9 @@ export function enhancementOffer(s, id = "artillery") {
         : null;
   return { cost, reason, canUpgrade: reason === null };
 }
-export function validEquipment(value, legacy = false) {
+export function validEquipment(value, legacy = false, includeHelicopter = true) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  return (legacy ? ["artillery"] : Object.keys(EQUIPMENT)).every((id) => {
+  return (legacy ? ["artillery"] : Object.keys(EQUIPMENT).filter(id => includeHelicopter || id !== "helicopter")).every((id) => {
     if (!Object.hasOwn(value, id)) return false;
     const g = value[id];
     return (

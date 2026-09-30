@@ -2,7 +2,7 @@ import { UNITS, armyPower } from "./units.js";
 import { EQUIPMENT } from "./equipment.js";
 import { FORMATIONS } from "./formations.js";
 import { RANKS, rankForArmy } from "./ranks.js";
-import { BATTLE_RULES, STAGES, infantryDamage, equipmentCombatStats } from "./battle-balance.js";
+import { ENEMY_EQUIPMENT, BATTLE_RULES, STAGES, infantryDamage, equipmentCombatStats } from "./battle-balance.js";
 export { BATTLE_RULES, STAGES, equipmentCombatStats } from "./battle-balance.js";
 
 export function battleAccess(state) {
@@ -72,7 +72,7 @@ export function createBattle(state, stageId, input = defaultLoadout(state)) {
       loadout.equipment.map((id) => ({ id, level: state.equipment[id].level }))),
     enemy: makeSide(enemyFormation, stage.hqPower,
       Object.fromEntries(['soldier','sergeant','staffSergeant'].map((id) => [id, stage.enemyUnitCount])),
-      Object.keys(EQUIPMENT).map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier),
+      ENEMY_EQUIPMENT.map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier),
   };
 }
 

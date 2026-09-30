@@ -129,7 +129,7 @@ test("catalog names and images stay absent until exactly the preceding rank, the
 test("tank and SPG have independent ownership and upgrades through level ten", () => {
   const s = state(1280, 40),
     base = { passive: perSecond(s), tap: perTap(s) };
-  for (const id of Object.keys(EQUIPMENT)) {
+  for (const id of ["artillery", "tank", "selfPropelled"]) {
     assert.equal(buyEquipment(s, T, id).ok, true);
     assert.equal(buyEquipment(s, T, id).reason, "owned");
   }
@@ -177,13 +177,13 @@ test("v5 saves preserve artillery, balances and armies while adding empty new sl
   delete old.staffSergeants;
   assert.deepEqual(parseSave(JSON.stringify(old)), {
     ...old,
-    version: 9, ncoSchoolLevel: 1,
+    version: 10, ncoSchoolLevel: 1,
     earnedAchievements: ["squad", "platoon", "company"],
     staffSergeants: 0,
     equipment: {
       artillery: old.equipment.artillery,
       tank: null,
-      selfPropelled: null,
+      selfPropelled: null, helicopter: null,
     },
   });
   for (const bad of [-1, 1.5, undefined])

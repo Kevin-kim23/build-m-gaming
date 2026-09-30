@@ -88,7 +88,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
 }
 export function freshState(now = Date.now()) {
   return {
-    version: 9,
+    version: 10,
     ncoSchoolLevel: 0,
     officerSchoolLevel: 0,
     battleCleared: 0,
@@ -164,7 +164,7 @@ export function parseSave(raw, now = Date.now()) {
     }
     const integer = (x, max) => Number.isSafeInteger(x) && x >= 0 && x <= max;
     if (
-      ![3, 4, 5, 6, 7, 8, 9].includes(s.version) ||
+      ![3, 4, 5, 6, 7, 8, 9, 10].includes(s.version) ||
       (s.version >= 9 && (!integer(s.ncoSchoolLevel,5) || !integer(s.officerSchoolLevel,1) ||
         (s.officerSchoolLevel>0 && s.ncoSchoolLevel!==5) ||
         !['masterSergeant','sergeantMajor','lieutenant'].every(id=>integer(s[UNITS[id].field],Math.floor(MAX_SOLDIERS/UNITS[id].power))))) ||
@@ -175,14 +175,14 @@ export function parseSave(raw, now = Date.now()) {
       !integer(s.soldiers, MAX_SOLDIERS) ||
       (s.version >= 4 && !integer(s.sergeants, MAX_SOLDIERS / 10)) ||
       (s.version >= 6 && !integer(s.staffSergeants, MAX_SOLDIERS / 20)) ||
-      (s.version >= 5 && !validEquipment(s.equipment, s.version === 5)) ||
+      (s.version >= 5 && !validEquipment(s.equipment, s.version === 5, s.version >= 10)) ||
       !integer(s.lastAccrual, 100_000_000_000_000) ||
       !integer(s.incomeRemainder, 999) ||
       !integer(s.revision, Number.MAX_SAFE_INTEGER)
     )
       return null;
     const migrated = {
-      version: 9,
+      version: 10,
       ncoSchoolLevel: s.version >= 9 ? s.ncoSchoolLevel : 0,
       officerSchoolLevel: s.version >= 9 ? s.officerSchoolLevel : 0,
       battleCleared: s.version >= 7 ? s.battleCleared : 0,
@@ -205,7 +205,7 @@ export function parseSave(raw, now = Date.now()) {
     if (s.version < 9) migrated.ncoSchoolLevel = legacySchoolLevel(migrated);
     for (const id of Object.keys(EQUIPMENT)) {
       const gun =
-        s.version >= 5 && (s.version >= 6 || id === "artillery")
+        s.version >= 5 && (s.version >= 6 || id === "artillery") && (id !== "helicopter" || s.version >= 10)
           ? s.equipment[id]
           : null;
       if (gun)

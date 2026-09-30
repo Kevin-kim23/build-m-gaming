@@ -76,7 +76,7 @@ export function renderEquipmentPanel(s, root, id) {
     "equipment-deployed",
     gun ? (gun.deployed ? "배치 중" : "보관 중") : "미보유",
   );
-  text(root, "equipment-stage", EQUIPMENT_STAGES[level]);
+  text(root, "equipment-stage", (d.stages ?? EQUIPMENT_STAGES)[level]);
   text(
     root,
     "equipment-empty",
@@ -132,7 +132,7 @@ export function renderEquipmentPanel(s, root, id) {
   text(
     root,
     "enhancement-appearance",
-    max ? EQUIPMENT_STAGES[level] : "다음 외형: " + EQUIPMENT_STAGES[level + 1],
+    max ? (d.stages ?? EQUIPMENT_STAGES)[level] : "다음 외형: " + (d.stages ?? EQUIPMENT_STAGES)[level + 1],
   );
   text(root, "enhancement-cost", max ? "완료" : fmt(offer.cost) + " G");
   text(

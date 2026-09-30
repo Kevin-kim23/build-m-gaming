@@ -21,7 +21,7 @@ test("battle art caches composition and sprites while HP and bounded shot effect
     const side = () => ({
       hq: { id: "battalion", name: "대대", hp: 1280, maxHp: 1280 },
       troops: { soldier: 10, sergeant: 10, staffSergeant: 10 },
-      equipment: [{ id: "artillery", level: 0 }, { id: "tank", level: 0 }, { id: "selfPropelled", level: 10 }],
+      equipment: [{ id: "artillery", level: 0 }, { id: "tank", level: 0 }, { id: "selfPropelled", level: 10 }, { id: "helicopter", level: 5 }],
     });
     const target = canvas(), view = { elapsed: 0, sides: { player: side(), enemy: side() }, effects: [] };
     drawBattle(target, view);

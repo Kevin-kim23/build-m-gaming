@@ -87,7 +87,7 @@ test('v8 migration preserves assets and previously unlocked NCO access without g
     const old={...freshState(T),version:8,gold:4321,soldiers,sergeants,staffSergeants,battleCleared:3};
     old.ncoSchoolLevel=5;old.officerSchoolLevel=1;old.lieutenants=999;
     const s=parseSave(JSON.stringify(old),T);
-    assert.equal(s.version,9);assert.equal(s.ncoSchoolLevel,level);assert.equal(s.officerSchoolLevel,0);
+    assert.equal(s.version,10);assert.equal(s.ncoSchoolLevel,level);assert.equal(s.officerSchoolLevel,0);
     assert.equal(s.gold,4321);assert.equal(s.battleCleared,3);assert.equal(s.lieutenants,0);
     assert.equal(s.masterSergeants,0);assert.equal(s.sergeantMajors,0);
   }

@@ -1,3 +1,4 @@
+import { helicopterSprite } from "./helicopter-art.js";
 import { equipmentStats } from "./equipment.js";
 const sprites = new Map(),
   painted = new WeakMap();
@@ -6,7 +7,7 @@ function sprite(level, id = "artillery") {
   const key = id + ":" + level;
   if (sprites.has(key)) return sprites.get(key);
   if (id !== "artillery") {
-    const vehicle = vehicleSprite(level, id);
+    const vehicle = id === "helicopter" ? helicopterSprite(level) : vehicleSprite(level, id);
     sprites.set(key, vehicle);
     return vehicle;
   }

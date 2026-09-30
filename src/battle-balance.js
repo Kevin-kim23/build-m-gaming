@@ -32,7 +32,11 @@ export const STAGES = Object.freeze(
   }),
 );
 
+// Enemy loadouts stay explicit so catalog additions do not silently raise stage difficulty.
+export const ENEMY_EQUIPMENT = Object.freeze(["artillery", "tank", "selfPropelled"]);
+
 const weaponBase = Object.freeze({
+  helicopter: { damage: 16, intervalMs: 1800 },
   artillery: { damage: 11, intervalMs: 2800 },
   tank: { damage: 12, intervalMs: 1900 },
   selfPropelled: { damage: 21, intervalMs: 3500 },
