@@ -1,3 +1,4 @@
+import { UNIT_LIST } from "./units.js";
 import { RANK_DEFINITIONS } from "./ranks.js";
 import { medalShelfMarkup } from "./achievement-markup.js";
 export const coin =
@@ -69,39 +70,10 @@ function dockMarkup() {
   return `<section class="home-dock" aria-label="내 부대">
     <div class="roster">
     <div class="roster-units">
-    <div class="owned-unit">
-    <canvas data-home-unit="soldier" width="36" height="46" role="img" aria-label="일반병">
-    </canvas>
-    <div>
-    <span>일반병</span>
-    <strong>
-    <b id="soldier-count">0</b>
-    <small>명</small>
-    </strong>
-    </div>
-    </div>
-    <div class="owned-unit" id="sergeant-roster">
-    <canvas data-home-unit="sergeant" width="36" height="46" role="img" aria-label="하사">
-    </canvas>
-    <div>
-    <span>하사</span>
-    <strong>
-    <b id="sergeant-count">0</b>
-    <small>명</small>
-    </strong>
-    </div>
-    </div>
-    <div class="owned-unit" id="staff-roster" hidden>
-    <canvas data-home-unit="staffSergeant" width="36" height="46" role="img" aria-label="중사">
-    </canvas>
-    <div>
-    <span>중사</span>
-    <strong>
-    <b id="staff-count">0</b>
-    <small>명</small>
-    </strong>
-    </div>
-    </div>
+    ${UNIT_LIST.map(u=>`<div class="owned-unit" data-roster="${u.id}" ${u.id==='soldier'?'':'hidden'}>
+      <canvas data-home-unit="${u.id}" width="36" height="46" role="img" aria-label="${u.name}"></canvas>
+      <div><span>${u.name}</span><strong><b data-home-count="${u.id}">0</b><small>명</small></strong></div>
+    </div>`).join('')}
     </div>
     </div>
     <div class="promotion-line">

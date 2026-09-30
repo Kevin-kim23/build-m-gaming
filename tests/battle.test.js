@@ -56,7 +56,7 @@ test("deployment clamps actual headcounts and rejects unknown or unowned equipme
     units: { soldier: 99.5, sergeant: -1, staffSergeant: 9, alien: 10 },
     equipment: ["artillery", "artillery", "tank", "unknown"],
   });
-  assert.deepEqual(chosen, { units: { soldier: 10, sergeant: 0, staffSergeant: 3 }, equipment: ["artillery"] });
+  assert.deepEqual(chosen, { units: { soldier: 10, sergeant: 0, staffSergeant: 3, masterSergeant: 0, sergeantMajor: 0, lieutenant: 0 }, equipment: ["artillery"] });
   assert.equal(normalizeLoadout(s, { units: { soldier: NaN } }).units.soldier, 0);
   assert.deepEqual(defaultLoadout(s).equipment, ["artillery", "selfPropelled"]);
   assert.throws(() => createBattle(army(), 1, { units: {}, equipment: [] }), RangeError);

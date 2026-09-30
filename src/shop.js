@@ -1,14 +1,16 @@
 import { fmt } from "./format.js";
 import { equipmentStoreMarkup } from "./equipment-panels.js";
-import { UNITS } from "./units.js";
+import { UNITS, unitAccess } from "./units.js";
+import { schoolsMarkup } from "./school-panels.js";
 import { FORMATIONS } from "./formations.js";
-import { RANK_DEFINITIONS, catalogVisible } from "./ranks.js";
+import { RANK_DEFINITIONS } from "./ranks.js";
 import { COMMAND_BATON, commandBatonStatus } from "./personal-equipment.js";
 
 export const SHOP_CATEGORIES = Object.freeze([
   Object.freeze({ id: "recruit", name: "군대 모집" }),
   Object.freeze({ id: "equipment", name: "장비 구매" }),
   Object.freeze({ id: "personal", name: "개인 장비" }),
+  Object.freeze({ id: "schools", name: "군사학교" }),
 ]);
 
 function bulkRecruitMarkup(coin) {
@@ -24,7 +26,7 @@ function bulkRecruitMarkup(coin) {
 function recruitmentMarkup(s, coin, insignia) {
   const bulkAvailable = commandBatonStatus(s).owned;
   return `<div class="unit-list">${Object.values(UNITS)
-    .filter((unit) => catalogVisible(s, unit.unlockRank))
+    .filter((unit) => unitAccess(s, unit).visible)
     .map(
       (unit) => `
    <article class="unit-card" data-unit="${unit.id}" aria-label="${unit.name} 모집">
@@ -32,10 +34,11 @@ function recruitmentMarkup(s, coin, insignia) {
      <div class="recruit-visual"><canvas data-portrait="${unit.id}" width="80" height="100" role="img" aria-label="${unit.name} 픽셀 그림"></canvas></div>
      <div class="recruit-info"><span class="item-class">${unit.id === "soldier" ? "기본 병력" : "전력 " + unit.power + " · 간부"}</span>
       <h3>${unit.name}</h3><span data-field="owned"></span>
-      <p>한 명마다 <b>초당 +${unit.passive} G</b><br>한 명마다 <b>터치 +${unit.tap} G</b></p>
+      <p>한 명마다 <b>초당 +${fmt(unit.passive)} G</b><br>한 명마다 <b>터치 +${fmt(unit.tap)} G</b></p>
      </div>
     </div>
-    <p class="unit-unlock" data-field="unlock"></p>
+    <p class="unit-unlock" data-field="unlock">${unitAccess(s,unit).requirement}</p>
+    ${unit.school ? '<button class="unit-school-link" data-shop-category="schools">군사학교 건설·확장 →</button>' : ''}
     <div class="price-line"><span>이번 모집 비용</span><strong>${coin}<b data-field="price"></b><small>G</small></strong></div>
     <button class="buy" data-buy="${unit.id}"><span data-field="label"></span><span aria-hidden="true">＋</span></button>
     <p class="unit-price-note">${unit.name} 모집 시에만 가격 상승</p>
@@ -44,7 +47,7 @@ function recruitmentMarkup(s, coin, insignia) {
     )
     .join("")}
   </div>
-  <p class="strength-note">진급·편제: 하사 1명 = 전력 10${catalogVisible(s, "소령") ? " · 중사 1명 = 전력 20" : ""}<br>모집 가격은 병력 종류별로 따로 증가합니다.</p>
+  <p class="strength-note">간부 모집은 학교 레벨로 해금합니다.<br>모집 가격은 병력 종류별로 따로 증가합니다.</p>
   <details class="shop-ranks shop-rank-guide"><summary>진급 조건 보기</summary><div class="shop-ranks-title"><b>전력이 쌓이면, 계급도 올라갑니다</b><small>조건 달성 시 자동 진급</small></div>
    <div class="rank-steps">${RANK_DEFINITIONS.map((r, i) => `<div class="rank-step" data-rank="${i}">${insignia(i)}<b>${r.name}</b><small>전력 ${fmt(r.required)}</small><em>${i >= 4 ? r.condition : ""}</em></div>`).join("")}</div><p id="shop-next"></p>
   </details>
@@ -97,7 +100,7 @@ export function shopMarkup(s, coin, insignia, category = "recruit") {
     ? recruitmentMarkup(s, coin, insignia)
     : selected === "equipment"
       ? equipmentStoreMarkup(s) || '<p class="shop-category-empty">진급하면 새로운 장비가 공개됩니다.</p>'
-      : personalMarkup(s);
+      : selected === "schools" ? schoolsMarkup(s) : personalMarkup(s);
   return `<div class="sheet-grip"></div>
   <div class="shop-header"><div><small>SUPPLY OFFICE</small><h2 id="modal-title">상점</h2></div><button id="close-shop" aria-label="상점 닫기">×</button></div>
   <div class="shop-wallet"><span>보유 골드</span><strong>${coin}<b id="shop-gold"></b><small>G</small></strong></div>

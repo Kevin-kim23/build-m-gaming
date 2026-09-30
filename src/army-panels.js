@@ -1,6 +1,9 @@
 import { fmt } from './format.js';
 import { coin, insignia } from './home-view.js';
-import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, enhanceEquipment, setEquipmentDeployed } from './game.js';
+import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool } from './game.js';
+import { unitAccess } from './units.js';
+import { SCHOOLS } from './schools.js';
+import { renderSchools } from './school-panels.js';
 import { rankForArmy, LAST_RANK, promotionProgress } from './ranks.js';
 import { COMMAND_BATON, commandBatonStatus } from './personal-equipment.js';
 import { EQUIPMENT, equipmentOf, visibleEquipment } from './equipment.js';
@@ -9,6 +12,7 @@ import { SHOP_CATEGORIES, shopMarkup } from './shop.js';
 import { drawFormationPortrait } from './art.js';
 import { showPromotion } from './promotion.js';
 import './shop.css';
+import './schools.css';
 
 // One controller owns the shared shop/equipment dialog and its event listener.
 export function createArmyPanels(session, audio) {
@@ -16,6 +20,7 @@ export function createArmyPanels(session, audio) {
   const $ = selector => dialog.querySelector(selector);
   let activePanel = 'shop', category = 'recruit', activeEquipment = 'artillery';
   let shopRank = -1, catalogRank = -1, equipmentCatalogKey = '';
+  let ncoLevel = -1, officerLevel = -1;
   const state = () => session.state;
   const text = (selector, value) => {
     const node = $(selector), next = String(value);
@@ -25,14 +30,15 @@ export function createArmyPanels(session, audio) {
     const toggle = $('#toggle-equipment');
     if (toggle) toggle.disabled = !session.active;
     if (session.active) return;
-    dialog.querySelectorAll('[data-buy], [data-buy-bulk], [data-buy-equipment], #enhance-equipment')
+    dialog.querySelectorAll('[data-buy], [data-buy-bulk], [data-buy-equipment], [data-upgrade-school], #enhance-equipment')
       .forEach(button => { button.disabled = true; });
   }
   function updateShop() {
     const s = state(), rank = rankForArmy(s);
-    if (catalogRank !== rank) { openShop(); return; }
+    if (catalogRank !== rank || ncoLevel !== s.ncoSchoolLevel || officerLevel !== s.officerSchoolLevel) { openShop(); return; }
     text('#shop-gold', fmt(s.gold));
     if (category === 'equipment') renderEquipmentStore(s, dialog);
+    if (category === 'schools') renderSchools(s, dialog);
     if (category !== 'recruit') return;
     for (const unit of Object.values(UNITS)) {
       const card = $(`[data-unit="${unit.id}"]`);
@@ -41,8 +47,8 @@ export function createArmyPanels(session, audio) {
       const field = (name, value) => text(`[data-unit="${unit.id}"] [data-field="${name}"]`, value);
       field('owned', `보유 ${fmt(offer.owned)}명`);
       field('price', fmt(offer.cost));
-      field('unlock', offer.locked ? `🔒 ${unit.unlockRank} 진급 시 해금` : `전력 +${unit.power}`);
-      field('label', offer.reason === 'locked' ? `잠금 · ${unit.unlockRank}부터 모집`
+      field('unlock', offer.locked ? `🔒 필요: ${offer.requirement}` : `전력 +${unit.power} · ${offer.requirement}`);
+      field('label', offer.reason === 'locked' ? `잠금 · ${offer.requirement} 필요`
         : offer.reason === 'limit' ? '전력 한도 도달'
         : offer.reason === 'gold' ? `${fmt(offer.cost - s.gold)} G 부족` : `${unit.name} 1명 모집`);
       card.classList.toggle('locked', offer.locked);
@@ -73,6 +79,8 @@ export function createArmyPanels(session, audio) {
     category = SHOP_CATEGORIES.some(item => item.id === nextCategory) ? nextCategory : 'recruit';
     activePanel = 'shop';
     catalogRank = rankForArmy(state());
+    ncoLevel = state().ncoSchoolLevel;
+    officerLevel = state().officerSchoolLevel;
     shopRank = -1;
     dialog.innerHTML = panelTabs('shop') + shopMarkup(state(), coin, insignia, category);
     if (!dialog.open) dialog.showModal();
@@ -122,7 +130,7 @@ export function createArmyPanels(session, audio) {
     text('#shop-message', result.ok
       ? `${unit.name} ${result.count}명 합류!` + (result.promoted ? ` ${RANKS[result.rank]} 진급! 총 전력 ${fmt(armyPower(state()))}` : '')
         + (receivedBaton ? ` ${COMMAND_BATON.name} Lv.${COMMAND_BATON.level} 자동 지급 · 일반병 ${COMMAND_BATON.recruitAmount}명 모집 해금!` : '')
-      : result.reason === 'locked' ? `${quantity > 1 ? COMMAND_BATON.unlockRank : unit.unlockRank} 진급 후 모집할 수 있어요.`
+      : result.reason === 'locked' ? `${quantity > 1 ? COMMAND_BATON.unlockRank + ' 진급' : unitAccess(state(),unit).requirement + ' 건설'} 후 모집할 수 있어요.`
       : result.reason === 'limit' ? '모집 인원만큼 전력 여유가 필요해요.' : '골드가 부족해요.');
     $('#shop-message')?.classList.toggle('promoted', !!result.promoted);
   }
@@ -134,6 +142,13 @@ export function createArmyPanels(session, audio) {
       ? `${EQUIPMENT[id].name} 구매·배치 완료!`
       : result.reason === 'locked' ? `${EQUIPMENT[id].unlockRank} 진급 후 구매할 수 있어요.`
       : result.reason === 'owned' ? '이미 보유한 장비입니다.' : '골드가 부족해요.');
+  }
+  function buildSchool(id) {
+    const result=session.change(s=>upgradeSchool(s,Date.now(),id));
+    if(!result)return;
+    if(result.ok)audio.recruit(state().sound);
+    text('#shop-message',result.ok?`${SCHOOLS[id].name} Lv.${result.level} 완료! ${SCHOOLS[id].effects[result.level-1]} 해금`
+      :result.reason==='locked'?'부사관학교 Lv.5와 소장 계급이 필요해요.':result.reason==='max'?'최대 레벨입니다.':'골드가 부족해요.');
   }
   function upgradeGun() {
     const id = activeEquipment;
@@ -166,6 +181,7 @@ export function createArmyPanels(session, audio) {
     else if (button.dataset.buy) buyUnit(button.dataset.buy);
     else if (button.dataset.buyBulk) buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount);
     else if (button.dataset.buyEquipment) purchaseGun(button.dataset.buyEquipment);
+    else if (button.dataset.upgradeSchool) buildSchool(button.dataset.upgradeSchool);
     else if (button.dataset.manageEquipment) openEquipment(button.dataset.manageEquipment);
     else if (button.dataset.selectEquipment) openEquipment(button.dataset.selectEquipment);
     else if (button.id === 'equipment-to-shop') openShop('equipment');

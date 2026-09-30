@@ -1,4 +1,6 @@
 import { tapFeedback } from "./tap-feedback.js";
+import { UNIT_LIST, unitAccess } from "./units.js";
+import { schoolOffer } from "./schools.js";
 import { fmt } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
 import { createGameSession } from "./session.js";
@@ -22,7 +24,6 @@ import {
   LAST_RANK,
   rankForArmy,
   promotionProgress,
-  catalogVisible,
 } from "./ranks.js";
 import { reportError, installErrorReporting } from "./diagnostics.js";
 import { createArmyPanels } from "./army-panels.js";
@@ -75,13 +76,11 @@ function update() {
     const deployed = deployedEquipment(state);
     setText("#rank-name", RANKS[r]);
     $(".rank-mark").innerHTML = insignia(r);
-    setText("#soldier-count", fmt(state.soldiers));
-    setText("#sergeant-count", fmt(state.sergeants));
-    $("#sergeant-roster").hidden =
-      !catalogVisible(state, "소위") && !state.sergeants;
-    setText("#staff-count", fmt(state.staffSergeants));
-    $("#staff-roster").hidden =
-      !catalogVisible(state, "소령") && !state.staffSergeants;
+    for (const unit of UNIT_LIST) {
+      const owned=state[unit.field]??0;
+      setText(`[data-home-count="${unit.id}"]`,fmt(owned));
+      $(`[data-roster="${unit.id}"]`).hidden=!owned&&!unitAccess(state,unit).unlocked;
+    }
     setText("#formation-summary", fieldSummary(state));
     $("#formation-summary").hidden = power === 0;
     setText("#passive-rate", "+" + fmt(perSecond(state)) + " G");
@@ -107,6 +106,7 @@ function update() {
   }
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
+    ["nco","officer"].some(id=>schoolOffer(state,id).canBuy) ||
     Object.keys(EQUIPMENT).some(
       (id) => equipmentPurchaseOffer(state, id).canBuy,
     )

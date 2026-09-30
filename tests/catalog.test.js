@@ -38,6 +38,7 @@ import { layoutFieldEquipment, layoutFieldArmy } from "../src/field-layout.js";
 const T = 1800000000000;
 const state = (power, sergeants = 0) => ({
   ...freshState(T),
+  ncoSchoolLevel: 2,
   soldiers: power - sergeants * 10,
   sergeants,
   gold: MAX_GOLD,
@@ -47,7 +48,7 @@ test("major requires both 640 strength and forty actual sergeants; later ranks c
     for (const n of [0, 39]) {
       const s = state(power, n);
       assert.equal(RANKS[rankForArmy(s)], "대위");
-      assert.equal(recruit(s, T, "staffSergeant").reason, "locked");
+      assert.equal(recruitOffer(s, "staffSergeant").locked, false);
       assert.equal(buyEquipment(s, T, "tank").reason, "locked");
     }
   const s = state(640, 39),
@@ -69,9 +70,9 @@ test("staff sergeants have independent prices, exact rewards and twenty strength
     tap: perTap(s),
     power: armyPower(s),
   };
-  assert.equal(recruitOffer(s, "staffSergeant").cost, 1_000_000);
+  assert.equal(recruitOffer(s, "staffSergeant").cost, 50_000);
   assert.equal(recruit(s, T, "staffSergeant").ok, true);
-  assert.equal(s.gold, before.gold - 1_000_000);
+  assert.equal(s.gold, before.gold - 50_000);
   assert.equal(s.staffSergeants, 1);
   assert.equal(perSecond(s) - before.passive, 150);
   assert.equal(perTap(s) - before.tap, 1000);
@@ -82,7 +83,7 @@ test("staff sergeants have independent prices, exact rewards and twenty strength
   recruit(s, T);
   recruit(s, T, "sergeant");
   assert.equal(recruitOffer(s, "staffSergeant").cost, cost);
-  assert.ok(cost > 1_000_000);
+  assert.ok(cost > 50_000);
 });
 test("catalog names and images stay absent until exactly the preceding rank, then remain available", () => {
   const cases = [
@@ -107,10 +108,10 @@ test("catalog names and images stay absent until exactly the preceding rank, the
   }
   assert.equal(catalogVisible(state(60), "소위"), false);
   assert.equal(catalogVisible(state(80), "소위"), true);
-  assert.equal(shopMarkup(state(0), "", () => "").includes("하사 모집"), false);
+  assert.equal(shopMarkup(state(0), "", () => "").includes("하사 모집"), true);
   assert.equal(
     shopMarkup(state(240), "", () => "").includes("중사 모집"),
-    false,
+    true,
   );
   assert.equal(
     shopMarkup(state(320), "", () => "").includes("중사 모집"),
@@ -160,9 +161,9 @@ test("new troops and equipment do not earn income retroactively", () => {
   s.gold = 20_000_000;
   const before = perSecond(s);
   recruit(s, T + 500, "staffSergeant");
-  assert.equal(s.gold, 19_000_000 + before / 2);
+  assert.equal(s.gold, 19_950_000 + before / 2);
   buyEquipment(s, T + 1000, "tank");
-  assert.equal(s.gold, 14_000_000 + before + 75);
+  assert.equal(s.gold, 14_950_000 + before + 75);
   const balance = s.gold;
   accrue(s, T + 2000);
   assert.equal(s.gold, balance + before + 150 + 2500);
@@ -176,7 +177,7 @@ test("v5 saves preserve artillery, balances and armies while adding empty new sl
   delete old.staffSergeants;
   assert.deepEqual(parseSave(JSON.stringify(old)), {
     ...old,
-    version: 8,
+    version: 9, ncoSchoolLevel: 1,
     earnedAchievements: ["squad", "platoon", "company"],
     staffSergeants: 0,
     equipment: {

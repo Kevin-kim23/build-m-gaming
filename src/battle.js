@@ -71,7 +71,7 @@ export function createBattle(state, stageId, input = defaultLoadout(state)) {
     player: makeSide(formation, power, loadout.units,
       loadout.equipment.map((id) => ({ id, level: state.equipment[id].level }))),
     enemy: makeSide(enemyFormation, stage.hqPower,
-      Object.fromEntries(Object.keys(UNITS).map((id) => [id, stage.enemyUnitCount])),
+      Object.fromEntries(['soldier','sergeant','staffSergeant'].map((id) => [id, stage.enemyUnitCount])),
       Object.keys(EQUIPMENT).map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier),
   };
 }

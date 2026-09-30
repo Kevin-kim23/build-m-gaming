@@ -43,7 +43,7 @@ export function groupSoldiers(total) {
 }
 export function groupArmy(s) {
   if (
-    ![s.soldiers, s.sergeants ?? 0, s.staffSergeants ?? 0].every(
+    !Object.values(UNITS).map(u => s[u.field] ?? 0).every(
       (n) => Number.isSafeInteger(n) && n >= 0,
     )
   ) {

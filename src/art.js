@@ -212,12 +212,17 @@ function sprite(id) {
   canvas.height = type.height;
   const c = canvas.getContext("2d");
   if (id === "soldier") soldier(c);
-  else if (id === "sergeant" || id === "staffSergeant") {
+  else if (UNITS[id]) {
     sergeant(c);
-    if (id === "staffSergeant") {
-      r(c, 3, 2, 13, 4, "#645446");
+    const u=UNITS[id];
+    if (id !== "sergeant") {
+      r(c, 3, 2, 13, 4, u.color);
       r(c, 12, 3, 2, 2, "#e7d293");
-      for (let y = 12; y <= 16; y += 2) r(c, 7, y, 5, 1, "#e7c679");
+      r(c, 7, 12, 6, 7, "#354d4a");
+      if(u.school==='officer') {
+        r(c,9,12,2,1,"#eef0d1");r(c,8,13,4,2,"#eef0d1");r(c,9,15,2,1,"#eef0d1");
+        r(c,3,10,3,2,"#eef0d1");r(c,13,10,3,2,"#eef0d1");
+      } else for(let i=0;i<u.schoolLevel;i++)r(c,7,12+i*2,5,1,"#e7c679");
     }
   } else building(c, id);
   sprites.set(id, canvas);

@@ -1,10 +1,10 @@
-/* Three shop categories share one wallet and one status message. */
+/* Shop categories share one wallet and one status message. */
 .shop-categories {
   position: sticky;
   top: 56px;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 5px;
   margin: 16px 0 0;
   padding: 4px;

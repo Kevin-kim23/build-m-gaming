@@ -1,0 +1,19 @@
+.school-intro { color:#b5c4a5; font-size:12px; line-height:1.8; }
+.school-card { margin:14px 0; padding:16px; border:1px solid #65744d; border-radius:8px; background:#2c3a2b; }
+.school-heading { display:flex; align-items:center; gap:14px; }
+.school-art { width:110px; height:83px; flex-shrink:0; image-rendering:pixelated; }
+.school-heading h3 { margin:5px 0; font-size:18px; }
+.school-heading b { color:#e4cf90; font-size:12px; }
+.school-requirement { color:#c4caad; font-size:11px; line-height:1.8; }
+.school-levels { padding:0; list-style:none; margin:12px 0; display:grid; gap:6px; }
+.school-levels li { color:#91a184; font-size:12px; }
+.school-levels b { margin-right:6px; }
+.school-levels .complete { color:#e1cf93; }
+.school-card .price-line { flex-wrap:wrap; gap:7px; }
+.school-card .price-line strong { font-size:18px; }
+.school-card .buy { font-size:12px; padding:10px; }
+.school-recruit-link,.unit-school-link { border:0; background:transparent; color:#d4c99a; cursor:pointer; font-size:11px; padding:10px 0; }
+.school-recruit-link { width:100%; }
+.roster .roster-units { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(114px,1fr); overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; padding-bottom:3px; }
+.roster .owned-unit strong b { font-size:14px; white-space:nowrap; }
+@media(max-width:360px) { .school-card { padding:12px; } .school-art { width:84px; height:68px; } .school-heading { gap:8px; } }

@@ -1,5 +1,6 @@
-import { rankForArmy, catalogVisible, RANKS } from "./ranks.js";
-import { UNITS, armyPower, troopIncome } from "./units.js";
+import { rankForArmy } from "./ranks.js";
+import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
+import { schoolOffer, legacySchoolLevel } from "./schools.js";
 import { FIELD_ARMY_SIZE } from "./formations.js";
 import { STAGES } from "./battle-balance.js";
 import { COMMAND_BATON, commandBatonStatus } from "./personal-equipment.js";
@@ -35,14 +36,9 @@ export const recruitCost = (count) => {
 // Each price uses only the owned count of that exact unit type.
 export function unitCost(owned, type = "soldier") {
   if (type === "soldier") return recruitCost(owned);
-  if (type === "staffSergeant")
-    return Math.min(
-      MAX_GOLD,
-      1_000_000 + 350_000 * owned + 50_000 * owned * owned,
-    );
-  if (type !== "sergeant") throw new RangeError("Unknown recruit type");
-  // A steeper, predictable curve without exponential late-game price walls.
-  return Math.min(MAX_GOLD, 100_000 + 30_000 * owned + 3_000 * owned * owned);
+  const price = UNITS[type]?.price;
+  if (!price) throw new RangeError("Unknown recruit type");
+  return Math.min(MAX_GOLD, price[0] + price[1] * owned + price[2] * owned * owned);
 }
 function recruitUnit(type, quantity) {
   const unit = UNITS[type];
@@ -69,7 +65,8 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
     owned = s[unit.field] ?? 0,
     cost = bulk ? batchRecruitCost(owned) : unitCost(owned, type);
   const baton = bulk ? commandBatonStatus(s) : null;
-  const locked = rankForArmy(s) < RANKS.indexOf(unit.unlockRank) || (bulk && !baton.owned);
+  const access = unitAccess(s, unit);
+  const locked = !access.unlocked || (bulk && !baton.owned);
   const reason = locked
     ? "locked"
     : power + unit.power * quantity > MAX_SOLDIERS
@@ -79,7 +76,8 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
         : null;
   return {
     unit,
-    visible: bulk ? baton.visible : catalogVisible(s, unit.unlockRank),
+    visible: bulk ? baton.visible : access.visible,
+    requirement: access.requirement,
     cost,
     owned,
     quantity,
@@ -90,7 +88,9 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
 }
 export function freshState(now = Date.now()) {
   return {
-    version: 8,
+    version: 9,
+    ncoSchoolLevel: 0,
+    officerSchoolLevel: 0,
     battleCleared: 0,
     earnedAchievements: [],
     gold: 0,
@@ -98,6 +98,9 @@ export function freshState(now = Date.now()) {
     soldiers: 0,
     sergeants: 0,
     staffSergeants: 0,
+    masterSergeants: 0,
+    sergeantMajors: 0,
+    lieutenants: 0,
     equipment: emptyEquipment(),
     sound: false,
     lastAccrual: now,
@@ -161,7 +164,10 @@ export function parseSave(raw, now = Date.now()) {
     }
     const integer = (x, max) => Number.isSafeInteger(x) && x >= 0 && x <= max;
     if (
-      ![3, 4, 5, 6, 7, 8].includes(s.version) ||
+      ![3, 4, 5, 6, 7, 8, 9].includes(s.version) ||
+      (s.version >= 9 && (!integer(s.ncoSchoolLevel,5) || !integer(s.officerSchoolLevel,1) ||
+        (s.officerSchoolLevel>0 && s.ncoSchoolLevel!==5) ||
+        !['masterSergeant','sergeantMajor','lieutenant'].every(id=>integer(s[UNITS[id].field],Math.floor(MAX_SOLDIERS/UNITS[id].power))))) ||
       (s.version >= 7 && !integer(s.battleCleared, STAGES.length)) ||
       (s.version >= 8 && !validAchievementIds(s.earnedAchievements)) ||
       !integer(s.gold, MAX_GOLD) ||
@@ -176,7 +182,9 @@ export function parseSave(raw, now = Date.now()) {
     )
       return null;
     const migrated = {
-      version: 8,
+      version: 9,
+      ncoSchoolLevel: s.version >= 9 ? s.ncoSchoolLevel : 0,
+      officerSchoolLevel: s.version >= 9 ? s.officerSchoolLevel : 0,
       battleCleared: s.version >= 7 ? s.battleCleared : 0,
       earnedAchievements: s.version >= 8 ? [...s.earnedAchievements] : [],
       gold: s.gold,
@@ -184,6 +192,9 @@ export function parseSave(raw, now = Date.now()) {
       soldiers: s.soldiers,
       sergeants: s.version >= 4 ? s.sergeants : 0,
       staffSergeants: s.version >= 6 ? s.staffSergeants : 0,
+      masterSergeants: s.version >= 9 ? s.masterSergeants : 0,
+      sergeantMajors: s.version >= 9 ? s.sergeantMajors : 0,
+      lieutenants: s.version >= 9 ? s.lieutenants : 0,
       equipment: emptyEquipment(),
       sound: s.sound,
       lastAccrual: s.lastAccrual,
@@ -191,6 +202,7 @@ export function parseSave(raw, now = Date.now()) {
       revision: s.revision,
     };
     if (armyPower(migrated) > MAX_SOLDIERS) return null;
+    if (s.version < 9) migrated.ncoSchoolLevel = legacySchoolLevel(migrated);
     for (const id of Object.keys(EQUIPMENT)) {
       const gun =
         s.version >= 5 && (s.version >= 6 || id === "artillery")
@@ -204,6 +216,15 @@ export function parseSave(raw, now = Date.now()) {
   } catch {
     return null;
   }
+}
+export function upgradeSchool(s, now = Date.now(), id = 'nco') {
+  schoolOffer(s,id); // Validate identifiers before settling or spending.
+  accrue(s,now);
+  const offer=schoolOffer(s,id);
+  if(!offer.canBuy) return {ok:false,reason:offer.reason};
+  s.gold-=offer.cost;
+  s[offer.school.field]=offer.nextLevel;
+  return {ok:true,cost:offer.cost,level:offer.nextLevel};
 }
 // Settle the old income before every equipment mutation, using the same transaction as recruitment.
 export function buyEquipment(s, now = Date.now(), id = "artillery") {

@@ -75,6 +75,12 @@ function infantrySprite(id, side) {
   if (side === "enemy") rect(c, 2, 4, 2, 3, p.light);
   if (officer) rect(c, 3, 11, 2, 1, "#edd092");
   if (id === "staffSergeant") { rect(c, 7, 11, 3, 1, "#edd092"); rect(c, 1, 12, 2, 4, p.dark); }
+  const unit=UNITS[id];
+  if(unit?.school) {
+    rect(c,4,3,5,2,side==='enemy'?p.body:unit.color);
+    for(let i=0;i<unit.schoolLevel;i++)rect(c,3+i*2,10,1,2,unit.school==='officer'?'#edf2dd':'#edd092');
+    if(unit.school==='officer')rect(c,5,2,3,1,'#edf2dd');
+  }
   sprites.set(key, canvas);
   return canvas;
 }
@@ -139,12 +145,12 @@ function headquartersSprite(id, side) {
   return canvas;
 }
 function unitPositions(troops, side) {
-  const kinds = Object.keys(UNITS), positions = [];
+  const kinds = Object.keys(UNITS).filter(id => troops?.[id]>0), positions = [];
   kinds.forEach((id, row) => {
     const count = Math.min(10, Math.max(0, troops?.[id] ?? 0));
     for (let i = 0; i < count; i++) {
-      const x = (W / (kinds.length + 1)) * (row + 1) - 26 + (i % 5) * 13;
-      const y = 208 + Math.floor(i / 5) * 21;
+      const x = (W / (Math.min(3,kinds.length) + 1)) * (row % 3 + 1) - 26 + (i % 5) * 13;
+      const y = (kinds.length>3?181:208) + Math.floor(row/3)*44 + Math.floor(i / 5) * 21;
       positions.push({ id, x, y: side === "enemy" ? y : H - y });
     }
   });

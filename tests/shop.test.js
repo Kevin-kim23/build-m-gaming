@@ -65,7 +65,8 @@ test("unrevealed equipment remains absent and invalid category IDs safely fall b
     const html = markup(s, value);
     assert.match(html, /data-shop-content="recruit"/);
     assert.doesNotMatch(html, /<script>/);
-    const ids = [...html.matchAll(/\sdata-shop-category="([^"]+)"/g)].map((m) => m[1]);
+    const nav = html.match(/<nav class="shop-categories"[^>]*>(.*?)<\/nav>/s)[1];
+    const ids = [...nav.matchAll(/\sdata-shop-category="([^"]+)"/g)].map((m) => m[1]);
     assert.deepEqual(ids, SHOP_CATEGORIES.map((item) => item.id));
   }
 });
