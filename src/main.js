@@ -2,6 +2,8 @@ import { tapFeedback } from "./tap-feedback.js";
 import { fmt } from "./format.js";
 import { homeMarkup, coin, insignia } from "./home-view.js";
 import { createGameSession } from "./session.js";
+import { createBattleUI } from "./battle-ui.js";
+import { battleAccess } from "./battle.js";
 import "./style.css";
 import {
   SAVE_KEY,
@@ -69,6 +71,7 @@ $("#app").innerHTML = homeMarkup(state);
 const zone = $("#tap-zone"),
   canvas = $("#field"),
   dialog = $("#modal");
+const battleUI = createBattleUI(session);
 function transact(change) {
   return session.change(change);
 }
@@ -128,6 +131,10 @@ function update() {
   setText("#save-status", session.status);
   zone.disabled = !session.active;
   $("#sound").disabled = !session.active;
+  const access = battleAccess(state);
+  $("#open-battle").hidden = !access.visible;
+  setText('#battle-lock-label', access.unlocked ? '' : '🔒 중령 해금');
+  battleUI.sync();
   if (dialog.open) {
     if (activePanel === "shop") updateShop();
     else if (
@@ -367,6 +374,7 @@ $("#sound").onclick = async () => {
 };
 $("#open-shop").onclick = openShop;
 $("#open-equipment").onclick = () => openEquipment();
+$("#open-battle").onclick = () => battleUI.open();
 dialog.addEventListener("click", (e) => {
   if (e.target === dialog) {
     const box = dialog.getBoundingClientRect();
@@ -383,6 +391,7 @@ dialog.addEventListener("close", () =>
   $(activePanel === "equipment" ? "#open-equipment" : "#open-shop").focus(),
 );
 function pauseGame() {
+  battleUI.suspend();
   session.pause();
   hidePromotion();
   gameAudio.stop();

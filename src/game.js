@@ -1,6 +1,7 @@
 import { rankForArmy, catalogVisible, RANKS } from "./ranks.js";
 import { UNITS, armyPower, troopIncome } from "./units.js";
 import { FIELD_ARMY_SIZE } from "./formations.js";
+import { STAGES } from "./battle-balance.js";
 import {
   emptyEquipment,
   equipmentIncome,
@@ -66,7 +67,8 @@ export function recruitOffer(s, type = "soldier") {
 }
 export function freshState(now = Date.now()) {
   return {
-    version: 6,
+    version: 7,
+    battleCleared: 0,
     gold: 0,
     taps: 0,
     soldiers: 0,
@@ -133,7 +135,8 @@ export function parseSave(raw, now = Date.now()) {
     }
     const integer = (x, max) => Number.isSafeInteger(x) && x >= 0 && x <= max;
     if (
-      ![3, 4, 5, 6].includes(s.version) ||
+      ![3, 4, 5, 6, 7].includes(s.version) ||
+      (s.version >= 7 && !integer(s.battleCleared, STAGES.length)) ||
       !integer(s.gold, MAX_GOLD) ||
       !integer(s.taps, Number.MAX_SAFE_INTEGER) ||
       !integer(s.soldiers, MAX_SOLDIERS) ||
@@ -146,7 +149,8 @@ export function parseSave(raw, now = Date.now()) {
     )
       return null;
     const migrated = {
-      version: 6,
+      version: 7,
+      battleCleared: s.version >= 7 ? s.battleCleared : 0,
       gold: s.gold,
       taps: s.taps,
       soldiers: s.soldiers,

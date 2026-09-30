@@ -123,6 +123,7 @@ function dockMarkup() {
     <span aria-hidden="true">⚙</span>
     <span>장비</span>
     </button>
+    <button id="open-battle" hidden><span aria-hidden="true">⚔</span><span>전투</span><small id="battle-lock-label"></small></button>
     </nav>
     </section>`;
 }
