@@ -177,7 +177,7 @@ test("v5 saves preserve artillery, balances and armies while adding empty new sl
   delete old.staffSergeants;
   assert.deepEqual(parseSave(JSON.stringify(old)), {
     ...old,
-    version: 13, ncoSchoolLevel: 1,
+    version: 14, ncoSchoolLevel: 1,
     earnedAchievements: ["squad", "platoon", "company"],
     staffSergeants: 0,
     equipment: {

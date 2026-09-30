@@ -2,6 +2,7 @@ import { fieldTheme, concreteTerrain } from './field-theme.js';
 import { ownedSchools, layoutFieldSchools, fieldArmyArea } from "./field-schools.js";
 import { renderFieldLabels } from "./field-labels.js";
 import { artSurface, uniformDetails, ART_SCALE } from "./pixel-detail.js";
+import { officerDetails } from './officer-art.js';
 import {
   fieldSummary,
   layoutFieldArmy,
@@ -238,6 +239,7 @@ function sprite(id) {
     }
   } else building(c, id);
   if (UNITS[id]) uniformDetails(c,id);
+  if (UNITS[id]?.school === 'officer') officerDetails(c,UNITS[id]);
   sprites.set(id, canvas);
   return canvas;
 }

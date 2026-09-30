@@ -2,6 +2,7 @@ import { artSurface, ART_SCALE, overheadDetails } from "./pixel-detail.js";
 import { drawOverheadRocket } from './rocket-art.js';
 import { drawOverheadHelicopter } from "./helicopter-art.js";
 import { UNITS } from "./units.js";
+import { officerDetails } from './officer-art.js';
 
 // Original overhead pixel art. The controller owns the animation clock.
 export const BATTLE_CANVAS_SIZE = Object.freeze({ width: 360, height: 560 });
@@ -85,6 +86,7 @@ function infantrySprite(id, side) {
   c.fillStyle=p.light;c.fillRect(4,5,3,.5);c.fillRect(3,9,2,.5);
   c.fillStyle=p.dark;c.fillRect(5.5,4.5,.5,.5);c.fillRect(8,8,.5,5);
   c.fillStyle='#d5cca6';c.fillRect(5,12,.5,.5);c.fillRect(9,12,.5,.5);
+  if(unit?.school==='officer')officerDetails(c,unit,true);
   sprites.set(key, canvas);
   return canvas;
 }
@@ -155,14 +157,15 @@ function headquartersSprite(id, side) {
   sprites.set(key, canvas);
   return canvas;
 }
-function unitPositions(troops, side) {
+export function unitPositions(troops, side) {
   const kinds = Object.keys(UNITS).filter(id => troops?.[id]>0), positions = [];
+  const compact = kinds.length > 6, columns = compact ? 5 : Math.min(3,kinds.length);
   kinds.forEach((id, row) => {
     const count = Math.min(10, Math.max(0, troops?.[id] ?? 0));
     for (let i = 0; i < count; i++) {
-      const x = (W / (Math.min(3,kinds.length) + 1)) * (row % 3 + 1) - 26 + (i % 5) * 13;
-      const y = (kinds.length>3?181:208) + Math.floor(row/3)*44 + Math.floor(i / 5) * 21;
-      positions.push({ id, x, y: side === "enemy" ? y : H - y });
+      const x = (W / (columns + 1)) * (row % columns + 1) - (compact ? 22 : 26) + (i % 5) * (compact ? 11 : 13);
+      const y = (kinds.length>3?181:208) + Math.floor(row/columns)*44 + Math.floor(i / 5) * 21;
+      positions.push({ id, x, y: side === "enemy" ? y : H - y, width:compact?10:14, height:compact?14:19 });
     }
   });
   return positions;
@@ -184,7 +187,7 @@ function createScene(view) {
     points[side] = { hq: { x: W / 2, y }, infantry: unitPositions(s.troops, side), equipment: [] };
     for (const p of points[side].infantry) {
       c.save(); c.translate(p.x, p.y); if (enemy) c.rotate(Math.PI);
-      c.drawImage(infantrySprite(p.id, side), -7, -9, 14, 19); c.restore();
+      c.drawImage(infantrySprite(p.id, side), -p.width/2, -p.height/2, p.width, p.height); c.restore();
     }
     s.equipment.forEach((g, i) => {
       const p = { id: g.id, x: (W / (s.equipment.length + 1)) * (i + 1), y: enemy ? 145 : H - 145 };

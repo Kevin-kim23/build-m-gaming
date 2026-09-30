@@ -1,5 +1,6 @@
 import { rankForArmy } from "./ranks.js";
 import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
+import { NEW_OFFICER_GRADES } from './officer-progression.js';
 import { schoolOffer, legacySchoolLevel } from "./schools.js";
 import { FIELD_ARMY_SIZE } from "./formations.js";
 import { STAGES } from "./battle-balance.js";
@@ -93,7 +94,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
 }
 export function freshState(now = Date.now()) {
   return {
-    version: 13,
+    version: 14,
     fieldTheme: 'earth',
     swordActivatedAt: null,
     ncoSchoolLevel: 0,
@@ -108,6 +109,7 @@ export function freshState(now = Date.now()) {
     masterSergeants: 0,
     sergeantMajors: 0,
     lieutenants: 0,
+    ...Object.fromEntries(NEW_OFFICER_GRADES.map(unit=>[unit.field,0])),
     equipment: emptyEquipment(),
     sound: false,
     lastAccrual: now,
@@ -180,10 +182,11 @@ export function parseSave(raw, now = Date.now()) {
     }
     const integer = (x, max) => Number.isSafeInteger(x) && x >= 0 && x <= max;
     if (
-      ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].includes(s.version) ||
+      ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].includes(s.version) ||
+      (s.version >= 14 && !NEW_OFFICER_GRADES.every(unit=>integer(s[unit.field],Math.floor(MAX_SOLDIERS/unit.power)))) ||
       (s.version >= 12 && (typeof s.fieldTheme !== 'string' || !Object.hasOwn(FIELD_THEMES, s.fieldTheme))) ||
       (s.version >= 11 && !(s.swordActivatedAt === null || integer(s.swordActivatedAt, 100_000_000_000_000))) ||
-      (s.version >= 9 && (!integer(s.ncoSchoolLevel,5) || !integer(s.officerSchoolLevel,1) ||
+      (s.version >= 9 && (!integer(s.ncoSchoolLevel,5) || !integer(s.officerSchoolLevel,s.version >= 14 ? 5 : 1) ||
         (s.officerSchoolLevel>0 && s.ncoSchoolLevel!==5) ||
         !['masterSergeant','sergeantMajor','lieutenant'].every(id=>integer(s[UNITS[id].field],Math.floor(MAX_SOLDIERS/UNITS[id].power))))) ||
       (s.version >= 7 && !integer(s.battleCleared, STAGES.length)) ||
@@ -200,7 +203,7 @@ export function parseSave(raw, now = Date.now()) {
     )
       return null;
     const migrated = {
-      version: 13,
+      version: 14,
       fieldTheme: s.version >= 12 ? s.fieldTheme : 'earth',
       swordActivatedAt: s.version >= 11 ? s.swordActivatedAt : null,
       ncoSchoolLevel: s.version >= 9 ? s.ncoSchoolLevel : 0,
@@ -215,6 +218,7 @@ export function parseSave(raw, now = Date.now()) {
       masterSergeants: s.version >= 9 ? s.masterSergeants : 0,
       sergeantMajors: s.version >= 9 ? s.sergeantMajors : 0,
       lieutenants: s.version >= 9 ? s.lieutenants : 0,
+      ...Object.fromEntries(NEW_OFFICER_GRADES.map(unit=>[unit.field,s.version >= 14 ? s[unit.field] : 0])),
       equipment: emptyEquipment(),
       sound: s.sound,
       lastAccrual: s.lastAccrual,

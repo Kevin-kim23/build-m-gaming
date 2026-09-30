@@ -1,4 +1,5 @@
 // Store real headcounts; derive equivalent strength everywhere from this catalog.
+import { OFFICER_GRADES } from './officer-progression.js';
 export const UNITS = Object.freeze({
   soldier: Object.freeze({
     id: "soldier",
@@ -52,12 +53,7 @@ export const UNITS = Object.freeze({
     school: "nco", schoolLevel: 4, price: Object.freeze([1_500_000, 150_000, 8_000]),
     color: "#784b3f", width: 18, height: 27,
   }),
-  lieutenant: Object.freeze({
-    id: "lieutenant", name: "소위", field: "lieutenants",
-    power: 160, passive: 15_000, tap: 100_000,
-    school: "officer", schoolLevel: 1, price: Object.freeze([8_000_000, 600_000, 25_000]),
-    color: "#426074", width: 18, height: 27,
-  }),
+  ...Object.fromEntries(OFFICER_GRADES.map(unit => [unit.id, unit])),
 });
 export const UNIT_LIST = Object.freeze(Object.values(UNITS));
 export function unitAccess(state, unit) {

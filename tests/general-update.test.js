@@ -52,7 +52,7 @@ test('v11 migration preserves assets and cooldown, grants neither rocket nor con
   delete old.equipment.rocketLauncher;delete old.fieldTheme;
   const next=parseSave(JSON.stringify(old),T);
   for(const key of ['gold','soldiers','sergeants','ncoSchoolLevel','battleCleared','swordActivatedAt'])assert.equal(next[key],old[key]);
-  assert.deepEqual(next.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),rocketLauncher:null});assert.equal(next.fieldTheme,'earth');assert.equal(next.version, 13);
+  assert.deepEqual(next.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),rocketLauncher:null});assert.equal(next.fieldTheme,'earth');assert.equal(next.version, 14);
   old.fieldTheme='concrete';old.equipment.rocketLauncher={level:10,deployed:true};
   assert.equal(parseSave(JSON.stringify(old),T).equipment.rocketLauncher,null);
   for(const theme of [undefined,null,'invalid',{}])assert.equal(parseSave(JSON.stringify({...next,fieldTheme:theme}),T),null);

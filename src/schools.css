@@ -9,6 +9,7 @@
 .school-levels li { color:#91a184; font-size:12px; }
 .school-levels b { margin-right:6px; }
 .school-levels .complete { color:#e1cf93; }
+.school-levels small { display:block; margin:5px 0 7px 39px; font-size:10px; line-height:1.5; color:#b1bfa3; }
 .school-card .price-line { flex-wrap:wrap; gap:7px; }
 .school-card .price-line strong { font-size:18px; }
 .school-card .buy { font-size:12px; padding:10px; }
