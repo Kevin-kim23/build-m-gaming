@@ -44,20 +44,6 @@ button:focus-visible {
   overflow: hidden;
   box-shadow: 0 10px 90px #0005;
 }
-.hud {
-  height: 81px;
-  padding: 19px 23px 15px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
-  background: #263227;
-}
-.rank {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 .rank-mark {
   display: grid;
   place-items: center;
@@ -66,17 +52,6 @@ button:focus-visible {
   border: 1px solid #697454;
   background: #34432f;
   clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
-}
-.rank small {
-  font-size: 9px;
-  letter-spacing: 1px;
-  color: #a0ab91;
-}
-.rank h1 {
-  font-size: 20px;
-  margin: 3px 0 0;
-  letter-spacing: -0.7px;
-  font-weight: 650;
 }
 #sound {
   display: grid;
@@ -105,55 +80,6 @@ button:focus-visible {
 }
 #sound[aria-checked="true"] .sound-off {
   display: none;
-}
-.gold-counter {
-  text-align: center;
-  padding: 10px 10px 23px;
-  background: #263227;
-  z-index: 2;
-  flex-shrink: 0;
-  border-bottom: 4px solid #4f5b3e;
-  box-shadow: 0 5px 0 #7a7d5199;
-}
-.gold-label {
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  color: #aeb699;
-}
-.gold-counter > div {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 8px;
-}
-.gold-counter svg {
-  width: 28px;
-  height: 28px;
-  image-rendering: pixelated;
-}
-.gold-counter strong {
-  font:
-    600 40px/1 Consolas,
-    "Courier New",
-    monospace;
-  color: #f1d991;
-  letter-spacing: 1px;
-  display: inline-block;
-  font-variant-numeric: tabular-nums;
-  max-width: 80%;
-  overflow-wrap: anywhere;
-}
-.gold-unit {
-  font:
-    17px Consolas,
-    monospace;
-  color: #b9b28a;
-  align-self: flex-end;
-  padding-bottom: 4px;
-}
-.gold-counter strong.pop {
-  animation: pop 0.16s ease-out;
 }
 @keyframes pop {
   50% {
@@ -307,28 +233,8 @@ footer {
     border: 1px solid #4b5740;
     border-radius: 5px;
   }
-  .hud {
-    height: 85px;
-  }
-  .gold-counter {
-    padding-bottom: 23px;
-  }
 }
 @media (max-height: 690px) {
-  .hud {
-    height: 66px;
-    padding: 12px 18px;
-  }
-  .gold-counter {
-    padding: 6px 10px 16px;
-  }
-  .gold-counter strong {
-    font-size: 32px;
-  }
-  .gold-counter svg {
-    width: 25px;
-    height: 25px;
-  }
   .intro-copy small {
     font-size: 9px;
     margin-top: 5px;
@@ -347,18 +253,6 @@ footer {
   }
 }
 @media (max-height: 540px) {
-  .hud {
-    height: 56px;
-  }
-  .gold-counter {
-    padding: 0 10px 9px;
-  }
-  .gold-counter .gold-label {
-    display: none;
-  }
-  .gold-counter strong {
-    font-size: 27px;
-  }
   .tap-hint {
     bottom: 13px;
   }
@@ -374,9 +268,6 @@ footer {
   .gold-float {
     animation-duration: 0.15s;
   }
-  .gold-counter strong.pop {
-    animation: none;
-  }
 }
 /* Recruitment shop: one extra home action, with detail contained in a sheet. */
 .rank-mark {
@@ -386,36 +277,6 @@ footer {
   justify-content: center;
   gap: 3px;
   padding-bottom: 5px;
-}
-.gold-counter {
-  padding-bottom: 13px;
-}
-.gold-counter strong.large-balance {
-  font-size: 26px;
-}
-.income-line {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 13px;
-  margin: 13px 0 0;
-  color: #a7b599;
-  font-size: 10px;
-  line-height: 1.5;
-  letter-spacing: 0;
-}
-.income-line i {
-  width: 3px;
-  height: 3px;
-  background: #697859;
-  border-radius: 50%;
-}
-.income-line b {
-  font:
-    600 12px Consolas,
-    monospace;
-  color: #d6dcaf;
-  margin-left: 4px;
 }
 .home-dock {
   flex-shrink: 0;
@@ -840,26 +701,6 @@ footer {
   }
 }
 @media (max-height: 740px) {
-  .hud {
-    height: 65px;
-    padding: 12px 18px;
-  }
-  .gold-counter {
-    padding: 4px 10px 11px;
-  }
-  .gold-counter strong {
-    font-size: 31px;
-  }
-  .gold-label {
-    font-size: 9px;
-  }
-  .income-line {
-    margin-top: 9px;
-    font-size: 9px;
-  }
-  .income-line b {
-    font-size: 11px;
-  }
   .home-dock {
     padding-top: 10px;
     padding-bottom: 8px;
@@ -921,24 +762,6 @@ footer {
   }
 }
 @media (max-height: 570px) {
-  .hud {
-    height: 53px;
-  }
-  .gold-counter > div {
-    margin-top: 3px;
-  }
-  .gold-counter .gold-label {
-    display: none;
-  }
-  .gold-counter strong {
-    font-size: 27px;
-  }
-  .gold-counter {
-    padding-bottom: 8px;
-  }
-  .income-line {
-    margin-top: 6px;
-  }
   .home-dock {
     padding: 8px 16px 7px;
   }

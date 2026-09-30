@@ -18,6 +18,7 @@ function headerMarkup(state) {
     </h1>
     </div>
     </div>
+    ${goldMarkup()}
     <button id="sound" aria-label="효과음" role="switch" aria-checked="${state.sound}">${speaker}</button>
     </header>`;
 }
@@ -33,8 +34,6 @@ function goldMarkup() {
     <span>초당 <b id="passive-rate">
     </b>
     </span>
-    <i>
-    </i>
     <span>터치 <b id="tap-rate">
     </b>
     </span>
@@ -139,7 +138,7 @@ function footerMarkup() {
 }
 
 export function homeMarkup(state) {
-  return `<main class="game">${headerMarkup(state)}${medalShelfMarkup()}${goldMarkup()}${fieldMarkup()}${dockMarkup()}${footerMarkup()}</main>`;
+  return `<main class="game">${headerMarkup(state)}${medalShelfMarkup()}${fieldMarkup()}${dockMarkup()}${footerMarkup()}</main>`;
 }
 
 export function insignia(index) {

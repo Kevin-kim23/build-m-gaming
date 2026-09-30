@@ -6,6 +6,7 @@ import { createBattleUI } from "./battle-ui.js";
 import { createAchievementUI } from "./achievement-ui.js";
 import { battleAccess } from "./battle.js";
 import "./style.css";
+import "./hud.css";
 import {
   SAVE_KEY,
   RANKS,
