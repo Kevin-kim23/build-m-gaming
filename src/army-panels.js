@@ -15,6 +15,7 @@ import { showPromotion } from './promotion.js';
 import { openDetail, closeDetail, setDetailActions } from './detail-popup.js';
 import { unitDetailMarkup } from './unit-detail.js';
 import { equipmentDetailMarkup } from './equipment-detail.js';
+import { personalDetailMarkup } from './personal-panels.js';
 import './shop.css';
 import './schools.css';
 
@@ -106,7 +107,7 @@ export function createArmyPanels(session, audio) {
     popup.querySelectorAll('[data-portrait]').forEach(c => drawFormationPortrait(c, c.dataset.portrait));
   }
   function showEquipmentDetail(id) {
-    const popup = openDetail(equipmentDetailMarkup(state(), id));
+    const popup = openDetail(equipmentDetailMarkup(state(), id, { manage: activePanel === 'shop' }));
     popup.querySelectorAll('[data-gun-preview]').forEach(c => drawEquipment(c, equipmentOf(state(), id)?.level ?? 0, id));
   }
   function buyUnit(id, quantity = 1) {
@@ -203,6 +204,7 @@ export function createArmyPanels(session, audio) {
     else if (button.dataset.detailUnit) showUnitDetail(button.dataset.detailUnit);
     else if (button.dataset.detailSchool) openDetail(schoolDetailMarkup(state(), button.dataset.detailSchool));
     else if (button.dataset.detailEquipment) showEquipmentDetail(button.dataset.detailEquipment);
+    else if (button.dataset.detailPersonal) openDetail(personalDetailMarkup(state(), button.dataset.detailPersonal));
     else if (button.dataset.buy) buyUnit(button.dataset.buy);
     else if (button.dataset.buyBulk) buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount);
     else if (button.dataset.buyAdditional) purchaseAdditionalGun(button.dataset.buyAdditional);

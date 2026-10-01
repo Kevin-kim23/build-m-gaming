@@ -62,3 +62,10 @@ test('detail popup lists exact numbers, requirement and both prices', () => {
   assert.match(sergeant.body, /data-detail-action="shop-category" data-category="schools"/);
   assert.match(sergeant.body, /🔒/);
 });
+
+test('layout columns: recruit tiles in three columns, equipment rows in one', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../src/shop.css', import.meta.url), 'utf8');
+  assert.match(css, /\.recruit-grid \{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.equip-grid \{[^}]*grid-template-columns: minmax\(0, 1fr\);/);
+});

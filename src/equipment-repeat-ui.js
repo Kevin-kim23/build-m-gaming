@@ -2,7 +2,7 @@ import { EQUIPMENT, additionalEquipmentOffer, equipmentCount } from './equipment
 import { fmtGoldCost } from './format.js';
 export function repeatPurchaseMarkup(id) {
   return `<section class="additional-purchase" data-repeat-equipment="${id}" hidden>
-    <h4>장비 추가 구매</h4><p>사단기 Lv.1 · 보유 장비 10강 이상 필요<br>현재 강화 단계 유지 · 같은 종류 한 칸<br>문마다 수입·전투 효과 합산</p>
+    <h4>장비 추가 구매</h4>
     <div class="price-line"><span>1문 추가 비용</span><strong data-repeat-cost></strong></div>
     <p data-repeat-summary></p><button class="buy" data-buy-additional="${id}"></button>
   </section>`;

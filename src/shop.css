@@ -169,7 +169,7 @@
 .tile-stats small { font-size: 9px; color: #a9b794; }
 .tile-stats b { color: #f1dfab; font-weight: 700; white-space: nowrap; }
 .tile-price { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0 3px; margin: 0; font-size: 12px; line-height: 1.3; color: #f1dfab; }
-.tile-price b { font-weight: 700; white-space: normal; }
+.tile-price b { font-weight: 700; word-break: keep-all; }
 .tile-price small { font-size: 8px; color: #b9ae7f; }
 .tile-price-bulk { padding-top: 1px; border-top: 1px dashed #5a6947; width: 100%; }
 .tile-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; width: 100%; margin-top: auto; padding-top: 3px; }
@@ -198,3 +198,51 @@
 .equip-info .tile-hint { font-size: 11px; }
 .equip-tile [hidden] { display: none; }
 .detail-art-wide { width: 100%; height: 150px; }
+
+/* Compact equipment tab: abilities and long text live in the detail popup. */
+.equipment-detail { padding: 12px; margin-top: 12px; }
+.equipment-detail .equipment-preview { margin-top: 8px; }
+.equipment-detail .equipment-preview canvas { height: 104px; }
+.equipment-detail-title { gap: 8px; }
+.equipment-detail-title h3 { font-size: 17px; }
+.equipment-detail-title > div { min-width: 0; flex: 1; }
+.equipment-detail .equipment-quantity { margin: 2px 0 0; font-size: 11px; }
+.detail-open, .personal-detail {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 4px 10px;
+  border: 1px solid #6f7e58;
+  border-radius: 6px;
+  background: transparent;
+  color: #cfd9b5;
+  font-size: 11px;
+  cursor: pointer;
+}
+.equipment-detail #equipment-empty { margin: 8px 0 0; font-size: 12px; line-height: 1.6; }
+.equipment-detail #owned-equipment { display: grid; gap: 8px; margin-top: 8px; }
+.equipment-detail #owned-equipment[hidden] { display: none; }
+.equipment-detail .enhancement-box { margin: 0; padding: 8px 0 0; border-top: 1px solid #55664a; }
+.equipment-detail .enhancement-box .price-line { margin: 0 0 6px; }
+.equipment-detail .additional-purchase { margin: 0; padding-top: 8px; }
+.equipment-detail .additional-purchase h4 { margin: 0 0 4px; }
+.equipment-detail .additional-purchase p { margin: 0 0 6px; }
+.equipment-select button { padding: 8px 4px; }
+
+/* Compact personal-equipment cards. */
+.personal-item { padding: 12px; }
+.personal-item + .personal-item { margin-top: 10px; }
+.personal-item .personal-item-art { width: 64px; height: 84px; }
+.personal-item .personal-item-art svg { width: 100%; height: 100%; }
+.personal-item .command-baton-art { width: 100%; height: 100%; }
+.personal-item-heading { gap: 12px; }
+.personal-item h3 { margin: 3px 0; font-size: 18px; }
+.personal-item-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 6px; margin-top: 10px; }
+.personal-item-actions > :only-child { grid-column: 1 / -1; }
+.personal-item-actions button { width: 100%; min-height: 40px; margin: 0; padding: 6px 8px; font-size: 12px; }
+.personal-item-actions .personal-recruit-link { margin: 0; }
+.detail-body .personal-item-effect { margin-top: 8px; padding-top: 8px; }
+.detail-body .enhancement-steps { margin: 8px 0; }
+.detail-body small { font-size: 12px; color: #d6c18c; }
+@media (max-width: 360px) {
+  .personal-item .personal-item-art { width: 56px; height: 76px; }
+}

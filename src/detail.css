@@ -72,3 +72,4 @@
 .rank-guide-title { margin: 14px 0 4px; font-size: 13px; color: #e0cf93; }
 .rank-next { margin: 12px 0 0; text-align: center; color: #b5c79c; font-size: 11px; line-height: 1.7; }
 .rank-guide .formation-guide-grid { margin-top: 8px; }
+.detail-head h2 small { display: inline; margin-left: 6px; font-size: 13px; letter-spacing: 0; color: #d6c18c; }

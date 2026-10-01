@@ -4,9 +4,7 @@ import { fmt, fmtGold, fmtGoldCost } from "./format.js";
 import {
   EQUIPMENT,
   MAX_DEPLOYED_EQUIPMENT, deployedEquipment, deploymentOffer,
-  equipmentStage, equipmentLevelLimit,
   equipmentOf, equipmentCount,
-  equipmentStats,
   equipmentPurchaseOffer,
   enhancementOffer,
   visibleEquipment,
@@ -32,7 +30,7 @@ export function equipmentPanelMarkup(s, id, category = "military") {
     );
   return (
     head +
-    `<p class="deployment-count" id="deployment-count"></p><nav class="equipment-select" aria-label="관리할 장비">${items.map((item) => `<button data-select-equipment="${item.id}" aria-pressed="${id === item.id}">${item.name} <span data-select-count="${item.id}">[${fmt(equipmentCount(s, item.id))}문]</span></button>`).join("")}</nav><article class="equipment-detail"><div class="equipment-detail-title"><div><h3>${d.name} <b id="equipment-level"></b></h3><span class="equipment-quantity" id="equipment-count"></span></div><span id="equipment-deployed"></span></div><div class="equipment-preview"><canvas data-gun-preview width="440" height="248" role="img" aria-label="${d.name} 외형"></canvas></div><p id="equipment-stage"></p><p class="equipment-role">${id === "transport" ? "보급 지원 · 전투 중 아군 본부 회복" : id === "fighter" ? "항공 타격 · 적 본부 자동 공격" : "화력 지원 · 적 본부 자동 공격"}</p><div class="enhancement-steps" aria-label="강화 단계">${Array.from({ length: equipmentLevelLimit(s) }, (_, i) => `<i data-level="${i + 1}"></i>`).join("")}</div><p id="equipment-empty"></p><button class="buy" id="equipment-to-shop">상점에서 ${d.name} 구매</button><div id="owned-equipment" hidden><div class="equipment-stats"><span>초당 보너스 <b id="equipment-passive"></b></span><span>터치 보너스 <b id="equipment-tap"></b></span></div><button class="equipment-deploy" id="toggle-equipment"></button><p class="unit-price-note">배치 중에만 골드 보너스 적용 · 같은 종류 전체 보관·배치 · 강화와 수량 유지</p><section class="enhancement-box"><h4 id="enhancement-title"></h4><p id="enhancement-next"></p><p id="enhancement-appearance"></p><div class="price-line"><span>강화 비용</span><strong id="enhancement-cost"></strong></div><button class="buy" id="enhance-equipment"></button><p class="unit-price-note">성공률 100% · 현재 최대 ${equipmentLevelLimit(s)}강 · 실패·파괴 없음<br>같은 종류 전체 강화 · 보유 문수만큼 비용 지불</p></section>${repeatPurchaseMarkup(id)}</div></article><p id="equipment-message" role="status" aria-live="polite"></p>`
+    `<p class="deployment-count" id="deployment-count"></p><nav class="equipment-select" aria-label="관리할 장비">${items.map((item) => `<button data-select-equipment="${item.id}" aria-pressed="${id === item.id}">${item.name} <span data-select-count="${item.id}">[${fmt(equipmentCount(s, item.id))}문]</span></button>`).join("")}</nav><article class="equipment-detail"><div class="equipment-detail-title"><div><h3>${d.name} <b id="equipment-level"></b></h3><span class="equipment-quantity" id="equipment-count"></span></div><span id="equipment-deployed"></span><button type="button" class="detail-open" data-detail-equipment="${id}" aria-label="${d.name} 능력 상세보기">능력 상세</button></div><div class="equipment-preview"><canvas data-gun-preview width="440" height="248" role="img" aria-label="${d.name} 외형"></canvas></div><p id="equipment-empty"></p><button class="buy" id="equipment-to-shop">상점에서 ${d.name} 구매</button><div id="owned-equipment" hidden><button class="equipment-deploy" id="toggle-equipment"></button><section class="enhancement-box"><div class="price-line"><span>강화 비용</span><strong id="enhancement-cost"></strong></div><button class="buy" id="enhance-equipment"></button></section>${repeatPurchaseMarkup(id)}</div></article><p id="equipment-message" role="status" aria-live="polite"></p>`
   );
 }
 export function renderEquipmentPanel(s, root, id) {
@@ -43,7 +41,6 @@ export function renderEquipmentPanel(s, root, id) {
     gun = equipmentOf(s, id),
     offer = enhancementOffer(s, id),
     level = gun?.level ?? 0,
-    stats = equipmentStats(level, id),
     purchase = equipmentPurchaseOffer(s, id);
   text(root, "equipment-level", gun ? "+" + level : "");
   text(root, "equipment-count", `[${fmt(equipmentCount(s, id))}문]`);
@@ -54,7 +51,6 @@ export function renderEquipmentPanel(s, root, id) {
     "equipment-deployed",
     gun ? (gun.deployed ? "배치 중" : "보관 중") : "미보유",
   );
-  text(root, "equipment-stage", equipmentStage(id, level));
   text(
     root,
     "equipment-empty",
@@ -69,14 +65,7 @@ export function renderEquipmentPanel(s, root, id) {
   const canvas = root.querySelector("[data-gun-preview]");
   drawEquipment(canvas, level, id);
   canvas.setAttribute("aria-label", d.name + " " + level + "강 외형");
-  root
-    .querySelectorAll("[data-level]")
-    .forEach((e) =>
-      e.classList.toggle("filled", !!gun && Number(e.dataset.level) <= level),
-    );
   if (!gun) return;
-  text(root, "equipment-passive", "+" + fmtGold(stats.passive * equipmentCount(s, id)) + " G");
-  text(root, "equipment-tap", "+" + fmtGold(stats.tap * equipmentCount(s, id)) + " G");
   text(
     root,
     "toggle-equipment",
@@ -86,33 +75,7 @@ export function renderEquipmentPanel(s, root, id) {
     .querySelector("#toggle-equipment")
     .setAttribute("aria-pressed", String(gun.deployed));
   root.querySelector("#toggle-equipment").disabled = !deploymentOffer(s, id).canDeploy;
-  const max = offer.reason === "max",
-    next = max ? stats : equipmentStats(level + 1, id);
-  text(
-    root,
-    "enhancement-title",
-    max ? `최대 ${offer.limit}강 달성` : "+" + level + " → +" + (level + 1) + " 강화",
-  );
-  text(
-    root,
-    "enhancement-next",
-    max
-      ? (offer.limit === 10 ? "중장 · 사단기 Lv.2부터 20강까지 확장됩니다." : "모든 강화가 완료되었습니다.")
-      : "1문당 초당 " +
-          fmtGold(stats.passive) +
-          " → " +
-          fmtGold(next.passive) +
-          " G · 터치 " +
-          fmtGold(stats.tap) +
-          " → " +
-          fmtGold(next.tap) +
-          " G",
-  );
-  text(
-    root,
-    "enhancement-appearance",
-    max ? equipmentStage(id, level) : "다음 외형: " + equipmentStage(id, level + 1),
-  );
+  const max = offer.reason === "max";
   text(root, "enhancement-cost", max ? "완료" : fmtGoldCost(offer.cost) + " G · " + fmt(equipmentCount(s,id)) + "문 합계");
   text(
     root,

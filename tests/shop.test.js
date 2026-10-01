@@ -1,4 +1,4 @@
-import { personalMarkup } from "../src/personal-panels.js";
+import { personalMarkup, personalDetailMarkup } from "../src/personal-panels.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { freshState } from "../src/game.js";
@@ -40,7 +40,7 @@ test("personal equipment stays unnamed before major, previews locked at major an
   assert.match(owned, /보유 중 · 중령 진급 보상/);
   assert.match(owned, /Lv\.1/);
   assert.match(owned, /class="personal-recruit-link" data-shop-category="recruit"/);
-  assert.match(owned, /골드는 별도로 지불/);
+  assert.match(personalDetailMarkup(state(1280), "commandBaton").body, /골드는 별도로 지불/);
   assert.doesNotMatch(owned, /data-buy=|data-buy-equipment=|data-buy-bulk=|data-enhance/);
 });
 
