@@ -1,6 +1,7 @@
 import { catalogVisible, rankForArmy, RANKS } from './ranks.js';
-import { PERSONAL_EQUIPMENT, COMMAND_BATON, GENERAL_SWORD, DIVISION_FLAG, GENERAL_REVOLVER, AUTO_TOUCH } from './personal-catalog.js';
-export { PERSONAL_EQUIPMENT, COMMAND_BATON, GENERAL_SWORD, DIVISION_FLAG, GENERAL_REVOLVER, AUTO_TOUCH } from './personal-catalog.js';
+import { PERSONAL_EQUIPMENT, COMMAND_BATON, GENERAL_SWORD, DIVISION_FLAG, GENERAL_REVOLVER, MARSHAL_GLAIVE, AUTO_TOUCH } from './personal-catalog.js';
+import { scaleMoney } from './money.js';
+export { PERSONAL_EQUIPMENT, COMMAND_BATON, GENERAL_SWORD, DIVISION_FLAG, GENERAL_REVOLVER, MARSHAL_GLAIVE, AUTO_TOUCH } from './personal-catalog.js';
 
 // Rank grants the item only; enhancement is persisted independently from promotions.
 export function personalStatus(state,id) {
@@ -13,6 +14,15 @@ export const commandBatonStatus = state=>personalStatus(state,COMMAND_BATON.id);
 export const generalSwordStatus = state=>personalStatus(state,GENERAL_SWORD.id);
 export const divisionFlagStatus = state=>personalStatus(state,DIVISION_FLAG.id);
 export const generalRevolverStatus = state=>personalStatus(state,GENERAL_REVOLVER.id);
+export const marshalGlaiveStatus = state=>personalStatus(state,MARSHAL_GLAIVE.id);
+export function glaiveBonusPercent(state) {
+  const status=marshalGlaiveStatus(state);
+  return status.owned ? MARSHAL_GLAIVE.passiveBonusPercent+(status.level-1)*MARSHAL_GLAIVE.passiveBonusStep : 0;
+}
+export function withPersonalIncome(state,income) {
+  const bonus=glaiveBonusPercent(state);
+  return bonus?scaleMoney(income,100+bonus,100):income;
+}
 export const FLAG_ENHANCEMENT_LIMITS = Object.freeze(Array.from({length:11},(_,level)=>10+level));
 export function enhancementLimitForFlag(level) {
   if(!Number.isInteger(level)||level<0||level>DIVISION_FLAG.maxLevel)throw new RangeError('Invalid flag level');

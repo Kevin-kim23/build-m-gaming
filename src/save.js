@@ -4,7 +4,7 @@ import { armyPower } from './units.js';
 import { NEW_OFFICER_GRADES } from './officer-progression.js';
 import { legacySchoolLevel } from './schools.js';
 import { GENERAL_SWORD } from './personal-equipment.js';
-import { AUTO_TOUCH, emptyPersonalLevels } from './personal-catalog.js';
+import { AUTO_TOUCH, PERSONAL_EQUIPMENT } from './personal-catalog.js';
 import { reconcileAchievements } from './achievements.js';
 import { emptyEquipment, EQUIPMENT, deployedEquipment, MAX_DEPLOYED_EQUIPMENT } from './equipment.js';
 import { freshState, MAX_SOLDIERS, SAVE_VERSION } from './state.js';
@@ -29,7 +29,7 @@ export function inspectSave(raw, now = Date.now()) {
     } };
   }
 }
-// Compatibility API for existing callers and version 2–19 migrations.
+// Compatibility API for existing callers and version 2–20 migrations.
 export function parseSave(raw, now = Date.now()) { return inspectSave(raw, now).state; }
 
 function migrateSave(s, now) {
@@ -37,7 +37,8 @@ function migrateSave(s, now) {
   if (s.version === 2) return { ...freshState(now), gold: minMoney(gold, MAX_GOLD), taps: s.taps, sound: s.sound };
   const migrated = {
     version: SAVE_VERSION,
-    personalLevels: s.version>=19?{...s.personalLevels}:emptyPersonalLevels(),
+    personalLevels: Object.fromEntries(Object.values(PERSONAL_EQUIPMENT).map(item=>
+      [item.id,s.version>=item.introducedVersion?s.personalLevels[item.id]:1])),
     fieldTheme: s.version >= 12 ? s.fieldTheme : 'earth',
     swordActivatedAt: s.version >= 11 ? s.swordActivatedAt : null,
     swordDurationMs: s.version >= 16 ? s.swordDurationMs : GENERAL_SWORD.durationMs,

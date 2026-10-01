@@ -5,7 +5,7 @@ import { GENERAL_SWORD, AUTO_TOUCH, emptyPersonalLevels } from './personal-catal
 import { emptyEquipment } from './equipment.js';
 
 // Shared defaults and limits have no dependency on game actions or save parsing.
-export const SAVE_VERSION = 19;
+export const SAVE_VERSION = 20;
 export const SAVE_KEY = "budae-kiugi-recruits-v3";
 export const LEGACY_KEY = "budae-kiugi-tap-save-v2";
 

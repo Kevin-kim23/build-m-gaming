@@ -11,7 +11,7 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
     labelWidth: item.boxWidth,
   }));
   labels.push(...equipment.map(item => ({
-    ...item, text: item.name, labelWidth: item.width, centered: true, gearCount: item.count ?? 1,
+    ...item, text: item.shortName??item.name, labelWidth: item.width, centered: true, gearCount: item.count ?? 1,
   })));
   const elements = labels.map(item => {
     const label = document.createElement("span");

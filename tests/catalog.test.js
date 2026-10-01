@@ -178,13 +178,13 @@ test("v5 saves preserve artillery, balances and armies while adding empty new sl
   delete old.staffSergeants;
   assert.deepEqual(parseSave(serializeSave(old)), {
     ...old,
-    version:19,personalLevels:{commandBaton:1,generalSword:1,divisionFlag:1,generalRevolver:1},autoTouchDurationMs:60000, ncoSchoolLevel: 1,
+    version:20,personalLevels:{commandBaton:1,generalSword:1,divisionFlag:1,generalRevolver:1,marshalGlaive:1},autoTouchDurationMs:60000, ncoSchoolLevel: 1,
     earnedAchievements: ["squad", "platoon", "company"],
     staffSergeants: 0,
     equipment: {
       artillery: {...old.equipment.artillery, count: 1},
       tank: null,
-      selfPropelled: null, helicopter: null, rocketLauncher: null, transport: null, fighter: null,
+      selfPropelled: null, helicopter: null, rocketLauncher: null, transport: null, fighter: null, railgunTank: null, icbm: null,
     },
   });
   for (const bad of [-1, 1.5, undefined])

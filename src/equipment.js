@@ -62,6 +62,16 @@ export const EQUIPMENT = Object.freeze({
     cost:1_500_000_000, maxLevel:20, passive:750000, tap:4500000, passiveStep:150000, tapStep:900000,
     stages:Object.freeze(['기본 전투기','기수 장갑','기관포 보강','날개 보강','미사일 장착','엔진 개량','사격 통제기','탐지 레이더','위장 패널','전자전 장비','최종 개량형']),
   }),
+  railgunTank: Object.freeze({
+    id:'railgunTank',name:'레일건 전차',unlockRank:'대장',introducedVersion:20,
+    cost:4_500_000_000,maxLevel:20,passive:2_250_000,tap:13_500_000,passiveStep:450_000,tapStep:2_700_000,
+    stages:Object.freeze(['기본 레일건','레일 외장','청광 코어','궤도 보강','측면 방호판','포탑 장갑','에너지 패널','탐지 센서','은빛 장갑','통신 안테나','최종 개량형']),
+  }),
+  icbm: Object.freeze({
+    id:'icbm',name:'대륙간 탄도미사일',shortName:'ICBM',unlockRank:'원수',introducedVersion:20,
+    cost:15_000_000_000,maxLevel:20,passive:7_500_000,tap:45_000_000,passiveStep:1_500_000,tapStep:9_000_000,
+    stages:Object.freeze(['기본 ICBM','동체 외장','운반대 보강','차체 장갑','지지대 확장','기수 도장','관측 센서','지원 설비','위장 패널','통신 안테나','최종 개량형']),
+  }),
 });
 export const MAX_DEPLOYED_EQUIPMENT = 4;
 export const REPEAT_EQUIPMENT_LEVEL = 10;
@@ -173,9 +183,9 @@ export function additionalEquipmentOffer(s, id) {
   equipmentType(id);
   return { cost:null, reason:'disabled', level:equipmentOf(s,id)?.level ?? 0, canBuy:false };
 }
-export function validEquipment(value, legacy = false, includeHelicopter = true, includeRocket = true, requireCount = false, includeAircraft = true) {
+export function validEquipment(value, legacy = false, includeHelicopter = true, includeRocket = true, requireCount = false, includeAircraft = true, saveVersion=Infinity) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  return (legacy ? ["artillery"] : Object.keys(EQUIPMENT).filter(id => (includeHelicopter || id !== "helicopter") && (includeRocket || id !== "rocketLauncher") && (includeAircraft || !EQUIPMENT[id].introducedVersion))).every((id) => {
+  return (legacy ? ["artillery"] : Object.keys(EQUIPMENT).filter(id => (EQUIPMENT[id].introducedVersion??0)<=saveVersion && (includeHelicopter || id !== "helicopter") && (includeRocket || id !== "rocketLauncher") && (includeAircraft || !EQUIPMENT[id].introducedVersion))).every((id) => {
     if (!Object.hasOwn(value, id)) return false;
     const g = value[id];
     return (

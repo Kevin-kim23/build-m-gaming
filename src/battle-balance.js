@@ -17,6 +17,8 @@ export const STAGES = campaignStages;
 export const ENEMY_EQUIPMENT = Object.freeze(["artillery", "tank", "selfPropelled"]);
 
 const weaponBase = Object.freeze({
+  railgunTank: {damage:180,intervalMs:2200},
+  icbm: {damage:1200,intervalMs:9000},
   transport: { damage:0, healing:6, intervalMs:5000 },
   fighter: { damage:96, intervalMs:2600 },
   rocketLauncher: { damage: 48, intervalMs: 4200 },

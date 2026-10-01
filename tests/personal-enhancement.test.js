@@ -27,7 +27,7 @@ test('v18 migrates once to Lv.1 while preserving exact gold, military gear and r
     autoTouchActivatedAt: T - 900, autoTouchTicks: 3 };
   s.equipment.tank = { level: 20, count: 1, deployed: true };
   const next = game.parseSave(serializeSave(s), T);
-  assert.equal(next.version, 19);
+  assert.equal(next.version, 20);
   for (const level of Object.values(next.personalLevels)) assert.equal(level, 1);
   assert.equal(next.gold, s.gold); assert.deepEqual(next.equipment, s.equipment);
   assert.equal(personal.swordSkillStatus(next,T).activeMs, 75000);
@@ -44,10 +44,10 @@ test('personal detail descriptions name the original award rank, not the current
     assert.doesNotMatch(detail, /대원수 진급 보상|진급할 때마다|자동 성장/);
     assert.match(detail, /강화 확률표/);
   }
-  assert.equal((personalMarkup(s).match(/data-detail-personal=/g)||[]).length, 4);
+  assert.equal((personalMarkup(s).match(/data-detail-personal=/g)||[]).length, 5);
 });
 test('all ten levels of every personal icon are distinct and cached', () => {
-  for (const kind of ['baton','sword','flag','revolver']) {
+  for (const kind of ['baton','sword','flag','revolver','glaive']) {
     const icons = Array.from({length:10},(_,i)=>personalIcon(kind,i+1));
     assert.equal(new Set(icons).size,10,kind);
     icons.forEach((svg,i)=>assert.equal(personalIcon(kind,i+1),svg));

@@ -1,9 +1,11 @@
 import { generalRewardIcon } from './general-reward-art.js';
+import { glaiveIcon } from './glaive-art.js';
 import { artLevel, personalLustre } from './personal-lustre.js';
 // Original high-density pixel geometry. The reference informs colors/materials only.
 const icons = new Map();
 export function personalIcon(kind, level = 1) {
   level=artLevel(level);
+  if(kind==='glaive')return glaiveIcon(level);
   if (kind === 'flag' || kind === 'revolver') return generalRewardIcon(kind, level);
   const key = `${kind}:${level}`;
   if (icons.has(key)) return icons.get(key);

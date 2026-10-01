@@ -1,11 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MAX_GOLD, exact, compactMoney, addMoney, subtractMoney, multiplyMoney, serializeSave } from '../src/money.js';
+import { MAX_GOLD, exact, compactMoney, addMoney, subtractMoney, multiplyMoney, scaleMoney, serializeSave } from '../src/money.js';
 import { freshState, parseSave, tapGold, accrue, perSecond, recruit, upgradeSchool, enhanceEquipment, SAVE_KEY, MAX_OFFLINE_MS } from '../src/game.js';
 import { enhancementOffer, enhancementCost } from '../src/equipment.js';
 import { fmtGold, fmtGoldCost } from '../src/format.js';
 import { createGameSession } from '../src/session.js';
 const T=1_800_000_000_000;
+
+test('passive percentage ratios remain exact across the safe integer boundary and 1000경',()=>{
+  for(const value of [0,1,99,100,101,Number.MAX_SAFE_INTEGER-1,Number.MAX_SAFE_INTEGER,BigInt(Number.MAX_SAFE_INTEGER)+1n,MAX_GOLD-1n,MAX_GOLD]){
+    for(const percent of [100,180,220,240,300,380,400])assert.equal(exact(scaleMoney(value,percent,100)),exact(value)*BigInt(percent)/100n);
+  }
+  for(const [n,d] of [[-1,100],[220,0],[1,NaN],[Infinity,100],[2.2,100]])assert.throws(()=>scaleMoney(100,n,d),RangeError);
+  assert.throws(()=>scaleMoney(-1,220,100),RangeError);
+});
 
 test('money crosses the safe-number boundary in both directions without losing a single gold',()=>{
   const edge=Number.MAX_SAFE_INTEGER;

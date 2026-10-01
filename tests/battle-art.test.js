@@ -21,7 +21,7 @@ test("battle art caches composition and sprites while HP and bounded shot effect
     const side = () => ({
       hq: { id: "battalion", name: "대대", hp: 1280, maxHp: 1280 },
       troops: { soldier: 10, sergeant: 10, staffSergeant: 10 },
-      equipment: [{ id: "artillery", level: 0 }, { id: "tank", level: 0 }, { id: "selfPropelled", level: 10 }, { id: "helicopter", level: 5 }],
+      equipment: [{ id: "railgunTank", level: 20 }, { id: "tank", level: 0 }, { id: "icbm", level: 20 }, { id: "helicopter", level: 5 }],
     });
     const target = canvas(), view = { elapsed: 0, sides: { player: side(), enemy: side() }, effects: [] };
     drawBattle(target, view);
@@ -37,6 +37,14 @@ test("battle art caches composition and sprites while HP and bounded shot effect
     view.elapsed = 1000;
     drawBattle(target, view);
     assert.equal(strokes, 30, "expired effects are not drawn");
+    view.elapsed=100;
+    view.effects=[{at:0,side:'player',kind:'railgunTank'},{at:0,side:'enemy',kind:'icbm'}];
+    drawBattle(target,view);
+    assert.equal(strokes,32,'new player and enemy overhead weapons both fire');
+    view.elapsed=300;drawBattle(target,view);
+    assert.equal(strokes,33,'rail flash ends while the missile is still flying');
+    view.elapsed=1000;drawBattle(target,view);
+    assert.equal(strokes,33);assert.equal(created,staticSurfaces,'new firing effects reuse cached art');
     view.sides.player.equipment[1].level = 1;
     drawBattle(target, view);
     assert.equal(created, staticSurfaces + 2, "a changed upgrade rebuilds only its sprite and the static field");

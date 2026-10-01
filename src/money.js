@@ -21,6 +21,13 @@ export function multiplyMoney(a, b) {
   return compactMoney(exact(a) * exact(b));
 }
 export const minMoney = (a, b) => a <= b ? a : b;
+// Apply positive rational bonuses without floating-point multiplication errors.
+export function scaleMoney(value,numerator,denominator) {
+  if(!Number.isSafeInteger(numerator)||numerator<0||!Number.isSafeInteger(denominator)||denominator<=0||value<0)
+    throw new RangeError('Invalid money ratio');
+  const product=multiplyMoney(value,numerator);
+  return typeof product==='bigint'?compactMoney(product/BigInt(denominator)):Math.floor(product/denominator);
+}
 export const serializeSave = value => JSON.stringify(value, (_key, item) => typeof item === 'bigint' ? item.toString() : item);
 export function parseGold(value, version) {
   if (typeof value === 'number') return Number.isSafeInteger(value) && value >= 0 && value <= MAX_GOLD ? value : null;

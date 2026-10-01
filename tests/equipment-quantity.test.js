@@ -7,7 +7,7 @@ import { createBattle, advanceBattle, equipmentCombatStats } from '../src/battle
 import { createGameSession } from '../src/session.js';
 import { RANKS, RANK_REQUIREMENTS } from '../src/ranks.js';
 const T = 1_800_000_000_000;
-const army = () => ({ ...freshState(T), soldiers: RANK_REQUIREMENTS[RANKS.indexOf('중장')] - 3000, sergeants: 300, gold:100_000_000_000_000, ncoSchoolLevel: 5, officerSchoolLevel: 1 });
+const army = () => ({ ...freshState(T), soldiers: RANK_REQUIREMENTS[RANKS.indexOf('원수')] - 3000, sergeants: 300, gold:100_000_000_000_000, ncoSchoolLevel: 5, officerSchoolLevel: 1 });
 function maxGun(s, id) { assert.equal(buyEquipment(s,T,id).ok,true); for(let n=0;n<10;n++) assert.equal(enhanceEquipment(s,T,id).ok,true); }
 
 test('legacy quotes remain calculable but additional purchases are locked', () => {
@@ -48,15 +48,15 @@ test('quantity calculation compatibility retains one slot and sums per copy', ()
   const income = perSecond(s), tap = perTap(s,T), before = s.gold, stats = equipmentStats(10,'tank');
   accrue(s,T+1000);s.equipment.tank.count=2;
   assert.equal(s.gold,before + income);
-  assert.equal(perSecond(s),income + stats.passive); assert.equal(perTap(s,T),tap + stats.tap);
+  assert.equal(perSecond(s),income + stats.passive*220/100); assert.equal(perTap(s,T),tap + stats.tap);
   const beforeStored = perSecond(s);
   s.equipment.rocketLauncher.count=2;
   assert.equal(perSecond(s),beforeStored); assert.equal(deployedEquipment(s).length,4);
   assert.equal(setEquipmentDeployed(s,true,T+1000,'rocketLauncher').reason,'capacity');
   setEquipmentDeployed(s,false,T+1000,'tank');
-  assert.equal(perSecond(s),beforeStored - stats.passive * 2);
+  assert.equal(perSecond(s),beforeStored - stats.passive * 2*220/100);
   setEquipmentDeployed(s,true,T+1000,'rocketLauncher');
-  assert.equal(perSecond(s),beforeStored - stats.passive * 2 + equipmentStats(10,'rocketLauncher').passive * 2);
+  assert.equal(perSecond(s),beforeStored - stats.passive * 2*220/100 + equipmentStats(10,'rocketLauncher').passive * 2*220/100);
   assert.deepEqual(parseSave(serializeSave(s),T).equipment,s.equipment);
 });
 test('v12 quantity migration preserves all assets, deployment, theme and running cooldown', () => {
@@ -64,7 +64,7 @@ test('v12 quantity migration preserves all assets, deployment, theme and running
   for(const [i,id] of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'].entries())old.equipment[id]={level:i+5,deployed:i<4};
   const next = parseSave(serializeSave(old),T);
   for(const key of ['gold','soldiers','sergeants','fieldTheme','swordActivatedAt','taps','battleCleared'])assert.equal(next[key],old[key]);
-  assert.equal(next.version, 19);
+  assert.equal(next.version, 20);
   for(const id of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'])assert.deepEqual(next.equipment[id],{...old.equipment[id],count:1});
   assert.equal(next.equipment.transport,null);assert.equal(next.equipment.fighter,null);
   old.equipment.tank.count = 900;
@@ -92,7 +92,7 @@ test('one grouped volley adds all copies without accelerating or duplicating sel
 });
 test('large valid quantities retain exact arithmetic and clamp offline income to wallet limit', () => {
   const s = army();
-  for(const [i,id] of Object.keys(EQUIPMENT).entries())s.equipment[id]={count:MAX_EQUIPMENT_COUNT,level:20,deployed:i>=3};
+  for(const [i,id] of Object.keys(EQUIPMENT).entries())s.equipment[id]={count:MAX_EQUIPMENT_COUNT,level:20,deployed:i>=Object.keys(EQUIPMENT).length-4};
   s.gold=MAX_GOLD-1n;
   assert.ok(Number.isSafeInteger(perSecond(s))); assert.ok(Number.isSafeInteger(perTap(s,T)));
   accrue(s,T+MAX_OFFLINE_MS);assert.equal(s.gold,MAX_GOLD);assert.equal(s.incomeRemainder,0);

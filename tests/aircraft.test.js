@@ -42,7 +42,7 @@ test('fighter attacks scale with copies and every upgrade through twenty improve
   b.enemy.units=[];b.enemy.equipment=[];const stats=equipmentCombatStats('fighter',20,81920,2);
   b=until(b,stats.intervalMs);assert.equal(b.enemy.hq.hp,100000-stats.damage);assert.equal(b.player.hq.hp,81920);
 });
-test('all 147 equipment stages have cached sprites and fit the preview including glowing upgrades',()=>{
+test('all equipment stages have cached sprites and fit the preview including glowing upgrades',()=>{
   const previous=globalThis.document;
   const make=()=>{
     const ops=[],draws=[],ctx={setTransform(){},clearRect(){},fillRect(...args){ops.push([this.fillStyle,...args]);},drawImage(...args){draws.push(args);}};
@@ -57,7 +57,7 @@ test('all 147 equipment stages have cached sprites and fit the preview including
         assert.ok(x>=0&&y>=0&&x+w<=440&&y+h<=248);sources.add(source);
         signatures.add(JSON.stringify(source.ops));
         const again=make();drawEquipment(again,level,id);assert.equal(again.draws.at(-1)[0],source);
-        if(id==='transport'||id==='fighter'||level>10)for(const [,x,y,w,h]of source.ops)assert.ok(x>=0&&y>=0&&w>=0&&h>=0&&x+w<=110&&y+h<=62,`${id} +${level} ${x},${y},${w},${h}`);
+        if(['transport','fighter','railgunTank','icbm'].includes(id)||level>10)for(const [,x,y,w,h]of source.ops)assert.ok(x>=0&&y>=0&&w>=0&&h>=0&&x+w<=110&&y+h<=62,`${id} +${level} ${x},${y},${w},${h}`);
       }
       assert.equal(sources.size,21);assert.equal(signatures.size,21);
     }

@@ -4,7 +4,7 @@ export { MAX_GOLD, serializeSave } from './money.js';
 import { rankForArmy } from "./ranks.js";
 import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
 import { schoolOffer } from "./schools.js";
-import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration } from "./personal-equipment.js";
+import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration, withPersonalIncome } from "./personal-equipment.js";
 import { personalUpgradeOffer, drawPersonalRoll, personalRollSucceeds } from './personal-enhancement.js';
 import { settleAutoTouch } from './auto-touch.js';
 import { withCampaignIncome } from './campaign-rewards.js';
@@ -26,7 +26,7 @@ export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
 export const perTap = (s, now = Date.now()) =>
   (1 + troopIncome(s, "tap") + equipmentIncome(s).tap) * swordSkillStatus(s, now).multiplier;
 export const perSecond = (s) =>
-  withCampaignIncome(s, troopIncome(s, "passive") + equipmentIncome(s).passive);
+  withPersonalIncome(s,withCampaignIncome(s, troopIncome(s, "passive") + equipmentIncome(s).passive));
 // Preserve early prices, but avoid exponential prices blocking battalion progression.
 export const recruitCost = count => {
   if (!Number.isSafeInteger(count) || count < 0) throw new RangeError('Invalid recruit count');

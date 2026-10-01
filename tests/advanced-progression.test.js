@@ -65,7 +65,7 @@ test('new officers spend their independent price and add only their catalog stre
     assert.equal(s[grade.field],1);
     assert.equal(before.gold-s.gold,BigInt(prices[grade.id]));
     assert.equal(armyPower(s)-before.power,grade.power);
-    assert.equal(perTap(s,T)-before.tap,grade.tap);assert.equal(perSecond(s)-before.income,grade.passive);
+    assert.equal(perTap(s,T)-before.tap,grade.tap);assert.equal(perSecond(s)-before.income,grade.passive*220/100);
     for(const other of ADVANCED_OFFICERS)assert.equal(recruitOffer(s,other.id).cost===prices[other.id],other.id!==grade.id);
   }
   assert.deepEqual(parseSave(serializeSave(s),T).gold,s.gold);
@@ -74,7 +74,7 @@ test('new officers spend their independent price and add only their catalog stre
 test('version sixteen migration preserves assets and ignores injected advanced units',()=>{
   const old={...army('대장'),version:16,gold:99_999_999_999_999,advancedSchoolLevel:5,colonels:999,generals:1,campaignCleared:20};
   const loaded=parseSave(serializeSave(old),T);
-  assert.equal(loaded.version,19);assert.equal(loaded.advancedSchoolLevel,0);
+  assert.equal(loaded.version,20);assert.equal(loaded.advancedSchoolLevel,0);
   for(const grade of ADVANCED_OFFICERS)assert.equal(loaded[grade.field],0);
   for(const key of ['gold','soldiers','sergeants','ncoSchoolLevel','officerSchoolLevel','campaignCleared'])assert.equal(loaded[key],old[key]);
   assert.deepEqual(loaded.equipment,old.equipment);

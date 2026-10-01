@@ -41,7 +41,7 @@ export function validateSave(s) {
   if (s.version >= 4) requireSave(integer(s.sergeants, MAX_SOLDIERS / 10), 'sergeants');
   if (s.version >= 6) requireSave(integer(s.staffSergeants, MAX_SOLDIERS / 20), 'staffSergeants');
   if (s.version >= 5) requireSave(validEquipment(s.equipment, s.version === 5, s.version >= 10,
-    s.version >= 12, s.version >= 13, s.version >= 16), 'equipment');
+    s.version >= 12, s.version >= 13, s.version >= 16, s.version), 'equipment');
   if (s.version >= 7) requireSave(integer(s.battleCleared, 10), 'battleCleared');
   if (s.version >= 8) requireSave(validAchievementIds(s.earnedAchievements), 'earnedAchievements');
   if (s.version >= 9) {
@@ -77,7 +77,7 @@ export function validateSave(s) {
   }
   if(s.version>=19){
     requireSave(s.personalLevels&&typeof s.personalLevels==='object'&&!Array.isArray(s.personalLevels),'personalLevels');
-    for(const item of Object.values(PERSONAL_EQUIPMENT))
+    for(const item of Object.values(PERSONAL_EQUIPMENT).filter(item=>item.introducedVersion<=s.version))
       requireSave(integer(s.personalLevels[item.id],item.maxLevel)&&s.personalLevels[item.id]>=1,`personalLevels.${item.id}`);
   }
   return gold;

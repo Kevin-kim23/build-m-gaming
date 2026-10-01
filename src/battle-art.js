@@ -4,6 +4,7 @@ import { drawOverheadHelicopter } from "./helicopter-art.js";
 import { drawOverheadAircraft } from './aircraft-art.js';
 import { overheadEnhancement } from './enhancement-art.js';
 import { UNITS } from "./units.js";
+import { drawOverheadStrategic } from './strategic-art.js';
 import { officerDetails } from './officer-art.js';
 
 // Original overhead pixel art. The controller owns the animation clock.
@@ -97,7 +98,9 @@ function equipmentSprite(id, level, side) {
   if (sprites.has(key)) return sprites.get(key);
   const canvas = surface(56, 68), c = canvas.getContext("2d"), p = palettes[side];
   rect(c, 12, 30, 36, 31, "#22392c44");
-  if (id === 'transport' || id === 'fighter') {
+  if(id==='railgunTank'||id==='icbm'){
+    drawOverheadStrategic(c,level,p,id);overheadEnhancement(c,level);emblem(c,25,46,side);sprites.set(key,canvas);return canvas;
+  } else if (id === 'transport' || id === 'fighter') {
     drawOverheadAircraft(c,level,p,id);overheadEnhancement(c,level);sprites.set(key,canvas);return canvas;
   } else if (id === "rocketLauncher") {
     drawOverheadRocket(c, level, p);
@@ -218,14 +221,15 @@ function health(c, hq, side) {
 function fire(c, scene, effect, elapsed) {
   if (!Number.isFinite(effect.at) || effect.at < 0) return;
   const age = elapsed - effect.at, infantry = effect.kind === "infantry" || Object.hasOwn(UNITS, effect.kind);
-  const duration = infantry ? 280 : 560;
+  const rail=effect.kind==='railgunTank',missile=effect.kind==='icbm';
+  const duration = infantry ? 280 : rail ? 240 : missile ? 900 : 560;
   if (age < 0 || age >= duration || !scene.points[effect.side]) return;
   const source = scene.points[effect.side], healing=effect.kind==='transport', target = healing ? source.hq : scene.points[effect.side === "player" ? "enemy" : "player"].hq;
   const shooters = infantry
     ? source.infantry.filter((p) => effect.kind === "infantry" || effect.kind === p.id)
     : source.equipment.filter((p) => p.id === effect.kind);
   const progress = Math.min(1, age / (duration * 0.76));
-  const color = healing ? '#a8f0bd' : effect.side === "player" ? "#ffe4a0" : "#ffd1bd";
+  const color = healing ? '#a8f0bd' : effect.side === "player" ? rail?'#a0f0f4':missile?'#ffc28b':"#ffe4a0" : "#ffd1bd";
   c.save();
   for (let i = 0; i < shooters.length; i++) {
     const p = shooters[i], offset = (i % 5 - 2) * 3;
@@ -234,10 +238,11 @@ function fire(c, scene, effect, elapsed) {
     if (progress < 1) {
       const x = p.x + dx * progress, y = p.y + dy * progress;
       c.strokeStyle = color; c.lineWidth = infantry ? 1 : 3;
-      c.beginPath(); c.moveTo(x - dx * 0.045, y - dy * 0.045); c.lineTo(x, y); c.stroke();
+      const trail=rail ? .3 : missile ? .09 : .045;
+      c.beginPath(); c.moveTo(x - dx * trail, y - dy * trail); c.lineTo(x, y); c.stroke();
       rect(c, x - 1, y - 2, infantry ? 2 : 4, infantry ? 3 : 5, "#fff4cd");
     } else {
-      const radius = infantry ? 3 : 10;
+      const radius = infantry ? 3 : missile ? 17 : 10;
       rect(c, target.x + offset - radius, target.y - 2, radius * 2, 4, color);
       rect(c, target.x + offset - 2, target.y - radius, 4, radius * 2, "#fff1c5");
     }
