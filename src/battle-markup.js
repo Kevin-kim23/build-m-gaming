@@ -22,8 +22,8 @@ export function preparationMarkup(state, stage, loadout) {
 export function battlefieldMarkup(battle) {
   return header(`STAGE ${String(battle.stageId).padStart(2,'0')} · ${battle.enemyName}`, battle.stageName) + `
     <div class="battle-toolbar"><span>본부를 먼저 파괴하세요</span><b id="battle-time">0:00</b><button id="battle-pause">일시정지</button></div>
-    <div class="battle-arena"><div id="battle-field"><canvas id="battle-canvas" width="360" height="560" aria-hidden="true"></canvas></div>
-    <div class="battle-overlay" id="battle-overlay" hidden><div><small id="battle-result-tag"></small><h3 id="battle-result-title"></h3><p id="battle-result-copy"></p><button class="battle-primary" id="battle-resume">전투 계속</button><div id="battle-result-actions" hidden><button data-battle-retry>다시 도전</button><button data-battle-back>작전 지도</button></div></div></div></div>
+    <div class="battle-arena" id="battle-arena"><div id="battle-field"><canvas id="battle-canvas" width="360" height="560" aria-hidden="true"></canvas></div>
+    <div class="battle-overlay" id="battle-overlay" hidden><div><small id="battle-result-tag"></small><h3 id="battle-result-title"></h3><p class="battle-stars" id="battle-result-stars" aria-live="polite"></p><p id="battle-result-copy"></p><button class="battle-primary" id="battle-resume">전투 계속</button><div id="battle-result-actions" hidden><button data-battle-retry>다시 도전</button><button data-battle-back>작전 지도</button></div></div></div></div>
     <div class="battle-hp-summary"><span>아군 <b id="battle-player-hp"></b></span><span>적군 <b id="battle-enemy-hp"></b></span></div>
     <div class="battle-specials" id="battle-specials">${battle.player.equipment.map((g) => `<button data-special="${g.id}" disabled><b>${EQUIPMENT[g.id].name}</b><small data-special-state="${g.id}">준비 중</small></button>`).join('')}</div>
     <p class="battle-controls">장비는 자동 공격 <small>필살기 버튼: 첫 사용 ${BATTLE_RULES.specialFirstReadyMs / 1000}초 후 · 사용 뒤 ${BATTLE_RULES.specialCooldownMs / 1000}초 대기</small></p>

@@ -24,7 +24,8 @@ function win(state, stage = 1) {
 test('a real victory records progress, its medal and the loot gold without changing troops', () => {
   const state = army(), before = structuredClone(state), battle = win(state);
   const result = recordBattleVictory(state, battle);
-  assert.deepEqual({ ...result, gold: undefined }, { ok: true, firstClear: true, gold: undefined, achievements: ['firstVictory'] });
+  assert.deepEqual({ ...result, gold: undefined, stars: undefined }, { ok: true, firstClear: true, gold: undefined, stars: undefined, achievements: ['firstVictory'] });
+  assert.ok(result.stars >= 1 && result.stars <= 3);
   assert.equal(state.gold, before.gold + result.gold);
   assert.deepEqual({ ...state, gold: 0 }, { ...before, gold: 0, campaignCleared: 1, earnedAchievements: [...before.earnedAchievements, 'firstVictory'] });
   assert.equal(battle.enemy.hq.hp, 0);
@@ -51,10 +52,10 @@ test('replayed victories are idempotent and stage progress cannot skip ahead or 
   assert.equal(recordBattleVictory(state, { ...first, stageId: 3 }).reason, 'sequence');
   assert.equal(state.campaignCleared, 0);
   recordBattleVictory(state, first);
-  assert.deepEqual({ ...recordBattleVictory(state, first), gold: 0 }, { ok: true, firstClear: false, gold: 0, achievements: [] });
+  assert.deepEqual({ ...recordBattleVictory(state, first), gold: 0, stars: 0 }, { ok: true, firstClear: false, gold: 0, stars: 0, achievements: [] });
   recordBattleVictory(state, win(state, 2));
   assert.equal(state.campaignCleared, 2);
-  assert.deepEqual({ ...recordBattleVictory(state, first), gold: 0 }, { ok: true, firstClear: false, gold: 0, achievements: [] });
+  assert.deepEqual({ ...recordBattleVictory(state, first), gold: 0, stars: 0 }, { ok: true, firstClear: false, gold: 0, stars: 0, achievements: [] });
   assert.equal(state.campaignCleared, 2);
 });
 
@@ -132,4 +133,18 @@ test('battle loot is income x 30 min on first clear, x 2 min on replay, and resp
   const r2 = recordBattleVictory(state, win(state, 1));
   assert.equal(r2.firstClear, false);
   assert.ok(r1.gold > r2.gold && r2.gold > 0 && state.gold === g1 + r2.gold);
+});
+
+test('stars: 1 for any win, 2 for fast OR healthy HQ, 3 for both; they scale only the loot', async () => {
+  const { battleStars, battleGoldReward } = await import('../src/campaign-rewards.js');
+  const b = (elapsedMs, hp, status = 'victory') => ({ status, elapsedMs, player: { hq: { hp, maxHp: 100 } } });
+  assert.equal(battleStars(b(120000, 49)), 1);
+  assert.equal(battleStars(b(90000, 49)), 2);
+  assert.equal(battleStars(b(120000, 50)), 2);
+  assert.equal(battleStars(b(90000, 50)), 3);
+  assert.equal(battleStars(b(10000, 100, 'defeat')), 0);
+  assert.equal(battleGoldReward(10, true, 0, 1), 18000);
+  assert.equal(battleGoldReward(10, true, 0, 2), 22500);
+  assert.equal(battleGoldReward(10, true, 0, 3), 27000);
+  assert.equal(battleGoldReward(10, false, 0, 3), 1800);
 });

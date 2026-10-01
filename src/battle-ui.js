@@ -117,9 +117,22 @@ export function createBattleUI(session) {
     }
     schedule();
   }
+  // 필살기 연출: 적 본부 위 피해 숫자(또는 회복 숫자)와 화면 흔들림. 클릭 때만 만들고 애니메이션이 끝나면 지운다.
+  function specialEffect(gun, damage, healed) {
+    const arena = $('#battle-arena'); if (!arena) return;
+    const note = document.createElement('span');
+    note.className = 'battle-float' + (damage > 0 ? '' : ' heal');
+    note.textContent = damage > 0 ? `-${fmt(Math.round(damage))}` : `+${fmt(Math.round(healed))}`;
+    note.style.left = `${35 + Math.random() * 30}%`;
+    note.addEventListener('animationend', () => note.remove(), { once: true });
+    arena.append(note);
+    if (damage > 0) { arena.classList.remove('shake'); void arena.offsetWidth; arena.classList.add('shake'); }
+  }
   function special(id) {
     if (!session.active || document.hidden || paused || battle?.status !== 'running') return;
+    const before = battle, gun = before.player.equipment.find(g => g.id === id);
     battle = useSpecial(battle, id);
+    if (battle !== before) specialEffect(gun, before.enemy.hq.hp - battle.enemy.hq.hp, battle.player.hq.hp - before.player.hq.hp);
     paint();
     if (battle.status !== 'running') finish();
   }
@@ -153,7 +166,8 @@ export function createBattleUI(session) {
       const result = session.change(s => recordBattleVictory(s, battle));
       copy = result?.ok ? (stageId === STAGES.length ? '아스테라 대륙의 모든 국가를 점령했어요!' : stageId % 20 === 0 ? `${COUNTRIES[Math.floor(stageId / 20)-1].name} 점령 완료! 다음 국가가 열렸어요.` : '지역 점령 완료! 다음 지역으로 진격할 수 있어요.') : '클리어 기록을 반영하지 못했어요. 작전 지도에서 확인해 주세요.';
       if (result?.ok) copy += result.firstClear ? ` 초당 수입 +${REGION_INCOME_PERCENT}% 획득! 누적 점령 보너스 +${campaignBonusPercent(session.state)}%.` : ` 재도전 보너스는 없으며 초당 수입 +${campaignBonusPercent(session.state)}%를 유지합니다.`;
-      if (result?.ok) copy += ` 전리품 ${fmtGold(result.gold)} 골드를 받았어요!`;
+      if (result?.ok) text('#battle-result-stars', '★'.repeat(result.stars) + '☆'.repeat(3 - result.stars) + (result.stars === 3 ? ' 완벽한 승리' : result.stars === 2 ? ' 훌륭한 승리' : ' 승리'));
+      if (result?.ok) copy += ` 전리품 ${fmtGold(result.gold)} 골드를 받았어요!${result.stars < 3 ? ' (별 3개: 90초 안에, 본부 체력 50% 이상으로 승리하면 전리품 +50%)' : ''}`;
       if (result?.achievements?.length) copy += ` 훈장 획득: ${result.achievements.map(id => ACHIEVEMENTS.find(a => a.id === id).title).join(', ')}. 홈 도전과제에서 확인하세요.`;
     }
     overlay(battle.status === 'victory' ? '승리' : battle.status === 'defeat' ? '패배' : '무승부', copy, true);

@@ -1,7 +1,7 @@
 import { STAGES, battleAccess } from './battle.js';
 import { reconcileAchievements } from './achievements.js';
 import { accrue, perSecond } from './game.js';
-import { battleGoldReward } from './campaign-rewards.js';
+import { battleGoldReward, battleStars } from './campaign-rewards.js';
 import { addMoney } from './money.js';
 
 // Settle the old rate before a first clear raises the passive income bonus.
@@ -14,8 +14,8 @@ export function recordBattleVictory(state, battle, now = Date.now()) {
   if (stage.id > cleared + 1) return { ok: false, reason: 'sequence' };
   accrue(state, now);
   state.campaignCleared = Math.max(cleared, stage.id);
-  const firstClear = stage.id > cleared;
-  const gold = battleGoldReward(perSecond(state), firstClear, state.gold); // 새 점령 보너스가 반영된 수입 기준
+  const firstClear = stage.id > cleared, stars = battleStars(battle);
+  const gold = battleGoldReward(perSecond(state), firstClear, state.gold, stars); // 새 점령 보너스가 반영된 수입 기준
   state.gold = addMoney(state.gold, gold);
-  return { ok: true, firstClear, gold, achievements: reconcileAchievements(state) };
+  return { ok: true, firstClear, gold, stars, achievements: reconcileAchievements(state) };
 }

@@ -79,3 +79,12 @@
 .battle-specials button small { display:block; margin-top:2px; font-size:11px; color:#e8d79c; }
 .battle-specials button:not(:disabled) { background:#8a6a1e; box-shadow:0 0 8px #e0b84a99; }
 .battle-specials button:disabled { opacity:.6; cursor:default; }
+
+.battle-arena { position:relative; }
+.battle-arena.shake { animation:battle-shake .28s linear; }
+.battle-float { position:absolute; top:22%; z-index:3; pointer-events:none; font-weight:bold; font-size:22px; color:#ffd36a; text-shadow:0 2px 0 #3a2a08,0 0 8px #000; animation:battle-float .9s ease-out forwards; }
+.battle-float.heal { color:#8fe08f; top:70%; }
+.battle-stars { margin:4px 0 8px; font-size:24px; letter-spacing:4px; color:#ffd36a; min-height:30px; }
+@keyframes battle-float { from { transform:translateY(0) scale(.8); opacity:1; } to { transform:translateY(-46px) scale(1.25); opacity:0; } }
+@keyframes battle-shake { 0%,100% { transform:translate(0,0); } 25% { transform:translate(-4px,2px); } 50% { transform:translate(4px,-2px); } 75% { transform:translate(-2px,-2px); } }
+@media (prefers-reduced-motion: reduce) { .battle-arena.shake { animation:none; } .battle-float { animation-duration:.01s; } }

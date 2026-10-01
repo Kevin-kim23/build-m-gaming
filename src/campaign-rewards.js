@@ -1,5 +1,5 @@
 import { campaignStages } from './campaign.js';
-import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney } from './money.js';
+import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, scaleMoney } from './money.js';
 
 export const REGION_INCOME_PERCENT = 1;
 export const MAX_CONQUEST_REGIONS = campaignStages.length;
@@ -15,7 +15,16 @@ export function withCampaignIncome(state, baseIncome) {
 // 전투 승리 즉시 골드 = 현재 초당 수입 × 초. 처음 점령은 30분, 다시 이기면 2분치.
 export const FIRST_CLEAR_REWARD_SECONDS = 1800;
 export const REPLAY_REWARD_SECONDS = 120;
-export function battleGoldReward(income, firstClear, gold = 0) {
+export const STAR_REWARD_PERCENT = Object.freeze([100, 100, 125, 150]); // 별 0~3개(0은 쓰지 않음)
+export const STAR_FAST_MS = 90_000, STAR_HP_RATIO = 0.5;
+// 별: 승리 1개, 90초 이내 또는 본부 체력 50% 이상 2개, 둘 다 3개. 저장하지 않고 이번 전리품에만 반영한다.
+export function battleStars(battle) {
+  if (battle?.status !== 'victory') return 0;
+  const fast = battle.elapsedMs <= STAR_FAST_MS, healthy = battle.player.hq.hp >= battle.player.hq.maxHp * STAR_HP_RATIO;
+  return 1 + (fast || healthy ? 1 : 0) + (fast && healthy ? 1 : 0);
+}
+export function battleGoldReward(income, firstClear, gold = 0, stars = 1) {
   const seconds = firstClear ? FIRST_CLEAR_REWARD_SECONDS : REPLAY_REWARD_SECONDS;
-  return minMoney(multiplyMoney(income, seconds), subtractMoney(MAX_GOLD, gold));
+  const percent = STAR_REWARD_PERCENT[Math.max(1, Math.min(3, stars))];
+  return minMoney(scaleMoney(multiplyMoney(income, seconds), percent, 100), subtractMoney(MAX_GOLD, gold));
 }
