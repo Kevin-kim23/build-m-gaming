@@ -1,5 +1,5 @@
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
-import { fmt, fmtGold } from './format.js';
+import { fmt, fmtGold, fmtGoldCost } from './format.js';
 import { coin, insignia } from './home-view.js';
 import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, buyAdditionalEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool, activateSword, activateAutoTouch } from './game.js';
 import { SCHOOLS } from './schools.js';
@@ -47,11 +47,11 @@ export function createArmyPanels(session, audio) {
       const offer = recruitOffer(s, unit.id);
       const field = (name, value) => text(`[data-unit="${unit.id}"] [data-field="${name}"]`, value);
       field('owned', `보유 ${fmt(offer.owned)}명`);
-      field('price', fmtGold(offer.cost));
+      field('price', fmtGoldCost(offer.cost));
       field('unlock', offer.locked ? `🔒 필요: ${offer.requirement}` : `전력 +${unit.power} · ${offer.requirement}`);
       field('label', offer.reason === 'locked' ? `잠금 · ${offer.requirement} 필요`
         : offer.reason === 'limit' ? '전력 한도 도달'
-        : offer.reason === 'gold' ? `${fmtGold(offer.cost - s.gold)} G 부족` : `${unit.name} 1명 모집`);
+        : offer.reason === 'gold' ? `${fmtGoldCost(offer.cost - s.gold)} G 부족` : `${unit.name} 1명 모집`);
       card.classList.toggle('locked', offer.locked);
       card.querySelector('[data-buy]').disabled = !offer.canBuy;
     }
@@ -59,10 +59,10 @@ export function createArmyPanels(session, audio) {
       const id = bulkButton.dataset.buyBulk, unit = UNITS[id];
       const offer = recruitOffer(s, id, COMMAND_BATON.recruitAmount);
       const scope = `[data-bulk-unit="${id}"]`;
-      text(`${scope} [data-bulk-price]`, fmtGold(offer.cost));
+      text(`${scope} [data-bulk-price]`, fmtGoldCost(offer.cost));
       text(`${scope} [data-bulk-label]`, offer.reason === 'locked' ? `잠금 · ${offer.requirement}`
         : offer.reason === 'limit' ? `${COMMAND_BATON.recruitAmount}명 모집할 전력 여유 부족`
-        : offer.reason === 'gold' ? `${fmtGold(offer.cost - s.gold)} G 부족`
+        : offer.reason === 'gold' ? `${fmtGoldCost(offer.cost - s.gold)} G 부족`
         : `${unit.name} ${COMMAND_BATON.recruitAmount}명 모집`);
       bulkButton.disabled = !offer.canBuy;
     }
