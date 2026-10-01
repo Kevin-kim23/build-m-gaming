@@ -69,8 +69,8 @@ export function layoutFieldArmy(army, area) {
     hierarchy.findIndex((f) => f.id === largest.id),
   );
   const scale = UNITS[largest.id] ? 1 : Math.min(1.35, 56 / largest.width);
-  const makeItems = (compact) =>
-    groups.flatMap((g) => {
+  const makeItems = (compact, visibleGroups) =>
+    visibleGroups.flatMap((g) => {
       const tier = Math.max(
         0,
         hierarchy.findIndex((f) => f.id === g.id),
@@ -84,12 +84,15 @@ export function layoutFieldArmy(army, area) {
         preferredHeight: g.height * relative,
       }));
     });
-  // Prefer separate icons. When crowded, use one icon and a count per type before shrinking further.
-  for (const compact of [false, true]) {
-    const items = makeItems(compact);
-    for (let factor = 1; factor >= (compact ? 0.1 : 0.65); factor -= 0.05) {
-      const result = pack(items, area, factor);
-      if (result) return result;
+  // Prefer all groups. On very short screens progressively omit smaller groups,
+  // preserving the largest headquarters instead of dropping the entire army.
+  for(let visibleCount=groups.length;visibleCount>0;visibleCount--) {
+    for (const compact of [false, true]) {
+      const items = makeItems(compact, groups.slice(0,visibleCount));
+      for (let factor = 1; factor >= (compact ? 0.1 : 0.65); factor -= 0.05) {
+        const result = pack(items, area, factor);
+        if (result) return result;
+      }
     }
   }
   return [];

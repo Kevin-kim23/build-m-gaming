@@ -82,13 +82,13 @@ function infantrySprite(id, side) {
   const unit=UNITS[id];
   if(unit?.school) {
     rect(c,4,3,5,2,side==='enemy'?p.body:unit.color);
-    for(let i=0;i<unit.schoolLevel;i++)rect(c,3+i*2,10,1,2,unit.school==='officer'?'#edf2dd':'#edd092');
-    if(unit.school==='officer')rect(c,5,2,3,1,'#edf2dd');
+    for(let i=0;i<unit.schoolLevel;i++)rect(c,3+i*2,10,1,2,(unit.school==='officer'||unit.school==='advanced')?'#edf2dd':'#edd092');
+    if((unit.school==='officer'||unit.school==='advanced'))rect(c,5,2,3,1,'#edf2dd');
   }
   c.fillStyle=p.light;c.fillRect(4,5,3,.5);c.fillRect(3,9,2,.5);
   c.fillStyle=p.dark;c.fillRect(5.5,4.5,.5,.5);c.fillRect(8,8,.5,5);
   c.fillStyle='#d5cca6';c.fillRect(5,12,.5,.5);c.fillRect(9,12,.5,.5);
-  if(unit?.school==='officer')officerDetails(c,unit,true);
+  if((unit?.school==='officer'||unit?.school==='advanced'))officerDetails(c,unit,true);
   sprites.set(key, canvas);
   return canvas;
 }
@@ -142,7 +142,7 @@ function equipmentSprite(id, level, side) {
 function headquartersSprite(id, side) {
   const key = `hq:${side}:${id}`;
   if (sprites.has(key)) return sprites.get(key);
-  const tier = Math.max(0, ["battalion", "regiment", "division", "corps", "fieldArmy"].indexOf(id));
+  const tier = Math.max(0, ["battalion", "regiment", "division", "corps", "fieldArmy", "armyGroup", "alliedArmy"].indexOf(id));
   const w = 62 + tier * 10, h = 42 + tier * 5, canvas = surface(w + 18, h + 12);
   const c = canvas.getContext("2d"), p = palettes[side];
   rect(c, 5, 6, w + 3, h + 2, "#26372d55");
@@ -164,13 +164,13 @@ function headquartersSprite(id, side) {
 }
 export function unitPositions(troops, side) {
   const kinds = Object.keys(UNITS).filter(id => troops?.[id]>0), positions = [];
-  const compact = kinds.length > 6, columns = compact ? 5 : Math.min(3,kinds.length);
+  const compact = kinds.length > 6, dense = kinds.length > 10, columns = compact ? 5 : Math.min(3,kinds.length);
   kinds.forEach((id, row) => {
     const count = Math.min(10, Math.max(0, troops?.[id] ?? 0));
     for (let i = 0; i < count; i++) {
       const x = (W / (columns + 1)) * (row % columns + 1) - (compact ? 22 : 26) + (i % 5) * (compact ? 11 : 13);
-      const y = (kinds.length>3?181:208) + Math.floor(row/columns)*44 + Math.floor(i / 5) * 21;
-      positions.push({ id, x, y: side === "enemy" ? y : H - y, width:compact?10:14, height:compact?14:19 });
+      const y = (kinds.length>3?181:208) + Math.floor(row/columns)*(dense?28:44) + Math.floor(i / 5) * (dense?12:21);
+      positions.push({ id, x, y: side === "enemy" ? y : H - y, width:dense?9:compact?10:14, height:dense?11:compact?14:19 });
     }
   });
   return positions;

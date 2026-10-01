@@ -1,17 +1,18 @@
+import { serializeSave } from '../src/money.js';
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { FORMATIONS } from "../src/formations.js";
 import { freshState, recruit, recruitOffer, parseSave, perSecond, perTap, MAX_GOLD, SAVE_KEY } from "../src/game.js";
 
 const T = 1800000000000;
-const ids = ["squad", "platoon", "company", "battalion", "regiment", "division", "corps", "fieldArmy"];
-const state = (power) => ({ ...freshState(T), soldiers: power, gold: MAX_GOLD });
+const ids = ["squad", "platoon", "company", "battalion", "regiment", "division", "corps", "fieldArmy", "armyGroup", "alliedArmy"];
+const state = (power) => ({ ...freshState(T), soldiers: power, gold:100_000_000_000_000 });
 const rules = () => import("../src/achievements.js");
 
-test("achievement definitions reuse all eight formation thresholds in ascending order", async () => {
+test("achievement definitions reuse all ten formation thresholds in ascending order", async () => {
   const { FORMATION_ACHIEVEMENTS: ACHIEVEMENTS } = await rules();
   assert.deepEqual(ACHIEVEMENTS.map(a => a.id), ids);
-  assert.deepEqual(ACHIEVEMENTS.map(a => a.title), ["분대장", "소대장", "중대장", "대대장", "연대장", "사단장", "군단장", "야전군사령관"]);
+  assert.deepEqual(ACHIEVEMENTS.map(a => a.title), ["분대장", "소대장", "중대장", "대대장", "연대장", "사단장", "군단장", "야전군사령관", "집단군 사령관", "연합군 사령관"]);
   ACHIEVEMENTS.forEach((a, tier) => {
     const formation = FORMATIONS.find(f => f.id === a.id);
     assert.equal(a.required, formation.size);
@@ -77,13 +78,13 @@ test("failed recruitment grants no medals and successful single recruitment reta
 
 test("consolidated armies receive lower medals and earned records survive later power reductions", async () => {
   const { reconcileAchievements, achievementProgress } = await rules();
-  const s = state(327680);
+  const s = state(5242880);
   assert.deepEqual(reconcileAchievements(s), ids);
   s.soldiers = 0;
   assert.deepEqual(reconcileAchievements(s), []);
   assert.deepEqual(s.earnedAchievements, ids);
   assert.deepEqual(achievementProgress(s, "fieldArmy"), { earned: true, current: 0, required: 327680, ratio: 1 });
-  assert.deepEqual(parseSave(JSON.stringify(s), T).earnedAchievements, ids);
+  assert.deepEqual(parseSave(serializeSave(s), T).earnedAchievements, ids);
 });
 
 test("achievement progress is read-only, uses current equivalent power, and caps at its threshold", async () => {
@@ -101,11 +102,11 @@ test("old version seven assets migrate intact and receive currently earned medal
     taps: 234, sound: true, revision: 22, gold: 7654321,
     equipment: { artillery: { level: 4, deployed: false }, tank: { level: 10, deployed: true }, selfPropelled: null } };
   delete old.earnedAchievements;
-  const restored = parseSave(JSON.stringify(old), T);
+  const restored = parseSave(serializeSave(old), T);
   const { version, earnedAchievements, ...assets } = restored;
   const { version: oldVersion, ...oldAssets } = old;
   assert.equal(oldVersion, 7);
-  assert.equal(version, 16);
+  assert.equal(version, 17);
   assert.deepEqual(assets, {...oldAssets,ncoSchoolLevel:2,equipment:{...Object.fromEntries(Object.entries(oldAssets.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),helicopter:null,rocketLauncher:null,transport:null,fighter:null}});
   assert.deepEqual(earnedAchievements, ids.slice(0, 4));
   assert.equal(SAVE_KEY, "budae-kiugi-recruits-v3");
@@ -114,13 +115,13 @@ test("old version seven assets migrate intact and receive currently earned medal
 test("all legacy save versions gain medals from preserved power without trusting injected medal records", () => {
   for (const version of [3, 4, 5, 6, 7]) {
     const old = { ...state(80), version, earnedAchievements: ["fieldArmy"] };
-    const restored = parseSave(JSON.stringify(old), T);
-    assert.equal(restored.version, 16);
+    const restored = parseSave(serializeSave(old), T);
+    assert.equal(restored.version, 17);
     assert.deepEqual(restored.earnedAchievements, ["squad", "platoon"]);
-    assert.equal(restored.gold, MAX_GOLD);
+    assert.equal(restored.gold, old.gold);
   }
-  const v2 = parseSave(JSON.stringify({ version: 2, gold: 50, taps: 50, rank: 0, sound: false }), T);
-  assert.equal(v2.version, 16);
+  const v2 = parseSave(serializeSave({ version: 2, gold: 50, taps: 50, rank: 0, sound: false }), T);
+  assert.equal(v2.version, 17);
   assert.deepEqual(v2.earnedAchievements, []);
 });
 
@@ -130,9 +131,9 @@ test("version eight rejects corrupt medal arrays and fills valid missing earned 
   assert.equal(validAchievementIds(ids), true);
   for (const bad of [undefined, null, {}, "squad", ["unknown"], ["squad", "squad"], [1], [...ids, "squad"], Array(1)]) {
     assert.equal(validAchievementIds(bad), false);
-    assert.equal(parseSave(JSON.stringify({ ...state(20), version: 8, earnedAchievements: bad }), T), null);
+    assert.equal(parseSave(serializeSave({ ...state(20), version: 8, earnedAchievements: bad }), T), null);
   }
-  const loaded = parseSave(JSON.stringify({ ...state(80), version: 8, earnedAchievements: ["fieldArmy"] }), T);
+  const loaded = parseSave(serializeSave({ ...state(80), version: 8, earnedAchievements: ["fieldArmy"] }), T);
   assert.deepEqual(loaded.earnedAchievements, ["fieldArmy", "squad", "platoon"]);
-  assert.deepEqual(parseSave(JSON.stringify(loaded), T), loaded);
+  assert.deepEqual(parseSave(serializeSave(loaded), T), loaded);
 });

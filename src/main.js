@@ -88,7 +88,7 @@ function update() {
     r = rank();
   const goldLabel = fmtGold(state.gold);
   setText("#gold", goldLabel);
-  $("#gold").classList.toggle("large-balance", goldLabel.length >= 12);
+  $("#gold").classList.toggle("large-balance", goldLabel.length >= 10);
   $("#sound").setAttribute("aria-checked", String(state.sound));
   if (rosterDirty) {
     rosterDirty = false;
@@ -130,7 +130,7 @@ function update() {
   guideUI.sync(state);
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
-    ["nco","officer"].some(id=>schoolOffer(state,id).canBuy) ||
+    ["nco","officer","advanced"].some(id=>schoolOffer(state,id).canBuy) ||
     Object.keys(EQUIPMENT).some(
       (id) => equipmentPurchaseOffer(state, id).canBuy,
     )

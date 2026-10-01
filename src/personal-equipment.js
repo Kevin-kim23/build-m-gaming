@@ -34,6 +34,8 @@ export const BULK_RECRUIT = Object.freeze({
   masterSergeant: Object.freeze({ level: 4, unlockRank: '소장' }),
   sergeantMajor: Object.freeze({ level: 5, unlockRank: '중장' }),
   lieutenant: Object.freeze({ level: 6, unlockRank: '대장' }),
+  firstLieutenant: Object.freeze({ level: 7, unlockRank: '원수' }),
+  captain: Object.freeze({ level: 8, unlockRank: '대원수' }),
 });
 // All personal items are derived from actual rank, without duplicate saved rewards.
 export function commandBatonStatus(state) {

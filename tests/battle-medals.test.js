@@ -9,7 +9,7 @@ const T=1800000000000;
 test('combat medals use unique conquered regions and each country capital, never army power or old stages',()=>{
   assert.deepEqual(BATTLE_ACHIEVEMENTS.map(a=>a.required),[1,5,10,...COUNTRIES.map(c=>c.lastStage)]);
   const s={...freshState(T),soldiers:1000000,battleCleared:10};
-  assert.deepEqual(reconcileAchievements(s),FORMATION_ACHIEVEMENTS.map(a=>a.id));
+  assert.deepEqual(reconcileAchievements(s),FORMATION_ACHIEVEMENTS.filter(a=>a.required<=s.soldiers).map(a=>a.id));
   for(const a of BATTLE_ACHIEVEMENTS)assert.equal(achievementProgress(s,a.id).current,0);
 });
 test('each conquest boundary awards once, preserves order and does not affect economic bonuses',()=>{

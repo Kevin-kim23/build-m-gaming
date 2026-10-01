@@ -1,3 +1,4 @@
+import { serializeSave } from '../src/money.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, recruit, recruitOffer, unitCost, perSecond, perTap, armyPower, parseSave, upgradeSchool, MAX_GOLD, MAX_SOLDIERS } from '../src/game.js';
@@ -9,7 +10,7 @@ import { groupArmy } from '../src/formations.js';
 import { createGameSession } from '../src/session.js';
 import { SAVE_KEY } from '../src/game.js';
 const T = 1800000000000;
-const wealthy = () => ({...freshState(T),gold:MAX_GOLD});
+const wealthy = () => ({...freshState(T),gold:100_000_000_000_000});
 
 test('rank alone never opens NCO recruitment; school levels open exactly one new grade', () => {
   const s = {...wealthy(), soldiers:20480, sergeants:40};
@@ -52,7 +53,7 @@ test('officer academy needs both NCO level five and actual major general rank',(
   assert.equal(schoolOffer(s,'officer').cost,3_000_000_000);
 });
 test('every new recruit changes only its count and price and adds its catalog power and income',()=>{
-  const s={...wealthy(),ncoSchoolLevel:5,officerSchoolLevel:5};
+  const s={...wealthy(),ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5};
   for(const u of Object.values(UNITS)) {
     const prices=Object.fromEntries(Object.keys(UNITS).map(id=>[id,recruitOffer(s,id).cost]));
     const old={gold:s.gold,power:armyPower(s),passive:perSecond(s),tap:perTap(s)};
@@ -70,7 +71,7 @@ test('NCO buffs reduce early and repeated costs, and all curves stay finite and 
     assert.ok(unitCost(n,'staffSergeant')<1000000+350000*n+50000*n*n);
   }
   for(const id of Object.keys(UNITS)) for(const n of [0,10,100,10000,MAX_SOLDIERS]) {
-    const cost=unitCost(n,id);assert.ok(Number.isSafeInteger(cost)&&cost<=MAX_GOLD);
+    const cost=unitCost(n,id);assert.ok((typeof cost==='bigint'||Number.isSafeInteger(cost))&&cost<=MAX_GOLD);
     assert.ok(unitCost(n+1,id)>=cost);
   }
 });
@@ -87,21 +88,21 @@ test('v8 migration preserves assets and previously unlocked NCO access without g
   for(const [soldiers,sergeants,staffSergeants,level] of [[0,0,0,0],[160,0,0,1],[0,1,0,1],[240,40,0,2],[0,0,1,2]]) {
     const old={...freshState(T),version:8,gold:4321,soldiers,sergeants,staffSergeants,battleCleared:3};
     old.ncoSchoolLevel=5;old.officerSchoolLevel=1;old.lieutenants=999;
-    const s=parseSave(JSON.stringify(old),T);
-    assert.equal(s.version, 16);assert.equal(s.ncoSchoolLevel,level);assert.equal(s.officerSchoolLevel,0);
+    const s=parseSave(serializeSave(old),T);
+    assert.equal(s.version, 17);assert.equal(s.ncoSchoolLevel,level);assert.equal(s.officerSchoolLevel,0);
     assert.equal(s.gold,4321);assert.equal(s.battleCleared,3);assert.equal(s.lieutenants,0);
     assert.equal(s.masterSergeants,0);assert.equal(s.sergeantMajors,0);
   }
 });
 test('v9 schools and troops survive reload and reject malformed school/count data',()=>{
   const s={...wealthy(),ncoSchoolLevel:5,officerSchoolLevel:1,masterSergeants:3,sergeantMajors:2,lieutenants:1};
-  const loaded=parseSave(JSON.stringify(s),T);
+  const loaded=parseSave(serializeSave(s),T);
   for(const key of ['ncoSchoolLevel','officerSchoolLevel','masterSergeants','sergeantMajors','lieutenants']) assert.equal(loaded[key],s[key]);
   for(const patch of [{ncoSchoolLevel:6},{ncoSchoolLevel:-1},{ncoSchoolLevel:1.5},{officerSchoolLevel:6},{officerSchoolLevel:1,ncoSchoolLevel:4},{lieutenants:-1},{masterSergeants:undefined},{sergeantMajors:MAX_SOLDIERS}])
-    assert.equal(parseSave(JSON.stringify({...s,...patch}),T),null);
+    assert.equal(parseSave(serializeSave({...s,...patch}),T),null);
 });
 test('school upgrade is saved once with backup and cannot purchase twice after restart',()=>{
-  const values=new Map([[SAVE_KEY,JSON.stringify({...freshState(T),gold:30000})]]),writes=[];
+  const values=new Map([[SAVE_KEY,serializeSave({...freshState(T),gold:30000})]]),writes=[];
   const session=createGameSession({storage:{getItem:k=>values.get(k)??null,setItem:(k,v)=>{writes.push(k);values.set(k,v);}},now:()=>T,setTimer:()=>1,clearTimer:()=>{}});
   assert.equal(session.change(s=>upgradeSchool(s,T,'nco')),undefined);
   session.start();assert.equal(session.change(s=>upgradeSchool(s,T,'nco')).ok,true);
@@ -111,7 +112,7 @@ test('school upgrade is saved once with backup and cannot purchase twice after r
 });
 test('new grades participate in capped deployments and one tap fires every deployed grade',()=>{
   const s={...wealthy(),soldiers:1000,sergeants:40,staffSergeants:12,masterSergeants:12,sergeantMajors:12,lieutenants:12};
-  const loadout=defaultLoadout(s);assert.equal(Object.values(loadout.units).length,10);
+  const loadout=defaultLoadout(s);assert.equal(Object.values(loadout.units).length,15);
   assert.ok(Object.entries(loadout.units).every(([id,n])=>n===Math.min(10,s[UNITS[id].field])));
   const b=createBattle(s,1,loadout),shot=fireVolley(b);
   assert.equal(shot.player.units.length,6);assert.ok(shot.player.units.every(u=>u.lastShotMs===0));

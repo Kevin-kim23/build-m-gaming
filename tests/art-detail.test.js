@@ -9,7 +9,7 @@ import { UNITS } from '../src/units.js';
 
 test('rank insignia uses the original simple marks for all current ranks', () => {
   RANK_DEFINITIONS.forEach((rank,i) => {
-    assert.equal(insignia(i), '<span class="insignia '+rank.kind+'">'+'<i></i>'.repeat(rank.marks)+'</span>');
+    assert.equal(insignia(i), '<span class="insignia '+rank.kind+(rank.marks>4?' extended-stars':'')+'">'+'<i></i>'.repeat(rank.marks)+'</span>');
   });
 });
 

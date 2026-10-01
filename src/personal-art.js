@@ -55,6 +55,8 @@ export function personalIcon(kind, level = 1) {
     if(level>=2){band(77,178,29,11);jewel(84,177);}
     if(level>=3){flourish(83,116);rect(76,109,2,95,gold[2]);}
     if(level>=4){band(74,17,35,10);jewel(85,16);rect(104,109,2,95,gold[3]);}
+    if(level>=5){band(75,145,28,6);jewel(84,146);rect(106,112,2,88,'#bacfd2');}
+    if(level>=6){band(76,176,26,8);jewel(83,177);flourish(77,129);rect(109,25,2,41,'#f3e7bb');}
   } else {
     // Ebony baton: fluted highlights, engraved caps, level-two gold collars.
     rect(79,48,36,170,'#10191a');rect(81,48,30,170,'#1c2c2a');
@@ -72,6 +74,8 @@ export function personalIcon(kind, level = 1) {
     if(level>=4){flourish(88,91);rect(115,66,2,82,gold[3]);}
     if(level>=5){band(77,118,39,6);band(77,140,39,6);jewel(91,52);}
     if(level>=6){band(78,26,37,12);jewel(91,26);rect(73,198,2,22,gold[4]);rect(119,198,2,22,gold[2]);}
+    if(level>=7){jewel(91,157);rect(74,67,1,128,'#bdd5d1');}
+    if(level>=8){jewel(91,180);rect(119,67,1,128,'#f7eac5');band(77,86,39,5);}
     rect(79,224,33,3,gold[0]);rect(84,227,23,2,gold[2]);
   }
   const name=kind==='sword'?'장군검':'지휘봉';

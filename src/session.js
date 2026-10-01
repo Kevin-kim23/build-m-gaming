@@ -1,3 +1,4 @@
+import { serializeSave } from './money.js';
 import { SAVE_KEY, LEGACY_KEY, freshState, parseSave, accrue, tapGold } from './game.js';
 
 export const SAVE_DELAY = 2000;
@@ -30,7 +31,7 @@ export function createGameSession({ storage, locks, now = Date.now,
           parseSave(storage.getItem(LEGACY_KEY + '-backup'), now());
       }
       state = loaded ?? freshState(now());
-      committed = loaded ? JSON.stringify(loaded) : null;
+      committed = loaded ? serializeSave(loaded) : null;
       storageError = false;
     } catch (error) { invalid = true; failure('save.load', error); }
   }
@@ -55,7 +56,7 @@ export function createGameSession({ storage, locks, now = Date.now,
     if (!dirty) return true;
     try {
       const next = { ...state, revision: state.revision + 1 };
-      const raw = JSON.stringify(next);
+      const raw = serializeSave(next);
       if (backup && committed) storage.setItem(SAVE_KEY + '-backup', committed);
       storage.setItem(SAVE_KEY, raw);
       state.revision = next.revision;

@@ -12,6 +12,8 @@ const palettes = [
   ["#59395e", "#ba99c4", "#be9751", "#fff1b8"],
   ["#21566c", "#85bbcb", "#d2ab55", "#fff5c9"],
   ["#742f39", "#d79985", "#d5a43c", "#fff4bb"],
+  ["#263568", "#aabce7", "#d8b15c", "#fff5d0"],
+  ["#512454", "#d2afd9", "#d6c58a", "#fffbe3"],
 ];
 
 export function medalSvg(id) {
@@ -19,7 +21,7 @@ export function medalSvg(id) {
   const definition = ACHIEVEMENTS.find(item => item.id === id);
   if (!definition) throw new RangeError("Unknown achievement medal");
   if (definition.category === 'battle') {
-    const svg = battleMedalSvg(definition.tier);
+  const svg = battleMedalSvg(definition.tier);
     cache.set(id, svg);
     return svg;
   }
@@ -89,10 +91,16 @@ export function medalSvg(id) {
     r(45,72,6,6,metal);r(46,72,3,3,"#fff9dc");
     if(tier>=5){r(46,73,4,4,stripe);r(46,73,2,1,"#e9faff");}
   }
-  if(tier===7) {
+  if(tier>=7) {
     r(36,15,24,4,metal);r(38,19,20,3,shine);
     for(const x of [37,46,55]){r(x,11,3,6,shine);r(x+1,10,1,1,"#fff9dc");}
     r(44,105,8,4,metal);r(46,105,4,6,shine);
+  }
+  if(tier>=8) {
+    for(let i=0;i<tier-3;i++){const x=33+i*5;r(x,23,1,5,shine);r(x-1,25,3,1,shine);}
+    for(const x of [14,77]){r(x,61,5,22,metal);r(x+1,61,1,22,shine);r(x-2,61,9,2,shine);}
+    r(39,83,18,3,shine);r(42,86,12,2,metal);
+    if(tier===9){r(44,67,8,10,'#8ecbd5');r(45,68,3,3,'#e7fcff');r(41,16,15,2,shine);}
   }
   const svg = `<svg class="achievement-medal-svg" viewBox="0 0 96 112" aria-hidden="true" focusable="false" shape-rendering="crispEdges">${pixels.join("")}</svg>`;
   cache.set(id,svg);

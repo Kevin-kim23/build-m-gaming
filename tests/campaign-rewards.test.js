@@ -1,3 +1,4 @@
+import { serializeSave } from '../src/money.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { campaignBonusPercent, withCampaignIncome } from '../src/campaign-rewards.js';
@@ -51,11 +52,11 @@ test('defeats and out-of-order victories cannot grant income or conquest progres
 test('existing version sixteen conquests apply retroactively and survive reload without changing assets',()=>{
   for(const cleared of [1,19,20,79,80]){
     const original={...state(),campaignCleared:cleared,gold:123456};
-    const loaded=parseSave(JSON.stringify(original),T);assert.ok(loaded);
-    assert.equal(loaded.version,16);assert.equal(loaded.gold,original.gold);assert.equal(loaded.soldiers,original.soldiers);
+    const loaded=parseSave(serializeSave(original),T);assert.ok(loaded);
+    assert.equal(loaded.version,17);assert.equal(loaded.gold,original.gold);assert.equal(loaded.soldiers,original.soldiers);
     assert.deepEqual(loaded.equipment,original.equipment);assert.equal(campaignBonusPercent(loaded),cleared);
     assert.equal(perSecond(loaded),perSecond(original));
-    assert.deepEqual(parseSave(JSON.stringify(loaded),T),loaded);
+    assert.deepEqual(parseSave(serializeSave(loaded),T),loaded);
   }
 });
 test('bonus accrual is consistent across fractional ticks, offline time, reloads, and wallet limits',()=>{
@@ -63,13 +64,14 @@ test('bonus accrual is consistent across fractional ticks, offline time, reloads
   accrue(whole,T+10000);
   for(let i=1;i<=100;i++)accrue(ticks,T+i*100);
   assert.equal(ticks.gold,whole.gold);assert.equal(ticks.incomeRemainder,whole.incomeRemainder);
-  const restored=parseSave(JSON.stringify(ticks),T+10000);
+  const restored=parseSave(serializeSave(ticks),T+10000);
   accrue(restored,T+11000);assert.equal(restored.gold,perSecond(restored)*11);
   accrue(restored,T+11000);assert.equal(restored.gold,perSecond(restored)*11);
-  restored.gold=MAX_GOLD-1;accrue(restored,T+12000);assert.equal(restored.gold,MAX_GOLD);assert.equal(restored.incomeRemainder,0);
+  restored.gold=MAX_GOLD - 1n;accrue(restored,T+12000);assert.equal(restored.gold,MAX_GOLD);assert.equal(restored.incomeRemainder,0);
   for(const id of ['helicopter','rocketLauncher','transport','fighter'])restored.equipment[id]={level:20,count:100000,deployed:true};
   restored.gold=0;assert.ok(Number.isSafeInteger(perSecond(restored)));
-  accrue(restored,T+12000+Math.ceil(MAX_GOLD/perSecond(restored))*1000);
+  restored.gold=MAX_GOLD-1n;
+  accrue(restored,T+13000);
   assert.equal(restored.gold,MAX_GOLD);assert.equal(restored.incomeRemainder,0);
 });
 test('country details follow the viewed nation and explain locked entries outside the map',()=>{

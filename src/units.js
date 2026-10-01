@@ -1,3 +1,4 @@
+import { ADVANCED_OFFICERS } from './advanced-officers.js';
 // Store real headcounts; derive equivalent strength everywhere from this catalog.
 import { OFFICER_GRADES } from './officer-progression.js';
 export const UNITS = Object.freeze({
@@ -53,15 +54,17 @@ export const UNITS = Object.freeze({
     school: "nco", schoolLevel: 4, price: Object.freeze([1_500_000, 150_000, 8_000]),
     color: "#784b3f", width: 18, height: 27,
   }),
-  ...Object.fromEntries(OFFICER_GRADES.map(unit => [unit.id, unit])),
+  ...Object.fromEntries([...OFFICER_GRADES, ...ADVANCED_OFFICERS].map(unit => [unit.id, unit])),
 });
 export const UNIT_LIST = Object.freeze(Object.values(UNITS));
 export function unitAccess(state, unit) {
-  const level = unit.school === 'officer' ? (state.officerSchoolLevel ?? 0) : (state.ncoSchoolLevel ?? 0);
+  const field = {nco:'ncoSchoolLevel',officer:'officerSchoolLevel',advanced:'advancedSchoolLevel'}[unit.school];
+  const level = state[field] ?? 0;
+  const schoolName = {nco:'부사관학교',officer:'사관학교',advanced:'고급 사관학교'}[unit.school];
   return {
-    visible: unit.school !== 'officer' || (state.ncoSchoolLevel ?? 0) >= 5 || (state[unit.field] ?? 0) > 0,
+    visible: (unit.school === 'advanced' ? (state.officerSchoolLevel ?? 0) >= 5 : unit.school !== 'officer' || (state.ncoSchoolLevel ?? 0) >= 5) || (state[unit.field] ?? 0) > 0,
     unlocked: !unit.school || level >= unit.schoolLevel,
-    requirement: unit.school ? `${unit.school === 'nco' ? '부사관학교' : '사관학교'} Lv.${unit.schoolLevel}` : '기본 모집',
+    requirement: unit.school ? `${schoolName} Lv.${unit.schoolLevel}${unit.unlockRank ? ' · '+unit.unlockRank+'부터 학교 확장' : ''}` : '기본 모집',
   };
 }
 export const armyPower = (s) =>

@@ -1,3 +1,4 @@
+import { serializeSave } from '../src/money.js';
 import test from "node:test";
 import assert from "node:assert/strict";
 import { freshState, buyEquipment, enhanceEquipment, setEquipmentDeployed, perSecond, perTap, parseSave, MAX_GOLD } from "../src/game.js";
@@ -7,7 +8,7 @@ import { createBattle, advanceBattle, defaultLoadout, equipmentCombatStats } fro
 import { layoutFieldEquipment } from "../src/field-layout.js";
 import { drawEquipment } from "../src/equipment-art.js";
 const T = 1800000000000;
-const army = (power=5120) => ({...freshState(T), soldiers:power-400, sergeants:40, ncoSchoolLevel:2, gold:MAX_GOLD, campaignCleared:80});
+const army = (power=5120) => ({...freshState(T), soldiers:power-400, sergeants:40, ncoSchoolLevel:2, gold:100_000_000_000_000, campaignCleared:80});
 
 test("helicopter is hidden before lieutenant colonel, previews locked, buys once at colonel",()=>{
   assert.equal(equipmentPurchaseOffer(army(640),'helicopter').visible,false);
@@ -40,20 +41,20 @@ test("helicopter upgrades through ten levels, settles prior income, stores and r
   assert.deepEqual(equipmentStats(10,'helicopter'),{passive:75000,tap:450000});
   assert.equal(enhanceEquipment(s,T+1000,'helicopter').reason,'max');
   setEquipmentDeployed(s,false,T+1000,'helicopter');assert.equal(perSecond(s),base);assert.equal(perTap(s),tap);
-  assert.deepEqual(parseSave(JSON.stringify(s),T).equipment.helicopter,{level:10,deployed:false, count: 1 });
+  assert.deepEqual(parseSave(serializeSave(s),T).equipment.helicopter,{level:10,deployed:false, count: 1 });
   assert.equal(new Set(HELICOPTER_STAGES).size,11);
 });
 test("v9 saves retain schools and assets; old versions cannot inject helicopter and v10 validates it",()=>{
   const old={...army(),version:9,ncoSchoolLevel:5,officerSchoolLevel:1,lieutenants:2};
   delete old.equipment.helicopter;
   old.equipment.tank={level:4,deployed:false};
-  const loaded=parseSave(JSON.stringify(old),T);
-  assert.equal(loaded.version, 16);assert.equal(loaded.ncoSchoolLevel,5);assert.equal(loaded.lieutenants,2);
+  const loaded=parseSave(serializeSave(old),T);
+  assert.equal(loaded.version, 17);assert.equal(loaded.ncoSchoolLevel,5);assert.equal(loaded.lieutenants,2);
   assert.deepEqual(loaded.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),helicopter:null});assert.equal(loaded.gold,old.gold);
   old.equipment.helicopter={level:10,deployed:true};
-  assert.equal(parseSave(JSON.stringify(old),T).equipment.helicopter,null);
+  assert.equal(parseSave(serializeSave(old),T).equipment.helicopter,null);
   for(const bad of [undefined,{}, {level:11,deployed:true},{level:1,deployed:1},{level:-1,deployed:true}]) {
-    const s=army();s.equipment.helicopter=bad;assert.equal(parseSave(JSON.stringify(s),T),null);
+    const s=army();s.equipment.helicopter=bad;assert.equal(parseSave(serializeSave(s),T),null);
   }
 });
 test("helicopter enters owned loadouts and fires automatically without changing existing enemy weapons",()=>{
@@ -81,7 +82,7 @@ test("helicopter preview changes each enhancement and reuses the cached sprite",
     const target=make(), signatures=[];
     for(let level=0;level<=10;level++) {
       assert.equal(drawEquipment(target,level,'helicopter'),true);
-      signatures.push(JSON.stringify(surfaces.at(-1).ops));
+      signatures.push(serializeSave(surfaces.at(-1).ops));
       assert.equal(drawEquipment(target,level,'helicopter'),false);
     }
     assert.equal(new Set(signatures).size,11);assert.equal(created,11);

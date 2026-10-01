@@ -1,3 +1,4 @@
+import { subtractMoney } from './money.js';
 import { fmt, fmtGold, fmtGoldCost } from './format.js';
 import {
   EQUIPMENT, equipmentOf, equipmentCount, equipmentStats,
@@ -57,7 +58,7 @@ export function renderEquipmentStore(s, root) {
       hint = `+${gun.level}강` + (add.reason && REPEAT_HINT[add.reason] ? ` · ${REPEAT_HINT[add.reason]}` : '');
     } else {
       q('[data-repeat-price]').hidden = true;
-      if (offer.reason === 'gold') hint = `${fmtGoldCost(offer.cost - s.gold)} 부족`;
+      if (offer.reason === 'gold') hint = `${fmtGoldCost(subtractMoney(offer.cost,s.gold))} 부족`;
     }
     set(q('[data-gear-status]'), hint);
     card.classList.toggle('locked', offer.locked);

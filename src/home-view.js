@@ -125,7 +125,7 @@ export function insignia(index) {
   const r = RANK_DEFINITIONS[index];
   return (
     '<span class="insignia ' +
-    r.kind +
+    r.kind + (r.marks>4 ? ' extended-stars' : '') +
     '">' +
     "<i></i>".repeat(r.marks) +
     "</span>"

@@ -1,3 +1,4 @@
+import { serializeSave } from '../src/money.js';
 import { personalMarkup, personalDetailMarkup } from "../src/personal-panels.js";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -7,7 +8,7 @@ import { RANKS, rankForArmy, promotionProgress } from "../src/ranks.js";
 import { shopMarkup } from "../src/shop.js";
 import { createGameSession } from "../src/session.js";
 const T=1800000000000;
-const army=(soldiers=4720)=>({...freshState(T),soldiers,sergeants:40,ncoSchoolLevel:1,gold:MAX_GOLD});
+const army=(soldiers=4720)=>({...freshState(T),soldiers,sergeants:40,ncoSchoolLevel:1,gold:100_000_000_000_000});
 const markup=(s,category)=>category==='personal'?personalMarkup(s):shopMarkup(s,'',()=>'',category);
 const sum=(count,type)=>Array.from({length:100},(_,i)=>unitCost(count+i,type)).reduce((a,b)=>a+b,0);
 
@@ -44,7 +45,7 @@ test('sergeant batch is atomic for insufficient gold, capacity and wallet-limit 
   const exact={...army(),soldiers:MAX_SOLDIERS-400-1000};
   assert.equal(recruit(exact,T,'sergeant',100).ok,true);
   const expensive={...army(10000),sergeants:120000};
-  assert.ok(recruitOffer(expensive,'sergeant',100).cost>MAX_GOLD);
+  assert.ok(recruitOffer(expensive,'sergeant',100).cost>expensive.gold);
   assert.equal(recruit(expensive,T,'sergeant',100).reason,'gold');
 });
 test('bulk sergeants accrue only old income and emit normal new income after purchase',()=>{
@@ -79,16 +80,16 @@ test('sword is hidden until colonel, locked there, granted at brigadier and expl
 });
 test('existing saves retain assets and derive new gear without inventing serialized items',()=>{
   const s=army(9999);s.staffSergeants=1000;s.equipment.helicopter={level:8,deployed:false,count:1};
-  const loaded=parseSave(JSON.stringify(s),T);
+  const loaded=parseSave(serializeSave(s),T);
   for(const field of ['soldiers','sergeants','staffSergeants','gold','equipment','ncoSchoolLevel'])assert.deepEqual(loaded[field],s[field]);
   assert.equal(RANKS[rankForArmy(loaded)],'대령');assert.equal(commandBatonStatus(loaded).level,2);
   assert.equal(generalSwordStatus(loaded).owned,false);
-  loaded.soldiers=5000;loaded.sergeants=300;assert.equal(generalSwordStatus(parseSave(JSON.stringify(loaded),T)).owned,true);
-  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version, 16);
+  loaded.soldiers=5000;loaded.sergeants=300;assert.equal(generalSwordStatus(parseSave(serializeSave(loaded),T)).owned,true);
+  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version, 17);
 });
 test('100 sergeants save once with backup and survive session reload without double purchase',()=>{
   const initial=army();initial.gold=sum(40,'sergeant');
-  const values=new Map([[SAVE_KEY,JSON.stringify(initial)]]),writes=[];
+  const values=new Map([[SAVE_KEY,serializeSave(initial)]]),writes=[];
   const storage={getItem:key=>values.get(key)??null,setItem(key,value){writes.push(key);values.set(key,value);}};
   const session=createGameSession({storage,now:()=>T,setTimer:()=>1,clearTimer:()=>{}});
   session.start();assert.equal(session.change(s=>recruit(s,T,'sergeant',100)).ok,true);

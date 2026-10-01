@@ -1,3 +1,4 @@
+import { serializeSave } from '../src/money.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, activateSword, activateAutoTouch, accrue, perTap, perSecond, parseSave, MAX_GOLD, buyAdditionalEquipment, enhanceEquipment, setEquipmentDeployed, SAVE_KEY } from '../src/game.js';
@@ -25,7 +26,7 @@ test('promotion rewards derive from actual ranks and sword duration increases by
 test('a promotion does not extend or resurrect an already activated sword',()=>{
   const s=army('준장');activateSword(s,T);accrue(s,T+30001);s.soldiers=army('중장').soldiers;
   assert.equal(generalSwordDuration(s),50000);assert.equal(swordSkillStatus(s,T+30001).active,false);
-  assert.equal(swordSkillStatus(parseSave(JSON.stringify(s)),T+30001).durationMs,30000);
+  assert.equal(swordSkillStatus(parseSave(serializeSave(s)),T+30001).durationMs,30000);
 });
 test('auto touch starts after 300 ms, pays exactly 200 times and does not inflate manual taps',()=>{
   const s=army(),tap=perTap(s,T),passive=perSecond(s);assert.equal(activateAutoTouch(s,T).ok,true);
@@ -60,7 +61,7 @@ test('auto touch settles old equipment income before storage, then uses new tap 
 test('coarse offline settlement equals fine ticks across boost expiry and survives reload',()=>{
   const a=army(),b=army();for(const s of [a,b]){activateAutoTouch(s,T);activateSword(s,T);}
   for(let ms=100;ms<=120000;ms+=100)accrue(a,T+ms);
-  accrue(b,T+17300);const loaded=parseSave(JSON.stringify(b));accrue(loaded,T+120000);
+  accrue(b,T+17300);const loaded=parseSave(serializeSave(b));accrue(loaded,T+120000);
   assert.equal(loaded.gold,a.gold);assert.equal(loaded.autoTouchTicks,200);
   const before=loaded.gold;accrue(loaded,T+120000);assert.equal(loaded.gold,before);
 });
@@ -68,7 +69,7 @@ test('version 15 migration preserves assets and active 30 second sword, ignores 
   const s={...army('소장'),version:15,gold:123456,taps:789,campaignCleared:20,swordActivatedAt:T-10000};
   s.equipment.tank={level:10,count:3,deployed:true};delete s.equipment.transport;delete s.equipment.fighter;
   s.autoTouchActivatedAt=T-300;s.autoTouchTicks=1;s.swordDurationMs=60000;
-  const next=parseSave(JSON.stringify(s));assert.equal(next.version,16);
+  const next=parseSave(serializeSave(s));assert.equal(next.version,17);
   for(const key of ['gold','taps','soldiers','sergeants','campaignCleared','swordActivatedAt'])assert.equal(next[key],s[key]);
   assert.deepEqual(next.equipment.tank,s.equipment.tank);assert.equal(next.equipment.transport,null);assert.equal(next.equipment.fighter,null);
   assert.equal(next.autoTouchActivatedAt,null);assert.equal(next.autoTouchTicks,0);assert.equal(next.swordDurationMs,30000);
@@ -78,15 +79,15 @@ test('version 16 rejects corrupt auto cursors, skill durations and incomplete ai
   const s=army();activateAutoTouch(s,T);accrue(s,T+300);
   for(const patch of [{autoTouchTicks:-1},{autoTouchTicks:201},{autoTouchTicks:.5},{autoTouchTicks:'1'},
     {autoTouchActivatedAt:T+301},{autoTouchActivatedAt:null},{swordDurationMs:90000},{swordDurationMs:undefined}])
-    assert.equal(parseSave(JSON.stringify({...s,...patch})),null);
-  const missing=structuredClone(s);delete missing.equipment.fighter;assert.equal(parseSave(JSON.stringify(missing)),null);
+    assert.equal(parseSave(serializeSave({...s,...patch})),null);
+  const missing=structuredClone(s);delete missing.equipment.fighter;assert.equal(parseSave(serializeSave(missing)),null);
 });
 test('division flag caps enhancement at ten or twenty; grouped copies pay per copy',()=>{
   const s=army('소장');s.gold=MAX_GOLD;s.equipment.tank={level:10,count:2,deployed:true};
   assert.equal(equipmentLevelLimit(s),10);assert.equal(enhanceEquipment(s,T,'tank').reason,'max');
   s.soldiers=army('중장').soldiers;assert.equal(equipmentLevelLimit(s),20);
-  for(let n=10;n<20;n++){const before=s.gold;assert.equal(enhanceEquipment(s,T,'tank').ok,true);assert.equal(before-s.gold,2*enhancementCost(n,'tank'));}
-  assert.equal(enhanceEquipment(s,T,'tank').reason,'max');assert.equal(parseSave(JSON.stringify(s)).equipment.tank.level,20);
+  for(let n=10;n<20;n++){const before=s.gold;assert.equal(enhanceEquipment(s,T,'tank').ok,true);assert.equal(before-s.gold,BigInt(2*enhancementCost(n,'tank')));}
+  assert.equal(enhanceEquipment(s,T,'tank').reason,'max');assert.equal(parseSave(serializeSave(s)).equipment.tank.level,20);
 });
 test('copies at every level 10 to 20 cost the initial purchase plus all actual upgrade costs',()=>{
   for(let level=10;level<=20;level++){
@@ -94,10 +95,10 @@ test('copies at every level 10 to 20 cost the initial purchase plus all actual u
     const total=1500000000+Array.from({length:level},(_,n)=>enhancementCost(n,'fighter')).reduce((a,b)=>a+b,0);
     assert.equal(additionalEquipmentCost('fighter',level),total);const before=s.gold;
     assert.deepEqual(buyAdditionalEquipment(s,T,'fighter'),{ok:true,cost:total,count:3,level,deployed:false});
-    assert.equal(s.gold,before-total);assert.deepEqual(parseSave(JSON.stringify(s)).equipment.fighter,s.equipment.fighter);
+    assert.equal(s.gold,before-BigInt(total));assert.deepEqual(parseSave(serializeSave(s)).equipment.fighter,s.equipment.fighter);
   }
   const s=army();s.gold=MAX_GOLD;s.equipment.fighter={level:19,count:100000,deployed:false};
-  assert.ok(Number.isSafeInteger(enhancementOffer(s,'fighter').cost));assert.equal(enhancementOffer(s,'fighter').reason,'gold');
+  assert.equal(enhancementOffer(s,'fighter').cost,BigInt(enhancementCost(19,'fighter'))*100000n);assert.equal(enhancementOffer(s,'fighter').reason,null);
 });
 test('aircraft rank previews require actual general ranks and 300 sergeants',()=>{
   assert.equal(equipmentPurchaseOffer(army('준장'),'transport').visible,true);assert.equal(equipmentPurchaseOffer(army('준장'),'transport').reason,'locked');
@@ -122,7 +123,7 @@ test('new ceremonial art is detailed, distinct and reused across renders',()=>{
   for(const svg of [flag,upgraded,revolver])assert.ok((svg.match(/<rect /g)??[]).length>90);
 });
 test('auto skill checkpoints once, ticks batch saves, handoff/reload never replays gold',()=>{
-  let now=T;const s=army(),values=new Map([[SAVE_KEY,JSON.stringify(s)]]),writes=[];
+  let now=T;const s=army(),values=new Map([[SAVE_KEY,serializeSave(s)]]),writes=[];
   const storage={getItem:key=>values.get(key)??null,setItem(key,value){writes.push(key);values.set(key,value);}};
   const make=()=>createGameSession({storage,now:()=>now,setTimer:()=>1,clearTimer:()=>{}});
   const a=make();a.start();a.change(state=>activateAutoTouch(state,now));assert.deepEqual(writes,[SAVE_KEY+'-backup',SAVE_KEY]);
@@ -132,7 +133,7 @@ test('auto skill checkpoints once, ticks batch saves, handoff/reload never repla
   now=T+60000;b.tick();assert.equal(b.state.autoTouchTicks,200);b.pause();const c=make();c.start();assert.equal(c.state.gold,b.state.gold);c.pause();
 });
 test('failed saves retain auto progress in memory and recover without duplicate pulses',()=>{
-  let now=T,fail=false;const values=new Map([[SAVE_KEY,JSON.stringify(army())]]),errors=[];
+  let now=T,fail=false;const values=new Map([[SAVE_KEY,serializeSave(army())]]),errors=[];
   const storage={getItem:k=>values.get(k)??null,setItem(k,v){if(fail)throw new Error('full');values.set(k,v);}};
   const session=createGameSession({storage,now:()=>now,setTimer:()=>1,clearTimer:()=>{},onError:(area)=>errors.push(area)});
   session.start();session.change(s=>activateAutoTouch(s,now));fail=true;now=T+600;session.tick();session.pause();

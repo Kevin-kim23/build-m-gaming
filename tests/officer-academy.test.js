@@ -1,3 +1,4 @@
+import { serializeSave } from '../src/money.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, upgradeSchool, recruit, recruitOffer, unitCost, parseSave, perSecond, perTap, MAX_GOLD, MAX_SOLDIERS, SAVE_KEY, armyPower } from '../src/game.js';
@@ -13,7 +14,7 @@ import { schoolIcon } from '../src/school-art.js';
 import { schoolsMarkup, schoolDetailMarkup } from '../src/school-panels.js';
 import { officerDetails } from '../src/officer-art.js';
 const T=1_800_000_000_000;
-const general=()=>({...freshState(T),soldiers:17480,sergeants:300,ncoSchoolLevel:5,gold:MAX_GOLD});
+const general=()=>({...freshState(T),soldiers:17480,sergeants:300,ncoSchoolLevel:5,gold:100_000_000_000_000});
 
 test('all five academy levels open in sequence at major general without additional rank gates',()=>{
   const s=general();
@@ -70,28 +71,28 @@ test('v13 and older saves preserve assets and never inject new officer counts or
   const old={...general(),version:13,officerSchoolLevel:1,lieutenants:49,gold:123456789,swordActivatedAt:T-30000,fieldTheme:'concrete',battleCleared:4};
   old.equipment.tank={level:10,deployed:true,count:3};
   for(const u of NEW_OFFICER_GRADES){delete old[u.field];}
-  const loaded=parseSave(JSON.stringify(old),T);assert.equal(loaded.version,16);
+  const loaded=parseSave(serializeSave(old),T);assert.equal(loaded.version,17);
   for(const field of ['gold','soldiers','sergeants','lieutenants','officerSchoolLevel','swordActivatedAt','fieldTheme','battleCleared','equipment'])assert.deepEqual(loaded[field],old[field]);
   for(const version of [9,10,11,12,13]){
     const prior={...old,version};for(const u of NEW_OFFICER_GRADES)prior[u.field]=99;
-    const migrated=parseSave(JSON.stringify(prior),T);
+    const migrated=parseSave(serializeSave(prior),T);
     assert.ok(migrated);for(const u of NEW_OFFICER_GRADES)assert.equal(migrated[u.field],0);
-    assert.equal(parseSave(JSON.stringify({...prior,officerSchoolLevel:2}),T),null);
+    assert.equal(parseSave(serializeSave({...prior,officerSchoolLevel:2}),T),null);
   }
 });
 test('v14 reloads new officers and all school levels and rejects corrupted headcounts',()=>{
   for(let level=1;level<=5;level++){
     const s={...general(),officerSchoolLevel:level};
     for(const u of NEW_OFFICER_GRADES)if(u.schoolLevel<=level)s[u.field]=2;
-    const loaded=parseSave(JSON.stringify(s),T);for(const u of NEW_OFFICER_GRADES)assert.equal(loaded[u.field],s[u.field]);
+    const loaded=parseSave(serializeSave(s),T);for(const u of NEW_OFFICER_GRADES)assert.equal(loaded[u.field],s[u.field]);
     assert.equal(loaded.officerSchoolLevel,level);assert.equal(armyPower(loaded),armyPower(s));
   }
-  for(const u of NEW_OFFICER_GRADES)for(const value of [undefined,null,-1,1.5,'2',Math.floor(MAX_SOLDIERS/u.power)+1])assert.equal(parseSave(JSON.stringify({...general(),[u.field]:value}),T),null);
-  for(const level of [6,-1,1.2,'5'])assert.equal(parseSave(JSON.stringify({...general(),officerSchoolLevel:level}),T),null);
+  for(const u of NEW_OFFICER_GRADES)for(const value of [undefined,null,-1,1.5,'2',Math.floor(MAX_SOLDIERS/u.power)+1])assert.equal(parseSave(serializeSave({...general(),[u.field]:value}),T),null);
+  for(const level of [6,-1,1.2,'5'])assert.equal(parseSave(serializeSave({...general(),officerSchoolLevel:level}),T),null);
 });
 test('academy and officer purchases share checkpoint/backups and survive restart',()=>{
   const initial={...general(),officerSchoolLevel:1,gold:OFFICER_GRADES[1].academyCost+unitCost(0,'firstLieutenant')};
-  const values=new Map([[SAVE_KEY,JSON.stringify(initial)]]),writes=[];
+  const values=new Map([[SAVE_KEY,serializeSave(initial)]]),writes=[];
   const storage={getItem:k=>values.get(k)??null,setItem(k,v){values.set(k,v);writes.push(k);}};
   const session=createGameSession({storage,now:()=>T,setTimer:()=>1,clearTimer:()=>{}});
   session.start();assert.equal(session.change(s=>upgradeSchool(s,T,'officer')).ok,true);
@@ -99,12 +100,12 @@ test('academy and officer purchases share checkpoint/backups and survive restart
   assert.equal(parseSave(values.get(SAVE_KEY+'-backup'),T).firstLieutenants,0);
   session.pause();session.start();assert.equal(session.state.officerSchoolLevel,2);assert.equal(session.state.firstLieutenants,1);assert.equal(session.state.gold,0);session.pause();
 });
-test('all ten troop types participate in battle without increasing the enemy roster',()=>{
+test('all fifteen troop types participate in battle without increasing the enemy roster',()=>{
   const s={...general(),officerSchoolLevel:5};for(const u of Object.values(UNITS))s[u.field]=Math.max(s[u.field],12);
-  const loadout=defaultLoadout(s);assert.equal(Object.values(loadout.units).length,10);assert.ok(Object.values(loadout.units).every(n=>n===10));
+  const loadout=defaultLoadout(s);assert.equal(Object.values(loadout.units).length,15);assert.ok(Object.values(loadout.units).every(n=>n===10));
   const battle=createBattle(s,1,loadout),shot=fireVolley(battle);
-  assert.equal(shot.player.units.length,10);assert.ok(shot.player.units.every(u=>u.lastShotMs===0));assert.equal(shot.enemy.units.length,3);
-  const positions=unitPositions(loadout.units,'player');assert.equal(positions.length,100);
+  assert.equal(shot.player.units.length,15);assert.ok(shot.player.units.every(u=>u.lastShotMs===0));assert.equal(shot.enemy.units.length,3);
+  const positions=unitPositions(loadout.units,'player');assert.equal(positions.length,150);
   for(const [i,p] of positions.entries()){
     assert.ok(p.x-p.width/2>=0&&p.x+p.width/2<=360&&p.y-p.height/2>290&&p.y+p.height/2<400);
     for(const other of positions.slice(i+1))assert.ok(Math.abs(p.x-other.x)>=(p.width+other.width)/2||Math.abs(p.y-other.y)>=(p.height+other.height)/2);
@@ -121,6 +122,6 @@ test('academy stages show true prices and recommended ranks, with distinct cache
   const images=OFFICER_GRADES.map(g=>schoolIcon('officer',g.schoolLevel).replace(/aria-label="[^"]*"/,''));
   assert.equal(new Set(images).size,5);
   const uniforms=OFFICER_GRADES.map(g=>{
-    const marks=[],c={fillRect(...r){marks.push([this.fillStyle,...r]);}};officerDetails(c,g);return JSON.stringify(marks);
+    const marks=[],c={fillRect(...r){marks.push([this.fillStyle,...r]);}};officerDetails(c,g);return serializeSave(marks);
   });assert.equal(new Set(uniforms).size,5);
 });

@@ -1,3 +1,4 @@
+import { serializeSave } from '../src/money.js';
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -8,7 +9,7 @@ import { RANKS } from "../src/ranks.js";
 
 const T = 1800000000000;
 const army = (power = 1280) => ({
-  ...freshState(T), soldiers: power - 400, sergeants: 40, gold: MAX_GOLD,
+  ...freshState(T), soldiers: power - 400, sergeants: 40, gold:100_000_000_000_000,
 });
 const expectedBatchCost = (owned, type = 'soldier') =>
   Array.from({ length: 100 }, (_, index) => unitCost(owned + index, type)).reduce((sum, cost) => sum + cost, 0);
@@ -16,7 +17,7 @@ const expectedBatchCost = (owned, type = 'soldier') =>
 test("level one command baton is previewed at major and automatically owned from lieutenant colonel", async () => {
   const { COMMAND_BATON, commandBatonStatus } = await import("../src/personal-equipment.js");
   assert.deepEqual(COMMAND_BATON, {
-    id: "commandBaton", name: "지휘봉", unlockRank: "중령", upgradeRank: "대령", level: 1, maxLevel: 6, recruitAmount: 100,
+    id: "commandBaton", name: "지휘봉", unlockRank: "중령", upgradeRank: "대령", level: 1, maxLevel: 8, recruitAmount: 100,
   });
   assert.deepEqual(commandBatonStatus(army(639)), { visible: false, owned: false, level: 0 });
   assert.deepEqual(commandBatonStatus(army(640)), { visible: true, owned: false, level: 0 });
@@ -62,15 +63,15 @@ test("a hundred recruits are atomic when money or only ninety-nine power slots r
   const atLimit = army(MAX_SOLDIERS - 99), beforeLimitFailure = structuredClone(atLimit);
   assert.equal(recruit(atLimit, T, "soldier", 100).reason, "limit");
   assert.deepEqual(atLimit, beforeLimitFailure);
-  const exactCapacity = army(MAX_SOLDIERS - 100);
+  const exactCapacity = {...army(MAX_SOLDIERS - 100),gold:MAX_GOLD};
   assert.equal(recruit(exactCapacity, T, "soldier", 100).ok, true);
   assert.equal(exactCapacity.soldiers + exactCapacity.sergeants * 10, MAX_SOLDIERS);
 });
 
-test("batch totals above the wallet limit remain unaffordable instead of being discounted to MAX_GOLD", () => {
+test("batch totals above the old wallet cap remain unaffordable at that saved balance", () => {
   const s = { ...army(), soldiers: 5000, sergeants: 130000, ncoSchoolLevel: 1 }, original = structuredClone(s);
   const cost = expectedBatchCost(s.sergeants, 'sergeant'), offer = recruitOffer(s, "sergeant", 100);
-  assert.ok(cost > MAX_GOLD);
+  assert.ok(cost > s.gold);
   assert.ok(Number.isSafeInteger(cost));
   assert.equal(offer.cost, cost);
   assert.equal(offer.canBuy, false);
@@ -133,13 +134,13 @@ test("cached batch prices do not cache changing gold or eligibility and refresh 
 test("existing version seven saves restore their derived baton without a separate baton save field", async () => {
   const { commandBatonStatus } = await import("../src/personal-equipment.js");
   const original = { ...army(), version: 7, battleCleared: 2, taps: 1234, gold: 987654321 };
-  const restored = parseSave(JSON.stringify(original), T);
-  assert.deepEqual(restored, { ...original, version: 16, ncoSchoolLevel: 2,
+  const restored = parseSave(serializeSave(original), T);
+  assert.deepEqual(restored, { ...original, version: 17, ncoSchoolLevel: 2,
     earnedAchievements: ["squad", "platoon", "company", "battalion"] });
-  assert.equal(restored.version, 16);
+  assert.equal(restored.version, 17);
   assert.equal(commandBatonStatus(restored).owned, true);
   assert.equal(Object.hasOwn(restored, "commandBaton"), false);
-  const migrated = parseSave(JSON.stringify({ ...original, version: 6 }), T);
+  const migrated = parseSave(serializeSave({ ...original, version: 6 }), T);
   assert.equal(commandBatonStatus(migrated).level, 1);
   assert.equal(migrated.battleCleared, 0);
 });

@@ -2,7 +2,7 @@ import { brush } from './pixel-detail.js';
 
 // Original dress-uniform details shared by recruitment/home portraits and battle sprites.
 export function officerDetails(c, unit, overhead = false) {
-  const r=brush(c), gold=unit.insigniaKind==='field', light=gold?'#edce80':'#ecf2e2';
+  const r=brush(c), gold=unit.insigniaKind!=='officer', light=gold?'#edce80':'#ecf2e2';
   if(overhead) {
     r(4,3,5,2,unit.color);r(4,3,5,.5,light);r(4,5,5,1,'#192d3c');
     for(let i=0;i<unit.marks;i++)r(4+i*2,10,1,2,light);
@@ -20,7 +20,8 @@ export function officerDetails(c, unit, overhead = false) {
   r(11,13,3,.8,'#973d38');r(11,14,1,.6,'#eed489');r(12,14,2,.6,'#6e9da6');
   for(let i=0;i<unit.marks;i++) {
     const x=7+i*2;
-    if(gold){r(x,12,1,3,light);r(x-.5,13,2,1,light);r(x,13,.5,.5,'#fff1be');}
+    if(unit.insigniaKind==='general'){r(x,12,.6,3,light);r(x-.7,13,2,1,light);r(x-.4,14,1.4,.5,'#fff5c8');}
+    else if(gold){r(x,12,1,3,light);r(x-.5,13,2,1,light);r(x,13,.5,.5,'#fff1be');}
     else {r(x,12,.7,2.5,light);r(x-.5,13,1.7,.7,light);}
   }
   if(unit.schoolLevel>=3){r(3,13,.5,6,light);r(3.5,18,2,.5,light);}

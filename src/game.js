@@ -1,13 +1,16 @@
+export { parseSave } from './save.js';
+import { ADVANCED_OFFICERS } from './advanced-officers.js';
+import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMoney } from './money.js';
+export { MAX_GOLD, serializeSave } from './money.js';
 import { rankForArmy } from "./ranks.js";
 import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
 import { NEW_OFFICER_GRADES } from './officer-progression.js';
-import { schoolOffer, legacySchoolLevel } from "./schools.js";
-import { FIELD_ARMY_SIZE } from "./formations.js";
-import { STAGES } from "./battle-balance.js";
-import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, AUTO_TOUCH, GENERAL_SWORD, generalSwordDuration } from "./personal-equipment.js";
+import { schoolOffer } from "./schools.js";
+import { ALLIED_ARMY_SIZE } from "./formations.js";
+import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, GENERAL_SWORD, generalSwordDuration } from "./personal-equipment.js";
 import { settleAutoTouch } from './auto-touch.js';
 import { withCampaignIncome } from './campaign-rewards.js';
-import { reconcileAchievements, validAchievementIds } from "./achievements.js";
+import { reconcileAchievements } from "./achievements.js";
 import {
   emptyEquipment,
   equipmentIncome,
@@ -15,37 +18,40 @@ import {
   enhancementOffer,
   equipmentOf,
   equipmentCount, additionalEquipmentOffer,
-  EQUIPMENT,
   deployedEquipment, MAX_DEPLOYED_EQUIPMENT, deploymentOffer,
-  validEquipment,
 } from "./equipment.js";
-import { FIELD_THEMES } from './field-theme.js';
 export { UNITS, armyPower } from "./units.js";
 export { RANKS, RANK_REQUIREMENTS, rankFor } from "./ranks.js";
 export const SAVE_KEY = "budae-kiugi-recruits-v3";
 export const LEGACY_KEY = "budae-kiugi-tap-save-v2";
-export const MAX_GOLD = 100_000_000_000_000;
 export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
-export const MAX_SOLDIERS = FIELD_ARMY_SIZE * 4;
+export const MAX_SOLDIERS = ALLIED_ARMY_SIZE * 4;
 export const perTap = (s, now = Date.now()) =>
   (1 + troopIncome(s, "tap") + equipmentIncome(s).tap) * swordSkillStatus(s, now).multiplier;
 export const perSecond = (s) =>
   withCampaignIncome(s, troopIncome(s, "passive") + equipmentIncome(s).passive);
 // Preserve early prices, but avoid exponential prices blocking battalion progression.
-export const recruitCost = (count) => {
-  const earlyPrice = 50 * 1.2 ** count;
-  const gradualPrice = 50 + 50 * count + 0.05 * count * count;
-  return Math.min(
-    MAX_GOLD,
-    Math.ceil((Math.min(earlyPrice, gradualPrice) - 1e-8) / 10) * 10,
-  );
+export const recruitCost = count => {
+  if (!Number.isSafeInteger(count) || count < 0) throw new RangeError('Invalid recruit count');
+  if (count < 64) return Math.ceil((Math.min(50*1.2**count,50+50*count+0.05*count*count)-1e-8)/10)*10;
+  const n=BigInt(count);
+  return minMoney(MAX_GOLD, compactMoney(((1000n+1000n*n+n*n+199n)/200n)*10n));
 };
-// Each price uses only the owned count of that exact unit type.
-export function unitCost(owned, type = "soldier") {
-  if (type === "soldier") return recruitCost(owned);
-  const price = UNITS[type]?.price;
-  if (!price) throw new RangeError("Unknown recruit type");
-  return Math.min(MAX_GOLD, price[0] + price[1] * owned + price[2] * owned * owned);
+// Exact polynomial prices depend only on this unit's owned count.
+function calculateUnitCost(owned, type) {
+  if (type==='soldier') return recruitCost(owned);
+  if (!Number.isSafeInteger(owned) || owned<0) throw new RangeError('Invalid recruit count');
+  const price=UNITS[type]?.price;
+  if(!price) throw new RangeError('Unknown recruit type');
+  return minMoney(MAX_GOLD,addMoney(price[0],addMoney(multiplyMoney(price[1],owned),multiplyMoney(multiplyMoney(price[2],owned),owned))));
+}
+const unitCosts = new Map();
+export function unitCost(owned, type = 'soldier') {
+  const cached = unitCosts.get(type);
+  if(cached?.owned === owned) return cached.cost;
+  const cost = calculateUnitCost(owned,type);
+  unitCosts.set(type,{owned,cost});
+  return cost;
 }
 function recruitUnit(type, quantity) {
   const unit = UNITS[type];
@@ -60,7 +66,7 @@ function batchRecruitCost(owned, type) {
   let cached = batchCosts.get(type);
   if (!cached || cached.owned !== owned) {
     let cost = 0;
-    for (let i = 0; i < COMMAND_BATON.recruitAmount; i++) cost += unitCost(owned + i, type);
+    for (let i = 0; i < COMMAND_BATON.recruitAmount; i++) cost = addMoney(cost, unitCost(owned + i, type));
     cached = { owned, cost };
     batchCosts.set(type, cached);
   }
@@ -96,7 +102,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
 }
 export function freshState(now = Date.now()) {
   return {
-    version: 16,
+    version: 17,
     fieldTheme: 'earth',
     swordActivatedAt: null,
     swordDurationMs: GENERAL_SWORD.durationMs,
@@ -104,6 +110,7 @@ export function freshState(now = Date.now()) {
     autoTouchTicks: 0,
     ncoSchoolLevel: 0,
     officerSchoolLevel: 0,
+    advancedSchoolLevel: 0,
     battleCleared: 0,
     campaignCleared: 0,
     earnedAchievements: [],
@@ -115,7 +122,7 @@ export function freshState(now = Date.now()) {
     masterSergeants: 0,
     sergeantMajors: 0,
     lieutenants: 0,
-    ...Object.fromEntries(NEW_OFFICER_GRADES.map(unit=>[unit.field,0])),
+    ...Object.fromEntries([...NEW_OFFICER_GRADES,...ADVANCED_OFFICERS].map(unit=>[unit.field,0])),
     equipment: emptyEquipment(),
     sound: false,
     lastAccrual: now,
@@ -126,25 +133,21 @@ export function freshState(now = Date.now()) {
 export function accrue(s, now = Date.now()) {
   const elapsed = Math.min(MAX_OFFLINE_MS, Math.max(0, Math.floor(now - s.lastAccrual)));
   if (!elapsed) return 0;
-  const wholeSeconds = Math.floor(elapsed / 1000);
-  const income = perSecond(s);
-  const fraction = s.incomeRemainder + (elapsed % 1000) * income;
-  const room = MAX_GOLD - s.gold;
-  const earned = wholeSeconds > 0 && income >= Math.ceil(room / wholeSeconds)
-    ? room : wholeSeconds * income + Math.floor(fraction / 1000);
-  const actual = Math.min(earned, MAX_GOLD - s.gold);
-  s.gold += actual;
-  s.incomeRemainder = s.gold === MAX_GOLD ? 0 : fraction % 1000;
+  const scaled = addMoney(multiplyMoney(perSecond(s),elapsed),s.incomeRemainder);
+  const earned = typeof scaled === 'bigint' ? compactMoney(scaled/1000n) : Math.floor(scaled/1000);
+  const actual = minMoney(earned, subtractMoney(MAX_GOLD,s.gold));
+  s.gold = addMoney(s.gold,actual);
+  s.incomeRemainder = s.gold === MAX_GOLD ? 0 : Number(typeof scaled === 'bigint' ? scaled%1000n : scaled%1000);
   s.lastAccrual = now;
   const automatic = settleAutoTouch(s, now, 1 + troopIncome(s, 'tap') + equipmentIncome(s).tap, MAX_GOLD);
   if (s.gold === MAX_GOLD) s.incomeRemainder = 0;
-  return actual + automatic;
+  return addMoney(actual,automatic);
 }
 export function tapGold(s, now = Date.now()) {
   accrue(s, now);
   if (s.gold >= MAX_GOLD || s.taps >= Number.MAX_SAFE_INTEGER) return 0;
-  const earned = Math.min(perTap(s, now), MAX_GOLD - s.gold);
-  s.gold += earned;
+  const earned = minMoney(perTap(s, now), subtractMoney(MAX_GOLD,s.gold));
+  s.gold = addMoney(s.gold,earned);
   s.taps++;
   return earned;
 }
@@ -174,107 +177,18 @@ export function recruit(s, now = Date.now(), type = "soldier", quantity = 1) {
     return { ok: false, reason: offer.reason, cost: offer.cost };
   const { cost, unit } = offer;
   const previousRank = rankForArmy(s);
-  s.gold -= cost;
+  s.gold = subtractMoney(s.gold,cost);
   s[unit.field] = (s[unit.field] ?? 0) + quantity;
   const rank = rankForArmy(s);
   const achievements = reconcileAchievements(s);
   return { ok: true, cost, rank, type, count: quantity, achievements, promoted: rank > previousRank };
-}
-export function parseSave(raw, now = Date.now()) {
-  try {
-    const s = JSON.parse(raw);
-    if (!s || typeof s.sound !== "boolean") return null;
-    if (s.version === 2) {
-      if (
-        !Number.isSafeInteger(s.gold) ||
-        s.gold < 0 ||
-        s.gold !== s.taps ||
-        s.rank !== 0
-      )
-        return null;
-      return {
-        ...freshState(now),
-        gold: Math.min(s.gold, MAX_GOLD),
-        taps: s.taps,
-        sound: s.sound,
-      };
-    }
-    const integer = (x, max) => Number.isSafeInteger(x) && x >= 0 && x <= max;
-    if (
-      ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].includes(s.version) ||
-      (s.version >= 16 && (!(s.autoTouchActivatedAt === null || integer(s.autoTouchActivatedAt, s.lastAccrual)) ||
-        ![30000,40000,50000,60000].includes(s.swordDurationMs) ||
-        !integer(s.autoTouchTicks, AUTO_TOUCH.durationMs/AUTO_TOUCH.intervalMs) || (s.autoTouchActivatedAt === null && s.autoTouchTicks !== 0))) ||
-      (s.version >= 15 && !integer(s.campaignCleared, STAGES.length)) ||
-      (s.version >= 14 && !NEW_OFFICER_GRADES.every(unit=>integer(s[unit.field],Math.floor(MAX_SOLDIERS/unit.power)))) ||
-      (s.version >= 12 && (typeof s.fieldTheme !== 'string' || !Object.hasOwn(FIELD_THEMES, s.fieldTheme))) ||
-      (s.version >= 11 && !(s.swordActivatedAt === null || integer(s.swordActivatedAt, 100_000_000_000_000))) ||
-      (s.version >= 9 && (!integer(s.ncoSchoolLevel,5) || !integer(s.officerSchoolLevel,s.version >= 14 ? 5 : 1) ||
-        (s.officerSchoolLevel>0 && s.ncoSchoolLevel!==5) ||
-        !['masterSergeant','sergeantMajor','lieutenant'].every(id=>integer(s[UNITS[id].field],Math.floor(MAX_SOLDIERS/UNITS[id].power))))) ||
-      (s.version >= 7 && !integer(s.battleCleared, 10)) ||
-      (s.version >= 8 && !validAchievementIds(s.earnedAchievements)) ||
-      !integer(s.gold, MAX_GOLD) ||
-      !integer(s.taps, Number.MAX_SAFE_INTEGER) ||
-      !integer(s.soldiers, MAX_SOLDIERS) ||
-      (s.version >= 4 && !integer(s.sergeants, MAX_SOLDIERS / 10)) ||
-      (s.version >= 6 && !integer(s.staffSergeants, MAX_SOLDIERS / 20)) ||
-      (s.version >= 5 && !validEquipment(s.equipment, s.version === 5, s.version >= 10, s.version >= 12, s.version >= 13, s.version >= 16)) ||
-      !integer(s.lastAccrual, 100_000_000_000_000) ||
-      !integer(s.incomeRemainder, 999) ||
-      !integer(s.revision, Number.MAX_SAFE_INTEGER)
-    )
-      return null;
-    const migrated = {
-      version: 16,
-      fieldTheme: s.version >= 12 ? s.fieldTheme : 'earth',
-      swordActivatedAt: s.version >= 11 ? s.swordActivatedAt : null,
-      swordDurationMs: s.version >= 16 ? s.swordDurationMs : GENERAL_SWORD.durationMs,
-      autoTouchActivatedAt: s.version >= 16 ? s.autoTouchActivatedAt : null,
-      autoTouchTicks: s.version >= 16 ? s.autoTouchTicks : 0,
-      ncoSchoolLevel: s.version >= 9 ? s.ncoSchoolLevel : 0,
-      officerSchoolLevel: s.version >= 9 ? s.officerSchoolLevel : 0,
-      battleCleared: s.version >= 7 ? s.battleCleared : 0,
-      campaignCleared: s.version >= 15 ? s.campaignCleared : 0,
-      earnedAchievements: s.version >= 8 ? [...s.earnedAchievements] : [],
-      gold: s.gold,
-      taps: s.taps,
-      soldiers: s.soldiers,
-      sergeants: s.version >= 4 ? s.sergeants : 0,
-      staffSergeants: s.version >= 6 ? s.staffSergeants : 0,
-      masterSergeants: s.version >= 9 ? s.masterSergeants : 0,
-      sergeantMajors: s.version >= 9 ? s.sergeantMajors : 0,
-      lieutenants: s.version >= 9 ? s.lieutenants : 0,
-      ...Object.fromEntries(NEW_OFFICER_GRADES.map(unit=>[unit.field,s.version >= 14 ? s[unit.field] : 0])),
-      equipment: emptyEquipment(),
-      sound: s.sound,
-      lastAccrual: s.lastAccrual,
-      incomeRemainder: s.incomeRemainder,
-      revision: s.revision,
-    };
-    if (armyPower(migrated) > MAX_SOLDIERS) return null;
-    if (s.version < 9) migrated.ncoSchoolLevel = legacySchoolLevel(migrated);
-    for (const id of Object.keys(EQUIPMENT)) {
-      const gun =
-        s.version >= 5 && (s.version >= 6 || id === "artillery") && (id !== "helicopter" || s.version >= 10) && (id !== "rocketLauncher" || s.version >= 12) && s.version >= (EQUIPMENT[id].introducedVersion ?? 0)
-          ? s.equipment[id]
-          : null;
-      if (gun)
-        migrated.equipment[id] = { level: gun.level, deployed: gun.deployed, count: s.version >= 13 ? gun.count : 1 };
-    }
-    if (deployedEquipment(migrated).length > MAX_DEPLOYED_EQUIPMENT) return null;
-    reconcileAchievements(migrated);
-    return migrated;
-  } catch {
-    return null;
-  }
 }
 export function upgradeSchool(s, now = Date.now(), id = 'nco') {
   schoolOffer(s,id); // Validate identifiers before settling or spending.
   accrue(s,now);
   const offer=schoolOffer(s,id);
   if(!offer.canBuy) return {ok:false,reason:offer.reason};
-  s.gold-=offer.cost;
+  s.gold = subtractMoney(s.gold,offer.cost);
   s[offer.school.field]=offer.nextLevel;
   return {ok:true,cost:offer.cost,level:offer.nextLevel};
 }
@@ -284,7 +198,7 @@ export function buyEquipment(s, now = Date.now(), id = "artillery") {
   const offer = equipmentPurchaseOffer(s, id);
   if (!offer.canBuy) return { ok: false, reason: offer.reason };
   const deployed = deployedEquipment(s).length < MAX_DEPLOYED_EQUIPMENT;
-  s.gold -= offer.cost;
+  s.gold = subtractMoney(s.gold,offer.cost);
   s.equipment = {
     ...emptyEquipment(),
     ...s.equipment,
@@ -296,7 +210,7 @@ export function enhanceEquipment(s, now = Date.now(), id = "artillery") {
   accrue(s, now);
   const offer = enhancementOffer(s, id);
   if (!offer.canUpgrade) return { ok: false, reason: offer.reason };
-  s.gold -= offer.cost;
+  s.gold = subtractMoney(s.gold,offer.cost);
   equipmentOf(s, id).level++;
   return { ok: true, cost: offer.cost, level: equipmentOf(s, id).level };
 }
@@ -305,7 +219,7 @@ export function buyAdditionalEquipment(s, now = Date.now(), id = 'artillery') {
   accrue(s, now);
   const offer = additionalEquipmentOffer(s, id);
   if (!offer.canBuy) return { ok: false, reason: offer.reason };
-  s.gold -= offer.cost;
+  s.gold = subtractMoney(s.gold,offer.cost);
   const gun = equipmentOf(s, id);
   gun.count = equipmentCount(s, id) + 1;
   return { ok: true, cost: offer.cost, count: gun.count, level: gun.level, deployed: gun.deployed };

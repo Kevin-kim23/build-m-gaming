@@ -1,3 +1,4 @@
+import { minMoney, subtractMoney, addMoney, multiplyMoney } from './money.js';
 import { AUTO_TOUCH, GENERAL_SWORD, generalRevolverStatus } from './personal-equipment.js';
 
 // Pay due pulses once, including throttled/offline time within the one-minute
@@ -14,8 +15,8 @@ export function settleAutoTouch(state, now, baseTapGold, maxGold) {
     const last=Math.min(due,Math.ceil((state.swordActivatedAt+(state.swordDurationMs??GENERAL_SWORD.durationMs)-at)/AUTO_TOUCH.intervalMs)-1);
     boosted=Math.max(0,last-first+1);
   }
-  const earned=Math.min(maxGold-state.gold,baseTapGold*(due-paid+boosted*(GENERAL_SWORD.tapMultiplier-1)));
-  state.gold+=earned;
+  const earned=minMoney(subtractMoney(maxGold,state.gold),multiplyMoney(baseTapGold,due-paid+boosted*(GENERAL_SWORD.tapMultiplier-1)));
+  state.gold=addMoney(state.gold,earned);
   state.autoTouchTicks=due;
   return earned;
 }

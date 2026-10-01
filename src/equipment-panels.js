@@ -1,3 +1,4 @@
+import { subtractMoney } from './money.js';
 import { personalMarkup } from "./personal-panels.js";
 import { repeatPurchaseMarkup, renderRepeatPurchase } from "./equipment-repeat-ui.js";
 import { fmt, fmtGold, fmtGoldCost } from "./format.js";
@@ -83,7 +84,7 @@ export function renderEquipmentPanel(s, root, id) {
     max
       ? "최대 강화 완료"
       : offer.reason === "gold"
-        ? fmtGoldCost(offer.cost - s.gold) + " G 부족"
+        ? fmtGoldCost(subtractMoney(offer.cost,s.gold)) + " G 부족"
         : level + 1 + "강으로 강화",
   );
   root.querySelector("#enhance-equipment").disabled = !offer.canUpgrade;

@@ -1,3 +1,4 @@
+import { serializeSave } from '../src/money.js';
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -18,7 +19,7 @@ import {
 const T = 1800000000000;
 test("sergeant stays locked without a school even with unlimited gold", () => {
   for (const soldiers of [0, 4, 10, 15, 20, 40, 60, 80, 159, 327680]) {
-    const s = { ...freshState(T), soldiers, gold: MAX_GOLD };
+    const s = { ...freshState(T), soldiers, gold:100_000_000_000_000 };
     const before = { ...s };
     assert.equal(recruitOffer(s, "sergeant").locked, true);
     assert.equal(recruit(s, T, "sergeant").reason, "locked");
@@ -52,7 +53,7 @@ test("sergeant purchase crosses promotion thresholds by equivalent strength", ()
       ...freshState(T), ncoSchoolLevel: 1,
       soldiers: soldiers - sergeants * 10,
       sergeants,
-      gold: MAX_GOLD,
+      gold:100_000_000_000_000,
     };
     assert.equal(rankFor(armyPower(s)), before);
     const result = recruit(s, T, "sergeant");
@@ -63,7 +64,7 @@ test("sergeant purchase crosses promotion thresholds by equivalent strength", ()
   }
 });
 test("each unit price is independent, even after actual purchases", () => {
-  const s = { ...freshState(T), ncoSchoolLevel: 1, soldiers: 160, sergeants: 2, gold: MAX_GOLD };
+  const s = { ...freshState(T), ncoSchoolLevel: 1, soldiers: 160, sergeants: 2, gold:100_000_000_000_000 };
   const sergeantPrice = recruitOffer(s, "sergeant").cost;
   recruit(s, T, "soldier");
   assert.equal(recruitOffer(s, "sergeant").cost, sergeantPrice);
@@ -93,7 +94,7 @@ test("new sergeants cannot earn retroactively; mixed offline income settles once
   assert.equal(s.gold, 80);
   accrue(s, T + 1000);
   assert.equal(s.gold, 185);
-  s = parseSave(JSON.stringify(s));
+  s = parseSave(serializeSave(s));
   accrue(s, T + 3601000);
   assert.equal(s.gold, 185 + 210 * 3600);
   const settled = s.gold;
@@ -112,14 +113,14 @@ test("v3 migration preserves the entire old progress and adds zero sergeants", (
     incomeRemainder: 456,
   };
   delete old.sergeants;
-  const migrated = parseSave(JSON.stringify(old));
-  assert.deepEqual(migrated, { ...old, version: 16, sergeants: 0,
+  const migrated = parseSave(serializeSave(old));
+  assert.deepEqual(migrated, { ...old, version: 17, sergeants: 0,
     earnedAchievements: ["squad", "platoon"] });
   const mixed = { ...migrated, sergeants: 9 };
-  assert.deepEqual(parseSave(JSON.stringify(mixed)), mixed);
+  assert.deepEqual(parseSave(serializeSave(mixed)), mixed);
 });
 test("capacity and corrupt mixed-unit saves are rejected without losing money", () => {
-  const s = { ...freshState(T), ncoSchoolLevel: 1, soldiers: MAX_SOLDIERS - 9, gold: MAX_GOLD };
+  const s = { ...freshState(T), ncoSchoolLevel: 1, soldiers: MAX_SOLDIERS - 9, gold:100_000_000_000_000 };
   const before = { ...s };
   assert.equal(recruit(s, T, "sergeant").reason, "limit");
   assert.deepEqual(s, before);
@@ -134,7 +135,7 @@ test("capacity and corrupt mixed-unit saves are rejected without losing money", 
     { soldiers: MAX_SOLDIERS - 1, sergeants: 1 },
   ]) {
     assert.equal(
-      parseSave(JSON.stringify({ ...freshState(T), ncoSchoolLevel: 1, ...patch })),
+      parseSave(serializeSave({ ...freshState(T), ncoSchoolLevel: 1, ...patch })),
       null,
     );
   }

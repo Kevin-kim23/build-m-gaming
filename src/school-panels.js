@@ -1,3 +1,4 @@
+import { subtractMoney } from './money.js';
 import { SCHOOLS, schoolOffer } from './schools.js';
 import { fmtGoldCost } from './format.js';
 import { schoolIcon } from './school-art.js';
@@ -19,7 +20,7 @@ export function schoolDetailMarkup(state,id) {
   return {kicker:'군사 교육 시설',title:d.name,
     body:`<div class="detail-art detail-art-wide">${schoolIcon(d.id,o.level)}</div>
       <p>${o.level?'Lv.'+o.level+' / '+d.maxLevel:'미건설'} · ${o.requirement}</p>
-      <ol class="school-levels">${d.effects.map((effect,i)=>`<li class="${o.level>i?'complete':''}"><b>Lv.${i+1}</b> ${effect}${o.level>i?' ✓':''}<small>${fmtGoldCost(d.costs[i])} G${d.recommendedRanks?` · ${d.recommendedRanks[i]} 구간 권장`:''}</small></li>`).join('')}</ol>
+      <ol class="school-levels">${d.effects.map((effect,i)=>`<li class="${o.level>i?'complete':''}"><b>Lv.${i+1}</b> ${effect}${o.level>i?' ✓':''}<small>${fmtGoldCost(d.costs[i])} G${d.requiredRanks?` · ${d.requiredRanks[i]} 이상 필수`:d.recommendedRanks?` · ${d.recommendedRanks[i]} 구간 권장`:''}</small></li>`).join('')}</ol>
       ${d.recommendedRanks?'<p>Lv.2~5는 추가 계급 제한 없이 골드로 확장합니다.<br>표시된 비용은 각 단계의 건설·확장비이며 모집비는 별도입니다.</p>':''}
       <p>학교는 한 채씩 보유하며 병력은 별도로 모집합니다. 자체 수입이나 전력은 없습니다.</p>`};
 }
@@ -28,7 +29,7 @@ export function renderSchools(state,root) {
     const card=root.querySelector(`[data-school="${id}"]`);if(!card)continue;
     const offer=schoolOffer(state,id),button=card.querySelector('[data-upgrade-school]');
     const label=offer.reason==='max'?'최대 레벨 달성':offer.reason==='locked'?'🔒 '+offer.requirement
-      :offer.reason==='gold'?`${fmtGoldCost(offer.cost-state.gold)} G 부족`:`${offer.level?'Lv.'+offer.nextLevel+' 확장':'건설'} · ${offer.effect}`;
+      :offer.reason==='gold'?`${fmtGoldCost(subtractMoney(offer.cost,state.gold))} G 부족`:`${offer.level?'Lv.'+offer.nextLevel+' 확장':'건설'} · ${offer.effect}`;
     if(button.textContent!==label)button.textContent=label;
     button.disabled=!offer.canBuy;
     const price=card.querySelector('[data-school-price]'),value=offer.reason==='max'?'—':fmtGoldCost(offer.cost)+' G';

@@ -1,3 +1,4 @@
+import { subtractMoney } from './money.js';
 import { EQUIPMENT, additionalEquipmentOffer, equipmentCount } from './equipment.js';
 import { fmtGoldCost } from './format.js';
 export function repeatPurchaseMarkup(id) {
@@ -19,7 +20,7 @@ export function renderRepeatPurchase(s, root) {
     const label = offer.reason === 'locked' ? '소장 · 사단기 Lv.1부터 추가 구매'
       : offer.reason === 'enhancement' ? '먼저 10강까지 강화하세요'
       : offer.reason === 'limit' ? '보유 수량 한도 도달'
-      : offer.reason === 'gold' ? fmtGoldCost(offer.cost - s.gold) + ' G 부족'
+      : offer.reason === 'gold' ? fmtGoldCost(subtractMoney(offer.cost,s.gold)) + ' G 부족'
       : `${EQUIPMENT[id].name} +${offer.level}강 1문 추가 구매`;
     if (button.textContent !== label) button.textContent = label;
   }

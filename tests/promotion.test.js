@@ -8,11 +8,11 @@ test("higher ranks retain bounded fanfares and give generals a longer dedicated 
   let previous = promotionProfile(1);
   for (let rank = 1; rank <= LAST_RANK; rank++) {
     const current = promotionProfile(rank);
-    assert.equal(current.duration, current.generalTier ? 5000 + current.generalTier * 300 : 3000);
+    assert.equal(current.duration, current.generalTier ? 5000 + current.generalTier * 300 + Math.max(0,current.generalTier-4)*500 : 3000);
     assert.ok(current.volume < 0.15);
     assert.ok(current.width <= 360);
     if (rank > 1) {
-      assert.ok(current.width > previous.width);
+      assert.ok(current.width >= previous.width);
       assert.ok(current.volume > previous.volume);
       assert.ok(current.sparks > previous.sparks);
     }

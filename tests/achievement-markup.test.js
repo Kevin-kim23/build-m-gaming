@@ -6,10 +6,10 @@ import { medalShelfMarkup, achievementListMarkup } from "../src/achievement-mark
 
 const state = (power = 0) => ({ soldiers: power, sergeants: 0, staffSergeants: 0, earnedAchievements: [] });
 
-test("all fifteen medals are distinct, fit their shared pixel bounds and use no duplicate SVG IDs", () => {
+test("all seventeen medals are distinct, fit their shared pixel bounds and use no duplicate SVG IDs", () => {
   const svgs = ACHIEVEMENTS.map(({ id }) => medalSvg(id));
-  assert.equal(svgs.length, 15);
-  assert.equal(new Set(svgs).size, 15);
+  assert.equal(svgs.length, 17);
+  assert.equal(new Set(svgs).size, 17);
   for (const [i, svg] of svgs.entries()) {
     assert.equal(svg, medalSvg(ACHIEVEMENTS[i].id));
     assert.match(svg, /viewBox="0 0 96 112"/);
@@ -26,16 +26,16 @@ test("all fifteen medals are distinct, fit their shared pixel bounds and use no 
 test("an empty medal shelf still exposes achievements without twenty fake medal slots", () => {
   const html = medalShelfMarkup();
   assert.match(html, /id="open-achievements"/);
-  assert.match(html, /id="medal-count">훈장 0 \/ 15/);
+  assert.match(html, /id="medal-count">훈장 0 \/ 17/);
   assert.match(html, /<ol id="medal-list"[^>]*><\/ol>/);
   assert.doesNotMatch(html, /<li|achievement-medal-svg|\/ 20/);
 });
 
-test("achievement list shows fifteen locked goals and progress without a reward claim action", () => {
+test("achievement list shows seventeen locked goals and progress without a reward claim action", () => {
   const html = achievementListMarkup(state(12));
   const ids = [...html.matchAll(/data-achievement="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(ids, ACHIEVEMENTS.map((item) => item.id));
-  assert.equal((html.match(/achievement-card locked/g) ?? []).length, 15);
+  assert.equal((html.match(/achievement-card locked/g) ?? []).length, 17);
   assert.equal((html.match(/획득 완료/g) ?? []).length, 0);
   assert.match(html, /12 \/ 20/);
   assert.match(html, /훈장이 자동으로 지급됩니다/);
@@ -52,7 +52,7 @@ test("earned medals remain complete, selection is unique and markup never change
   assert.equal((html.match(/achievement-card earned/g) ?? []).length, 4);
   assert.equal((html.match(/achievement-card[^\"]* selected/g) ?? []).length, 1);
   assert.match(html, /class="achievement-card earned selected" data-achievement="battalion"/);
-  assert.match(html, /훈장 <strong>4<\/strong> \/ 15/);
+  assert.match(html, /훈장 <strong>4<\/strong> \/ 17/);
   assert.deepEqual(s, snapshot);
   s.soldiers = 0;
   const retained = achievementListMarkup(s);

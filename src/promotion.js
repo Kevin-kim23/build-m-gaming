@@ -4,16 +4,16 @@ export function promotionProfile(rank) {
   const level = Number.isInteger(rank) ? Math.max(1, Math.min(LAST_RANK, rank)) : 1;
   const generalTier = RANK_DEFINITIONS[level].kind === 'general' ? RANK_DEFINITIONS[level].marks : 0;
   return {
-    duration: generalTier ? 5000 + generalTier * 300 : 3000,
+    duration: generalTier ? 5000 + generalTier * 300 + Math.max(0,generalTier-4)*500 : 3000,
     generalTier,
     salvos: generalTier ? generalTier + 2 : 0,
     salvoInterval: 600,
     saluteDelay: 850,
-    width: 220 + level * 8,
+    width: Math.min(360, 220 + level * 8),
     medal: 66 + level * 3,
     volume:
-      0.05 + Math.min(12, level) * 0.006 + Math.max(0, level - 12) * 0.004,
-    notes: 3 + Math.floor(level / 3),
+      Math.min(0.149, 0.05 + Math.min(12, level) * 0.006 + Math.max(0, level - 12) * 0.004),
+    notes: Math.min(8, 3 + Math.floor(level / 3)),
     sparks: 6 + level,
   };
 }

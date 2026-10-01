@@ -6,7 +6,7 @@ import {
   REGIMENT_SIZE,
   DIVISION_SIZE,
   CORPS_SIZE,
-  FIELD_ARMY_SIZE,
+  FIELD_ARMY_SIZE, ARMY_GROUP_SIZE, ALLIED_ARMY_SIZE,
 } from "./formations.js";
 import { armyPower } from "./units.js";
 export const GENERAL_MIN_SOLDIERS = 5_000;
@@ -141,6 +141,8 @@ export const RANK_DEFINITIONS = Object.freeze([
     kind: "general",
     marks: 4,
   },
+  { name: '원수', required: ARMY_GROUP_SIZE, condition: '4개 야전군 · 집단군 1개', kind: 'general', marks: 5 },
+  { name: '대원수', required: ALLIED_ARMY_SIZE, condition: '4개 집단군 · 연합군 1개', kind: 'general', marks: 6 },
 ]);
 export const RANKS = RANK_DEFINITIONS.map((r) => r.name);
 export const RANK_REQUIREMENTS = RANK_DEFINITIONS.map((r) => r.required);

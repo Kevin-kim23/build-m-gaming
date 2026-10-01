@@ -1,3 +1,4 @@
+import { multiplyMoney } from './money.js';
 import { rankForArmy, RANKS, catalogVisible } from "./ranks.js";
 import { divisionFlagStatus } from './personal-equipment.js';
 export const HELICOPTER_STAGES = Object.freeze([
@@ -151,7 +152,7 @@ export function equipmentPurchaseOffer(s, id = "artillery") {
 export function enhancementOffer(s, id = "artillery") {
   const gun = equipmentOf(s, id),
     limit = equipmentLevelLimit(s),
-    cost = gun && gun.level < limit ? Math.min(Number.MAX_SAFE_INTEGER, enhancementCost(gun.level, id) * equipmentCount(s,id)) : null;
+    cost = gun && gun.level < limit ? multiplyMoney(enhancementCost(gun.level, id),equipmentCount(s,id)) : null;
   const reason = !gun
     ? "unowned"
     : cost === null

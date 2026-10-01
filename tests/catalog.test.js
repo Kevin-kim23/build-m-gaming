@@ -1,3 +1,4 @@
+import { serializeSave } from '../src/money.js';
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -41,7 +42,7 @@ const state = (power, sergeants = 0) => ({
   ncoSchoolLevel: 2,
   soldiers: power - sergeants * 10,
   sergeants,
-  gold: MAX_GOLD,
+  gold:100_000_000_000_000,
 });
 test("major requires both 640 strength and forty actual sergeants; later ranks cannot bypass it", () => {
   for (const power of [640, 1280, 327680])
@@ -153,7 +154,7 @@ test("tank and SPG have independent ownership and upgrades through level ten", (
   setEquipmentDeployed(s, false, T, "tank");
   assert.equal(perSecond(s), base.passive + expected.passive + spg.passive);
   assert.equal(s.equipment.selfPropelled.deployed, true);
-  assert.deepEqual(parseSave(JSON.stringify(s)), { ...s,
+  assert.deepEqual(parseSave(serializeSave(s)), { ...s,
     earnedAchievements: ["squad", "platoon", "company", "battalion"] });
 });
 test("new troops and equipment do not earn income retroactively", () => {
@@ -175,9 +176,9 @@ test("v5 saves preserve artillery, balances and armies while adding empty new sl
     equipment: { artillery: { level: 7, deployed: false } },
   };
   delete old.staffSergeants;
-  assert.deepEqual(parseSave(JSON.stringify(old)), {
+  assert.deepEqual(parseSave(serializeSave(old)), {
     ...old,
-    version: 16, ncoSchoolLevel: 1,
+    version: 17, ncoSchoolLevel: 1,
     earnedAchievements: ["squad", "platoon", "company"],
     staffSergeants: 0,
     equipment: {
@@ -188,12 +189,12 @@ test("v5 saves preserve artillery, balances and armies while adding empty new sl
   });
   for (const bad of [-1, 1.5, undefined])
     assert.equal(
-      parseSave(JSON.stringify({ ...state(640, 40), staffSergeants: bad })),
+      parseSave(serializeSave({ ...state(640, 40), staffSergeants: bad })),
       null,
     );
   assert.equal(
     parseSave(
-      JSON.stringify({
+      serializeSave({
         ...state(640, 40),
         equipment: { ...emptyEquipment(), tank: { level: 11, deployed: true } },
       }),

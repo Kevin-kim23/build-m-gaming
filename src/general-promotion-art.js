@@ -1,4 +1,4 @@
-// Original ceremonial metalwork. SVG strings are cached by the four general tiers.
+// Original ceremonial metalwork. SVG strings are cached by the six general tiers.
 const cache = new Map();
 const star = (x,y,r,fill) => {
   const points=Array.from({length:10},(_,i)=>{
@@ -8,7 +8,7 @@ const star = (x,y,r,fill) => {
   return `<polygon points="${points}" fill="${fill}" stroke="#fff1b4" stroke-width="1"/>`;
 };
 export function generalEmblem(tier) {
-  if(!Number.isInteger(tier)||tier<1||tier>4)throw new RangeError('Unknown general ceremony tier');
+  if(!Number.isInteger(tier)||tier<1||tier>6)throw new RangeError('Unknown general ceremony tier');
   if(cache.has(tier))return cache.get(tier);
   const id=`general-ceremony-${tier}`, gold=`url(#${id}-gold)`, enamel=`url(#${id}-enamel)`;
   const feathers=Array.from({length:7+tier},(_,i)=>{
@@ -25,9 +25,9 @@ export function generalEmblem(tier) {
     const angle=(i*15+27)*Math.PI/180,x=300-Math.sin(angle)*83,y=168+Math.cos(angle)*84;
     return `<g transform="rotate(${i*14-55} ${x} ${y})"><path d="M${x} ${y+11}q-18-7-9-23q15 4 9 23Z" fill="${gold}" stroke="#fff0a0" stroke-width=".7"/><path d="m${x} ${y+8}-7-15" stroke="#96703c" stroke-width="1"/></g>`;
   }).join('');
-  const stars=Array.from({length:tier},(_,i)=>star(300+(i-(tier-1)/2)*29,169,15,gold)).join('');
+  const stars=Array.from({length:tier},(_,i)=>star(300+(i-(tier-1)/2)*(tier>4?19:29),169,tier>4?10:15,gold)).join('');
   const gems=tier>=3?`${star(74,92,7,'#f8e1a0')}${star(526,92,7,'#f8e1a0')}`:'';
-  const crown=tier===4?`<path d="m273 75 7 13 7-18 13 14 13-14 7 18 7-13-5 26h-44Z" fill="${gold}" stroke="#fff1bc" stroke-width="1.5"/><path d="M282 95h36" stroke="#77512b" stroke-width="2"/>`:star(300,85,9,gold);
+  const crown=tier>=4?`<path d="m273 75 7 13 7-18 13 14 13-14 7 18 7-13-5 26h-44Z" fill="${gold}" stroke="#fff1bc" stroke-width="1.5"/><path d="M282 95h36" stroke="#77512b" stroke-width="2"/>`:star(300,85,9,gold);
   const svg=`<svg class="general-emblem" viewBox="0 0 600 330" aria-hidden="true" focusable="false">
     <defs><linearGradient id="${id}-gold" x1="0" y1="0" x2=".35" y2="1"><stop stop-color="#fff8cf"/><stop offset=".22" stop-color="#efd084"/><stop offset=".48" stop-color="#bd873d"/><stop offset=".7" stop-color="#ffe7a1"/><stop offset="1" stop-color="#89602d"/></linearGradient>
     <linearGradient id="${id}-enamel" x2=".7" y2="1"><stop stop-color="#49685c"/><stop offset=".48" stop-color="#213e36"/><stop offset="1" stop-color="#101d1c"/></linearGradient></defs>

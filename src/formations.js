@@ -8,7 +8,11 @@ export const REGIMENT_SIZE = BATTALION_SIZE * 4;
 export const DIVISION_SIZE = REGIMENT_SIZE * 4;
 export const CORPS_SIZE = DIVISION_SIZE * 4;
 export const FIELD_ARMY_SIZE = CORPS_SIZE * 4;
+export const ARMY_GROUP_SIZE = FIELD_ARMY_SIZE * 4;
+export const ALLIED_ARMY_SIZE = ARMY_GROUP_SIZE * 4;
 export const FORMATIONS = Object.freeze([
+  { id: 'alliedArmy', name: '연합군', size: ALLIED_ARMY_SIZE, width: 170, height: 143 },
+  { id: 'armyGroup', name: '집단군', size: ARMY_GROUP_SIZE, width: 152, height: 128 },
   {
     id: "fieldArmy",
     name: "야전군",

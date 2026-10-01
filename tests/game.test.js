@@ -1,3 +1,4 @@
+import { serializeSave } from '../src/money.js';
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -51,7 +52,7 @@ test("fractional seconds survive repeated saves and refreshes", () => {
   let s = { ...freshState(T), soldiers: 3 };
   for (let i = 1; i <= 20; i++) {
     accrue(s, T + i * 100);
-    s = parseSave(JSON.stringify(s));
+    s = parseSave(serializeSave(s));
   }
   assert.equal(s.gold, 6);
   assert.equal(s.incomeRemainder, 0);
@@ -62,7 +63,7 @@ test("offline income is settled once and backward clocks never grant duplicate i
   let s = { ...freshState(T), soldiers: 4 };
   accrue(s, T + 3600000);
   assert.equal(s.gold, 14400);
-  s = parseSave(JSON.stringify(s));
+  s = parseSave(serializeSave(s));
   accrue(s, T + 3600000);
   assert.equal(s.gold, 14400);
   accrue(s, T);
@@ -83,7 +84,7 @@ test("every approved promotion happens at its exact threshold without consuming 
     RANK_DEFINITIONS.map((r) => r.required),
     [
       0, 4, 10, 15, 20, 40, 60, 80, 160, 240, 320, 640, 1280, 5120, 10240,
-      20480, 81920, 327680,
+      20480, 81920, 327680, 1310720, 5242880,
     ],
   );
   for (let i = 1; i < RANK_DEFINITIONS.length; i++) {
@@ -126,7 +127,7 @@ test("existing v3 soldiers and income survive the new formation and rank rules",
       taps: 123,
       sound: true,
     };
-    const restored = parseSave(JSON.stringify(original));
+    const restored = parseSave(serializeSave(original));
     assert.deepEqual(restored, { ...original,
       earnedAchievements: ACHIEVEMENTS.filter(a => a.required <= n).map(a => a.id) });
     assert.equal(perSecond(restored), n);
@@ -135,7 +136,7 @@ test("existing v3 soldiers and income survive the new formation and rank rules",
 });
 test("v2 migration preserves gold, sound, and touch count", () => {
   const migrated = parseSave(
-    JSON.stringify({ version: 2, gold: 44, taps: 44, rank: 0, sound: true }),
+    serializeSave({ version: 2, gold: 44, taps: 44, rank: 0, sound: true }),
     T,
   );
   assert.equal(migrated.gold, 44);
@@ -144,18 +145,18 @@ test("v2 migration preserves gold, sound, and touch count", () => {
   assert.equal(migrated.lastAccrual, T);
   accrue(migrated, T + 100000);
   assert.equal(migrated.gold, 44);
-  assert.deepEqual(parseSave(JSON.stringify(migrated)), migrated);
+  assert.deepEqual(parseSave(serializeSave(migrated)), migrated);
 });
 test("malformed saves are rejected and maximum gold stays finite", () => {
   for (const raw of [
     "null",
     "{broken",
-    JSON.stringify({ ...freshState(T), gold: -1 }),
-    JSON.stringify({ ...freshState(T), soldiers: 1.5 }),
-    JSON.stringify({ ...freshState(T), incomeRemainder: 1000 }),
+    serializeSave({ ...freshState(T), gold: -1 }),
+    serializeSave({ ...freshState(T), soldiers: 1.5 }),
+    serializeSave({ ...freshState(T), incomeRemainder: 1000 }),
   ])
     assert.equal(parseSave(raw), null);
-  const s = { ...freshState(T), gold: MAX_GOLD - 1, soldiers: 40 };
+  const s = { ...freshState(T), gold: MAX_GOLD - 1n, soldiers: 40 };
   assert.equal(tapGold(s, T), 1);
   accrue(s, T + 3600000);
   assert.equal(s.gold, MAX_GOLD);

@@ -149,7 +149,7 @@ function door(c, x, y) {
   r(c, x + 3, y + 4, 1, 1, "#c4bf88");
 }
 function building(c, id) {
-  const headquarters = ["regiment", "division", "corps", "fieldArmy"].indexOf(
+  const headquarters = ["regiment", "division", "corps", "fieldArmy", "armyGroup", "alliedArmy"].indexOf(
     id,
   );
   if (headquarters >= 0) {
@@ -172,6 +172,20 @@ function building(c, id) {
     r(c, center + 9, 3, 12, 6, "#d2c07e");
     for (let n = 0; n <= headquarters; n++)
       r(c, towerX + 5 + n * 6, 17, 3, 2, "#e3cd87");
+    if (headquarters >= 4) {
+      // Twin command wings, gilded cornice, communications towers and a ceremonial court.
+      for(const x of [14,width-32]) {
+        shell(c,x,base-65,18,58);
+        for(let y=base-59;y<base-15;y+=9)windowPane(c,x+5,y,6,5);
+        r(c,x+7,base-78,2,7,'#d8c481');r(c,x+4,base-75,8,2,'#b8c7b5');
+      }
+      r(c,towerX+1,towerY-3,towerW-2,2,'#ddc785');
+      r(c,center-14,base+3,29,2,'#d1c4a0');
+      if(headquarters===5){
+        r(c,center-10,6,20,8,'#385858');r(c,center-9,6,18,1,'#e8d28e');
+        for(let i=0;i<6;i++)r(c,center-8+i*3,9,2,2,'#fff2bf');
+      }
+    }
     if (headquarters >= 2) {
       r(c, 9, base - 47, 2, 14, "#526b60");
       r(c, 5, base - 45, 10, 2, "#b6c3ae");
@@ -232,14 +246,14 @@ function sprite(id) {
       r(c, 3, 2, 13, 4, u.color);
       r(c, 12, 3, 2, 2, "#e7d293");
       r(c, 7, 12, 6, 7, "#354d4a");
-      if(u.school==='officer') {
+      if(u.school==='officer'||u.school==='advanced') {
         r(c,9,12,2,1,"#eef0d1");r(c,8,13,4,2,"#eef0d1");r(c,9,15,2,1,"#eef0d1");
         r(c,3,10,3,2,"#eef0d1");r(c,13,10,3,2,"#eef0d1");
       } else for(let i=0;i<u.schoolLevel;i++)r(c,7,12+i*2,5,1,"#e7c679");
     }
   } else building(c, id);
   if (UNITS[id]) uniformDetails(c,id);
-  if (UNITS[id]?.school === 'officer') officerDetails(c,UNITS[id]);
+  if (['officer','advanced'].includes(UNITS[id]?.school)) officerDetails(c,UNITS[id]);
   sprites.set(id, canvas);
   return canvas;
 }

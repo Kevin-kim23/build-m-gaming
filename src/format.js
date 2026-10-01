@@ -1,27 +1,27 @@
+import { exact } from './money.js';
 const numberFormat = new Intl.NumberFormat('ko-KR');
 export const fmt = (value) => numberFormat.format(value);
 
-// 10억 and above drop the digits below 만; 1,000억 and above drop the digits below 억.
+// Display 만 from 10억, 억 from 1,000억, and 조 from 1경; calculations keep every gold.
 export const MAN_GOLD_THRESHOLD = 1_000_000_000;
 export const COMPACT_GOLD_THRESHOLD = 100_000_000_000;
-const MAN = 10_000, EOK = 100_000_000, MAN_PER_EOK = 10_000, EOK_PER_JO = 10_000;
 const goldLabels = new Map();
 const MAX_CACHED_LABELS = 256;
 
 function goldLabel(value, roundUp) {
-  if (!Number.isSafeInteger(value) || value < 0 || value < MAN_GOLD_THRESHOLD) return fmt(value);
-  const eokUnit = value >= COMPACT_GOLD_THRESHOLD;
-  const unit = eokUnit ? EOK : MAN;
-  const rest = value % unit;
-  const amount = (value - rest) / unit + (roundUp && rest ? 1 : 0);
-  const key = `${roundUp ? 'c' : 'w'}${eokUnit ? 'e' : 'm'}${amount}`;
+  const n = exact(value);
+  if(n < BigInt(MAN_GOLD_THRESHOLD)) return fmt(n);
+  const unit = n >= 10_000_000_000_000_000n ? 1_000_000_000_000n : n >= BigInt(COMPACT_GOLD_THRESHOLD) ? 100_000_000n : 10_000n;
+  const rounded = (n/unit + (roundUp && n%unit ? 1n : 0n))*unit;
+  const key = rounded.toString();
   if (goldLabels.has(key)) return goldLabels.get(key);
-  // `amount` counts 억 (compact) or 만; split it into 조/억/만 parts.
-  const eok = eokUnit ? amount : Math.floor(amount / MAN_PER_EOK);
-  const man = eokUnit ? 0 : amount % MAN_PER_EOK;
-  const jo = Math.floor(eok / EOK_PER_JO), eokPart = eok % EOK_PER_JO;
-  const label = [jo ? `${fmt(jo)}조` : '', eokPart || (!jo && !man) ? `${fmt(eokPart)}억` : '', man ? `${fmt(man)}만` : '']
-    .filter(Boolean).join(' ');
+  let remaining=rounded;
+  const parts=[];
+  for(const [divisor,suffix] of [[10_000_000_000_000_000n,'경'],[1_000_000_000_000n,'조'],[100_000_000n,'억'],[10_000n,'만']]) {
+    const part=remaining/divisor;remaining%=divisor;
+    if(part)parts.push(fmt(part)+suffix);
+  }
+  const label=parts.join(' ');
   if (goldLabels.size >= MAX_CACHED_LABELS) goldLabels.delete(goldLabels.keys().next().value);
   goldLabels.set(key, label);
   return label;

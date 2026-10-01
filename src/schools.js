@@ -1,3 +1,4 @@
+import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { rankForArmy, RANKS } from './ranks.js';
 import { OFFICER_GRADES } from './officer-progression.js';
 
@@ -9,17 +10,24 @@ export const SCHOOLS = Object.freeze({
     costs:Object.freeze(OFFICER_GRADES.map(grade=>grade.academyCost)),
     effects:Object.freeze(OFFICER_GRADES.map(grade=>grade.name+' 모집')),
     recommendedRanks:Object.freeze(OFFICER_GRADES.map(grade=>grade.recommendedRank))}),
+  advanced: Object.freeze({id:'advanced',name:'고급 사관학교',field:'advancedSchoolLevel',maxLevel:ADVANCED_OFFICERS.length,
+    costs:Object.freeze(ADVANCED_OFFICERS.map(grade=>grade.academyCost)),
+    effects:Object.freeze(ADVANCED_OFFICERS.map(grade=>grade.name+' 모집')),
+    requiredRanks:Object.freeze(ADVANCED_OFFICERS.map(grade=>grade.unlockRank))}),
 });
 export function schoolOffer(state,id) {
   const school=SCHOOLS[id];
   if(!school) throw new RangeError('Unknown school');
   const level=state[school.field]??0, max=level>=school.maxLevel;
-  const visible=id==='nco'||(state.ncoSchoolLevel??0)>=5||level>0;
-  const locked=id==='officer'&&((state.ncoSchoolLevel??0)<5||rankForArmy(state)<RANKS.indexOf('소장'));
+  const advanced = id==='advanced';
+  const visible=advanced ? (state.officerSchoolLevel??0)>=5 || level>0 : id==='nco'||(state.ncoSchoolLevel??0)>=5||level>0;
+  const requiredRank = advanced ? school.requiredRanks[Math.min(level,school.maxLevel-1)] : '소장';
+  const locked=advanced ? (state.officerSchoolLevel??0)<5 || rankForArmy(state)<RANKS.indexOf(requiredRank)
+    : id==='officer'&&((state.ncoSchoolLevel??0)<5||rankForArmy(state)<RANKS.indexOf('소장'));
   const cost=max?0:school.costs[level];
   const reason=max?'max':locked?'locked':state.gold<cost?'gold':null;
   return {school,level,nextLevel:max?level:level+1,cost,visible,reason,canBuy:reason===null,
-    requirement:id==='officer'?'부사관학교 Lv.5 · 소장 이상':'골드를 모아 단계별로 건설·확장',
+    requirement:advanced?`사관학교 Lv.5 · ${requiredRank} 이상`:id==='officer'?'부사관학교 Lv.5 · 소장 이상':'골드를 모아 단계별로 건설·확장',
     effect:school.effects[max?level-1:level]};
 }
 // Honor ranks/units that were already available before schools existed.

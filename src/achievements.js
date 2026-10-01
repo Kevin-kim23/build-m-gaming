@@ -5,7 +5,7 @@ import { COUNTRIES } from "./campaign.js";
 export const FORMATION_ACHIEVEMENTS = Object.freeze(
   FORMATIONS.filter(f => f.id !== "soldier").slice().reverse().map((formation, tier) => Object.freeze({
     id: formation.id,
-    title: formation.id === "fieldArmy" ? "야전군사령관" : `${formation.name}장`,
+    title: {fieldArmy:'야전군사령관',armyGroup:'집단군 사령관',alliedArmy:'연합군 사령관'}[formation.id] ?? `${formation.name}장`,
     formationName: formation.name,
     category: 'formation',
     required: formation.size,

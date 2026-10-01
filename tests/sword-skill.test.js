@@ -1,3 +1,4 @@
+import { serializeSave } from '../src/money.js';
 import { personalMarkup } from "../src/personal-panels.js";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -23,24 +24,24 @@ test('locked ranks and malformed activation times cannot start skill, cap still 
     const s={...general(),...patch};assert.equal(activateSword(s,T).reason,'locked');assert.equal(s.swordActivatedAt,null);
   }
   for(const now of [NaN,Infinity,-1,1.2]){const s=general();assert.equal(activateSword(s,now).reason,'time');assert.equal(s.swordActivatedAt,null);}
-  const s=general();activateSword(s,T);s.gold=MAX_GOLD-1;assert.equal(tapGold(s,T),1);assert.equal(s.gold,MAX_GOLD);
+  const s=general();activateSword(s,T);s.gold=MAX_GOLD - 1n;assert.equal(tapGold(s,T),1);assert.equal(s.gold,MAX_GOLD);
 });
 test('reload, offline income and clock rollback cannot extend or resurrect a saved boost',()=>{
   const s=general(),income=perSecond(s);activateSword(s,T);
-  let restored=parseSave(JSON.stringify(s),T+15000);assert.equal(swordSkillStatus(restored,T+15000).activeMs,15000);
+  let restored=parseSave(serializeSave(s),T+15000);assert.equal(swordSkillStatus(restored,T+15000).activeMs,15000);
   accrue(restored,T+30000);assert.equal(restored.gold,1000+income*30);
   assert.equal(swordSkillStatus(restored,T).active,false);assert.equal(swordSkillStatus(restored,T).remainingMs,570000);
-  restored=parseSave(JSON.stringify(restored),T+600000);assert.equal(swordSkillStatus(restored,T+600000).canUse,true);
+  restored=parseSave(serializeSave(restored),T+600000);assert.equal(swordSkillStatus(restored,T+600000).canUse,true);
 });
 test('schema ten gains unused skill; schema eleven validates and preserves timestamps',()=>{
   const old={...general(),version:10};delete old.swordActivatedAt;
-  const migrated=parseSave(JSON.stringify(old),T);assert.equal(migrated.version, 16);assert.equal(migrated.swordActivatedAt,null);
+  const migrated=parseSave(serializeSave(old),T);assert.equal(migrated.version, 17);assert.equal(migrated.swordActivatedAt,null);
   assert.equal(migrated.gold,old.gold);assert.equal(migrated.sergeants,300);
-  old.swordActivatedAt=T;assert.equal(parseSave(JSON.stringify(old),T).swordActivatedAt,null);
+  old.swordActivatedAt=T;assert.equal(parseSave(serializeSave(old),T).swordActivatedAt,null);
   for(const bad of [undefined,-1,1.5,'12',{},100000000000001]) {
-    assert.equal(parseSave(JSON.stringify({...general(),swordActivatedAt:bad}),T),null);
+    assert.equal(parseSave(serializeSave({...general(),swordActivatedAt:bad}),T),null);
   }
-  const s=general();activateSword(s,T);assert.equal(parseSave(JSON.stringify(s),T).swordActivatedAt,T);
+  const s=general();activateSword(s,T);assert.equal(parseSave(serializeSave(s),T).swordActivatedAt,T);
 });
 test('skill never changes automatic income or infantry damage in battle',()=>{
   const s=general(),initial=createBattle(s,1),income=perSecond(s);
@@ -48,7 +49,7 @@ test('skill never changes automatic income or infantry damage in battle',()=>{
   assert.deepEqual(fireVolley(boosted),fireVolley(initial));assert.equal(perSecond(s),income);
 });
 test('activation saves cooldown immediately; restart cannot activate again; inactive sessions cannot use it',()=>{
-  let now=T;const values=new Map([[SAVE_KEY,JSON.stringify(general())]]),writes=[];
+  let now=T;const values=new Map([[SAVE_KEY,serializeSave(general())]]),writes=[];
   const storage={getItem:k=>values.get(k)??null,setItem(k,v){writes.push(k);values.set(k,v);}};
   const session=createGameSession({storage,now:()=>now,setTimer:()=>1,clearTimer:()=>{}});
   assert.equal(session.change(s=>activateSword(s,now)),undefined);

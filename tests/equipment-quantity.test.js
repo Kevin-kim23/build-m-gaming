@@ -1,3 +1,4 @@
+import { serializeSave } from '../src/money.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, buyEquipment, enhanceEquipment, buyAdditionalEquipment, setEquipmentDeployed, parseSave, perSecond, perTap, MAX_GOLD, MAX_OFFLINE_MS, accrue, SAVE_KEY } from '../src/game.js';
@@ -6,7 +7,7 @@ import { createBattle, advanceBattle, equipmentCombatStats } from '../src/battle
 import { createGameSession } from '../src/session.js';
 import { RANKS, RANK_REQUIREMENTS } from '../src/ranks.js';
 const T = 1_800_000_000_000;
-const army = () => ({ ...freshState(T), soldiers: RANK_REQUIREMENTS[RANKS.indexOf('중장')] - 3000, sergeants: 300, gold: MAX_GOLD, ncoSchoolLevel: 5, officerSchoolLevel: 1 });
+const army = () => ({ ...freshState(T), soldiers: RANK_REQUIREMENTS[RANKS.indexOf('중장')] - 3000, sergeants: 300, gold:100_000_000_000_000, ncoSchoolLevel: 5, officerSchoolLevel: 1 });
 function maxGun(s, id) { assert.equal(buyEquipment(s,T,id).ok,true); for(let n=0;n<10;n++) assert.equal(enhanceEquipment(s,T,id).ok,true); }
 
 test('each additional copy charges the complete initial purchase plus ten actual upgrades', () => {
@@ -56,27 +57,27 @@ test('quantities share one slot and preserve group storage while income sums per
   assert.equal(perSecond(s),beforeStored - stats.passive * 2);
   setEquipmentDeployed(s,true,T+1000,'rocketLauncher');
   assert.equal(perSecond(s),beforeStored - stats.passive * 2 + equipmentStats(10,'rocketLauncher').passive * 2);
-  assert.deepEqual(parseSave(JSON.stringify(s),T).equipment,s.equipment);
+  assert.deepEqual(parseSave(serializeSave(s),T).equipment,s.equipment);
 });
 test('v12 quantity migration preserves all assets, deployment, theme and running cooldown', () => {
   const old = {...army(),version:12,fieldTheme:'concrete',swordActivatedAt:T-1000,taps:987,battleCleared:3};
   for(const [i,id] of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'].entries())old.equipment[id]={level:i+5,deployed:i<4};
-  const next = parseSave(JSON.stringify(old),T);
+  const next = parseSave(serializeSave(old),T);
   for(const key of ['gold','soldiers','sergeants','fieldTheme','swordActivatedAt','taps','battleCleared'])assert.equal(next[key],old[key]);
-  assert.equal(next.version, 16);
+  assert.equal(next.version, 17);
   for(const id of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'])assert.deepEqual(next.equipment[id],{...old.equipment[id],count:1});
   assert.equal(next.equipment.transport,null);assert.equal(next.equipment.fighter,null);
   old.equipment.tank.count = 900;
-  assert.equal(parseSave(JSON.stringify(old),T).equipment.tank.count,1);
-  assert.deepEqual(parseSave(JSON.stringify(next),T),next);
+  assert.equal(parseSave(serializeSave(old),T).equipment.tank.count,1);
+  assert.deepEqual(parseSave(serializeSave(next),T),next);
 });
 test('current saves reject missing, malformed and impossible quantities', () => {
   const s = army();maxGun(s,'tank');
   for(const count of [undefined,null,0,-1,1.2,'2',MAX_EQUIPMENT_COUNT+1]) {
-    s.equipment.tank.count=count;assert.equal(parseSave(JSON.stringify(s),T),null);
+    s.equipment.tank.count=count;assert.equal(parseSave(serializeSave(s),T),null);
   }
-  s.equipment.tank={level:9,deployed:true,count:2}; assert.equal(parseSave(JSON.stringify(s),T),null);
-  s.equipment.tank.level=10;assert.equal(parseSave(JSON.stringify(s),T).equipment.tank.count,2);
+  s.equipment.tank={level:9,deployed:true,count:2}; assert.equal(parseSave(serializeSave(s),T),null);
+  s.equipment.tank.level=10;assert.equal(parseSave(serializeSave(s),T).equipment.tank.count,2);
 });
 test('one grouped volley adds all copies without accelerating or duplicating selected ids', () => {
   const s = army();maxGun(s,'tank');buyAdditionalEquipment(s,T,'tank');
@@ -92,14 +93,14 @@ test('one grouped volley adds all copies without accelerating or duplicating sel
 test('large valid quantities retain exact arithmetic and clamp offline income to wallet limit', () => {
   const s = army();
   for(const [i,id] of Object.keys(EQUIPMENT).entries())s.equipment[id]={count:MAX_EQUIPMENT_COUNT,level:20,deployed:i>=3};
-  s.gold=0;
+  s.gold=MAX_GOLD-1n;
   assert.ok(Number.isSafeInteger(perSecond(s))); assert.ok(Number.isSafeInteger(perTap(s,T)));
   accrue(s,T+MAX_OFFLINE_MS);assert.equal(s.gold,MAX_GOLD);assert.equal(s.incomeRemainder,0);
-  assert.ok(parseSave(JSON.stringify(s),T));
+  assert.ok(parseSave(serializeSave(s),T));
 });
 test('additional purchase uses one checkpoint, survives reload, and never buys twice during startup', () => {
   const initial = army();maxGun(initial,'tank');initial.gold=additionalEquipmentCost('tank');
-  const values=new Map([[SAVE_KEY,JSON.stringify(initial)]]),writes=[];
+  const values=new Map([[SAVE_KEY,serializeSave(initial)]]),writes=[];
   const storage={getItem:key=>values.get(key)??null,setItem(key,value){writes.push(key);values.set(key,value);}};
   const session=createGameSession({storage,now:()=>T,setTimer:()=>1,clearTimer:()=>{}});
   session.start();assert.equal(session.change(s=>buyAdditionalEquipment(s,T,'tank')).ok,true);

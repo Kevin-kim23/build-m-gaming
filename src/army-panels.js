@@ -2,7 +2,7 @@ import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { fmt, fmtGold, fmtGoldCost } from './format.js';
 import { coin, insignia } from './home-view.js';
 import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, buyAdditionalEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool, activateSword, activateAutoTouch } from './game.js';
-import { SCHOOLS } from './schools.js';
+import { SCHOOLS, schoolOffer } from './schools.js';
 import { renderSchools, schoolDetailMarkup } from './school-panels.js';
 import { rankForArmy } from './ranks.js';
 import { COMMAND_BATON, BULK_RECRUIT, commandBatonStatus, generalSwordStatus, GENERAL_SWORD, generalSwordDuration, divisionFlagStatus, generalRevolverStatus } from './personal-equipment.js';
@@ -27,7 +27,8 @@ export function createArmyPanels(session, audio) {
   let activePanel = 'shop', category = 'recruit', activeEquipment = 'artillery';
   let equipmentCategory = 'military', equipmentRank = -1;
   let catalogRank = -1, equipmentCatalogKey = '';
-  let ncoLevel = -1, officerLevel = -1;
+  const schools = Object.values(SCHOOLS);
+  let schoolLevels = [];
   const state = () => session.state;
   const text = (selector, value) => {
     const node = $(selector), next = String(value);
@@ -42,7 +43,7 @@ export function createArmyPanels(session, audio) {
   }
   function updateShop() {
     const s = state(), rank = rankForArmy(s);
-    if (catalogRank !== rank || ncoLevel !== s.ncoSchoolLevel || officerLevel !== s.officerSchoolLevel) { openShop(); return; }
+    if (catalogRank !== rank || schools.some((school,i)=>schoolLevels[i] !== (s[school.field]??0))) { openShop(); return; }
     text('#shop-gold', fmtGold(s.gold));
     // First-five-minutes guide: say what to do and pulse the matching control.
     const guide = currentGuide(s);
@@ -76,8 +77,7 @@ export function createArmyPanels(session, audio) {
     category = SHOP_CATEGORIES.some(item => item.id === nextCategory) ? nextCategory : 'recruit';
     activePanel = 'shop';
     catalogRank = rankForArmy(state());
-    ncoLevel = state().ncoSchoolLevel;
-    officerLevel = state().officerSchoolLevel;
+    schoolLevels = schools.map(school=>state()[school.field]??0);
     dialog.innerHTML = panelTabs('shop') + shopMarkup(state(), coin, insignia, category);
     if (!dialog.open) dialog.showModal();
     updateShop();
@@ -169,7 +169,7 @@ export function createArmyPanels(session, audio) {
     if(!result)return;
     if(result.ok)audio.recruit(state().sound);
     text('#shop-message',result.ok?`${SCHOOLS[id].name} Lv.${result.level} 완료! ${SCHOOLS[id].effects[result.level-1]} 해금`
-      :result.reason==='locked'?'부사관학교 Lv.5와 소장 계급이 필요해요.':result.reason==='max'?'최대 레벨입니다.':'골드가 부족해요.');
+      :result.reason==='locked'?schoolOffer(state(),id).requirement+' 조건이 필요해요.':result.reason==='max'?'최대 레벨입니다.':'골드가 부족해요.');
   }
   function upgradeGun() {
     const id = activeEquipment;
