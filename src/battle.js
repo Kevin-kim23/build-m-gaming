@@ -2,7 +2,7 @@ import { UNITS, armyPower } from "./units.js";
 import { EQUIPMENT, equipmentCount } from "./equipment.js";
 import { FORMATIONS } from "./formations.js";
 import { RANKS, rankForArmy } from "./ranks.js";
-import { ENEMY_EQUIPMENT, BATTLE_RULES, STAGES, infantryDamage, equipmentCombatStats, matchupMultiplier } from "./battle-balance.js";
+import { ENEMY_EQUIPMENT, BATTLE_RULES, STAGES, infantryDamage, equipmentCombatStats, matchupMultiplier, stageEnemyType, enemyBalanceFactor } from "./battle-balance.js";
 export { BATTLE_RULES, STAGES, equipmentCombatStats, matchupMultiplier, stageEnemyType, GEAR_CLASS, CLASS_NAMES } from "./battle-balance.js";
 
 export function battleAccess(state) {
@@ -55,6 +55,12 @@ function makeSide(formation, power, units, equipment, multiplier = 1, playerUpgr
   };
 }
 
+// 적 장비 편성이 달라도 총 공격력이 같도록 장비 피해만 보정한다(보병 사격은 그대로).
+function scaleEnemyGear(side, factor) {
+  for (const gun of side.equipment) gun.damage *= factor;
+  return side;
+}
+
 export function createBattle(state, stageId, input = defaultLoadout(state)) {
   const stage = STAGES.find((s) => s.id === stageId);
   const cleared = state.campaignCleared ?? 0;
@@ -73,9 +79,9 @@ export function createBattle(state, stageId, input = defaultLoadout(state)) {
     nextEnemyVolleyMs: BATTLE_RULES.enemyVolleyMs,
     player: makeSide({...formation,size:power}, power, {},
       loadout.equipment.map((id) => ({ id, level: state.equipment[id].level, count: equipmentCount(state, id) })), 1, true, stageId),
-    enemy: makeSide(enemyFormation, stage.enemyPower,
+    enemy: scaleEnemyGear(makeSide(enemyFormation, stage.enemyPower,
       Object.fromEntries(['soldier','sergeant','staffSergeant'].map((id) => [id, stage.enemyUnitCount])),
-      ENEMY_EQUIPMENT.map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier, false),
+      stageEnemyType(stageId).gear.map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier, false), enemyBalanceFactor(stageId)),
   };
 }
 

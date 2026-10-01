@@ -9,6 +9,7 @@ import {personalIcon} from '../src/personal-art.js';
 import {supremeRankSymbol} from '../src/rank-emblem.js';
 import {insignia,homeMarkup} from '../src/home-view.js';
 import {createBattle,equipmentCombatStats,STAGES} from '../src/battle.js';
+import {enemyBalanceFactor} from '../src/battle-balance.js';
 const T=1_800_000_000_000;
 const army=rank=>({...freshState(T),gold:MAX_GOLD,soldiers:Math.max(5000,RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000),sergeants:300,ncoSchoolLevel:5});
 
@@ -59,7 +60,7 @@ test('player attack and healing upgrade rewards increase without raising enemy s
   }
   const s={...army('소원수'),campaignCleared:80};s.equipment.tank={level:15,count:1,deployed:true};
   const battle=createBattle(s,80,{units:{},equipment:['tank']}),stage=STAGES[79];
-  for(const g of battle.enemy.equipment)assert.equal(g.damage,equipmentCombatStats(g.id,stage.enemyLevel,stage.enemyPower,1,false).damage*stage.enemyModifier);
+  for(const g of battle.enemy.equipment)assert.ok(Math.abs(g.damage-equipmentCombatStats(g.id,stage.enemyLevel,stage.enemyPower,1,false).damage*stage.enemyModifier*enemyBalanceFactor(80))<1e-6);
 });
 test('personal cards have only detail buttons, while home skill controls remain',()=>{
   const s=army('준원수'),html=personalMarkup(s);

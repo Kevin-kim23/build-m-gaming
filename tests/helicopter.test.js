@@ -61,7 +61,7 @@ test("helicopter enters owned loadouts and fires automatically without changing 
   const s=army();assert.ok(!defaultLoadout(s).equipment.includes('helicopter'));
   buyEquipment(s,T,'helicopter');assert.ok(defaultLoadout(s).equipment.includes('helicopter'));
   let b=createBattle(s,3,{units:{},equipment:['helicopter']});
-  assert.deepEqual(b.enemy.equipment.map(g=>g.id),['artillery','tank','selfPropelled']);
+  assert.deepEqual(b.enemy.equipment.map(g=>g.id),['artillery','selfPropelled','tank']);
   const hp=b.enemy.hq.hp;
   for(let i=0;i<36;i++)b=advanceBattle(b,50);
   assert.equal(b.enemy.hq.hp,hp-equipmentCombatStats('helicopter',0,5120).damage);

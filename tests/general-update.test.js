@@ -82,7 +82,7 @@ test('staff sergeant batches require Lv3 baton and school Lv2, charge exact sum 
 test('rocket fires in battle with its own stats while enemies keep their previous weapons',()=>{
   const s=general();buyEquipment(s,T,'rocketLauncher');
   let b=createBattle(s,1,{units:{},equipment:['rocketLauncher']});
-  assert.deepEqual(b.enemy.equipment.map(g=>g.id),['artillery','tank','selfPropelled']);
+  assert.deepEqual(b.enemy.equipment.map(g=>g.id),['tank','selfPropelled','helicopter']);
   const hp=b.enemy.hq.hp;for(let i=0;i<84;i++)b=advanceBattle(b,50);
   assert.ok(Math.abs(b.enemy.hq.hp-(hp-equipmentCombatStats('rocketLauncher',0,10240).damage*matchupMultiplier(1,'rocketLauncher')))<1e-6);
 });

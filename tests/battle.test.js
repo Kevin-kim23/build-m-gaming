@@ -175,3 +175,14 @@ test("matchups: stage type rotates, strong x1.3, weak x0.8, healing untouched, d
   assert.ok(dmg("helicopter") / equipmentCombatStats("helicopter", 3, 1280).damage > dmg("artillery") / equipmentCombatStats("artillery", 3, 1280).damage);
   assert.ok(defaultLoadout(s, 1).equipment.includes("helicopter"));
 });
+
+test("enemy gear differs by stage type but total enemy gear power stays equal to the old three-gun roster", async () => {
+  const { ENEMY_TYPES, ENEMY_EQUIPMENT, enemyBalanceFactor } = await import("../src/battle-balance.js");
+  assert.equal(new Set(ENEMY_TYPES.map((t) => t.gear.join())).size, 3);
+  const raw = (ids, factor = 1) => ids.reduce((n, id) => { const c = equipmentCombatStats(id, 5, 1280, 1, false); return n + c.damage / c.intervalMs * factor; }, 0);
+  for (const id of [1, 2, 3]) {
+    const type = stageEnemyType(id), b = createBattle(army(), id);
+    assert.deepEqual(b.enemy.equipment.map((g) => g.id), type.gear);
+    assert.ok(Math.abs(raw(type.gear, enemyBalanceFactor(id)) - raw(ENEMY_EQUIPMENT)) / raw(ENEMY_EQUIPMENT) < 0.03); // 간격은 50ms 단위로 반올림되므로 오차 3% 허용
+  }
+});

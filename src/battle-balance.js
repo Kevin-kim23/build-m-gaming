@@ -66,9 +66,9 @@ export const GEAR_CLASS = Object.freeze({
 });
 export const CLASS_NAMES = Object.freeze({ firepower: "화력", armor: "기갑", air: "공중", support: "지원" });
 export const ENEMY_TYPES = Object.freeze([
-  { id: "armored", name: "기갑 부대", strong: "air", weak: "firepower" },
-  { id: "airDefense", name: "방공 진지", strong: "firepower", weak: "air" },
-  { id: "artilleryNest", name: "포병 진지", strong: "armor", weak: "firepower" },
+  { id: "armored", name: "기갑 부대", strong: "air", weak: "firepower", gear: ["tank", "selfPropelled", "helicopter"] },
+  { id: "airDefense", name: "방공 진지", strong: "firepower", weak: "air", gear: ["rocketLauncher", "artillery", "selfPropelled"] },
+  { id: "artilleryNest", name: "포병 진지", strong: "armor", weak: "firepower", gear: ["artillery", "selfPropelled", "tank"] },
 ]);
 export const MATCHUP = Object.freeze({ strong: 1.3, weak: 0.8 });
 // 지역 번호 순서대로 유형이 돌아가며, 지도에서 번호만으로 유형을 알 수 있다.
@@ -77,3 +77,7 @@ export function matchupMultiplier(stageId, gearId) {
   const type = stageEnemyType(stageId), cls = GEAR_CLASS[gearId];
   return cls === type.strong ? MATCHUP.strong : cls === type.weak ? MATCHUP.weak : 1;
 }
+
+// 적 유형마다 장비 3종이 다르지만, 총 공격력은 기존 편성(ENEMY_EQUIPMENT)과 같도록 맞춘다(난이도 유지).
+const dps = (ids) => ids.reduce((n, id) => n + weaponBase[id].damage / weaponBase[id].intervalMs, 0);
+export const enemyBalanceFactor = (stageId) => dps(ENEMY_EQUIPMENT) / dps(stageEnemyType(stageId).gear);
