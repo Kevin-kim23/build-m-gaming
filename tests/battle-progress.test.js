@@ -20,10 +20,12 @@ function win(state, stage = 1) {
   return battle;
 }
 
-test('a real victory records progress and its medal without changing gold or troops', () => {
+test('a real victory records progress, its medal and the loot gold without changing troops', () => {
   const state = army(), before = structuredClone(state), battle = win(state);
-  assert.deepEqual(recordBattleVictory(state, battle), { ok: true, firstClear: true, achievements: ['firstVictory'] });
-  assert.deepEqual(state, { ...before, campaignCleared: 1, earnedAchievements: [...before.earnedAchievements, 'firstVictory'] });
+  const result = recordBattleVictory(state, battle);
+  assert.deepEqual({ ...result, gold: undefined }, { ok: true, firstClear: true, gold: undefined, achievements: ['firstVictory'] });
+  assert.equal(state.gold, before.gold + result.gold);
+  assert.deepEqual({ ...state, gold: 0 }, { ...before, gold: 0, campaignCleared: 1, earnedAchievements: [...before.earnedAchievements, 'firstVictory'] });
   assert.equal(battle.enemy.hq.hp, 0);
   assert.ok(battle.player.hq.hp > 0);
 });
@@ -48,10 +50,10 @@ test('replayed victories are idempotent and stage progress cannot skip ahead or 
   assert.equal(recordBattleVictory(state, { ...first, stageId: 3 }).reason, 'sequence');
   assert.equal(state.campaignCleared, 0);
   recordBattleVictory(state, first);
-  assert.deepEqual(recordBattleVictory(state, first), { ok: true, firstClear: false, achievements: [] });
+  assert.deepEqual({ ...recordBattleVictory(state, first), gold: 0 }, { ok: true, firstClear: false, gold: 0, achievements: [] });
   recordBattleVictory(state, win(state, 2));
   assert.equal(state.campaignCleared, 2);
-  assert.deepEqual(recordBattleVictory(state, first), { ok: true, firstClear: false, achievements: [] });
+  assert.deepEqual({ ...recordBattleVictory(state, first), gold: 0 }, { ok: true, firstClear: false, gold: 0, achievements: [] });
   assert.equal(state.campaignCleared, 2);
 });
 
@@ -94,7 +96,7 @@ test('victory transaction immediately saves progress with a valid prior backup a
   assert.ok(saved.earnedAchievements.includes('firstVictory'));
   assert.ok(!backup.earnedAchievements.includes('firstVictory'));
   assert.equal(backup.campaignCleared, 0);
-  assert.equal(saved.gold, backup.gold);
+  assert.equal(saved.gold, backup.gold + result.gold); // 전리품 골드가 저장에 반영됨
   h.session.pause(); h.session.start();
   assert.equal(h.session.state.campaignCleared, 1);
   h.session.pause();
@@ -111,7 +113,22 @@ test('failed victory save preserves pending progress and retries without duplica
   assert.equal(h.session.flush(), true);
   assert.equal(parseSave(h.values.get(SAVE_KEY), T).campaignCleared, 1);
   const gold = h.session.state.gold;
-  assert.equal(h.session.change((state) => recordBattleVictory(state, victory)).firstClear, false);
-  assert.equal(h.session.state.gold, gold);
+  const replay = h.session.change((state) => recordBattleVictory(state, victory));
+  assert.equal(replay.firstClear, false);
+  assert.equal(h.session.state.gold, gold + replay.gold);
   h.session.pause();
+});
+
+test('battle loot is income x 30 min on first clear, x 2 min on replay, and respects the gold cap', async () => {
+  const { battleGoldReward } = await import('../src/campaign-rewards.js');
+  const { MAX_GOLD } = await import('../src/money.js');
+  assert.equal(battleGoldReward(10, true), 18000);
+  assert.equal(battleGoldReward(10, false), 1200);
+  assert.equal(battleGoldReward(10, true, MAX_GOLD - 5n), 5);
+  assert.equal(battleGoldReward(Number.MAX_SAFE_INTEGER, true) > BigInt(Number.MAX_SAFE_INTEGER), true);
+  const state = army(), first = win(state, 1);
+  const r1 = recordBattleVictory(state, first), g1 = state.gold;
+  const r2 = recordBattleVictory(state, win(state, 1));
+  assert.equal(r2.firstClear, false);
+  assert.ok(r1.gold > r2.gold && r2.gold > 0 && state.gold === g1 + r2.gold);
 });
