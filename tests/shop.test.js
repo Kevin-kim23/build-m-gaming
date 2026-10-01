@@ -21,8 +21,8 @@ test("shop shows just the selected category and shares one wallet, title and liv
     assert.equal(html.includes('data-unit="soldier"'), id === "recruit");
     assert.equal(html.includes('data-buy-equipment="artillery"'), id === "equipment");
     assert.equal(html.includes('data-personal-equipment='), id === "personal");
-    assert.equal(html.includes('class="formation-guide"'), id === "recruit");
-    assert.equal(html.includes('class="rank-steps"'), id === "recruit");
+    // Rank and formation guides moved to the rank badge popup.
+    assert.doesNotMatch(html, /formation-guide|rank-steps/);
   }
   assert.match(markup(s), /data-shop-content="recruit"/);
   assert.doesNotMatch(markup(s, "recruit"), /<details[^>]*\sopen(?:\s|>)/);

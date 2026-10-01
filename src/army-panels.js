@@ -4,7 +4,7 @@ import { coin, insignia } from './home-view.js';
 import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, buyAdditionalEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool, activateSword, activateAutoTouch } from './game.js';
 import { SCHOOLS } from './schools.js';
 import { renderSchools } from './school-panels.js';
-import { rankForArmy, LAST_RANK, promotionProgress } from './ranks.js';
+import { rankForArmy } from './ranks.js';
 import { COMMAND_BATON, BULK_RECRUIT, commandBatonStatus, generalSwordStatus, GENERAL_SWORD, generalSwordDuration, divisionFlagStatus, generalRevolverStatus } from './personal-equipment.js';
 import { EQUIPMENT, equipmentOf, visibleEquipment, deploymentOffer } from './equipment.js';
 import { panelTabs, equipmentPanelMarkup, renderEquipmentStore, renderEquipmentPanel } from './equipment-panels.js';
@@ -20,7 +20,7 @@ export function createArmyPanels(session, audio) {
   const $ = selector => dialog.querySelector(selector);
   let activePanel = 'shop', category = 'recruit', activeEquipment = 'artillery';
   let equipmentCategory = 'military', equipmentRank = -1;
-  let shopRank = -1, catalogRank = -1, equipmentCatalogKey = '';
+  let catalogRank = -1, equipmentCatalogKey = '';
   let ncoLevel = -1, officerLevel = -1;
   const state = () => session.state;
   const text = (selector, value) => {
@@ -66,16 +66,6 @@ export function createArmyPanels(session, audio) {
         : `${unit.name} ${COMMAND_BATON.recruitAmount}명 모집`);
       bulkButton.disabled = !offer.canBuy;
     }
-    text('#shop-next', rank === LAST_RANK ? `${RANKS[rank]} 달성!`
-      : `${RANKS[rank + 1]} 진급 조건: ${promotionProgress(s).text}`);
-    if (shopRank !== rank) {
-      shopRank = rank;
-      dialog.querySelectorAll('.rank-step').forEach(tile => {
-        const i = Number(tile.dataset.rank);
-        tile.classList.toggle('reached', i <= rank);
-        tile.classList.toggle('current', i === rank);
-      });
-    }
   }
   function openShop(nextCategory = category) {
     category = SHOP_CATEGORIES.some(item => item.id === nextCategory) ? nextCategory : 'recruit';
@@ -83,18 +73,10 @@ export function createArmyPanels(session, audio) {
     catalogRank = rankForArmy(state());
     ncoLevel = state().ncoSchoolLevel;
     officerLevel = state().officerSchoolLevel;
-    shopRank = -1;
     dialog.innerHTML = panelTabs('shop') + shopMarkup(state(), coin, insignia, category);
     if (!dialog.open) dialog.showModal();
     updateShop();
     dialog.querySelectorAll('[data-portrait]').forEach(c => drawFormationPortrait(c, c.dataset.portrait));
-    // Formation portraits are created only if their initially collapsed guide is opened.
-    const guide = $('.formation-guide');
-    if (guide) guide.addEventListener('toggle', () => {
-      if (!guide.open || guide.dataset.drawn) return;
-      guide.querySelectorAll('[data-formation]').forEach(c => drawFormationPortrait(c, c.dataset.formation));
-      guide.dataset.drawn = 'true';
-    });
     dialog.scrollTop = 0;
     lockPanel();
   }

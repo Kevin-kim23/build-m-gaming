@@ -9,7 +9,10 @@
   flex-shrink: 0;
   background: #263227;
 }
-.rank { display: flex; align-items: center; gap: 8px; }
+.rank { position: relative; display: flex; align-items: center; gap: 8px; }
+.rank-open { position: absolute; inset: -6px -8px; padding: 0; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
+.rank-open:focus-visible { outline: 2px solid #bfd18c; }
+.rank h1::after { content: " ▾"; font-size: 11px; color: #a0ab91; }
 .rank small { font-size: 9px; color: #a0ab91; white-space: nowrap; }
 .rank h1 { font-size: 20px; margin: 3px 0 0; letter-spacing: -0.7px; font-weight: 650; }
 .gold-counter { min-width: 0; text-align: right; }

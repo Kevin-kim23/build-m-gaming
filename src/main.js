@@ -35,6 +35,8 @@ import {
 } from "./ranks.js";
 import { reportError, installErrorReporting } from "./diagnostics.js";
 import { createArmyPanels } from "./army-panels.js";
+import { openRankGuide } from "./rank-guide.js";
+import "./detail.css";
 import { hidePromotion } from "./promotion.js";
 import { createGameAudio } from "./audio.js";
 import {
@@ -157,6 +159,7 @@ $("#sound").onclick = async () => {
   if (!state.sound) gameAudio.stop();
   else gameAudio.tap(true);
 };
+$("#open-ranks").onclick = () => openRankGuide(state, insignia);
 $("#open-shop").onclick = () => armyPanels.openShop();
 $("#open-equipment").onclick = () => armyPanels.openEquipment();
 $("#open-battle").onclick = () => battleUI.open();

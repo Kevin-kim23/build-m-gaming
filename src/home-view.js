@@ -12,6 +12,7 @@ const shopIcon =
 function headerMarkup(state) {
   return `<header class="hud">
     <div class="rank">
+    <button type="button" id="open-ranks" class="rank-open" aria-label="계급과 편제 안내 열기"></button>
     <span class="rank-mark" aria-hidden="true">
     </span>
     <div>
