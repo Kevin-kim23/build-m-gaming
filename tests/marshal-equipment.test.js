@@ -8,7 +8,7 @@ import {personalStatus} from '../src/personal-equipment.js';
 import {personalDetailMarkup,personalLevelEffect} from '../src/personal-panels.js';
 import {equipmentCombatStats,createBattle,advanceBattle} from '../src/battle.js';
 const T=1800000000000;
-const army=(rank='원수')=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,gold:MAX_GOLD,ncoSchoolLevel:5});
+const army=(rank='준원수')=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,gold:MAX_GOLD,ncoSchoolLevel:5});
 
 test('enhancement control comes before growing descriptions, artwork and result text at every level',()=>{
   for(let level=1;level<10;level++){
@@ -21,7 +21,7 @@ test('enhancement control comes before growing descriptions, artwork and result 
   }
 });
 test('railgun and ICBM preview one rank early, enforce ranks and use exact gold and deployment limits',()=>{
-  for(const [id,hidden,preview,unlocked] of [['railgunTank','소장','중장','대장'],['icbm','중장','대장','원수']]){
+  for(const [id,hidden,preview,unlocked] of [['railgunTank','소장','중장','대장'],['icbm','중장','대장','준원수']]){
     assert.equal(equipmentPurchaseOffer(army(hidden),id).visible,false);
     const locked=army(preview),before=locked.gold;
     assert.equal(equipmentPurchaseOffer(locked,id).visible,true);
@@ -73,7 +73,7 @@ test('v19 adds empty military slots and Lv.1 glaive while preserving all paid ge
   delete s.personalLevels.marshalGlaive;delete s.equipment.railgunTank;delete s.equipment.icbm;
   s.equipment.tank={level:20,count:1,deployed:true};s.swordActivatedAt=T-1000;s.swordDurationMs=90000;
   s.autoTouchActivatedAt=T-900;s.autoTouchDurationMs=120000;s.autoTouchTicks=3;
-  const next=parseSave(serializeSave(s),T);assert.equal(next.version,20);assert.equal(next.gold,s.gold);
+  const next=parseSave(serializeSave(s),T);assert.equal(next.version,21);assert.equal(next.gold,s.gold);
   for(const id of Object.keys(s.personalLevels))assert.equal(next.personalLevels[id],7);
   assert.equal(next.personalLevels.marshalGlaive,1);assert.equal(next.equipment.icbm,null);assert.equal(next.equipment.railgunTank,null);
   for(const key of ['swordActivatedAt','swordDurationMs','autoTouchActivatedAt','autoTouchDurationMs','autoTouchTicks'])assert.equal(next[key],s[key]);

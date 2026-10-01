@@ -145,7 +145,7 @@ function equipmentSprite(id, level, side) {
 function headquartersSprite(id, side) {
   const key = `hq:${side}:${id}`;
   if (sprites.has(key)) return sprites.get(key);
-  const tier = Math.max(0, ["battalion", "regiment", "division", "corps", "fieldArmy", "armyGroup", "alliedArmy"].indexOf(id));
+  const tier = Math.max(0, ["battalion", "regiment", "division", "corps", "fieldArmy", "armyGroup", "alliedArmy", "grandAlliedArmy", "supremeCommand"].indexOf(id));
   const w = 62 + tier * 10, h = 42 + tier * 5, canvas = surface(w + 18, h + 12);
   const c = canvas.getContext("2d"), p = palettes[side];
   rect(c, 5, 6, w + 3, h + 2, "#26372d55");
@@ -162,6 +162,12 @@ function headquartersSprite(id, side) {
   else rect(c, -0, h - 13, 9, 8, p.light);
   for(let x=8;x<w-8;x+=8){c.fillStyle=p.light;c.fillRect(x,8,4,.5);c.fillStyle=p.dark;c.fillRect(x,h-6,4,1);}
   for(let y=15;y<h-10;y+=7){c.fillStyle=p.light;c.fillRect(w-10,y,3,2);c.fillStyle=p.dark;c.fillRect(w-9,y+.5,2,.5);}
+  if(tier>=7){
+    const metal=tier===8?'#d8e8f1':'#e4ce92';
+    for(const x of [5,w-20]){rect(c,x,h/2-5,14,19,p.dark);rect(c,x+2,h/2-3,10,2,metal);}
+    rect(c,w/2-15,h/2-12,30,2,metal);
+    for(let n=0;n<tier-5;n++)rect(c,w/2-9+n*8,h/2+10,4,3,metal);
+  }
   sprites.set(key, canvas);
   return canvas;
 }

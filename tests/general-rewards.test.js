@@ -69,7 +69,7 @@ test('version 15 migration preserves assets and active 30 second sword, ignores 
   const s={...army('소장'),version:15,gold:123456,taps:789,campaignCleared:20,swordActivatedAt:T-10000};
   s.equipment.tank={level:10,count:3,deployed:true};delete s.equipment.transport;delete s.equipment.fighter;
   s.autoTouchActivatedAt=T-300;s.autoTouchTicks=1;s.swordDurationMs=60000;
-  const next=parseSave(serializeSave(s));assert.equal(next.version,20);
+  const next=parseSave(serializeSave(s));assert.equal(next.version,21);
   for(const key of ['gold','taps','soldiers','sergeants','campaignCleared','swordActivatedAt'])assert.equal(next[key],s[key]);
   assert.deepEqual(next.equipment.tank,{...s.equipment.tank,count:1});assert.equal(next.equipment.transport,null);assert.equal(next.equipment.fighter,null);
   assert.equal(next.autoTouchActivatedAt,null);assert.equal(next.autoTouchTicks,0);assert.equal(next.swordDurationMs,30000);

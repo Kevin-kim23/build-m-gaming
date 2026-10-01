@@ -68,7 +68,7 @@ export const EQUIPMENT = Object.freeze({
     stages:Object.freeze(['기본 레일건','레일 외장','청광 코어','궤도 보강','측면 방호판','포탑 장갑','에너지 패널','탐지 센서','은빛 장갑','통신 안테나','최종 개량형']),
   }),
   icbm: Object.freeze({
-    id:'icbm',name:'대륙간 탄도미사일',shortName:'ICBM',unlockRank:'원수',introducedVersion:20,
+    id:'icbm',name:'대륙간 탄도미사일',shortName:'ICBM',unlockRank:'준원수',introducedVersion:20,
     cost:15_000_000_000,maxLevel:20,passive:7_500_000,tap:45_000_000,passiveStep:1_500_000,tapStep:9_000_000,
     stages:Object.freeze(['기본 ICBM','동체 외장','운반대 보강','차체 장갑','지지대 확장','기수 도장','관측 센서','지원 설비','위장 패널','통신 안테나','최종 개량형']),
   }),

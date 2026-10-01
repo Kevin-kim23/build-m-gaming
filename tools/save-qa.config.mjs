@@ -5,7 +5,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 const page = `<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>저장·작은 화면 검증</title><h1>4198 전용 테스트 기록</h1><p>실제 4173 기록과 분리된 테스트입니다.</p>
-<button data-case="normal">정상 원수</button><button data-case="recover">손상 + 보조 복구</button><button data-case="blocked">둘 다 손상</button><button data-case="future">새 버전 기록</button><button data-case="missing">주 저장 누락</button>
+<button data-case="normal">정상 준원수</button><button data-case="recover">손상 + 보조 복구</button><button data-case="blocked">둘 다 손상</button><button data-case="future">새 버전 기록</button><button data-case="missing">주 저장 누락</button>
 <p id="result" role="status"></p><a href="/">게임 확인</a>
 <script type="module">
 import { freshState, SAVE_KEY, SAVE_VERSION } from '/src/state.js';

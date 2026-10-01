@@ -14,6 +14,8 @@ const palettes = [
   ["#742f39", "#d79985", "#d5a43c", "#fff4bb"],
   ["#263568", "#aabce7", "#d8b15c", "#fff5d0"],
   ["#512454", "#d2afd9", "#d6c58a", "#fffbe3"],
+  ["#243b59", "#b4d3e8", "#d6b96c", "#fff1bf"],
+  ["#243e44", "#b2dedf", "#a8bdcd", "#f4fbff"],
 ];
 
 export function medalSvg(id) {
@@ -101,6 +103,12 @@ export function medalSvg(id) {
     for(const x of [14,77]){r(x,61,5,22,metal);r(x+1,61,1,22,shine);r(x-2,61,9,2,shine);}
     r(39,83,18,3,shine);r(42,86,12,2,metal);
     if(tier===9){r(44,67,8,10,'#8ecbd5');r(45,68,3,3,'#e7fcff');r(41,16,15,2,shine);}
+    if(tier>=10){
+      r(37,68,22,16,metal);r(39,70,18,12,ribbon);r(42,64,12,20,shine);
+      for(const x of [39,53])for(const y of [73,78])r(x,y,4,2,stripe);
+      r(46,76,4,8,ribbon);r(35,85,26,2,shine);
+      if(tier===11){r(45,58,6,6,shine);r(33,88,30,2,metal);r(35,90,26,1,shine);}
+    }
   }
   const svg = `<svg class="achievement-medal-svg" viewBox="0 0 96 112" aria-hidden="true" focusable="false" shape-rendering="crispEdges">${pixels.join("")}</svg>`;
   cache.set(id,svg);

@@ -25,7 +25,7 @@ test('legacy general ranks reset personal levels to one but retain active skill 
 test('each baton level adds exactly one supported 100-person button and keeps earlier ones',()=>{
   const rules=Object.entries(BULK_RECRUIT);
   for(const [index,[id,rule]] of rules.entries()) {
-    const s=army('대원수');s.gold=MAX_GOLD;s.personalLevels.commandBaton=rule.level;
+    const s=army('소원수');s.gold=MAX_GOLD;s.personalLevels.commandBaton=rule.level;
     const html=shopMarkup(s,'',()=>'', 'recruit');
     assert.equal((html.match(/data-buy-bulk=/g)||[]).length,index+1);
     for(const [earlier] of rules.slice(0,index+1))assert.match(html,new RegExp(`data-buy-bulk="${earlier}"`));
@@ -33,7 +33,7 @@ test('each baton level adds exactly one supported 100-person button and keeps ea
   }
 });
 for(const id of ['masterSergeant','sergeantMajor','lieutenant'])test(`${id} batch charges 100 sequential prices with school, paid level, gold and capacity gates`,()=>{
-  const rule=BULK_RECRUIT[id], unit=UNITS[id], s=army('대원수');s.personalLevels.commandBaton=rule.level;
+  const rule=BULK_RECRUIT[id], unit=UNITS[id], s=army('소원수');s.personalLevels.commandBaton=rule.level;
   s[unit.field]=7;s.soldiers-=7*unit.power;
   const cost=Array.from({length:100},(_,i)=>unitCost(7+i,id)).reduce((a,b)=>a+b,0);
   assert.equal(recruitOffer(s,id,100).cost,cost);

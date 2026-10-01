@@ -133,9 +133,9 @@ test("existing version seven saves restore their derived baton without a separat
   const { commandBatonStatus } = await import("../src/personal-equipment.js");
   const original = { ...army(), version: 7, battleCleared: 2, taps: 1234, gold: 987654321 };
   const restored = parseSave(serializeSave(original), T);
-  assert.deepEqual(restored, { ...original, version:20,personalLevels:{commandBaton:1,generalSword:1,divisionFlag:1,generalRevolver:1,marshalGlaive:1},autoTouchDurationMs:60000, ncoSchoolLevel: 2,
+  assert.deepEqual(restored, { ...original, version:21,personalLevels:{commandBaton:1,generalSword:1,divisionFlag:1,generalRevolver:1,marshalGlaive:1},autoTouchDurationMs:60000, ncoSchoolLevel: 2,
     earnedAchievements: ["squad", "platoon", "company", "battalion"] });
-  assert.equal(restored.version, 20);
+  assert.equal(restored.version, 21);
   assert.equal(commandBatonStatus(restored).owned, true);
   assert.equal(Object.hasOwn(restored, "commandBaton"), false);
   const migrated = parseSave(serializeSave({ ...original, version: 6 }), T);

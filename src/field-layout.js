@@ -34,9 +34,12 @@ function pack(items, area, factor) {
   for (const item of items) {
     const width = Math.max(1, Math.round(item.preferredWidth * factor));
     const height = Math.max(1, Math.round(item.preferredHeight * factor));
-    const label = !UNITS[item.id] || item.count > 1 ? 9 : 0;
+    const hasLabel = !UNITS[item.id] || item.count > 1;
     const labelText = item.name + (item.count > 1 ? " ×" + item.count : "");
-    const boxWidth = Math.max(width, label ? Math.max(30, labelText.length * 6) : width);
+    const textWidth = Math.max(30, labelText.length * 6);
+    const wrapLabel = hasLabel && textWidth > area.width;
+    const label = hasLabel ? 9 * Math.ceil(textWidth / Math.max(1, area.width)) : 0;
+    const boxWidth = Math.max(width, hasLabel ? Math.min(textWidth, area.width) : width);
     if (x > area.x && x + boxWidth > area.x + area.width) {
       x = area.x;
       y += rowHeight + 5;
@@ -53,6 +56,7 @@ function pack(items, area, factor) {
       boxWidth,
       boxHeight: height + label,
       label: !!label,
+      wrapLabel,
     });
     x += boxWidth + 6;
     rowHeight = Math.max(rowHeight, height + label);
@@ -68,7 +72,8 @@ export function layoutFieldArmy(army, area) {
     0,
     hierarchy.findIndex((f) => f.id === largest.id),
   );
-  const scale = UNITS[largest.id] ? 1 : Math.min(1.35, 56 / largest.width);
+  const displayWidth = ['alliedArmy', 'grandAlliedArmy', 'supremeCommand'].includes(largest.id) ? 84 : 56;
+  const scale = UNITS[largest.id] ? 1 : Math.min(1.35, displayWidth / largest.width);
   const makeItems = (compact, visibleGroups) =>
     visibleGroups.flatMap((g) => {
       const tier = Math.max(

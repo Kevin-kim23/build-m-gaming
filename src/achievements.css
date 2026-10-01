@@ -35,7 +35,7 @@
 }
 #medal-list {
   display: grid;
-  grid-template-columns: repeat(17, minmax(0, 1fr));
+  grid-template-columns: repeat(19, minmax(0, 1fr));
   grid-template-rows: 21px;
   grid-auto-flow: row;
   direction: ltr;

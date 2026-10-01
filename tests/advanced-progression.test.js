@@ -20,7 +20,7 @@ const army=rank=>({...freshState(T),gold:MAX_GOLD,soldiers:RANK_REQUIREMENTS[RAN
 
 test('four field armies form an army group, four groups form allied command, ranks use five and six stars',()=>{
   assert.equal(ARMY_GROUP_SIZE,FIELD_ARMY_SIZE*4);assert.equal(ALLIED_ARMY_SIZE,ARMY_GROUP_SIZE*4);
-  for(const [rank,id,power,stars] of [['원수','armyGroup',1310720,5],['대원수','alliedArmy',5242880,6]]) {
+  for(const [rank,id,power,stars] of [['준원수','armyGroup',1310720,5],['소원수','alliedArmy',5242880,6]]) {
     const s=army(rank);s.soldiers--;
     assert.equal(rankForArmy(s),RANKS.indexOf(rank)-1);
     const oldPower=armyPower(s);assert.equal(recruit(s,T).promoted,true);
@@ -57,7 +57,7 @@ test('advanced academy requires officer level five and sequential rank-gated upg
 });
 
 test('new officers spend their independent price and add only their catalog strength and income',()=>{
-  const s={...army('대원수'),advancedSchoolLevel:5};
+  const s={...army('소원수'),advancedSchoolLevel:5};
   for(const grade of ADVANCED_OFFICERS) {
     const before={gold:s.gold,power:armyPower(s),tap:perTap(s,T),income:perSecond(s)};
     const prices=Object.fromEntries(ADVANCED_OFFICERS.map(g=>[g.id,recruitOffer(s,g.id).cost]));
@@ -74,7 +74,7 @@ test('new officers spend their independent price and add only their catalog stre
 test('version sixteen migration preserves assets and ignores injected advanced units',()=>{
   const old={...army('대장'),version:16,gold:99_999_999_999_999,advancedSchoolLevel:5,colonels:999,generals:1,campaignCleared:20};
   const loaded=parseSave(serializeSave(old),T);
-  assert.equal(loaded.version,20);assert.equal(loaded.advancedSchoolLevel,0);
+  assert.equal(loaded.version,21);assert.equal(loaded.advancedSchoolLevel,0);
   for(const grade of ADVANCED_OFFICERS)assert.equal(loaded[grade.field],0);
   for(const key of ['gold','soldiers','sergeants','ncoSchoolLevel','officerSchoolLevel','campaignCleared'])assert.equal(loaded[key],old[key]);
   assert.deepEqual(loaded.equipment,old.equipment);
@@ -86,7 +86,7 @@ test('advanced school UI lists each required rank and has five distinct cached c
   const s=army('대장');
   assert.match(schoolsMarkup(s),/고급 사관학교/);
   const detail=schoolDetailMarkup(s,'advanced').body;
-  for(const rank of ['대장','원수','대원수'])assert.ok(detail.includes(rank+' 이상 필수'));
+  for(const rank of ['대장','준원수','소원수'])assert.ok(detail.includes(rank+' 이상 필수'));
   const icons=ADVANCED_OFFICERS.map(g=>schoolIcon('advanced',g.schoolLevel));
   assert.equal(new Set(icons).size,5);
   for(let level=1;level<=5;level++)assert.equal(schoolIcon('advanced',level),icons[level-1]);
@@ -95,7 +95,7 @@ test('advanced school UI lists each required rank and has five distinct cached c
 });
 
 test('three campuses and upper formations fit beside weapons on narrow and short fields',()=>{
-  const s={...army('대원수'),advancedSchoolLevel:5,soldiers:MAX_SOLDIERS-3000-1};
+  const s={...army('소원수'),advancedSchoolLevel:5,soldiers:MAX_SOLDIERS-3000-1};
   for(const width of [160,195,240])for(const height of [110,140,210,300]) {
     const gear=layoutFieldEquipment(Array.from({length:4},()=>({})),width,height);
     const schools=layoutFieldSchools(ownedSchools(s),gear,width,height);
@@ -110,7 +110,7 @@ test('three campuses and upper formations fit beside weapons on narrow and short
 });
 
 test('extended personal reward art is distinct and 70/80 second skills survive reload',()=>{
-  for(const [rank,duration,baton,sword] of [['원수',70000,7,5],['대원수',80000,8,6]]) {
+  for(const [rank,duration,baton,sword] of [['준원수',70000,7,5],['소원수',80000,8,6]]) {
     const s=army(rank);s.personalLevels.generalSword=sword;assert.equal(activateSword(s,T).ok,true);assert.equal(s.swordDurationMs,duration);
     assert.equal(parseSave(serializeSave(s),T).swordDurationMs,duration);
     assert.notEqual(personalIcon('baton',baton),personalIcon('baton',baton-1));

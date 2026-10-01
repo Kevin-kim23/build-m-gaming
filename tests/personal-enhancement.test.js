@@ -8,7 +8,7 @@ import { equipmentLevelLimit } from '../src/equipment.js';
 import { personalIcon } from '../src/personal-art.js';
 import { personalDetailMarkup, personalMarkup } from '../src/personal-panels.js';
 const T = 1800000000000;
-const army = (rank = '대원수') => ({ ...game.freshState(T), soldiers: RANK_REQUIREMENTS[RANKS.indexOf(rank)] - 3000,
+const army = (rank = '소원수') => ({ ...game.freshState(T), soldiers: RANK_REQUIREMENTS[RANKS.indexOf(rank)] - 3000,
   sergeants: 300, gold: MAX_GOLD, ncoSchoolLevel: 5, officerSchoolLevel: 5 });
 
 test('promotion grants Lv.1 only and cannot replace paid personal levels', () => {
@@ -27,7 +27,7 @@ test('v18 migrates once to Lv.1 while preserving exact gold, military gear and r
     autoTouchActivatedAt: T - 900, autoTouchTicks: 3 };
   s.equipment.tank = { level: 20, count: 1, deployed: true };
   const next = game.parseSave(serializeSave(s), T);
-  assert.equal(next.version, 20);
+  assert.equal(next.version, 21);
   for (const level of Object.values(next.personalLevels)) assert.equal(level, 1);
   assert.equal(next.gold, s.gold); assert.deepEqual(next.equipment, s.equipment);
   assert.equal(personal.swordSkillStatus(next,T).activeMs, 75000);

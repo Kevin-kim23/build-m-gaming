@@ -3,6 +3,7 @@ import { ownedSchools, layoutFieldSchools, fieldArmyArea } from "./field-schools
 import { renderFieldLabels } from "./field-labels.js";
 import { artSurface, uniformDetails, ART_SCALE } from "./pixel-detail.js";
 import { officerDetails } from './officer-art.js';
+import { drawHighCommand } from './command-art.js';
 import {
   fieldSummary,
   layoutFieldArmy,
@@ -149,6 +150,8 @@ function door(c, x, y) {
   r(c, x + 3, y + 4, 1, 1, "#c4bf88");
 }
 function building(c, id) {
+  const type = FORMATIONS.find(f => f.id === id);
+  if (drawHighCommand(c, id, type.width, type.height)) return;
   const headquarters = ["regiment", "division", "corps", "fieldArmy", "armyGroup", "alliedArmy"].indexOf(
     id,
   );

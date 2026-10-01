@@ -29,7 +29,7 @@ export function inspectSave(raw, now = Date.now()) {
     } };
   }
 }
-// Compatibility API for existing callers and version 2–20 migrations.
+// Compatibility API for existing callers and version 2–21 migrations.
 export function parseSave(raw, now = Date.now()) { return inspectSave(raw, now).state; }
 
 function migrateSave(s, now) {

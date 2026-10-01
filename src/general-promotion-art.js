@@ -1,5 +1,5 @@
 import { supremeRankSymbol } from './rank-emblem.js';
-// Original ceremonial metalwork. SVG strings are cached by the six general tiers.
+// Original ceremonial metalwork. SVG strings are cached by the eight general tiers.
 const cache = new Map();
 const star = (x,y,r,fill) => {
   const points=Array.from({length:10},(_,i)=>{
@@ -9,10 +9,10 @@ const star = (x,y,r,fill) => {
   return `<polygon points="${points}" fill="${fill}" stroke="#fff1b4" stroke-width="1"/>`;
 };
 export function generalEmblem(tier) {
-  if(!Number.isInteger(tier)||tier<1||tier>6)throw new RangeError('Unknown general ceremony tier');
+  if(!Number.isInteger(tier)||tier<1||tier>8)throw new RangeError('Unknown general ceremony tier');
   if(cache.has(tier))return cache.get(tier);
   const id=`general-ceremony-${tier}`, gold=`url(#${id}-gold)`, enamel=`url(#${id}-enamel)`;
-  const feathers=Array.from({length:7+tier},(_,i)=>{
+  const feathers=Array.from({length:7+Math.min(tier,6)},(_,i)=>{
     const x=19+i*9+Math.max(0,i-4)*8,y=24+i*19,root=145+i*7;
     return `<path d="M281 ${root} Q182 ${y+64} ${x} ${y} Q${x+5} ${y+28} ${x+29} ${y+43} Q185 ${y+96} 283 ${root+34}Z" fill="${gold}" stroke="#77572c" stroke-width="1.8"/>
     <path d="M${x+9} ${y+17} Q150 ${y+90} 271 ${root+23}" fill="none" stroke="#ffefb0" stroke-width="2"/>

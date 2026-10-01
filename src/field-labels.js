@@ -15,7 +15,7 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
   })));
   const elements = labels.map(item => {
     const label = document.createElement("span");
-    label.className = "field-label";
+    label.className = item.wrapLabel ? "field-label field-label-wrap" : "field-label";
     label.textContent = item.text;
     if (item.gearCount) {
       const count = document.createElement("span");

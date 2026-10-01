@@ -10,7 +10,11 @@ export const CORPS_SIZE = DIVISION_SIZE * 4;
 export const FIELD_ARMY_SIZE = CORPS_SIZE * 4;
 export const ARMY_GROUP_SIZE = FIELD_ARMY_SIZE * 4;
 export const ALLIED_ARMY_SIZE = ARMY_GROUP_SIZE * 4;
+export const GRAND_ALLIED_ARMY_SIZE = ALLIED_ARMY_SIZE * 4;
+export const SUPREME_COMMAND_SIZE = GRAND_ALLIED_ARMY_SIZE * 4;
 export const FORMATIONS = Object.freeze([
+  { id: 'supremeCommand', name: '총군사령부', size: SUPREME_COMMAND_SIZE, width: 216, height: 172 },
+  { id: 'grandAlliedArmy', name: '대연합군', size: GRAND_ALLIED_ARMY_SIZE, width: 192, height: 156 },
   { id: 'alliedArmy', name: '연합군', size: ALLIED_ARMY_SIZE, width: 170, height: 143 },
   { id: 'armyGroup', name: '집단군', size: ARMY_GROUP_SIZE, width: 152, height: 128 },
   {

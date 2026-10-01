@@ -1,6 +1,6 @@
 {
   "name": "budae-kiugi",
-  "version": "0.37.0",
+  "version": "0.38.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +11,8 @@
     "android:sync": "npm run build && cap sync android",
     "qa:save": "vite --config tools/save-qa.config.mjs",
     "docs:personal": "node tools/personal-rates.mjs",
-    "qa:personal": "vite --config tools/personal-qa.config.mjs"
+    "qa:personal": "vite --config tools/personal-qa.config.mjs",
+    "qa:marshal": "vite --config tools/marshal-qa.config.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

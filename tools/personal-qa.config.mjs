@@ -7,7 +7,7 @@ const page=`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="vie
 <title>개인 장비 검증</title><style>body{background:#172126;color:#eee;font:14px sans-serif;margin:16px}button,a{display:inline-block;padding:12px;margin:4px}a{color:#cfe9c7}.gallery{display:grid;grid-template-columns:repeat(10,minmax(84px,1fr));gap:8px;overflow:auto}figure{margin:0;background:#253036;padding:6px;text-align:center}svg{width:72px;height:112px}</style>
 <h1>4199 전용 개인 장비 검증</h1><p>실제 4173 기록과 분리된 개발용 기록입니다.</p>
 <button data-case="legacy">이전 형식 18</button><button data-case="one">전체 Lv.1</button><button data-case="nine">전체 Lv.9</button><button data-case="max">전체 Lv.10</button><button data-case="poor">골드 부족</button><button data-case="locked">대령 잠금</button>
-<button data-case="v19">형식 19 유료 Lv.7</button><button data-case="general">대장 신규 장비</button><button data-case="marshal">원수 신규 장비</button><button data-case="weapons">새 장비 20강 배치</button>
+<button data-case="v19">형식 19 유료 Lv.7</button><button data-case="general">대장 신규 장비</button><button data-case="marshal">준원수 신규 장비</button><button data-case="weapons">새 장비 20강 배치</button>
 <p id="result" role="status"></p><a href="/">게임 확인</a><div id="gallery"></div>
 <script type="module">
 import {freshState,SAVE_KEY} from '/src/state.js';

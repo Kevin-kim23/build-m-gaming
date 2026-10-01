@@ -7,7 +7,7 @@ import { createBattle, advanceBattle, equipmentCombatStats } from '../src/battle
 import { createGameSession } from '../src/session.js';
 import { RANKS, RANK_REQUIREMENTS } from '../src/ranks.js';
 const T = 1_800_000_000_000;
-const army = () => ({ ...freshState(T), soldiers: RANK_REQUIREMENTS[RANKS.indexOf('원수')] - 3000, sergeants: 300, gold:100_000_000_000_000, ncoSchoolLevel: 5, officerSchoolLevel: 1 });
+const army = () => ({ ...freshState(T), soldiers: RANK_REQUIREMENTS[RANKS.indexOf('준원수')] - 3000, sergeants: 300, gold:100_000_000_000_000, ncoSchoolLevel: 5, officerSchoolLevel: 1 });
 function maxGun(s, id) { assert.equal(buyEquipment(s,T,id).ok,true); for(let n=0;n<10;n++) assert.equal(enhanceEquipment(s,T,id).ok,true); }
 
 test('legacy quotes remain calculable but additional purchases are locked', () => {
@@ -64,7 +64,7 @@ test('v12 quantity migration preserves all assets, deployment, theme and running
   for(const [i,id] of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'].entries())old.equipment[id]={level:i+5,deployed:i<4};
   const next = parseSave(serializeSave(old),T);
   for(const key of ['gold','soldiers','sergeants','fieldTheme','swordActivatedAt','taps','battleCleared'])assert.equal(next[key],old[key]);
-  assert.equal(next.version, 20);
+  assert.equal(next.version, 21);
   for(const id of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'])assert.deepEqual(next.equipment[id],{...old.equipment[id],count:1});
   assert.equal(next.equipment.transport,null);assert.equal(next.equipment.fighter,null);
   old.equipment.tank.count = 900;

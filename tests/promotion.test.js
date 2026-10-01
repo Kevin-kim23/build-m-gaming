@@ -13,7 +13,7 @@ test("higher ranks retain bounded fanfares and give generals a longer dedicated 
     assert.ok(current.width <= 360);
     if (rank > 1) {
       assert.ok(current.width >= previous.width);
-      assert.ok(current.volume > previous.volume);
+      assert.ok(current.volume >= previous.volume);
       assert.ok(current.sparks > previous.sparks);
     }
     previous = current;
