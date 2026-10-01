@@ -51,7 +51,6 @@ test("baton adds exactly one 100-soldier action without replacing one-unit recru
   const html = markup(state(1280), "recruit");
   assert.equal((html.match(/data-buy-bulk="soldier"/g) ?? []).length, 1);
   assert.equal((html.match(/data-bulk-price/g) ?? []).length, 1);
-  assert.equal((html.match(/data-bulk-label/g) ?? []).length, 1);
   assert.match(html, /일반병 100명 모집/);
   for (const id of ["soldier", "sergeant", "staffSergeant"])
     assert.match(html, new RegExp(`data-buy="${id}"`));

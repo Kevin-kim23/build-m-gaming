@@ -11,6 +11,8 @@ import { panelTabs, equipmentPanelMarkup, renderEquipmentStore, renderEquipmentP
 import { SHOP_CATEGORIES, shopMarkup } from './shop.js';
 import { drawFormationPortrait } from './art.js';
 import { showPromotion } from './promotion.js';
+import { openDetail, closeDetail, setDetailActions } from './detail-popup.js';
+import { unitDetailMarkup } from './unit-detail.js';
 import './shop.css';
 import './schools.css';
 
@@ -46,24 +48,16 @@ export function createArmyPanels(session, audio) {
       if (!card) continue;
       const offer = recruitOffer(s, unit.id);
       const field = (name, value) => text(`[data-unit="${unit.id}"] [data-field="${name}"]`, value);
-      field('owned', `보유 ${fmt(offer.owned)}명`);
+      field('owned', `보유 ${fmt(offer.owned)}`);
       field('price', fmtGoldCost(offer.cost));
-      field('unlock', offer.locked ? `🔒 필요: ${offer.requirement}` : `전력 +${unit.power} · ${offer.requirement}`);
-      field('label', offer.reason === 'locked' ? `잠금 · ${offer.requirement} 필요`
-        : offer.reason === 'limit' ? '전력 한도 도달'
-        : offer.reason === 'gold' ? `${fmtGoldCost(offer.cost - s.gold)} G 부족` : `${unit.name} 1명 모집`);
+      field('hint', offer.locked ? `🔒 ${offer.requirement}` : offer.reason === 'limit' ? '전력 한도' : '');
       card.classList.toggle('locked', offer.locked);
       card.querySelector('[data-buy]').disabled = !offer.canBuy;
     }
     for (const bulkButton of dialog.querySelectorAll('[data-buy-bulk]')) {
-      const id = bulkButton.dataset.buyBulk, unit = UNITS[id];
+      const id = bulkButton.dataset.buyBulk;
       const offer = recruitOffer(s, id, COMMAND_BATON.recruitAmount);
-      const scope = `[data-bulk-unit="${id}"]`;
-      text(`${scope} [data-bulk-price]`, fmtGoldCost(offer.cost));
-      text(`${scope} [data-bulk-label]`, offer.reason === 'locked' ? `잠금 · ${offer.requirement}`
-        : offer.reason === 'limit' ? `${COMMAND_BATON.recruitAmount}명 모집할 전력 여유 부족`
-        : offer.reason === 'gold' ? `${fmtGoldCost(offer.cost - s.gold)} G 부족`
-        : `${unit.name} ${COMMAND_BATON.recruitAmount}명 모집`);
+      text(`[data-bulk-unit="${id}"] [data-bulk-price]`, fmtGoldCost(offer.cost));
       bulkButton.disabled = !offer.canBuy;
     }
   }
@@ -104,6 +98,10 @@ export function createArmyPanels(session, audio) {
     else if (equipmentRank !== rankForArmy(state()) || equipmentCatalogKey !== visibleEquipment(state()).map(d => d.id).join(':')) openEquipment();
     else updateEquipment();
     lockPanel();
+  }
+  function showUnitDetail(id) {
+    const popup = openDetail(unitDetailMarkup(state(), UNITS[id]));
+    popup.querySelectorAll('[data-portrait]').forEach(c => drawFormationPortrait(c, c.dataset.portrait));
   }
   function buyUnit(id, quantity = 1) {
     const previousBatonLevel = commandBatonStatus(state()).level;
@@ -196,6 +194,7 @@ export function createArmyPanels(session, audio) {
       const result = session.change(s => activateSword(s));
       if (result?.ok) text('#equipment-message', `${generalSwordDuration(state())/1000}초 동안 터치 골드가 2배입니다!`);
     }
+    else if (button.dataset.detailUnit) showUnitDetail(button.dataset.detailUnit);
     else if (button.dataset.buy) buyUnit(button.dataset.buy);
     else if (button.dataset.buyBulk) buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount);
     else if (button.dataset.buyAdditional) purchaseAdditionalGun(button.dataset.buyAdditional);
@@ -206,6 +205,9 @@ export function createArmyPanels(session, audio) {
     else if (button.id === 'equipment-to-shop') openShop('equipment');
     else if (button.id === 'enhance-equipment') upgradeGun();
     else if (button.id === 'toggle-equipment') toggleEquipment();
+  });
+  setDetailActions((action, data) => {
+    if (action === 'shop-category') { closeDetail(); openShop(data.category); }
   });
   dialog.addEventListener('close', () => document.querySelector(activePanel === 'equipment' ? '#open-equipment' : '#open-shop').focus());
   return { openShop, openEquipment, sync };

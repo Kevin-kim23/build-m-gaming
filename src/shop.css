@@ -142,3 +142,40 @@
 .equipment-select { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
 .equipment-select button { min-width:0; word-break:keep-all; }
 .equipment-select button span { display:block; margin-top:4px; color:#dfd6ad; }
+
+/* Compact recruit tiles: four columns; a long price grows the tile downward. */
+.recruit-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 14px 0; align-items: stretch; }
+.recruit-tile {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 7px 3px 5px;
+  text-align: center;
+  background: #2c3929;
+  border: 1px solid #596849;
+  border-radius: 7px;
+}
+.recruit-tile.locked { border-style: dashed; background: #293327; }
+.recruit-tile.locked .tile-visual, .recruit-tile.locked h3, .recruit-tile.locked .tile-stats { opacity: 0.6; }
+.recruit-tile.locked .tile-visual { filter: grayscale(0.65); }
+.tile-visual { position: relative; width: 100%; height: 46px; display: grid; place-items: center; background: #78805b; border-radius: 3px; box-shadow: inset 0 0 0 2px #67714d; }
+.tile-visual canvas { width: 32px; height: 40px; image-rendering: pixelated; }
+.recruit-tile h3 { margin: 3px 0 0; font-size: 12px; line-height: 1.2; word-break: keep-all; }
+.tile-owned { font-size: 9px; color: #b7c2a3; }
+.tile-stats { display: flex; flex-direction: column; margin: 1px 0; font-size: 9px; line-height: 1.35; color: #c9d4b6; }
+.tile-stats span { display: block; }
+.tile-stats small { font-size: 8px; color: #a9b794; }
+.tile-stats b { color: #f1dfab; font-weight: 700; white-space: nowrap; }
+.tile-price { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0 2px; margin: 0; font-size: 10px; line-height: 1.3; color: #f1dfab; }
+.tile-price b { font-weight: 700; white-space: normal; }
+.tile-price small { font-size: 8px; color: #b9ae7f; }
+.tile-price-bulk { padding-top: 1px; border-top: 1px dashed #5a6947; width: 100%; }
+.tile-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; width: 100%; margin-top: auto; padding-top: 3px; }
+.tile-buttons.single { grid-template-columns: 1fr; }
+.tile-buttons .buy { justify-content: center; min-height: 28px; margin: 0; padding: 4px 0; font-size: 9px; white-space: nowrap; border-radius: 4px; }
+.tile-buttons .buy:disabled { opacity: 0.55; }
+.tile-hint { min-height: 0; margin: 1px 0 0; font-size: 8px; line-height: 1.25; color: #d6b88c; word-break: keep-all; }
+.tile-hint:empty { display: none; }
+.tile-detail { position: absolute; top: 1px; right: 1px; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: #1f2b22aa; color: #e8e2b8; font-size: 12px; line-height: 1; cursor: pointer; }

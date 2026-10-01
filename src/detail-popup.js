@@ -2,6 +2,10 @@
 // One shared "상세" popup for shop, equipment, schools and the rank guide.
 // The dialog is created once; callers pass trusted, game-generated markup only.
 let dialog = null;
+let onAction = null;
+
+// Buttons inside the popup may carry data-detail-action; one owner handles them.
+export function setDetailActions(handler) { onAction = handler; }
 
 function ensureDialog() {
   if (dialog) return dialog;
@@ -9,7 +13,9 @@ function ensureDialog() {
   dialog.id = 'detail-modal';
   dialog.setAttribute('aria-labelledby', 'detail-title');
   dialog.addEventListener('click', (event) => {
-    if (event.target === dialog || event.target.closest('[data-detail-close]')) dialog.close();
+    if (event.target === dialog || event.target.closest('[data-detail-close]')) return dialog.close();
+    const action = event.target.closest('[data-detail-action]');
+    if (action && onAction) onAction(action.dataset.detailAction, action.dataset, dialog);
   });
   document.body.append(dialog);
   return dialog;
