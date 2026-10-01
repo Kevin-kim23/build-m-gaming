@@ -234,7 +234,7 @@ footer {
   justify-content: space-between;
   gap: 10px;
   flex-shrink: 0;
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.1px;
   color: #9ba98a;
   background: #263227;
@@ -263,7 +263,7 @@ footer {
 }
 @media (max-height: 690px) {
   .intro-copy small {
-    font-size: 9px;
+    font-size: 10px;
     margin-top: 5px;
   }
   .tap-hint {
@@ -276,7 +276,7 @@ footer {
     font-size: 11px;
   }
   .tap-hint small {
-    font-size: 9px;
+    font-size: 10px;
   }
 }
 @media (max-height: 540px) {
@@ -307,7 +307,7 @@ footer {
 }
 .home-dock {
   flex-shrink: 0;
-  padding: 13px 22px 10px;
+  padding: 9px 22px 5px;
   background: #263227;
   border-top: 3px solid #4f5b3e;
 }
@@ -381,7 +381,7 @@ footer {
   justify-content: space-between;
   font-size: 10px;
   color: #a3b294;
-  margin: 12px 0 7px;
+  margin: 8px 0 5px;
 }
 .promotion-line b {
   font-size: 10px;
@@ -455,7 +455,7 @@ footer {
 }
 .shop-header small {
   font:
-    9px Consolas,
+    10px Consolas,
     monospace;
   letter-spacing: 1.8px;
   color: #a7b091;
@@ -538,7 +538,7 @@ footer {
   image-rendering: pixelated;
 }
 .recruit-info .item-class {
-  font-size: 9px;
+  font-size: 10px;
   color: #9aaf7f;
 }
 .recruit-info h3 {
@@ -605,7 +605,7 @@ footer {
   line-height: 1;
 }
 .following-price {
-  font-size: 9px;
+  font-size: 10px;
   color: #98a989;
   text-align: center;
   margin: 10px 0 0;
@@ -644,7 +644,7 @@ footer {
   color: #c6d2b2;
 }
 .shop-ranks-title small {
-  font-size: 8px;
+  font-size: 10px;
   color: #93a483;
 }
 .rank-steps {
@@ -676,7 +676,7 @@ footer {
   font-weight: 500;
 }
 .rank-step small {
-  font-size: 9px;
+  font-size: 10px;
   color: #a5b995;
 }
 #shop-next {
@@ -724,7 +724,7 @@ footer {
     font-size: 18px;
   }
   .following-price {
-    font-size: 8px;
+    font-size: 10px;
   }
 }
 @media (max-height: 740px) {
@@ -734,10 +734,10 @@ footer {
   }
   .promotion-line {
     margin-top: 9px;
-    font-size: 9px;
+    font-size: 10px;
   }
   .home-dock + footer {
-    font-size: 7px;
+    font-size: 10px;
   }
   .tap-hint {
     bottom: 17px;
@@ -927,7 +927,7 @@ footer {
 }
 .rank-step em {
   font-style: normal;
-  font-size: 8px;
+  font-size: 10px;
   color: #a5b995;
 }
 .formation-guide {
@@ -972,7 +972,7 @@ footer {
   margin-top: 3px;
 }
 .formation-guide-grid span {
-  font-size: 8px;
+  font-size: 10px;
   color: #acbd95;
   margin-top: 5px;
 }
@@ -983,11 +983,11 @@ footer {
   }
   .intro-copy small {
     margin-top: 5px;
-    font-size: 9px;
+    font-size: 10px;
   }
   .formation-summary {
     top: 9px;
-    font-size: 9px;
+    font-size: 10px;
     padding: 3px 7px;
   }
   .rank-step {
@@ -1113,7 +1113,7 @@ footer {
 
 /* Rank-up: short-lived top-layer overlay, animated with transforms and opacity. */
 .unit-price-note {
-  font-size: 9px;
+  font-size: 10px;
   color: #a6b794;
   text-align: center;
   margin: 8px 0 0;
@@ -1340,7 +1340,7 @@ footer {
 .home-tabs {
   display: flex;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 .home-tabs button {
   flex: 1;
@@ -1410,7 +1410,7 @@ footer {
   color: #d2dfb4;
 }
 .item-class {
-  font-size: 9px;
+  font-size: 10px;
   color: #a5ba8d;
 }
 .equipment-link,
@@ -1675,7 +1675,7 @@ footer {
     gap: 4px !important;
   }
   .owned-unit strong small {
-    font-size: 8px;
+    font-size: 10px;
   }
 }
 

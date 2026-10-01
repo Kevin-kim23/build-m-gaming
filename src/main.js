@@ -36,6 +36,7 @@ import { reportError, installErrorReporting } from "./diagnostics.js";
 import { createArmyPanels } from "./army-panels.js";
 import { openRankGuide } from "./rank-guide.js";
 import "./detail.css";
+import "./touch.css";
 import { hidePromotion } from "./promotion.js";
 import { createGameAudio } from "./audio.js";
 import {

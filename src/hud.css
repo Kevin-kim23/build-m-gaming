@@ -13,10 +13,10 @@
 .rank-open { position: absolute; inset: -6px -8px; padding: 0; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
 .rank-open:focus-visible { outline: 2px solid #bfd18c; }
 .rank h1::after { content: " ▾"; font-size: 11px; color: #a0ab91; }
-.rank small { font-size: 9px; color: #a0ab91; white-space: nowrap; }
+.rank small { font-size: 10px; color: #a0ab91; white-space: nowrap; }
 .rank h1 { font-size: 20px; margin: 3px 0 0; letter-spacing: -0.7px; font-weight: 650; }
 .gold-counter { min-width: 0; text-align: right; }
-.gold-label { display: block; font-size: 9px; line-height: 12px; color: #aeb699; }
+.gold-label { display: block; font-size: 10px; line-height: 12px; color: #aeb699; }
 .gold-counter > div { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin: 2px 0; }
 .gold-counter svg { width: 15px; height: 15px; flex-shrink: 0; image-rendering: pixelated; }
 .gold-counter strong {
@@ -34,7 +34,7 @@
 @media (max-width: 360px) {
   .hud { height: 74px; padding-inline: 14px; gap: 7px; }
   .rank { gap: 5px; }
-  .rank small { font-size: 8px; }
+  .rank small { font-size: 10px; }
   .rank h1 { font-size: 17px; }
   .rank-mark { width: 30px; height: 38px; }
   #sound { width: 34px; height: 38px; }
@@ -48,7 +48,7 @@
 }
 
 /* Personal-equipment buttons and the field-theme switch share one slim row at the top of the dock. */
-.field-tools { display:flex; align-items:center; gap:6px; padding:0 0 6px; flex-shrink:0; }
+.field-tools { display:flex; align-items:center; gap:6px; padding:0 0 4px; flex-shrink:0; }
 .field-tools[hidden], .home-sword[hidden] { display:none; }
 .home-skills { display:flex; align-items:center; gap:6px; flex:1; min-width:0; }
 .home-skill { box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:5px; flex:1 1 0; min-width:0; height:40px; padding:2px 6px; background:#314034; color:#d8debd; border:1px solid #7d805a; border-radius:7px; font-size:11px; line-height:13px; cursor:pointer; }
@@ -61,7 +61,7 @@
 .home-skill .sword-clock-ring { position:absolute; inset:0; width:100%; height:100%; fill:none; stroke:#f6d67c; stroke-width:2.5; }
 .home-skill .sword-clock-ring[hidden], .home-skill [data-sword-time][hidden], .home-skill [data-revolver-time][hidden] { display:none; }
 .sword-clock-track { stroke:#262e24; }
-.home-skill [data-sword-time], .home-skill [data-revolver-time] { position:absolute; bottom:-3px; padding:0 2px; border-radius:3px; background:#243127; color:#fff1ba; font-size:9px; line-height:11px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.home-skill [data-sword-time], .home-skill [data-revolver-time] { position:absolute; bottom:-3px; padding:0 2px; border-radius:3px; background:#243127; color:#fff1ba; font-size:10px; line-height:11px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .revolver-mini-art { display:flex; align-items:center; }
 .home-revolver .revolver-mini-art svg { width:24px; height:18px; }
 .field-theme-picker { flex:0 0 auto; display:flex; font-size:10px; color:#aebba7; }
@@ -70,8 +70,8 @@
 .field-theme-picker button[aria-pressed="true"] { background:#536149; color:#f0e5bc; border-color:#b7b481; }
 .sr-only { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
 .deployment-count { font-size:11px; line-height:1.7; color:#bbc7ad; }
-@media(max-width:360px) { .field-school-name { white-space:normal; word-break:keep-all; font-size:9px; line-height:12px; } }
+@media(max-width:360px) { .field-school-name { white-space:normal; word-break:keep-all; font-size:10px; line-height:12px; } }
 
 @media(max-width:360px) { .field-tools { gap:4px; } .home-skills { gap:4px; } .home-skill { gap:3px; padding-inline:4px; font-size:10px; } .field-theme-picker button { padding-inline:6px; font-size:10px; } }
 
-#campaign-income-bonus { margin-left:4px; color:#e0ce91; font-size:9px; white-space:nowrap; }
+#campaign-income-bonus { margin-left:4px; color:#e0ce91; font-size:10px; white-space:nowrap; }

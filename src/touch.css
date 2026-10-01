@@ -1,0 +1,35 @@
+/*
+ * Touch targets. Loaded last so these sizes win over the per-screen styles.
+ * Every control is at least 44px tall. Controls that sit side by side in a row
+ * keep their width but are at least 40px wide; tiny drawn controls (ⓘ, the medal row,
+ * the shelf links) keep their drawn size and get an invisible 44px hit area.
+ */
+:root { --tap: 44px; }
+
+/* Header and home */
+#sound { min-width: var(--tap); min-height: var(--tap); width: var(--tap); height: var(--tap); }
+.home-tabs button, .home-tabs #open-shop { min-height: var(--tap); }
+.home-skill { height: var(--tap); }
+.field-theme-picker button { min-height: var(--tap); min-width: 40px; }
+
+/* Panels, sheets and dialogs */
+.panel-tabs button, .shop-categories button { min-height: var(--tap); }
+#close-shop, #close-equipment, #close-achievements, .detail-close, .battle-header > button { width: var(--tap); height: var(--tap); }
+
+/* Shop, equipment, schools, personal gear */
+.tile-buttons .buy, .equip-info .tile-buttons .buy, .school-card .buy, .equipment-detail .buy { min-height: var(--tap); }
+.school-detail, .detail-open, .personal-detail, .medal-visibility, .detail-link,
+.school-recruit-link, .personal-recruit-link, .sword-skill-button, .equipment-deploy,
+.personal-item-actions button { min-height: var(--tap); }
+
+/* Battle menu and map */
+.nation-tab { min-height: var(--tap); }
+.atlas-controls button { width: 40px; height: var(--tap); }
+
+/* Small drawn controls: keep the look, extend the tappable area. */
+#toggle-medals, #open-achievements, #medal-list button, .tile-detail { position: relative; }
+.tile-detail { position: absolute; }
+#toggle-medals::after, #open-achievements::after { content: ""; position: absolute; inset: -10px -4px; }
+#medal-list { overflow: visible; }
+#medal-list button::after { content: ""; position: absolute; inset: -12px 0; }
+.tile-detail::after { content: ""; position: absolute; inset: -10px; border-radius: 50%; }
