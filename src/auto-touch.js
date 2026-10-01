@@ -1,13 +1,14 @@
 import { minMoney, subtractMoney, addMoney, multiplyMoney } from './money.js';
 import { AUTO_TOUCH, GENERAL_SWORD, generalRevolverStatus } from './personal-equipment.js';
 
-// Pay due pulses once, including throttled/offline time within the one-minute
+// Pay due pulses once, including throttled/offline time within the activation's
 // window. Mutations settle before changing troops, equipment or the gold boost.
 export function settleAutoTouch(state, now, baseTapGold, maxGold) {
   const at=state.autoTouchActivatedAt;
   if(at==null || !generalRevolverStatus(state).owned)return 0;
   const paid=state.autoTouchTicks ?? 0;
-  const due=Math.max(0,Math.min(AUTO_TOUCH.durationMs/AUTO_TOUCH.intervalMs,Math.floor((now-at)/AUTO_TOUCH.intervalMs)));
+  const duration=state.autoTouchDurationMs??AUTO_TOUCH.durationMs;
+  const due=Math.max(0,Math.min(Math.floor(duration/AUTO_TOUCH.intervalMs),Math.floor((now-at)/AUTO_TOUCH.intervalMs)));
   if(due<=paid)return 0;
   let boosted=0;
   if(state.swordActivatedAt!==null && state.swordActivatedAt!==undefined){

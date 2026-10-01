@@ -4,7 +4,8 @@ export { MAX_GOLD, serializeSave } from './money.js';
 import { rankForArmy } from "./ranks.js";
 import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
 import { schoolOffer } from "./schools.js";
-import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, generalSwordDuration } from "./personal-equipment.js";
+import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration } from "./personal-equipment.js";
+import { personalUpgradeOffer, drawPersonalRoll, personalRollSucceeds } from './personal-enhancement.js';
 import { settleAutoTouch } from './auto-touch.js';
 import { withCampaignIncome } from './campaign-rewards.js';
 import { reconcileAchievements } from "./achievements.js";
@@ -133,7 +134,18 @@ export function activateAutoTouch(s, now = Date.now()) {
   const skill=autoTouchStatus(s,now);
   if(!skill.canUse)return {ok:false,reason:skill.owned?'cooldown':'locked'};
   s.autoTouchActivatedAt=Math.max(now,s.lastAccrual);s.autoTouchTicks=0;
+  s.autoTouchDurationMs=generalRevolverDuration(s);
   return {ok:true};
+}
+export function enhancePersonalEquipment(s,now=Date.now(),id='commandBaton',random=drawPersonalRoll) {
+  accrue(s,now);
+  const offer=personalUpgradeOffer(s,id);
+  if(!offer.canUpgrade)return {ok:false,reason:offer.reason};
+  const success=personalRollSucceeds(offer.level,random());
+  s.gold=subtractMoney(s.gold,offer.cost);
+  s.personalLevels={...s.personalLevels,[id]:offer.level+(success?1:0)};
+  // Failed rolls are completed paid attempts; checkpoint them just like success.
+  return {ok:true,success,level:s.personalLevels[id],cost:offer.cost,chance:offer.chance};
 }
 export function recruit(s, now = Date.now(), type = "soldier", quantity = 1) {
   recruitUnit(type, quantity);

@@ -53,7 +53,7 @@ test('v11 migration preserves assets and cooldown, grants neither rocket nor con
   delete old.equipment.rocketLauncher;delete old.fieldTheme;
   const next=parseSave(serializeSave(old),T);
   for(const key of ['gold','soldiers','sergeants','ncoSchoolLevel','battleCleared','swordActivatedAt'])assert.equal(next[key],old[key]);
-  assert.deepEqual(next.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),rocketLauncher:null});assert.equal(next.fieldTheme,'earth');assert.equal(next.version, 18);
+  assert.deepEqual(next.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),rocketLauncher:null});assert.equal(next.fieldTheme,'earth');assert.equal(next.version, 19);
   old.fieldTheme='concrete';old.equipment.rocketLauncher={level:10,deployed:true};
   assert.equal(parseSave(serializeSave(old),T).equipment.rocketLauncher,null);
   for(const theme of [undefined,null,'invalid',{}])assert.equal(parseSave(serializeSave({...next,fieldTheme:theme}),T),null);
@@ -69,10 +69,10 @@ test('general can switch both backgrounds and reload preference without affectin
   s.fieldTheme='concrete';assert.equal(fieldTheme(s),'earth');assert.equal(setFieldTheme(s,'invalid').reason,'invalid');
 });
 test('staff sergeant batches require Lv3 baton and school Lv2, charge exact sum and remain atomic',()=>{
-  const s=general();s.staffSergeants=20;
+  const s=general();s.staffSergeants=20;s.personalLevels.commandBaton=3;
   const sum=Array.from({length:100},(_,i)=>unitCost(20+i,'staffSergeant')).reduce((a,b)=>a+b,0);
   assert.equal(recruitOffer(s,'staffSergeant',100).cost,sum);
-  for(const patch of [{sergeants:299},{ncoSchoolLevel:1},{gold:sum-1},{soldiers:MAX_SOLDIERS-3000-400-1999}]) {
+  for(const patch of [{personalLevels:{...s.personalLevels,commandBaton:2}},{ncoSchoolLevel:1},{gold:sum-1},{soldiers:MAX_SOLDIERS-3000-400-1999}]) {
     const blocked={...s,...patch},before=structuredClone(blocked);
     assert.equal(recruit(blocked,T,'staffSergeant',100).ok,false);assert.deepEqual(blocked,before);
   }

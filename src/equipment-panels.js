@@ -82,7 +82,7 @@ export function renderEquipmentPanel(s, root, id) {
     root,
     "enhance-equipment",
     max
-      ? level>offer.limit ? `기존 ${level}강 유지` : offer.limit===20 ? "최대 강화 완료" : "진급하면 강화 한도가 늘어납니다"
+      ? level>offer.limit ? `기존 ${level}강 유지` : offer.limit===20 ? "최대 강화 완료" : "사단기를 강화하면 한도가 늘어납니다"
       : offer.reason === "gold"
         ? fmtGoldCost(subtractMoney(offer.cost,s.gold)) + " G 부족"
         : level + 1 + "강으로 강화",

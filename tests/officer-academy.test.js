@@ -71,7 +71,7 @@ test('v13 and older saves preserve assets and never inject new officer counts or
   const old={...general(),version:13,officerSchoolLevel:1,lieutenants:49,gold:123456789,swordActivatedAt:T-30000,fieldTheme:'concrete',battleCleared:4};
   old.equipment.tank={level:10,deployed:true,count:3};
   for(const u of NEW_OFFICER_GRADES){delete old[u.field];}
-  const loaded=parseSave(serializeSave(old),T);assert.equal(loaded.version,18);
+  const loaded=parseSave(serializeSave(old),T);assert.equal(loaded.version,19);
   for(const field of ['gold','soldiers','sergeants','lieutenants','officerSchoolLevel','swordActivatedAt','fieldTheme','battleCleared'])assert.deepEqual(loaded[field],old[field]);
   assert.deepEqual(loaded.equipment,{...old.equipment,tank:{...old.equipment.tank,count:1}});
   for(const version of [9,10,11,12,13]){

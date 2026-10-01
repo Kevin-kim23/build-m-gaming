@@ -12,11 +12,11 @@ import {createBattle,equipmentCombatStats,STAGES} from '../src/battle.js';
 const T=1_800_000_000_000;
 const army=rank=>({...freshState(T),gold:MAX_GOLD,soldiers:Math.max(5000,RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000),sergeants:300,ncoSchoolLevel:5});
 
-test('flag grows once per rank, each level from zero to ten adds one enhancement step',()=>{
+test('paid flag levels add one enhancement step and promotion alone keeps level one',()=>{
   for(let level=0;level<=10;level++)assert.equal(enhancementLimitForFlag(level),10+level);
   for(const bad of [-1,11,1.5,NaN])assert.throws(()=>enhancementLimitForFlag(bad),RangeError);
   for(const [i,rank] of ['준장','소장','중장','대장','원수','대원수'].entries()){
-    const s=army(rank);assert.equal(divisionFlagStatus(s).level,i);assert.equal(equipmentLevelLimit(s),10+i);
+    const s=army(rank);assert.equal(divisionFlagStatus(s).level,i===0?0:1);if(i)s.personalLevels.divisionFlag=i;assert.equal(divisionFlagStatus(s).level,i);assert.equal(equipmentLevelLimit(s),10+i);
     s.equipment.tank={level:9+i,count:1,deployed:true};const before=s.gold;
     assert.equal(enhanceEquipment(s,T,'tank').ok,true);
     assert.equal(before-s.gold,BigInt(enhancementCost(9+i,'tank')));
@@ -26,7 +26,7 @@ test('flag grows once per rank, each level from zero to ten adds one enhancement
 test('previous copies collapse once while level, deployment, exact gold and troops survive',()=>{
   const s={...army('원수'),version:17,gold:MAX_GOLD-123n};
   for(const [i,id] of Object.keys(EQUIPMENT).entries())s.equipment[id]={level:i===0?20:10+i,count:35+i,deployed:i<4};
-  const migrated=parseSave(serializeSave(s),T);assert.equal(migrated.version,18);
+  const migrated=parseSave(serializeSave(s),T);assert.equal(migrated.version,19);
   for(const key of ['gold','soldiers','sergeants','lastAccrual'])assert.equal(migrated[key],s[key]);
   for(const id of Object.keys(EQUIPMENT))assert.deepEqual(migrated.equipment[id],{...s.equipment[id],count:1});
   assert.equal(enhanceEquipment(migrated,T,'artillery').reason,'max');
@@ -68,7 +68,7 @@ test('personal cards have only detail buttons, while home skill controls remain'
   assert.doesNotMatch(html,/data-use-sword|data-use-revolver|data-shop-category|data-equipment-category/);
   assert.match(homeMarkup(s),/data-use-sword/);assert.match(homeMarkup(s),/data-use-revolver/);
   const detail=personalDetailMarkup(s,'divisionFlag').body;
-  assert.match(detail,/최대 14강/);assert.match(detail,/Lv.10 · 최대 20강/);assert.match(detail,/앞으로 추가될 계급/);
+  assert.match(detail,/최대 11강/);assert.match(detail,/Lv.10 · 장비 최대 20강/);assert.match(detail,/골드로 강화/);
   assert.equal(new Set(Array.from({length:10},(_,i)=>personalIcon('flag',i+1))).size,10);
 });
 test('marshal has four corner stars and a center; grand marshal one star and bilateral laurels',()=>{

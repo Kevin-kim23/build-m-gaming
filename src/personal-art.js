@@ -1,7 +1,9 @@
 import { generalRewardIcon } from './general-reward-art.js';
+import { artLevel, personalLustre } from './personal-lustre.js';
 // Original high-density pixel geometry. The reference informs colors/materials only.
 const icons = new Map();
 export function personalIcon(kind, level = 1) {
+  level=artLevel(level);
   if (kind === 'flag' || kind === 'revolver') return generalRewardIcon(kind, level);
   const key = `${kind}:${level}`;
   if (icons.has(key)) return icons.get(key);
@@ -57,6 +59,10 @@ export function personalIcon(kind, level = 1) {
     if(level>=4){band(74,17,35,10);jewel(85,16);rect(104,109,2,95,gold[3]);}
     if(level>=5){band(75,145,28,6);jewel(84,146);rect(106,112,2,88,'#bacfd2');}
     if(level>=6){band(76,176,26,8);jewel(83,177);flourish(77,129);rect(109,25,2,41,'#f3e7bb');}
+    if(level>=7){band(77,115,30,7);rect(81,111,2,101,'#c7e7de');}
+    if(level>=8){jewel(85,190);rect(99,112,2,97,'#fff0b7');flourish(59,72);}
+    if(level>=9){band(73,10,38,5);jewel(83,46);flourish(111,72);}
+    if(level>=10){rect(76,110,2,117,'#e0fff1');rect(105,109,2,114,'#c4f2df');band(73,221,36,7);jewel(86,154);}
   } else {
     // Ebony baton: fluted highlights, engraved caps, level-two gold collars.
     rect(79,48,36,170,'#10191a');rect(81,48,30,170,'#1c2c2a');
@@ -76,9 +82,11 @@ export function personalIcon(kind, level = 1) {
     if(level>=6){band(78,26,37,12);jewel(91,26);rect(73,198,2,22,gold[4]);rect(119,198,2,22,gold[2]);}
     if(level>=7){jewel(91,157);rect(74,67,1,128,'#bdd5d1');}
     if(level>=8){jewel(91,180);rect(119,67,1,128,'#f7eac5');band(77,86,39,5);}
+    if(level>=9){band(72,218,50,8);flourish(86,119);rect(77,68,2,126,'#d5f5e4');}
+    if(level>=10){jewel(91,92);flourish(71,29);flourish(107,29);rect(116,67,2,128,'#efffe9');band(76,8,42,7);}
     rect(79,224,33,3,gold[0]);rect(84,227,23,2,gold[2]);
   }
   const name=kind==='sword'?'장군검':'지휘봉';
-  const svg=`<svg class="command-baton-art ${kind==='sword'?'general-sword-art':''}" viewBox="0 0 192 256" role="img" aria-label="${name} 정밀 픽셀 그림" shape-rendering="crispEdges">${pixels.join('')}</svg>`;
+  const svg=`<svg class="command-baton-art ${kind==='sword'?'general-sword-art':''}" viewBox="0 0 192 256" role="img" aria-label="${name} 정밀 픽셀 그림" shape-rendering="crispEdges">${personalLustre(kind,level)}${pixels.join('')}</svg>`;
   icons.set(key,svg);return svg;
 }

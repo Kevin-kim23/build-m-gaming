@@ -4,6 +4,7 @@ import { UNITS } from './units.js';
 import { NEW_OFFICER_GRADES } from './officer-progression.js';
 import { STAGES } from './battle-balance.js';
 import { AUTO_TOUCH } from './personal-equipment.js';
+import { PERSONAL_EQUIPMENT, GENERAL_SWORD, GENERAL_REVOLVER } from './personal-catalog.js';
 import { validAchievementIds } from './achievements.js';
 import { validEquipment } from './equipment.js';
 import { FIELD_THEMES } from './field-theme.js';
@@ -59,8 +60,13 @@ export function validateSave(s) {
   if (s.version >= 15) requireSave(integer(s.campaignCleared, STAGES.length), 'campaignCleared');
   if (s.version >= 16) {
     requireSave(s.autoTouchActivatedAt === null || integer(s.autoTouchActivatedAt, s.lastAccrual), 'autoTouchActivatedAt');
-    requireSave([30000, 40000, 50000, 60000, 70000, 80000].includes(s.swordDurationMs), 'swordDurationMs');
-    requireSave(integer(s.autoTouchTicks, AUTO_TOUCH.durationMs / AUTO_TOUCH.intervalMs) &&
+    const swordMax=s.version>=19?GENERAL_SWORD.durationMs+(GENERAL_SWORD.maxLevel-1)*GENERAL_SWORD.durationStepMs:80000;
+    requireSave(integer(s.swordDurationMs,swordMax)&&s.swordDurationMs>=GENERAL_SWORD.durationMs&&
+      (s.swordDurationMs-GENERAL_SWORD.durationMs)%GENERAL_SWORD.durationStepMs===0,'swordDurationMs');
+    const autoDuration=s.version>=19?s.autoTouchDurationMs:AUTO_TOUCH.durationMs;
+    requireSave(integer(autoDuration,AUTO_TOUCH.durationMs+(GENERAL_REVOLVER.maxLevel-1)*AUTO_TOUCH.durationStepMs)&&
+      autoDuration>=AUTO_TOUCH.durationMs&&(autoDuration-AUTO_TOUCH.durationMs)%AUTO_TOUCH.durationStepMs===0,'autoTouchDurationMs');
+    requireSave(integer(s.autoTouchTicks,Math.floor(autoDuration/AUTO_TOUCH.intervalMs)) &&
       (s.autoTouchActivatedAt !== null || s.autoTouchTicks === 0), 'autoTouchTicks');
   }
   if (s.version >= 17) {
@@ -68,6 +74,11 @@ export function validateSave(s) {
       (s.advancedSchoolLevel === 0 || s.officerSchoolLevel === 5), 'advancedSchoolLevel');
     for (const unit of ADVANCED_OFFICERS)
       requireSave(integer(s[unit.field], Math.floor(MAX_SOLDIERS / unit.power)), unit.field);
+  }
+  if(s.version>=19){
+    requireSave(s.personalLevels&&typeof s.personalLevels==='object'&&!Array.isArray(s.personalLevels),'personalLevels');
+    for(const item of Object.values(PERSONAL_EQUIPMENT))
+      requireSave(integer(s.personalLevels[item.id],item.maxLevel)&&s.personalLevels[item.id]>=1,`personalLevels.${item.id}`);
   }
   return gold;
 }

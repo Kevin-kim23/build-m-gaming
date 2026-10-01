@@ -1,6 +1,8 @@
+import { artLevel, personalLustre } from './personal-lustre.js';
 // Original ceremonial pixel art; reused by the personal equipment catalogue.
 const cache = new Map();
 export function generalRewardIcon(kind, level = 1) {
+  level=artLevel(level);
   const key = `${kind}:${level}`;
   if (cache.has(key)) return cache.get(key);
   const p = [], r = (x,y,w,h,c) => p.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`);
@@ -25,7 +27,7 @@ export function generalRewardIcon(kind, level = 1) {
     r(34,39,4,85,'#bd333c');r(31,41,2,77,'#f2816b');r(29,120,11,7,gold);
     for(let i=0;i<6;i++)r(28+i*2,127,1,30-i%3*3,'#cb4e43');
     if(level>=2){r(51,44,95,2,light);r(51,159,96,2,light);star(97,137);star(18,64);star(167,190);r(36,185,11,7,gold);}
-    // Each promotion adds embroidery; later tiers add metal mounts.
+    // Each paid level adds embroidery; later tiers add metal mounts.
     for(let i=2;i<Math.min(level,10);i++){const x=62+(i-2)*11;r(x,151,7,4,gold);r(x,151,7,1,light);}
     if(level>=4){r(48,35,102,3,gold);r(49,35,100,1,light);}
     if(level>=6){r(34,195,13,8,gold);r(35,196,3,6,light);star(97,47);}
@@ -53,8 +55,13 @@ export function generalRewardIcon(kind, level = 1) {
     for(let y=85;y<105;y+=5){r(209,y,1,2,shade);r(196,y,1,1,light);}
     r(41,83,89,3,shade);r(43,83,85,1,gold);star(31,100);star(224,47);
     r(34,174,194,4,'#10221b');r(42,172,178,2,'#647057');
-
+    for(let i=1;i<level;i++){const x=49+(i-1)*10;r(x,67,6,3,gold);r(x,67,5,1,light);}
+    if(level>=3){r(187,133,4,19,gold);r(188,134,2,17,light);}
+    if(level>=5){r(144,75,49,3,gold);r(146,76,44,1,light);star(170,88);}
+    if(level>=7){r(32,57,105,2,light);r(34,83,102,2,'#c0efdf');star(202,134);}
+    if(level>=9){r(195,79,20,3,'#ddffed');r(199,115,5,15,gold);}
+    if(level>=10){r(24,60,175,2,'#effff2');star(123,90);r(183,155,38,3,light);}
   }
-  const svg = `<svg class="command-baton-art general-reward-art" viewBox="0 0 ${kind==='flag'?'192 256':'256 192'}" role="img" aria-label="${kind==='flag'?'사단기':'장군 리볼버'} 정밀 픽셀 그림" shape-rendering="crispEdges">${p.join('')}</svg>`;
+  const svg = `<svg class="command-baton-art general-reward-art" viewBox="0 0 ${kind==='flag'?'192 256':'256 192'}" role="img" aria-label="${kind==='flag'?'사단기':'장군 리볼버'} 정밀 픽셀 그림" shape-rendering="crispEdges">${personalLustre(kind,level)}${p.join('')}</svg>`;
   cache.set(key,svg);return svg;
 }

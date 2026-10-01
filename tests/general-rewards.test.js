@@ -14,8 +14,8 @@ import { equipmentDetailMarkup } from '../src/equipment-detail.js';
 const T=1_800_000_000_000;
 const army=(rank='중장')=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,ncoSchoolLevel:5});
 
-test('promotion rewards derive from actual ranks and sword duration increases by ten seconds',()=>{
-  for(const [rank,duration,flag,revolver] of [['준장',30000,0,0],['소장',40000,1,0],['중장',50000,2,1],['대장',60000,3,1]]){
+test('rank awards start at level one regardless of later promotions',()=>{
+  for(const [rank,duration,flag,revolver] of [['준장',30000,0,0],['소장',30000,1,0],['중장',30000,1,1],['대장',30000,1,1]]){
     const s=army(rank);assert.equal(generalSwordDuration(s),duration);
     assert.equal(divisionFlagStatus(s).level,flag);assert.equal(generalRevolverStatus(s).level,revolver);
     assert.equal(activateSword(s,T).ok,true);assert.equal(s.swordDurationMs,duration);
@@ -25,7 +25,7 @@ test('promotion rewards derive from actual ranks and sword duration increases by
 });
 test('a promotion does not extend or resurrect an already activated sword',()=>{
   const s=army('준장');activateSword(s,T);accrue(s,T+30001);s.soldiers=army('중장').soldiers;
-  assert.equal(generalSwordDuration(s),50000);assert.equal(swordSkillStatus(s,T+30001).active,false);
+  assert.equal(generalSwordDuration(s),30000);assert.equal(swordSkillStatus(s,T+30001).active,false);
   assert.equal(swordSkillStatus(parseSave(serializeSave(s)),T+30001).durationMs,30000);
 });
 test('auto touch starts after 300 ms, pays exactly 200 times and does not inflate manual taps',()=>{
@@ -48,7 +48,7 @@ test('sword overlap uses each pulse timestamp, including its exclusive expiry bo
   for(const offset of [0,100,300,30000,50000]){
     const s=army(),base=perTap(s,T),income=perSecond(s);activateAutoTouch(s,T);activateSword(s,T+offset);accrue(s,T+60000);
     // The activation transaction settles a pulse exactly at offset before enabling the boost.
-    let boosted=0;for(let n=1;n<=200;n++)if(n*300>offset&&n*300<offset+50000)boosted++;
+    let boosted=0;for(let n=1;n<=200;n++)if(n*300>offset&&n*300<offset+30000)boosted++;
     assert.equal(s.gold,income*60+base*(200+boosted),`offset ${offset}`);
   }
 });
@@ -69,23 +69,23 @@ test('version 15 migration preserves assets and active 30 second sword, ignores 
   const s={...army('소장'),version:15,gold:123456,taps:789,campaignCleared:20,swordActivatedAt:T-10000};
   s.equipment.tank={level:10,count:3,deployed:true};delete s.equipment.transport;delete s.equipment.fighter;
   s.autoTouchActivatedAt=T-300;s.autoTouchTicks=1;s.swordDurationMs=60000;
-  const next=parseSave(serializeSave(s));assert.equal(next.version,18);
+  const next=parseSave(serializeSave(s));assert.equal(next.version,19);
   for(const key of ['gold','taps','soldiers','sergeants','campaignCleared','swordActivatedAt'])assert.equal(next[key],s[key]);
   assert.deepEqual(next.equipment.tank,{...s.equipment.tank,count:1});assert.equal(next.equipment.transport,null);assert.equal(next.equipment.fighter,null);
   assert.equal(next.autoTouchActivatedAt,null);assert.equal(next.autoTouchTicks,0);assert.equal(next.swordDurationMs,30000);
   assert.equal(divisionFlagStatus(next).level,1);assert.equal(swordSkillStatus(next,T).activeMs,20000);
 });
 test('version 16 rejects corrupt auto cursors, skill durations and incomplete aircraft slots',()=>{
-  const s=army();activateAutoTouch(s,T);accrue(s,T+300);
+  const s={...army(),version:16};activateAutoTouch(s,T);accrue(s,T+300);
   for(const patch of [{autoTouchTicks:-1},{autoTouchTicks:201},{autoTouchTicks:.5},{autoTouchTicks:'1'},
     {autoTouchActivatedAt:T+301},{autoTouchActivatedAt:null},{swordDurationMs:90000},{swordDurationMs:undefined}])
     assert.equal(parseSave(serializeSave({...s,...patch})),null);
   const missing=structuredClone(s);delete missing.equipment.fighter;assert.equal(parseSave(serializeSave(missing)),null);
 });
-test('division flag adds one enhancement step per promotion; legacy groups retain exact costs',()=>{
+test('paid division flag levels add one enhancement step; legacy groups retain exact costs',()=>{
   const s=army('소장');s.gold=MAX_GOLD;s.equipment.tank={level:10,count:2,deployed:true};
   assert.equal(equipmentLevelLimit(s),11);assert.equal(enhanceEquipment(s,T,'tank').ok,true);assert.equal(enhanceEquipment(s,T,'tank').reason,'max');
-  s.soldiers=army('중장').soldiers;assert.equal(equipmentLevelLimit(s),12);
+  s.soldiers=army('중장').soldiers;assert.equal(equipmentLevelLimit(s),11);s.personalLevels.divisionFlag=2;assert.equal(equipmentLevelLimit(s),12);
   for(let n=11;n<12;n++){const before=s.gold;assert.equal(enhanceEquipment(s,T,'tank').ok,true);assert.equal(before-s.gold,BigInt(2*enhancementCost(n,'tank')));}
   assert.equal(enhanceEquipment(s,T,'tank').reason,'max');assert.equal(parseSave(serializeSave(s)).equipment.tank.level,12);
 });
@@ -112,10 +112,10 @@ test('equipment owns military/personal navigation; shop no longer exposes person
   assert.doesNotMatch(shopMarkup(s,'',()=>''),/data-personal-equipment|data-shop-category="personal"/);
   for(const id of ['commandBaton','generalSword','divisionFlag','generalRevolver'])assert.match(personal,new RegExp(`data-personal-equipment="${id}"`));
   // Effect text lives in each item's detail popup, not in the compact card.
-  assert.match(personalDetailMarkup(s,'generalSword').body,/50초 동안 터치 골드 2배/);assert.match(personalDetailMarkup(s,'divisionFlag').body,/진급할 때마다/);
+  assert.match(personalDetailMarkup(s,'generalSword').body,/30초 동안 터치 골드 2배/);assert.match(personalDetailMarkup(s,'divisionFlag').body,/골드로 강화/);
   assert.doesNotMatch(personal,/50초 동안|현재 단계까지의 강화비/);for(const id of ['commandBaton','generalSword','divisionFlag','generalRevolver'])assert.match(personal,new RegExp(`data-detail-personal="${id}"`));
   assert.doesNotMatch(personal,/data-use-revolver/);assert.doesNotMatch(personal,/data-select-equipment/);
-  assert.match(military,/data-equipment-category="personal"/);assert.doesNotMatch(military,/data-level=|equipment-stage|enhancement-next/);assert.equal((equipmentDetailMarkup(s,'tank').body.match(/data-level=/g)??[]).length,12);
+  assert.match(military,/data-equipment-category="personal"/);assert.doesNotMatch(military,/data-level=|equipment-stage|enhancement-next/);assert.equal((equipmentDetailMarkup(s,'tank').body.match(/data-level=/g)??[]).length,11);
 });
 test('new ceremonial art is detailed, distinct and reused across renders',()=>{
   const flag=personalIcon('flag',1),upgraded=personalIcon('flag',2),revolver=personalIcon('revolver');

@@ -46,8 +46,8 @@ test('the 100 button is a purchase-free locked placeholder until the baton unloc
   const open = tile(recruit(state(1280)), 'soldier');
   assert.match(open, /data-buy-bulk="soldier"/);
   assert.match(open, /data-bulk-price/);
-  // Types the baton cannot bulk-recruit show no 100 button at all.
-  assert.doesNotMatch(tile(recruit({ ...state(1280), ncoSchoolLevel: 5, officerSchoolLevel: 4 }), 'major'), /data-buy-bulk|data-bulk-locked/);
+  // Newly supported officer batches stay visibly locked until paid baton levels 9/10.
+  assert.match(tile(recruit({ ...state(1280), ncoSchoolLevel: 5, officerSchoolLevel: 4 }), 'major'), /data-bulk-locked/);
 });
 
 test('detail popup lists exact numbers, requirement and both prices', () => {

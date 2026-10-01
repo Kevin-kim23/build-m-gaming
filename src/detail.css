@@ -85,3 +85,11 @@
 .info-status { min-height: 18px; margin: 0 0 8px; color: #b5c79c; font-size: 11px; }
 .info-report summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-size: 12px; color: #cfd9b5; }
 .info-report textarea { width: 100%; box-sizing: border-box; margin-bottom: 10px; padding: 8px; border: 1px solid #55664a; border-radius: 6px; background: #1b261e; color: #cdd6bb; font: 11px/1.5 Consolas, monospace; resize: vertical; }
+:root { --personal-upgrade-gold:#e7cc82; }
+.personal-upgrade { margin:16px 0; padding:12px; background:#303d30; border:1px solid #877f52; border-radius:10px; }
+.personal-upgrade button:disabled { opacity:.5; cursor:default; }
+.personal-upgrade-result:not(:empty) { padding:10px; border:1px solid var(--personal-upgrade-gold); border-radius:8px; color:#ffebb2; }
+.personal-rates { width:100%; border-collapse:collapse; font-size:12px; }
+.personal-rates th,.personal-rates td { padding:9px 5px; border-bottom:1px solid #647051; text-align:left; }
+.personal-rates td:last-child { text-align:right; font-variant-numeric:tabular-nums; }
+.personal-levels summary { cursor:pointer; padding:10px 0; }

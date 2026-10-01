@@ -8,12 +8,12 @@ import { RANKS, rankForArmy, promotionProgress } from "../src/ranks.js";
 import { shopMarkup } from "../src/shop.js";
 import { createGameSession } from "../src/session.js";
 const T=1800000000000;
-const army=(soldiers=4720)=>({...freshState(T),soldiers,sergeants:40,ncoSchoolLevel:1,gold:100_000_000_000_000});
+const army=(soldiers=4720)=>({...freshState(T),personalLevels:{...freshState(T).personalLevels,commandBaton:2},soldiers,sergeants:40,ncoSchoolLevel:1,gold:100_000_000_000_000});
 const markup=(s,category)=>category==='personal'?personalMarkup(s):shopMarkup(s,'',()=>'',category);
 const sum=(count,type)=>Array.from({length:100},(_,i)=>unitCost(count+i,type)).reduce((a,b)=>a+b,0);
 
-test('colonel baton level two adds sergeant batches but preserves soldier batches and school locks',()=>{
-  const lower=army(4719);assert.equal(commandBatonStatus(lower).level,1);
+test('paid baton level two adds sergeant batches but preserves soldier batches and school locks',()=>{
+  const lower=army(4719);lower.personalLevels.commandBaton=1;assert.equal(commandBatonStatus(lower).level,1);
   assert.equal(recruitOffer(lower,'sergeant',100).reason,'locked');
   assert.equal(recruit(lower,T,'sergeant',100).ok,false);
   const s=army();assert.equal(commandBatonStatus(s).level,2);
@@ -70,22 +70,22 @@ test('sword is hidden until colonel, locked there, granted at brigadier and expl
   assert.doesNotMatch(markup(army(880),'personal'),/장군검|general-sword-art/);
   const locked=markup(army(),'personal');assert.match(locked,/장군검/);assert.match(locked,/준장 진급 시 자동 지급/);
   assert.match(locked,/Lv.2/);assert.match(personalDetailMarkup(army(),'commandBaton').body,/하사 100명 한 번에 모집/);
-  const s={...army(10000),sergeants:300},stats=[perSecond(s),perTap(s)],owned=markup(s,'personal');
-  assert.match(owned,/보유 중 · 진급 보상/);assert.match(personalDetailMarkup(s,'generalSword').body,/30초 동안 터치 골드 2배/);
+  const s={...army(10000),sergeants:300};s.personalLevels.commandBaton=3;const stats=[perSecond(s),perTap(s)],owned=markup(s,'personal');
+  assert.match(owned,/보유 중 · 준장 진급 보상/);assert.match(personalDetailMarkup(s,'generalSword').body,/30초 동안 터치 골드 2배/);
   assert.deepEqual([perSecond(s),perTap(s)],stats);
   const recruits=markup(s,'recruit');
   for(const type of ['soldier','sergeant','staffSergeant'])assert.equal((recruits.match(new RegExp(`data-buy-bulk="${type}"`,'g'))??[]).length,1);
   assert.equal((recruits.match(/data-bulk-price/g)??[]).length,3);
   assert.match(recruits,/data-buy-bulk="staffSergeant"/);
 });
-test('existing saves retain assets and derive new gear without inventing serialized items',()=>{
+test('current saves retain assets and paid personal levels',()=>{
   const s=army(9999);s.staffSergeants=1000;s.equipment.helicopter={level:8,deployed:false,count:1};
   const loaded=parseSave(serializeSave(s),T);
   for(const field of ['soldiers','sergeants','staffSergeants','gold','equipment','ncoSchoolLevel'])assert.deepEqual(loaded[field],s[field]);
   assert.equal(RANKS[rankForArmy(loaded)],'대령');assert.equal(commandBatonStatus(loaded).level,2);
   assert.equal(generalSwordStatus(loaded).owned,false);
   loaded.soldiers=5000;loaded.sergeants=300;assert.equal(generalSwordStatus(parseSave(serializeSave(loaded),T)).owned,true);
-  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version, 18);
+  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version, 19);
 });
 test('100 sergeants save once with backup and survive session reload without double purchase',()=>{
   const initial=army();initial.gold=sum(40,'sergeant');

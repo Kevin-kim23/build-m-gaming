@@ -74,7 +74,7 @@ test('new officers spend their independent price and add only their catalog stre
 test('version sixteen migration preserves assets and ignores injected advanced units',()=>{
   const old={...army('대장'),version:16,gold:99_999_999_999_999,advancedSchoolLevel:5,colonels:999,generals:1,campaignCleared:20};
   const loaded=parseSave(serializeSave(old),T);
-  assert.equal(loaded.version,18);assert.equal(loaded.advancedSchoolLevel,0);
+  assert.equal(loaded.version,19);assert.equal(loaded.advancedSchoolLevel,0);
   for(const grade of ADVANCED_OFFICERS)assert.equal(loaded[grade.field],0);
   for(const key of ['gold','soldiers','sergeants','ncoSchoolLevel','officerSchoolLevel','campaignCleared'])assert.equal(loaded[key],old[key]);
   assert.deepEqual(loaded.equipment,old.equipment);
@@ -111,7 +111,7 @@ test('three campuses and upper formations fit beside weapons on narrow and short
 
 test('extended personal reward art is distinct and 70/80 second skills survive reload',()=>{
   for(const [rank,duration,baton,sword] of [['원수',70000,7,5],['대원수',80000,8,6]]) {
-    const s=army(rank);assert.equal(activateSword(s,T).ok,true);assert.equal(s.swordDurationMs,duration);
+    const s=army(rank);s.personalLevels.generalSword=sword;assert.equal(activateSword(s,T).ok,true);assert.equal(s.swordDurationMs,duration);
     assert.equal(parseSave(serializeSave(s),T).swordDurationMs,duration);
     assert.notEqual(personalIcon('baton',baton),personalIcon('baton',baton-1));
     assert.notEqual(personalIcon('sword',sword),personalIcon('sword',sword-1));
