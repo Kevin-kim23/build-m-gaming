@@ -39,7 +39,7 @@ test("personal equipment stays unnamed before major, previews locked at major an
   const owned = markup(state(1280), "personal");
   assert.match(owned, /보유 중 · 중령 진급 보상/);
   assert.match(owned, /Lv\.1/);
-  assert.match(owned, /class="personal-recruit-link" data-shop-category="recruit"/);
+  assert.doesNotMatch(owned, /class="personal-recruit-link" data-shop-category="recruit"/);
   assert.match(personalDetailMarkup(state(1280), "commandBaton").body, /골드는 별도로 지불/);
   assert.doesNotMatch(owned, /data-buy=|data-buy-equipment=|data-buy-bulk=|data-enhance/);
 });

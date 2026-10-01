@@ -10,7 +10,7 @@ const T = 1_800_000_000_000;
 const army = () => ({ ...freshState(T), soldiers: RANK_REQUIREMENTS[RANKS.indexOf('중장')] - 3000, sergeants: 300, gold:100_000_000_000_000, ncoSchoolLevel: 5, officerSchoolLevel: 1 });
 function maxGun(s, id) { assert.equal(buyEquipment(s,T,id).ok,true); for(let n=0;n<10;n++) assert.equal(enhanceEquipment(s,T,id).ok,true); }
 
-test('each additional copy charges the complete initial purchase plus ten actual upgrades', () => {
+test('legacy quotes remain calculable but additional purchases are locked', () => {
   for (const id of Object.keys(EQUIPMENT)) {
     const s = army(), before = s.gold;
     maxGun(s,id);
@@ -18,14 +18,14 @@ test('each additional copy charges the complete initial purchase plus ten actual
     assert.equal(additionalEquipmentCost(id),total);
     s.gold = total * 2;
     for (const count of [2,3]) {
-      assert.deepEqual(buyAdditionalEquipment(s,T,id),{ok:true,cost:total,count,level:10,deployed:true});
+      assert.deepEqual(buyAdditionalEquipment(s,T,id),{ok:false,reason:'disabled'});assert.equal(s.equipment[id].count,1);
       assert.equal(s.equipment[id].level,10);
     }
-    assert.equal(s.gold,0);
+    assert.equal(s.gold,total*2);
     assert.equal(buyEquipment(s,T,id).reason,'owned');
   }
 });
-test('repeat purchase requires division flag Lv1, owned +10 gear and full gold atomically', () => {
+test('repeat purchase remains disabled regardless of flags, ownership, enhancement, gold or capacity', () => {
   const s = army(); maxGun(s,'tank'); const cost = additionalEquipmentCost('tank');
   for (const [patch, gear, reason] of [
     [{soldiers:7240},s.equipment.tank,'locked'],
@@ -35,22 +35,22 @@ test('repeat purchase requires division flag Lv1, owned +10 gear and full gold a
     [{},{level:10,deployed:true,count:MAX_EQUIPMENT_COUNT},'limit'],
   ]) {
     const state = {...structuredClone(s),...patch,equipment:{...s.equipment,tank:gear ? {...gear} : null}}, before = structuredClone(state);
-    assert.equal(additionalEquipmentOffer(state,'tank').reason,reason);
-    assert.equal(buyAdditionalEquipment(state,T,'tank').reason,reason);
+    assert.equal(additionalEquipmentOffer(state,'tank').reason,'disabled');
+    assert.equal(buyAdditionalEquipment(state,T,'tank').reason,'disabled');
     assert.deepEqual(state,before);
   }
   const before = structuredClone(s);
   assert.throws(()=>buyAdditionalEquipment(s,T+1000,'unknown'),RangeError); assert.deepEqual(s,before);
 });
-test('quantities share one slot and preserve group storage while income sums per copy', () => {
+test('quantity calculation compatibility retains one slot and sums per copy', () => {
   const s = army(); for(const id of Object.keys(EQUIPMENT)) maxGun(s,id);
   assert.equal(deployedEquipment(s).length,4); assert.equal(s.equipment.rocketLauncher.deployed,false);
   const income = perSecond(s), tap = perTap(s,T), before = s.gold, stats = equipmentStats(10,'tank');
-  assert.equal(buyAdditionalEquipment(s,T+1000,'tank').ok,true);
-  assert.equal(s.gold,before + income - additionalEquipmentCost('tank'));
+  accrue(s,T+1000);s.equipment.tank.count=2;
+  assert.equal(s.gold,before + income);
   assert.equal(perSecond(s),income + stats.passive); assert.equal(perTap(s,T),tap + stats.tap);
   const beforeStored = perSecond(s);
-  assert.equal(buyAdditionalEquipment(s,T+1000,'rocketLauncher').ok,true);
+  s.equipment.rocketLauncher.count=2;
   assert.equal(perSecond(s),beforeStored); assert.equal(deployedEquipment(s).length,4);
   assert.equal(setEquipmentDeployed(s,true,T+1000,'rocketLauncher').reason,'capacity');
   setEquipmentDeployed(s,false,T+1000,'tank');
@@ -64,7 +64,7 @@ test('v12 quantity migration preserves all assets, deployment, theme and running
   for(const [i,id] of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'].entries())old.equipment[id]={level:i+5,deployed:i<4};
   const next = parseSave(serializeSave(old),T);
   for(const key of ['gold','soldiers','sergeants','fieldTheme','swordActivatedAt','taps','battleCleared'])assert.equal(next[key],old[key]);
-  assert.equal(next.version, 17);
+  assert.equal(next.version, 18);
   for(const id of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'])assert.deepEqual(next.equipment[id],{...old.equipment[id],count:1});
   assert.equal(next.equipment.transport,null);assert.equal(next.equipment.fighter,null);
   old.equipment.tank.count = 900;
@@ -80,7 +80,7 @@ test('current saves reject missing, malformed and impossible quantities', () => 
   s.equipment.tank.level=10;assert.equal(parseSave(serializeSave(s),T).equipment.tank.count,2);
 });
 test('one grouped volley adds all copies without accelerating or duplicating selected ids', () => {
-  const s = army();maxGun(s,'tank');buyAdditionalEquipment(s,T,'tank');
+  const s = army();maxGun(s,'tank');s.equipment.tank.count=2;
   const one = equipmentCombatStats('tank',10,s.soldiers+3000);
   let battle = createBattle(s,1,{units:{},equipment:['tank','tank']});
   assert.equal(battle.player.equipment.length,1); assert.equal(battle.player.equipment[0].count,2);
@@ -98,14 +98,14 @@ test('large valid quantities retain exact arithmetic and clamp offline income to
   accrue(s,T+MAX_OFFLINE_MS);assert.equal(s.gold,MAX_GOLD);assert.equal(s.incomeRemainder,0);
   assert.ok(parseSave(serializeSave(s),T));
 });
-test('additional purchase uses one checkpoint, survives reload, and never buys twice during startup', () => {
+test('blocked additional purchase never creates copies after checkpoint, reload or inactive calls', () => {
   const initial = army();maxGun(initial,'tank');initial.gold=additionalEquipmentCost('tank');
   const values=new Map([[SAVE_KEY,serializeSave(initial)]]),writes=[];
   const storage={getItem:key=>values.get(key)??null,setItem(key,value){writes.push(key);values.set(key,value);}};
   const session=createGameSession({storage,now:()=>T,setTimer:()=>1,clearTimer:()=>{}});
-  session.start();assert.equal(session.change(s=>buyAdditionalEquipment(s,T,'tank')).ok,true);
-  assert.deepEqual(writes,[SAVE_KEY+'-backup',SAVE_KEY]);
-  assert.equal(parseSave(values.get(SAVE_KEY+'-backup'),T).equipment.tank.count,1);
-  session.pause();session.start();assert.equal(session.state.equipment.tank.count,2);assert.equal(session.state.gold,0);
+  session.start();assert.equal(session.change(s=>buyAdditionalEquipment(s,T,'tank')).reason,'disabled');
+  assert.deepEqual(writes,[SAVE_KEY]);
+  assert.equal(values.has(SAVE_KEY+'-backup'),false);
+  session.pause();session.start();assert.equal(session.state.equipment.tank.count,1);assert.equal(session.state.gold,initial.gold);
   session.pause();assert.equal(session.change(s=>buyAdditionalEquipment(s,T,'tank')),undefined);
 });

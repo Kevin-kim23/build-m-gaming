@@ -1683,5 +1683,5 @@ footer {
 .home-sword [data-sword-art] { display:flex; }
 
 /* Five/six stars fit the original rank panel. */
-.rank-mark .insignia.general.extended-stars { gap: 1px; }
-.rank-mark .insignia.general.extended-stars i { width: 5px; height: 6px; }
+.supreme-rank-badge { display:block; width:28px; height:28px; }
+.rank-mark .supreme-rank-badge { width:26px; height:26px; }

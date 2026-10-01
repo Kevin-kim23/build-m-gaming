@@ -25,6 +25,12 @@ export function generalRewardIcon(kind, level = 1) {
     r(34,39,4,85,'#bd333c');r(31,41,2,77,'#f2816b');r(29,120,11,7,gold);
     for(let i=0;i<6;i++)r(28+i*2,127,1,30-i%3*3,'#cb4e43');
     if(level>=2){r(51,44,95,2,light);r(51,159,96,2,light);star(97,137);star(18,64);star(167,190);r(36,185,11,7,gold);}
+    // Each promotion adds embroidery; later tiers add metal mounts.
+    for(let i=2;i<Math.min(level,10);i++){const x=62+(i-2)*11;r(x,151,7,4,gold);r(x,151,7,1,light);}
+    if(level>=4){r(48,35,102,3,gold);r(49,35,100,1,light);}
+    if(level>=6){r(34,195,13,8,gold);r(35,196,3,6,light);star(97,47);}
+    if(level>=8){r(32,217,17,7,gold);r(33,217,15,2,light);r(155,56,3,101,light);}
+    if(level>=10){star(59,135);star(134,135);r(90,82,25,2,light);}
     r(33,228,18,7,shade);r(32,229,20,3,gold);
   } else {
     // Landscape silhouette: long barrel, compact cylinder, short angled walnut grip.

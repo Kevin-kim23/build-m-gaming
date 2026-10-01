@@ -57,12 +57,12 @@ test("every enhancement charges once, raises both rewards and stops at ten", () 
     assert.equal(enhanceEquipment(s, T).ok, true);
     assert.equal(s.gold, before - cost);
     assert.equal(s.equipment.artillery.level, level + 1);
-    assert.equal(perSecond(s), 320 + old.passive + 100);
-    assert.equal(perTap(s), 3201 + old.tap + 600);
+    assert.equal(perSecond(s), 320 + old.passive + 100 + 15*(2*level+1));
+    assert.equal(perTap(s), 3201 + old.tap + 600 + 90*(2*level+1));
     lastCost = cost;
   }
-  assert.equal(perSecond(s), 1820);
-  assert.equal(perTap(s), 12201);
+  assert.equal(perSecond(s), 3320);
+  assert.equal(perTap(s), 21201);
   const before = structuredClone(s);
   assert.equal(enhanceEquipment(s, T).reason, "max");
   assert.deepEqual(s, before);
@@ -95,16 +95,16 @@ test("purchase, enhancement and storage settle elapsed time at the old rate", ()
   assert.equal(s.gold, before + 410 - 250_000);
   const upgraded = s.gold;
   setEquipmentDeployed(s, false, T + 1500);
-  assert.equal(s.gold, upgraded + 460);
+  assert.equal(s.gold, upgraded + 467);
   accrue(s, T + 2000);
-  assert.equal(s.gold, upgraded + 460 + 160);
+  assert.equal(s.gold, upgraded + 467 + 160);
   assert.equal(perSecond(s), 320);
   assert.equal(perTap(s), 3201);
   assert.equal(s.equipment.artillery.level, 1);
   assert.equal(tapGold(s, T + 2000), 3201);
   setEquipmentDeployed(s, true, T + 2500);
-  assert.equal(perSecond(s), 920);
-  assert.equal(tapGold(s, T + 2500), 6801);
+  assert.equal(perSecond(s), 935);
+  assert.equal(tapGold(s, T + 2500), 6891);
 });
 test("saved equipment survives reload; offline income only settles once", () => {
   let s = captain();
@@ -116,7 +116,7 @@ test("saved equipment survives reload; offline income only settles once", () => 
   setEquipmentDeployed(s, true, T);
   const before = s.gold;
   accrue(s, T + 3600000);
-  assert.equal(s.gold, before + 920 * 3600);
+  assert.equal(s.gold, before + 935 * 3600);
   const settled = s.gold;
   s = parseSave(JSON.stringify(s));
   accrue(s, T + 3600000);
@@ -135,7 +135,7 @@ test("v4 migration preserves troop balances and adds empty equipment", () => {
   delete old.equipment;
   assert.deepEqual(parseSave(JSON.stringify(old)), {
     ...old,
-    version: 17, ncoSchoolLevel: 1,
+    version: 18, ncoSchoolLevel: 1,
     earnedAchievements: ["squad", "platoon", "company"],
     equipment: { artillery: null, tank: null, selfPropelled: null, helicopter: null, rocketLauncher: null, transport: null, fighter: null },
   });

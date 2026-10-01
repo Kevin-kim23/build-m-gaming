@@ -45,7 +45,7 @@ test('rocket upgrades settle old income and all ten levels persist while stored'
   for(let n=1;n<10;n++)assert.equal(enhanceEquipment(s,T+1000,'rocketLauncher').ok,true);
   assert.equal(perSecond(s),without);assert.equal(enhanceEquipment(s,T+1000,'rocketLauncher').reason,'max');
   assert.deepEqual(parseSave(serializeSave(s),T).equipment.rocketLauncher,{level:10,deployed:false, count: 1 });
-  assert.deepEqual(equipmentStats(10,'rocketLauncher'),{passive:225000,tap:1350000});
+  assert.deepEqual(equipmentStats(10,'rocketLauncher'),{passive:450000,tap:2700000});
 });
 test('v11 migration preserves assets and cooldown, grants neither rocket nor concrete; current saves reject corrupt saves',()=>{
   const old={...general(),version:11,battleCleared:3,swordActivatedAt:T-5000};
@@ -53,7 +53,7 @@ test('v11 migration preserves assets and cooldown, grants neither rocket nor con
   delete old.equipment.rocketLauncher;delete old.fieldTheme;
   const next=parseSave(serializeSave(old),T);
   for(const key of ['gold','soldiers','sergeants','ncoSchoolLevel','battleCleared','swordActivatedAt'])assert.equal(next[key],old[key]);
-  assert.deepEqual(next.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),rocketLauncher:null});assert.equal(next.fieldTheme,'earth');assert.equal(next.version, 17);
+  assert.deepEqual(next.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),rocketLauncher:null});assert.equal(next.fieldTheme,'earth');assert.equal(next.version, 18);
   old.fieldTheme='concrete';old.equipment.rocketLauncher={level:10,deployed:true};
   assert.equal(parseSave(serializeSave(old),T).equipment.rocketLauncher,null);
   for(const theme of [undefined,null,'invalid',{}])assert.equal(parseSave(serializeSave({...next,fieldTheme:theme}),T),null);

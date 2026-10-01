@@ -36,7 +36,7 @@ export function normalizeLoadout(state, input = {}) {
   };
 }
 
-function makeSide(formation, power, units, equipment, multiplier = 1) {
+function makeSide(formation, power, units, equipment, multiplier = 1, playerUpgrades = true) {
   return {
     hq: { id: formation.id, name: formation.name, maxHp: formation.size, hp: formation.size },
     units: Object.values(UNITS).filter((u) => units[u.id] > 0).map((u) => ({
@@ -45,7 +45,7 @@ function makeSide(formation, power, units, equipment, multiplier = 1) {
       lastShotMs: -1,
     })),
     equipment: equipment.map(({ id, level, count = 1 }) => {
-      const stats = equipmentCombatStats(id, level, power, count);
+      const stats = equipmentCombatStats(id, level, power, count, playerUpgrades);
       return { id, level, count, ...stats, damage: stats.damage * multiplier, lastShotMs: -1, nextShotMs: stats.intervalMs };
     }),
   };
@@ -72,7 +72,7 @@ export function createBattle(state, stageId, input = defaultLoadout(state)) {
       loadout.equipment.map((id) => ({ id, level: state.equipment[id].level, count: equipmentCount(state, id) }))),
     enemy: makeSide(enemyFormation, stage.enemyPower,
       Object.fromEntries(['soldier','sergeant','staffSergeant'].map((id) => [id, stage.enemyUnitCount])),
-      ENEMY_EQUIPMENT.map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier),
+      ENEMY_EQUIPMENT.map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier, false),
   };
 }
 

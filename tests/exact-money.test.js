@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MAX_GOLD, exact, compactMoney, addMoney, subtractMoney, multiplyMoney, serializeSave } from '../src/money.js';
 import { freshState, parseSave, tapGold, accrue, perSecond, recruit, upgradeSchool, enhanceEquipment, SAVE_KEY, MAX_OFFLINE_MS } from '../src/game.js';
-import { enhancementOffer } from '../src/equipment.js';
+import { enhancementOffer, enhancementCost } from '../src/equipment.js';
 import { fmtGold, fmtGoldCost } from '../src/format.js';
 import { createGameSession } from '../src/session.js';
 const T=1_800_000_000_000;
@@ -63,14 +63,14 @@ test('one-gold tap at the new cap and purchases never erase low digits',()=>{
   assert.equal(upgradeSchool(s,T,'nco').ok,true);assert.equal(s.gold,MAX_GOLD-30001n);
 });
 
-test('large grouped enhancement charges its exact price instead of clamping to safe-number limit',()=>{
+test('legacy enhancement quote stays exact and cannot bypass the new flag limit',()=>{
   const s={...freshState(T),soldiers:78920,sergeants:300,gold:MAX_GOLD};
   s.equipment.fighter={level:19,count:100000,deployed:false};
-  const cost=enhancementOffer(s,'fighter').cost;
+  const cost=multiplyMoney(enhancementCost(19,'fighter'),100000);
   assert.ok(typeof cost==='bigint'&&cost>BigInt(Number.MAX_SAFE_INTEGER));
   s.gold=cost-1n;const before=structuredClone(s);
-  assert.equal(enhanceEquipment(s,T,'fighter').reason,'gold');assert.deepEqual(s,before);
-  s.gold=cost;assert.equal(enhanceEquipment(s,T,'fighter').ok,true);assert.equal(s.gold,0);
+  assert.equal(enhanceEquipment(s,T,'fighter').reason,'max');assert.deepEqual(s,before);
+  s.gold=cost;assert.equal(enhanceEquipment(s,T,'fighter').reason,'max');assert.equal(s.gold,cost);
 });
 
 test('eight-hour exact income, fractional ticks and cap settlement match integer reference',()=>{

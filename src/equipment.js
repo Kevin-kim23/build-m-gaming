@@ -1,6 +1,6 @@
 import { multiplyMoney } from './money.js';
 import { rankForArmy, RANKS, catalogVisible } from "./ranks.js";
-import { divisionFlagStatus } from './personal-equipment.js';
+import { divisionFlagStatus, enhancementLimitForFlag } from './personal-equipment.js';
 export const HELICOPTER_STAGES = Object.freeze([
   "기본형", "기수 장갑", "로켓 포드", "꼬리날개 확장", "동체 장갑",
   "미사일 장착", "엔진 보강", "탐지 센서", "위장 패널", "통신 안테나", "최종 개량형",
@@ -65,7 +65,7 @@ export const EQUIPMENT = Object.freeze({
 });
 export const MAX_DEPLOYED_EQUIPMENT = 4;
 export const REPEAT_EQUIPMENT_LEVEL = 10;
-export const equipmentLevelLimit = state => divisionFlagStatus(state).level >= 2 ? 20 : 10;
+export const equipmentLevelLimit = state => enhancementLimitForFlag(divisionFlagStatus(state).level);
 export const equipmentStage = (id,level) => level <= 10 ? (EQUIPMENT[id].stages ?? EQUIPMENT_STAGES)[level] : ['금장 보강','빛나는 장갑','지휘 문양','은빛 광채','황금 코어','청광 패널','정예 문장','별빛 장갑','영광의 광채','최종 지휘관 사양'][level-11];
 // Income saturates at the wallet limit before large offline multiplications.
 export const MAX_EQUIPMENT_COUNT = 100_000;
@@ -92,8 +92,8 @@ export function equipmentStats(level, id = "artillery") {
   if (!Number.isInteger(level) || level < 0 || level > d.maxLevel)
     throw new RangeError("Invalid enhancement level");
   return {
-    passive: d.passive + level * d.passiveStep,
-    tap: d.tap + level * d.tapStep,
+    passive: d.passive + level * d.passiveStep + d.passive * (3 * level * level) / 100,
+    tap: d.tap + level * d.tapStep + d.tap * (3 * level * level) / 100,
   };
 }
 export const emptyEquipment = () =>
@@ -170,13 +170,8 @@ export function additionalEquipmentCost(id, level = REPEAT_EQUIPMENT_LEVEL) {
   return cost;
 }
 export function additionalEquipmentOffer(s, id) {
-  const d = equipmentType(id), gun = equipmentOf(s, id), level = Math.max(REPEAT_EQUIPMENT_LEVEL,gun?.level ?? 0), cost = additionalEquipmentCost(id,level);
-  const reason = !gun ? 'unowned'
-    : !divisionFlagStatus(s).owned ? 'locked'
-    : gun.level < REPEAT_EQUIPMENT_LEVEL ? 'enhancement'
-    : equipmentCount(s, id) >= MAX_EQUIPMENT_COUNT ? 'limit'
-    : s.gold < cost ? 'gold' : null;
-  return { cost, reason, level, canBuy: reason === null };
+  equipmentType(id);
+  return { cost:null, reason:'disabled', level:equipmentOf(s,id)?.level ?? 0, canBuy:false };
 }
 export function validEquipment(value, legacy = false, includeHelicopter = true, includeRocket = true, requireCount = false, includeAircraft = true) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;

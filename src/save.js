@@ -32,7 +32,7 @@ export function parseSave(raw, now = Date.now()) {
     const integer = (x, max) => Number.isSafeInteger(x) && x >= 0 && x <= max;
     const gold = parseGold(s.gold, s.version);
     if (
-      ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17].includes(s.version) ||
+      ![3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].includes(s.version) ||
       (s.version >= 17 && (!integer(s.advancedSchoolLevel,5) || (s.advancedSchoolLevel>0 && s.officerSchoolLevel!==5) ||
         !ADVANCED_OFFICERS.every(unit=>integer(s[unit.field],Math.floor(MAX_SOLDIERS/unit.power))))) ||
       (s.version >= 16 && (!(s.autoTouchActivatedAt === null || integer(s.autoTouchActivatedAt, s.lastAccrual)) ||
@@ -59,7 +59,7 @@ export function parseSave(raw, now = Date.now()) {
     )
       return null;
     const migrated = {
-      version: 17,
+      version: 18,
       fieldTheme: s.version >= 12 ? s.fieldTheme : 'earth',
       swordActivatedAt: s.version >= 11 ? s.swordActivatedAt : null,
       swordDurationMs: s.version >= 16 ? s.swordDurationMs : GENERAL_SWORD.durationMs,
@@ -95,7 +95,7 @@ export function parseSave(raw, now = Date.now()) {
           ? s.equipment[id]
           : null;
       if (gun)
-        migrated.equipment[id] = { level: gun.level, deployed: gun.deployed, count: s.version >= 13 ? gun.count : 1 };
+        migrated.equipment[id] = { level: gun.level, deployed: gun.deployed, count: s.version >= 18 ? gun.count : 1 };
     }
     if (deployedEquipment(migrated).length > MAX_DEPLOYED_EQUIPMENT) return null;
     reconcileAchievements(migrated);

@@ -1,7 +1,7 @@
 import { RANKS } from './ranks.js';
 import { generalEmblem, saluteCannon } from './general-promotion-art.js';
 
-const captions=['새로운 별, 새로운 지휘의 시작','두 개의 별 아래, 더 넓은 전선으로','세 개의 별과 함께, 전군의 선봉으로','네 개의 별, 최고 지휘관의 영예','다섯 개의 별, 집단군을 이끄는 원수','여섯 개의 별, 연합군을 지휘하는 대원수'];
+const captions=['새로운 별, 새로운 지휘의 시작','두 개의 별 아래, 더 넓은 전선으로','세 개의 별과 함께, 전군의 선봉으로','네 개의 별, 최고 지휘관의 영예','다섯 개의 별, 집단군을 이끄는 원수','큰 별과 월계수, 연합군을 지휘하는 대원수'];
 export function generalPromotionMarkup(rank, profile) {
   const {generalTier:tier,salvos,salvoInterval,saluteDelay}=profile;
   const cannons=['left','right'].map((side,index)=>`<div class="general-salute ${side}" style="--salute-delay:${saluteDelay+index*140}ms" aria-hidden="true">

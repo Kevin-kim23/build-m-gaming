@@ -2,7 +2,7 @@ import { subtractMoney } from './money.js';
 import { fmt, fmtGold, fmtGoldCost } from './format.js';
 import {
   EQUIPMENT, equipmentOf, equipmentCount, equipmentStats,
-  equipmentPurchaseOffer, additionalEquipmentOffer, visibleEquipment,
+  equipmentPurchaseOffer, visibleEquipment,
 } from './equipment.js';
 import { drawEquipment } from './equipment-art.js';
 
@@ -34,7 +34,6 @@ export function equipmentStoreMarkup(s) {
 }
 
 const set = (node, value) => { if (node.textContent !== value) node.textContent = value; };
-const REPEAT_HINT = { locked: '추가 구매: 사단기 필요', enhancement: '10강 후 추가 구매', limit: '보유 수량 한도' };
 
 export function renderEquipmentStore(s, root) {
   root.querySelectorAll('[data-equipment]').forEach((card) => {
@@ -47,15 +46,13 @@ export function renderEquipmentStore(s, root) {
     q('[data-gear-price]').hidden = !!gun;
     const buy = q('[data-buy-equipment]'), manage = q('[data-manage-equipment]'), more = q('[data-buy-additional]');
     buy.hidden = !!gun; buy.disabled = !offer.canBuy;
-    manage.hidden = more.hidden = !gun;
-    q('.tile-buttons').classList.toggle('single', !gun);
+    manage.hidden = !gun;
+    more.hidden = true; more.disabled = true;
+    q('.tile-buttons').classList.add('single');
     let hint = offer.locked ? `🔒 ${d.unlockRank} 진급 시 해금` : '';
     if (gun) {
-      const add = additionalEquipmentOffer(s, id);
-      more.disabled = !add.canBuy;
-      q('[data-repeat-price]').hidden = false;
-      set(q('[data-repeat-cost]'), fmtGoldCost(add.cost));
-      hint = `+${gun.level}강` + (add.reason && REPEAT_HINT[add.reason] ? ` · ${REPEAT_HINT[add.reason]}` : '');
+      q('[data-repeat-price]').hidden = true;
+      hint = `+${gun.level}강 · 추가 구매 잠금`;
     } else {
       q('[data-repeat-price]').hidden = true;
       if (offer.reason === 'gold') hint = `${fmtGoldCost(subtractMoney(offer.cost,s.gold))} 부족`;

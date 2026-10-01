@@ -85,7 +85,7 @@ test('existing saves retain assets and derive new gear without inventing seriali
   assert.equal(RANKS[rankForArmy(loaded)],'대령');assert.equal(commandBatonStatus(loaded).level,2);
   assert.equal(generalSwordStatus(loaded).owned,false);
   loaded.soldiers=5000;loaded.sergeants=300;assert.equal(generalSwordStatus(parseSave(serializeSave(loaded),T)).owned,true);
-  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version, 17);
+  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version, 18);
 });
 test('100 sergeants save once with backup and survive session reload without double purchase',()=>{
   const initial=army();initial.gold=sum(40,'sergeant');

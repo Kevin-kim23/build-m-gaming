@@ -160,7 +160,8 @@ export function createArmyPanels(session, audio) {
     if (result.ok) audio.recruit(state().sound);
     text(activePanel === 'equipment' ? '#equipment-message' : '#shop-message', result.ok
       ? `${EQUIPMENT[id].name} [${fmt(result.count)}문] · +${result.level}강 유지 · ${result.deployed ? '같은 칸에 합류!' : '보관함에 합류!'}`
-      : result.reason === 'locked' ? '소장 · 사단기 Lv.1부터 추가 구매할 수 있어요.'
+      : result.reason === 'disabled' ? '장비 추가 구매는 현재 잠겨 있습니다.'
+      : result.reason === 'locked' ? '장비 추가 구매 조건이 필요해요.'
       : result.reason === 'enhancement' ? '먼저 10강까지 강화하세요.'
       : result.reason === 'gold' ? '골드가 부족해요.' : '추가 구매 조건을 확인하세요.');
   }
@@ -178,7 +179,7 @@ export function createArmyPanels(session, audio) {
     if (result.ok) audio.recruit(state().sound);
     if (dialog.open && activePanel === 'equipment' && activeEquipment === id) text('#equipment-message', result.ok
       ? `${EQUIPMENT[id].name} +${result.level}강 완료!`
-      : result.reason === 'max' ? '현재 계급의 최대 강화입니다. 사단기 Lv.2부터 20강까지 확장됩니다.'
+      : result.reason === 'max' ? '현재 강화 한도입니다. 소장부터 진급할 때마다 사단기가 성장해 한도가 1강씩 늘어납니다.'
       : result.reason === 'unowned' ? '장비를 먼저 구매하세요.' : '골드가 부족해요.');
   }
   function toggleEquipment() {

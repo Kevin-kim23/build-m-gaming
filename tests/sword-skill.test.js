@@ -35,7 +35,7 @@ test('reload, offline income and clock rollback cannot extend or resurrect a sav
 });
 test('schema ten gains unused skill; schema eleven validates and preserves timestamps',()=>{
   const old={...general(),version:10};delete old.swordActivatedAt;
-  const migrated=parseSave(serializeSave(old),T);assert.equal(migrated.version, 17);assert.equal(migrated.swordActivatedAt,null);
+  const migrated=parseSave(serializeSave(old),T);assert.equal(migrated.version, 18);assert.equal(migrated.swordActivatedAt,null);
   assert.equal(migrated.gold,old.gold);assert.equal(migrated.sergeants,300);
   old.swordActivatedAt=T;assert.equal(parseSave(serializeSave(old),T).swordActivatedAt,null);
   for(const bad of [undefined,-1,1.5,'12',{},100000000000001]) {
@@ -74,9 +74,9 @@ test('ceremonial pixel drawings are detailed, distinct and cached by level',()=>
   assert.notEqual(baton,upgraded);assert.notEqual(baton,sword);assert.equal(personalIcon('sword'),sword);
 });
 
-test('owned sword card retains valid article attributes and exactly one skill button',()=>{
+test('owned sword card retains valid article attributes and only detail buttons',()=>{
   const html=personalMarkup(general());
   assert.match(html,/<article class="personal-item" data-personal-equipment="generalSword">/);
-  assert.equal((html.match(/data-use-sword/g)??[]).length,1);
-  assert.equal((html.match(/<button class="sword-skill-button"/g)??[]).length,1);
+  assert.equal((html.match(/data-use-sword/g)??[]).length,0);
+  assert.equal((html.match(/<button class="sword-skill-button"/g)??[]).length,0);
 });

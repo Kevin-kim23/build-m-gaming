@@ -77,12 +77,12 @@ export function renderEquipmentPanel(s, root, id) {
     .setAttribute("aria-pressed", String(gun.deployed));
   root.querySelector("#toggle-equipment").disabled = !deploymentOffer(s, id).canDeploy;
   const max = offer.reason === "max";
-  text(root, "enhancement-cost", max ? "완료" : fmtGoldCost(offer.cost) + " G · " + fmt(equipmentCount(s,id)) + "문 합계");
+  text(root, "enhancement-cost", max ? `현재 한도 ${offer.limit}강` : fmtGoldCost(offer.cost) + " G");
   text(
     root,
     "enhance-equipment",
     max
-      ? "최대 강화 완료"
+      ? level>offer.limit ? `기존 ${level}강 유지` : offer.limit===20 ? "최대 강화 완료" : "진급하면 강화 한도가 늘어납니다"
       : offer.reason === "gold"
         ? fmtGoldCost(subtractMoney(offer.cost,s.gold)) + " G 부족"
         : level + 1 + "강으로 강화",

@@ -8,7 +8,12 @@ export const GENERAL_SWORD = Object.freeze({
   id: "generalSword", name: "장군검", unlockRank: "준장", level: 1,
   durationMs: 30_000, durationStepMs: 10_000, cooldownMs: 600_000, tapMultiplier: 2,
 });
-export const DIVISION_FLAG = Object.freeze({ id:'divisionFlag', name:'사단기', unlockRank:'소장', maxLevel:2 });
+export const DIVISION_FLAG = Object.freeze({ id:'divisionFlag', name:'사단기', unlockRank:'소장', maxLevel:10 });
+export const FLAG_ENHANCEMENT_LIMITS = Object.freeze(Array.from({length:11},(_,level)=>10+level));
+export function enhancementLimitForFlag(level) {
+  if (!Number.isInteger(level) || level<0 || level>DIVISION_FLAG.maxLevel) throw new RangeError('Invalid flag level');
+  return FLAG_ENHANCEMENT_LIMITS[level];
+}
 export const GENERAL_REVOLVER = Object.freeze({ id:'generalRevolver', name:'장군 리볼버', unlockRank:'중장', maxLevel:1 });
 const rewardStatus = (state, item) => {
   const rank=rankForArmy(state), first=RANKS.indexOf(item.unlockRank), owned=rank>=first;

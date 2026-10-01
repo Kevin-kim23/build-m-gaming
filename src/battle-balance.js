@@ -36,7 +36,7 @@ export function infantryDamage(unit, count, totalPower) {
   return count * (0.12 + Math.sqrt(unit.power) * 0.07) * combatScale(totalPower);
 }
 
-export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, count = 1) {
+export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, count = 1, playerUpgrades = true) {
   if (!Number.isSafeInteger(count) || count < 1 || count > MAX_EQUIPMENT_COUNT) throw new RangeError("Invalid equipment count");
   const type = EQUIPMENT[id];
   if (!type || !Number.isInteger(level) || level < 0 || level > type.maxLevel)
@@ -45,9 +45,10 @@ export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, cou
     damage: Math.max(5, Math.sqrt(type.passive) / 3),
     intervalMs: 3000,
   };
+  const growth = 1 + level*.12 + (playerUpgrades ? Math.max(0,level-10)**2*.02 : 0);
   return {
-    damage: count * base.damage * (1 + level * 0.12) * combatScale(totalPower),
-    ...(base.healing ? { healing:count*base.healing*(1+level*.12)*combatScale(totalPower) } : {}),
+    damage: count * base.damage * growth * combatScale(totalPower),
+    ...(base.healing ? { healing:count*base.healing*growth*combatScale(totalPower) } : {}),
     intervalMs: Math.max(
       BATTLE_RULES.stepMs,
       Math.round(base.intervalMs / (1 + level * 0.08) / BATTLE_RULES.stepMs) * BATTLE_RULES.stepMs,

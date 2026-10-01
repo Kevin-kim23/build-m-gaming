@@ -17,7 +17,7 @@ import {
   equipmentPurchaseOffer,
   enhancementOffer,
   equipmentOf,
-  equipmentCount, additionalEquipmentOffer,
+  additionalEquipmentOffer,
   deployedEquipment, MAX_DEPLOYED_EQUIPMENT, deploymentOffer,
 } from "./equipment.js";
 export { UNITS, armyPower } from "./units.js";
@@ -102,7 +102,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
 }
 export function freshState(now = Date.now()) {
   return {
-    version: 17,
+    version: 18,
     fieldTheme: 'earth',
     swordActivatedAt: null,
     swordDurationMs: GENERAL_SWORD.durationMs,
@@ -215,14 +215,8 @@ export function enhanceEquipment(s, now = Date.now(), id = "artillery") {
   return { ok: true, cost: offer.cost, level: equipmentOf(s, id).level };
 }
 export function buyAdditionalEquipment(s, now = Date.now(), id = 'artillery') {
-  additionalEquipmentOffer(s, id); // Validate the identifier before settling income.
-  accrue(s, now);
   const offer = additionalEquipmentOffer(s, id);
-  if (!offer.canBuy) return { ok: false, reason: offer.reason };
-  s.gold = subtractMoney(s.gold,offer.cost);
-  const gun = equipmentOf(s, id);
-  gun.count = equipmentCount(s, id) + 1;
-  return { ok: true, cost: offer.cost, count: gun.count, level: gun.level, deployed: gun.deployed };
+  return { ok:false, reason:offer.reason };
 }
 export function setEquipmentDeployed(
   s,

@@ -27,7 +27,7 @@ test('general artwork is cached, tier-specific and resolves every unique gradien
     const ids=[...svg.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
     assert.equal(ids.length,new Set(ids).size);
     for(const [,id] of svg.matchAll(/url\(#([^)]*)\)/g))assert.ok(ids.includes(id));
-    assert.equal((svg.match(/<g class="general-rank-stars">([^]*?)<\/g>/)[1].match(/<polygon/g)||[]).length,tier);
+    assert.equal((svg.match(/<g class="general-rank-stars">([^]*?)<\/g>/)[1].match(/<polygon/g)||[]).length,tier===6?1:tier);
     assert.match(svg,/viewBox="0 0 600 330"/);assert.doesNotMatch(svg,/<image|https?:|<script/);
   }
   assert.equal(new Set(art).size,6);

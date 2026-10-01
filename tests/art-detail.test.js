@@ -9,6 +9,7 @@ import { UNITS } from '../src/units.js';
 
 test('rank insignia uses the original simple marks for all current ranks', () => {
   RANK_DEFINITIONS.forEach((rank,i) => {
+    if(rank.marks>4){assert.match(insignia(i),/supreme-rank-badge/);return;}
     assert.equal(insignia(i), '<span class="insignia '+rank.kind+(rank.marks>4?' extended-stars':'')+'">'+'<i></i>'.repeat(rank.marks)+'</span>');
   });
 });

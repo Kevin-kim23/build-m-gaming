@@ -33,7 +33,7 @@ test('equipment detail popup carries role, limits, prices and the management lin
   const s = army(1280), id = visibleEquipment(s)[0].id;
   const fresh = equipmentDetailMarkup(s, id);
   assert.equal(fresh.title, EQUIPMENT[id].name);
-  for (const label of ['해금 계급', '구매 가격', '보유', '현재 최대 강화', '1문 추가 비용'])
+  for (const label of ['해금 계급', '구매 가격', '보유', '현재 최대 강화', '장비 추가 구매'])
     assert.ok(fresh.body.includes(`<dt>${label}</dt>`), label);
   assert.match(fresh.body, /data-gun-preview/);
   assert.match(fresh.body, /구매 후 가능/);

@@ -38,7 +38,7 @@ test("helicopter upgrades through ten levels, settles prior income, stores and r
     const next=equipmentCombatStats('helicopter',level+1);
     assert.ok(next.damage>previous.damage);assert.ok(next.intervalMs<previous.intervalMs);
   }
-  assert.deepEqual(equipmentStats(10,'helicopter'),{passive:75000,tap:450000});
+  assert.deepEqual(equipmentStats(10,'helicopter'),{passive:150000,tap:900000});
   assert.equal(enhanceEquipment(s,T+1000,'helicopter').reason,'max');
   setEquipmentDeployed(s,false,T+1000,'helicopter');assert.equal(perSecond(s),base);assert.equal(perTap(s),tap);
   assert.deepEqual(parseSave(serializeSave(s),T).equipment.helicopter,{level:10,deployed:false, count: 1 });
@@ -49,7 +49,7 @@ test("v9 saves retain schools and assets; old versions cannot inject helicopter 
   delete old.equipment.helicopter;
   old.equipment.tank={level:4,deployed:false};
   const loaded=parseSave(serializeSave(old),T);
-  assert.equal(loaded.version, 17);assert.equal(loaded.ncoSchoolLevel,5);assert.equal(loaded.lieutenants,2);
+  assert.equal(loaded.version, 18);assert.equal(loaded.ncoSchoolLevel,5);assert.equal(loaded.lieutenants,2);
   assert.deepEqual(loaded.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),helicopter:null});assert.equal(loaded.gold,old.gold);
   old.equipment.helicopter={level:10,deployed:true};
   assert.equal(parseSave(serializeSave(old),T).equipment.helicopter,null);
