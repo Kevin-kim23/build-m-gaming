@@ -96,3 +96,22 @@ test('after exiting, the confirmation starts over', () => {
   log.time += 10;
   assert.equal(handler(), 'hint');
 });
+
+test('closing a newly opened popup cancels the old exit hint', () => {
+  const { dialogs, log, handler } = setup();
+  assert.equal(handler(), 'hint');
+  dialogs['#detail-modal'].open = true;
+  log.time += 100;
+  assert.equal(handler(), 'closed');
+  log.time += 100;
+  assert.equal(handler(), 'hint');
+  assert.equal(log.exits, 0);
+});
+
+test('a clock rollback never accepts a stale exit confirmation', () => {
+  const { log, handler } = setup();
+  handler();
+  log.time -= 1000;
+  assert.equal(handler(), 'hint');
+  assert.equal(log.exits, 0);
+});

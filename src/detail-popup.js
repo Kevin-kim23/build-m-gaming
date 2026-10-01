@@ -14,7 +14,13 @@ function ensureDialog() {
   dialog.id = 'detail-modal';
   dialog.setAttribute('aria-labelledby', 'detail-title');
   dialog.addEventListener('click', (event) => {
-    if (event.target === dialog || event.target.closest('[data-detail-close]')) return dialog.close();
+    if (event.target.closest('[data-detail-close]')) return dialog.close();
+    if (event.target === dialog) {
+      const box = dialog.getBoundingClientRect();
+      if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom)
+        dialog.close();
+      return;
+    }
     const action = event.target.closest('[data-detail-action]');
     if (action) for (const handle of actionHandlers) handle(action.dataset.detailAction, action.dataset, dialog);
   });

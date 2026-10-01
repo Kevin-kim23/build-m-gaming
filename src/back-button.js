@@ -18,12 +18,13 @@ export function createBackHandler({ root = document, now = Date.now, hint, exit 
     for (const layer of BACK_LAYERS) {
       const dialog = root.querySelector(layer.selector);
       if (!dialog?.open) continue;
+      hintedAt = -Infinity;
       dialog.querySelector(layer.close)?.click();
       if (dialog.open) dialog.close();
       return 'closed';
     }
     const time = now();
-    if (time - hintedAt <= EXIT_CONFIRM_MS) {
+    if (time >= hintedAt && time - hintedAt <= EXIT_CONFIRM_MS) {
       hintedAt = -Infinity;
       exit();
       return 'exit';

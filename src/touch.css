@@ -1,8 +1,7 @@
 /*
  * Touch targets. Loaded last so these sizes win over the per-screen styles.
- * Every control is at least 44px tall. Controls that sit side by side in a row
- * keep their width but are at least 40px wide; tiny drawn controls (ⓘ, the medal row,
- * the shelf links) keep their drawn size and get an invisible 44px hit area.
+ * Main controls are at least 44px tall; compact controls extend their hit area
+ * within the shelf, keeping the links above medals and the field unobstructed.
  */
 :root { --tap: 44px; }
 
@@ -25,6 +24,8 @@
 /* Battle menu and map */
 .nation-tab { min-height: var(--tap); }
 .atlas-controls button { width: 40px; height: var(--tap); }
+.atlas-controls { flex-wrap: wrap; }
+.atlas-zoom { margin-left: auto; }
 
 /* Small drawn controls: keep the look, extend the tappable area. */
 #toggle-medals, #open-achievements, #medal-list button, .tile-detail { position: relative; }
