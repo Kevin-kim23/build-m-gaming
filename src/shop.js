@@ -51,6 +51,7 @@ export function shopMarkup(s, coin, insignia, category = "recruit") {
   return `<div class="sheet-grip"></div>
   <div class="shop-header"><div><small>SUPPLY OFFICE</small><h2 id="modal-title">상점</h2></div><button id="close-shop" aria-label="상점 닫기">×</button></div>
   <div class="shop-wallet"><span>보유 골드</span><strong>${coin}<b id="shop-gold"></b><small>G</small></strong></div>
+  <p class="shop-guide" id="shop-guide"></p>
   <nav class="shop-categories" aria-label="상점 분류">${SHOP_CATEGORIES.map((item) => `<button type="button" data-shop-category="${item.id}" aria-pressed="${selected === item.id}">${item.name}</button>`).join("")}</nav>
   <p id="shop-message" role="status" aria-live="polite"></p>
   <div class="shop-category-content" data-shop-content="${selected}">${content}</div>`;

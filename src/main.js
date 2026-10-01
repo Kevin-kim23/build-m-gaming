@@ -34,6 +34,7 @@ import {
 } from "./ranks.js";
 import { reportError, installErrorReporting } from "./diagnostics.js";
 import { createArmyPanels } from "./army-panels.js";
+import { createGuideUI } from "./guide-ui.js";
 import { openRankGuide } from "./rank-guide.js";
 import "./detail.css";
 import "./touch.css";
@@ -74,6 +75,7 @@ const zone = $("#tap-zone"),
 const battleUI = createBattleUI(session);
 const armyPanels = createArmyPanels(session, gameAudio);
 const achievementUI = createAchievementUI(session);
+const guideUI = createGuideUI();
 function update() {
   const power = armyPower(state),
     r = rank();
@@ -118,6 +120,7 @@ function update() {
   zone.setAttribute("aria-label", "화면 터치해서 골드 " + tap + " 획득");
   syncSwordControls(document.querySelector('.field-tools'), state, session.active);
   syncRevolverControls(document.querySelector('.field-tools'), state, session.active);
+  guideUI.sync(state);
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
     ["nco","officer"].some(id=>schoolOffer(state,id).canBuy) ||

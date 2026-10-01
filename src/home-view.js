@@ -70,6 +70,7 @@ function fieldMarkup() {
 
 function dockMarkup() {
   return `<section class="home-dock" aria-label="내 부대">
+    <div class="coach" id="coach" role="status" aria-live="polite" hidden><p id="coach-text"></p><button type="button" id="coach-off" aria-label="안내 끄기">끄기</button></div>
     ${fieldToolsMarkup()}
     <div class="promotion-line">
     <span id="next-rank">

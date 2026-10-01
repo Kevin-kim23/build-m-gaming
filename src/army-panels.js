@@ -15,6 +15,7 @@ import { showPromotion } from './promotion.js';
 import { openDetail, closeDetail, setDetailActions } from './detail-popup.js';
 import { unitDetailMarkup } from './unit-detail.js';
 import { equipmentDetailMarkup } from './equipment-detail.js';
+import { currentGuide } from './guide-ui.js';
 import { personalDetailMarkup } from './personal-panels.js';
 import './shop.css';
 import './schools.css';
@@ -43,6 +44,13 @@ export function createArmyPanels(session, audio) {
     const s = state(), rank = rankForArmy(s);
     if (catalogRank !== rank || ncoLevel !== s.ncoSchoolLevel || officerLevel !== s.officerSchoolLevel) { openShop(); return; }
     text('#shop-gold', fmtGold(s.gold));
+    // First-five-minutes guide: say what to do and pulse the matching control.
+    const guide = currentGuide(s);
+    text('#shop-guide', guide ? guide.text : '');
+    const pulse = (selector, on) => $(selector)?.classList.toggle('guide-pulse', on);
+    pulse('[data-shop-category="schools"]', !!guide?.pulse && guide.target === 'school');
+    pulse('[data-shop-category="equipment"]', !!guide?.pulse && guide.target === 'equipment');
+    pulse('[data-unit="soldier"] [data-buy]', category === 'recruit' && !!guide?.pulse && guide.target === 'shop');
     if (category === 'equipment') renderEquipmentStore(s, dialog);
     if (category === 'schools') renderSchools(s, dialog);
     if (category !== 'recruit') return;
