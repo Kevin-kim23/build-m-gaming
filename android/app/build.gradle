@@ -1,3 +1,12 @@
+import groovy.json.JsonSlurper
+
+// The app version lives only in ../../package.json. versionName is that text and versionCode is
+// derived from it, so the Play Store version and the in-game info screen can never drift apart.
+// 0.32.0 -> 32000 (major * 1,000,000 + minor * 1,000 + patch); it always grows with the version.
+def appVersion = new JsonSlurper().parse(file('../../package.json')).version.toString()
+def appVersionParts = appVersion.split('-')[0].tokenize('.').collect { it.toInteger() }
+def appVersionCode = appVersionParts[0] * 1000000 + appVersionParts[1] * 1000 + appVersionParts[2]
+
 apply plugin: 'com.android.application'
 
 android {
@@ -7,8 +16,8 @@ android {
         applicationId "com.budaekiugi.prototype"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "0.19.1"
+        versionCode appVersionCode
+        versionName appVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
