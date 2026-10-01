@@ -6,6 +6,7 @@ import { overheadEnhancement } from './enhancement-art.js';
 import { UNITS } from "./units.js";
 import { drawOverheadStrategic } from './strategic-art.js';
 import { officerDetails } from './officer-art.js';
+import { fortressSprite } from './fortress-art.js';
 
 // Original overhead pixel art. The controller owns the animation clock.
 export const BATTLE_CANVAS_SIZE = Object.freeze({ width: 360, height: 560 });
@@ -187,7 +188,7 @@ export function unitPositions(troops, side) {
 function signature(view) {
   return ["player", "enemy"].map((side) => {
     const s = view.sides[side];
-    return `${side}:${s.hq.id}:${Object.keys(UNITS).map((id) => s.troops?.[id] ?? 0).join(",")}:${s.equipment.map((g) => `${g.id}/${g.level}/${g.count ?? 1}`).join(",")}`;
+    return `${side}:${s.fortress ?? ''}:${s.hq.id}:${Object.keys(UNITS).map((id) => s.troops?.[id] ?? 0).join(",")}:${s.equipment.map((g) => `${g.id}/${g.level}/${g.count ?? 1}`).join(",")}`;
   }).join("|");
 }
 function createScene(view) {
@@ -195,9 +196,9 @@ function createScene(view) {
   terrain(c);
   for (const side of ["enemy", "player"]) {
     const s = view.sides[side], enemy = side === "enemy", y = enemy ? 76 : H - 76;
-    const hq = headquartersSprite(s.hq.id, side);
+    const hq = enemy && s.fortress ? fortressSprite(s.fortress) : headquartersSprite(s.hq.id, side);
     rect(c, W / 2 - 65, y - 34, 130, 69, enemy ? "#ba8b8226" : "#4f7b6326");
-    c.drawImage(hq, Math.round(W / 2 - hq.width / ART_SCALE / 2), Math.round(y - hq.height / ART_SCALE / 2), hq.width / ART_SCALE, hq.height / ART_SCALE);
+    c.drawImage(hq, Math.round(W / 2 - hq.width / ART_SCALE / 2), Math.round(y - hq.height / ART_SCALE / 2) + (enemy && s.fortress ? 8 : 0), hq.width / ART_SCALE, hq.height / ART_SCALE);
     points[side] = { hq: { x: W / 2, y }, infantry: unitPositions(s.troops, side), equipment: [] };
     for (const p of points[side].infantry) {
       c.save(); c.translate(p.x, p.y); if (enemy) c.rotate(Math.PI);

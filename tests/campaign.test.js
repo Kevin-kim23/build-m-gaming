@@ -8,6 +8,7 @@ import { UNITS,armyPower } from '../src/units.js';
 import { EQUIPMENT } from '../src/equipment.js';
 import { createBattle,advanceBattle,useSpecial } from '../src/battle.js';
 import { recordBattleVictory } from '../src/battle-progress.js';
+import { REFERENCE_GEAR,fortressShieldClass,matchupMultiplier,isFortress } from '../src/battle-balance.js';
 import { RANKS,rankForArmy,GENERAL_MIN_SOLDIERS } from '../src/ranks.js';
 const T=1_800_000_000_000;
 test('wide landscape maps start centered on the next country after width clamping',()=>{
@@ -59,7 +60,7 @@ test('only conquest of all twenty regions unlocks the next country, including re
 });
 test('every recommended force can win its region using specials as soon as they are ready',()=>{
   for(const stage of campaignStages){
-    const state=army(stage.recommendedPower,stage.id<=20?8:10,stage.id<=20?1:3),before=structuredClone(state);
+    const [level,copies]=REFERENCE_GEAR[Math.floor((stage.id-1)/20)],state=army(stage.recommendedPower,level,copies),before=structuredClone(state);
     assert.equal(RANKS[rankForArmy(state)],stage.recommendedRank);
     const result=simulate(state,stage.id);
     assert.equal(result.status,'victory',`${stage.enemyName} ${stage.region}`);
@@ -155,4 +156,29 @@ test('upper countries provide a southern route to the conquered previous country
   }
   assert.ok(!campaignMarkup({campaignCleared:80}).includes('class="atlas-previous-country"'));
   assert.ok(!campaignMarkup({campaignCleared:19},'veloc',21).includes('class="atlas-previous-country"'));
+});
+
+test('belok needs roughly a marshal: its capital recommends 1,310,720 and later nations climb to the supreme ranks',()=>{
+  const veloc=campaignStages.filter(s=>s.countryId==='veloc');
+  assert.equal(veloc[0].recommendedPower,100000);assert.equal(veloc.at(-1).recommendedPower,1310720);assert.equal(veloc.at(-1).recommendedRank,'준원수');
+  assert.equal(campaignStages.filter(s=>s.countryId==='istra').at(-1).recommendedRank,'소원수');
+  assert.equal(campaignStages.filter(s=>s.countryId==='norgard').at(-1).recommendedRank,'중원수');
+  for(let i=1;i<campaignStages.length;i++)assert.ok(campaignStages[i].recommendedPower>campaignStages[i-1].recommendedPower);
+});
+test('strategy matters: auto-fire alone loses every capital fortress while the full kit with specials wins',()=>{
+  for(const stage of campaignStages.filter(s=>s.capital)){
+    const [level,copies]=REFERENCE_GEAR[Math.floor((stage.id-1)/20)],state=army(stage.recommendedPower,level,copies);
+    assert.equal(simulate(state,stage.id).status,'victory',stage.name);
+    assert.equal(simulate(state,stage.id,false).status,'defeat',stage.name);
+  }
+});
+test('capital fortresses are tougher than the region before them and shield one gear class',()=>{
+  for(const stage of campaignStages.filter(s=>s.capital)){
+    const before=campaignStages[stage.id-2];
+    assert.ok(stage.hqPower/stage.recommendedPower>before.hqPower/before.recommendedPower);
+    const shield=fortressShieldClass(stage.id);assert.ok(['armor','air','firepower'].includes(shield));
+    const gear={armor:'tank',air:'helicopter',firepower:'artillery'}[shield];
+    assert.equal(matchupMultiplier(stage.id,gear),0.6);
+  }
+  assert.equal(fortressShieldClass(19),null);assert.equal(isFortress(20),true);assert.equal(isFortress(21),false);
 });

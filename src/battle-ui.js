@@ -82,7 +82,7 @@ export function createBattleUI(session) {
     const effects = [], sides = {};
     for (const side of ['player', 'enemy']) {
       const army = battle[side];
-      sides[side] = { hq: army.hq, troops: Object.fromEntries(army.units.map(u => [u.id,u.count])), equipment: army.equipment };
+      sides[side] = { hq: army.hq, fortress: army.fortress, troops: Object.fromEntries(army.units.map(u => [u.id,u.count])), equipment: army.equipment };
       for (const gun of [...army.units, ...army.equipment])
         if (gun.lastShotMs >= 0) effects.push({at:gun.lastShotMs, side, kind:gun.id});
     }

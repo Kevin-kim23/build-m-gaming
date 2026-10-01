@@ -59,3 +59,11 @@ test('battlefield shows one canvas plus a special button per deployed gear and k
     assert.ok(!ids.includes(homeControl));
   assert.match(markup, /전투 중 터치는 골드를 지급하지 않아요/);
 });
+
+test('capital preparation shows the fortress warning and its shielded gear class; ordinary regions do not', () => {
+  const state = army({ campaignCleared: 19, equipment: { artillery: { level: 3, deployed: true } } });
+  const capital = preparationMarkup(state, STAGES[19], defaultLoadout(state, 20));
+  assert.match(capital, /요새 수도 · 방어 장갑/);
+  assert.match(capital, /기갑 장비 피해 -40%/);
+  assert.doesNotMatch(preparationMarkup(state, STAGES[0], defaultLoadout(state, 1)), /요새 수도/);
+});

@@ -2,8 +2,8 @@ import { UNITS, armyPower } from "./units.js";
 import { EQUIPMENT, equipmentCount } from "./equipment.js";
 import { FORMATIONS } from "./formations.js";
 import { RANKS, rankForArmy } from "./ranks.js";
-import { ENEMY_EQUIPMENT, BATTLE_RULES, STAGES, infantryDamage, equipmentCombatStats, matchupMultiplier, stageEnemyType, enemyBalanceFactor } from "./battle-balance.js";
-export { BATTLE_RULES, STAGES, equipmentCombatStats, matchupMultiplier, stageEnemyType, GEAR_CLASS, CLASS_NAMES } from "./battle-balance.js";
+import { ENEMY_EQUIPMENT, BATTLE_RULES, STAGES, infantryDamage, equipmentCombatStats, matchupMultiplier, stageEnemyType, enemyBalanceFactor, isFortress } from "./battle-balance.js";
+export { BATTLE_RULES, STAGES, equipmentCombatStats, matchupMultiplier, stageEnemyType, GEAR_CLASS, CLASS_NAMES, fortressShieldClass, isFortress } from "./battle-balance.js";
 
 export function battleAccess(state) {
   const rank = rankForArmy(state);
@@ -56,7 +56,8 @@ function makeSide(formation, power, units, equipment, multiplier = 1, playerUpgr
 }
 
 // 적 장비 편성이 달라도 총 공격력이 같도록 장비 피해만 보정한다(보병 사격은 그대로).
-function scaleEnemyGear(side, factor) {
+function scaleEnemyGear(side, factor, fortress = null) {
+  side.fortress = fortress; // 수도 요새면 나라 id(그림용)
   for (const gun of side.equipment) gun.damage *= factor;
   return side;
 }
@@ -81,7 +82,7 @@ export function createBattle(state, stageId, input = defaultLoadout(state)) {
       loadout.equipment.map((id) => ({ id, level: state.equipment[id].level, count: equipmentCount(state, id) })), 1, true, stageId),
     enemy: scaleEnemyGear(makeSide(enemyFormation, stage.enemyPower,
       Object.fromEntries(['soldier','sergeant','staffSergeant'].map((id) => [id, stage.enemyUnitCount])),
-      stageEnemyType(stageId).gear.map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier, false), enemyBalanceFactor(stageId)),
+      stageEnemyType(stageId).gear.map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier, false), enemyBalanceFactor(stageId), isFortress(stageId) ? stage.countryId : null),
   };
 }
 

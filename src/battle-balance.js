@@ -70,12 +70,24 @@ export const ENEMY_TYPES = Object.freeze([
   { id: "airDefense", name: "방공 진지", strong: "firepower", weak: "air", gear: ["rocketLauncher", "artillery", "selfPropelled"] },
   { id: "artilleryNest", name: "포병 진지", strong: "armor", weak: "firepower", gear: ["artillery", "selfPropelled", "tank"] },
 ]);
-export const MATCHUP = Object.freeze({ strong: 1.3, weak: 0.8 });
+// 나라가 뒤로 갈수록 상성 차이가 커진다(세르딘 → 노르가드). 전력만으로는 못 깨고 장비 선택이 중요해진다.
+export const MATCHUP_BY_COUNTRY = Object.freeze([{ strong: 1.3, weak: 0.8 }, { strong: 1.4, weak: 0.7 }, { strong: 1.5, weak: 0.65 }, { strong: 1.6, weak: 0.6 }]);
+// 난이도 기준 장비(레벨, 보유 수량). 나라별 적 본부 체력은 이 장비로 쓰러뜨리는 데 걸리는 시간에 맞춰 정했다.
+export const REFERENCE_GEAR = Object.freeze([[8, 1], [12, 3], [16, 6], [20, 10]].map(Object.freeze));
+export const FORTRESS_SHIELD = 0.6; // 수도 요새: 방어 분류 장비의 피해가 40% 줄어듦
 // 지역 번호 순서대로 유형이 돌아가며, 지도에서 번호만으로 유형을 알 수 있다.
 export const stageEnemyType = (stageId) => ENEMY_TYPES[(stageId - 1) % ENEMY_TYPES.length];
+export const isFortress = (stageId) => stageId % 20 === 0;
+// 수도 요새의 방어 분류: 그 유형이 강점·약점으로 삼지 않는 첫 분류(기갑 → 공중 → 화력 순)
+export function fortressShieldClass(stageId) {
+  if (!isFortress(stageId)) return null;
+  const type = stageEnemyType(stageId);
+  return ["armor", "air", "firepower"].find((cls) => cls !== type.strong && cls !== type.weak);
+}
 export function matchupMultiplier(stageId, gearId) {
-  const type = stageEnemyType(stageId), cls = GEAR_CLASS[gearId];
-  return cls === type.strong ? MATCHUP.strong : cls === type.weak ? MATCHUP.weak : 1;
+  const type = stageEnemyType(stageId), cls = GEAR_CLASS[gearId], m = MATCHUP_BY_COUNTRY[Math.floor((stageId - 1) / 20)] ?? MATCHUP_BY_COUNTRY[0];
+  if (cls && cls === fortressShieldClass(stageId)) return FORTRESS_SHIELD;
+  return cls === type.strong ? m.strong : cls === type.weak ? m.weak : 1;
 }
 
 // 적 유형마다 장비 3종이 다르지만, 총 공격력은 기존 편성(ENEMY_EQUIPMENT)과 같도록 맞춘다(난이도 유지).
