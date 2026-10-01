@@ -6,9 +6,10 @@ import { campaignMarkup } from '../src/campaign-map.js';
 import { freshState,parseSave,MAX_SOLDIERS } from '../src/game.js';
 import { UNITS,armyPower } from '../src/units.js';
 import { EQUIPMENT } from '../src/equipment.js';
-import { createBattle,advanceBattle,useSpecial } from '../src/battle.js';
+import { createBattle } from '../src/battle.js';
+import { play } from './lane-helpers.js';
 import { recordBattleVictory } from '../src/battle-progress.js';
-import { REFERENCE_GEAR,fortressShieldClass,matchupMultiplier,isFortress } from '../src/battle-balance.js';
+import { REFERENCE_GEAR,fortressShieldClass,stageEnemyType,isFortress } from '../src/battle-balance.js';
 import { RANKS,rankForArmy,GENERAL_MIN_SOLDIERS } from '../src/ranks.js';
 const T=1_800_000_000_000;
 test('wide landscape maps start centered on the next country after width clamping',()=>{
@@ -28,13 +29,8 @@ function army(power,level=8,copies=1){
   for(const [i,id]of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'].entries())state.equipment[id]={level,count:copies,deployed:i>0};
   return state;
 }
-function simulate(state,id,special=true){
-  let battle=createBattle(state,id);
-  while(battle.status==='running'){
-    if(special)for(const gun of battle.player.equipment)battle=useSpecial(battle,gun.id);
-    battle=advanceBattle(battle,50);
-  }return battle;
-}
+// 쓸 수 있는 카드를 돌아가며 출격하는 평범한 플레이(policy 'none'이면 아무것도 출격하지 않음).
+function simulate(state,id,policy='cycle'){return play(state,id,{policy});}
 test('four original countries each contain twenty ordered, progressively stronger regions',()=>{
   assert.equal(COUNTRIES.length,4);assert.equal(campaignStages.length,80);
   assert.equal(new Set(campaignStages.map(s=>s.name)).size,80);
@@ -58,7 +54,7 @@ test('only conquest of all twenty regions unlocks the next country, including re
   assert.equal(countryProgress(state,'veloc').unlocked,true);assert.equal(createBattle(state,21).stageId,21);
   assert.equal(recordBattleVictory(state,result).firstClear,false);assert.equal(state.campaignCleared,20);
 });
-test('every recommended force can win its region using specials as soon as they are ready',()=>{
+test('every recommended force wins its region by simply sending its equipment as mana allows',()=>{
   for(const stage of campaignStages){
     const [level,copies]=REFERENCE_GEAR[Math.floor((stage.id-1)/20)],state=army(stage.recommendedPower,level,copies),before=structuredClone(state);
     assert.equal(RANKS[rankForArmy(state)],stage.recommendedRank);
@@ -69,13 +65,12 @@ test('every recommended force can win its region using specials as soon as they 
 });
 test('first capital targets corps strength without hard power gates; preparation and investment matter',()=>{
   const ordinary=simulate(army(81920),20);assert.equal(ordinary.status,'victory');
-  assert.ok(ordinary.elapsedMs>=25000&&ordinary.elapsedMs<=55000);
-  assert.ok(ordinary.player.hq.hp/ordinary.player.hq.maxHp>.15&&ordinary.player.hq.hp/ordinary.player.hq.maxHp<.5);
+  assert.ok(ordinary.elapsedMs>=40000&&ordinary.elapsedMs<=140000);
   for(const power of [20480,40960,61440])assert.equal(simulate(army(power),20).status,'defeat');
-  assert.equal(simulate(army(40960,10),20,6.67).status,'defeat');
-  assert.equal(simulate(army(81920),20,0).status,'defeat');
-  // Higher investment and skill can intentionally beat the recommendation early.
-  assert.equal(simulate(army(61440,10,4),20,6).status,'victory');
+  assert.equal(simulate(army(40960,10),20).status,'defeat');
+  assert.notEqual(simulate(army(81920),20,'none').status,'victory');
+  // Higher investment can intentionally beat the recommendation early.
+  assert.equal(simulate(army(61440,10,4),20).status,'victory');
   assert.equal(createBattle({...army(20480),campaignCleared:19},20).status,'running');
 });
 test('legacy combat records are preserved without skipping any new conquest region',()=>{
@@ -118,7 +113,7 @@ test('region UI exposes all twenty regions, lock reasons, replay, next-country a
   }
 });
 
-test('supply support preserves the first-capital corps target with ordinary one-copy investment',()=>{
+test('extra support and air gear in the collection does not lower the first-capital corps target',()=>{
   for(const power of [20480,40960,61440,81920]){
     const s=army(power);s.equipment.transport={level:8,count:1,deployed:false};
     if(power>=81920)s.equipment.fighter={level:8,count:1,deployed:false};
@@ -165,11 +160,11 @@ test('belok needs roughly a marshal: its capital recommends 1,310,720 and later 
   assert.equal(campaignStages.filter(s=>s.countryId==='norgard').at(-1).recommendedRank,'중원수');
   for(let i=1;i<campaignStages.length;i++)assert.ok(campaignStages[i].recommendedPower>campaignStages[i-1].recommendedPower);
 });
-test('strategy matters: auto-fire alone loses every capital fortress while the full kit with specials wins',()=>{
+test('strategy matters: never sending equipment cannot take any capital fortress, while sending it wins',()=>{
   for(const stage of campaignStages.filter(s=>s.capital)){
     const [level,copies]=REFERENCE_GEAR[Math.floor((stage.id-1)/20)],state=army(stage.recommendedPower,level,copies);
     assert.equal(simulate(state,stage.id).status,'victory',stage.name);
-    assert.equal(simulate(state,stage.id,false).status,'defeat',stage.name);
+    assert.notEqual(simulate(state,stage.id,'none').status,'victory',stage.name);
   }
 });
 test('capital fortresses are tougher than the region before them and shield one gear class',()=>{
@@ -177,8 +172,7 @@ test('capital fortresses are tougher than the region before them and shield one 
     const before=campaignStages[stage.id-2];
     assert.ok(stage.hqPower/stage.recommendedPower>before.hqPower/before.recommendedPower);
     const shield=fortressShieldClass(stage.id);assert.ok(['armor','air','firepower'].includes(shield));
-    const gear={armor:'tank',air:'helicopter',firepower:'artillery'}[shield];
-    assert.equal(matchupMultiplier(stage.id,gear),0.6);
+    assert.equal(shield,stageEnemyType(stage.id).counter,'the usual counter does less to the fortress base');
   }
   assert.equal(fortressShieldClass(19),null);assert.equal(isFortress(20),true);assert.equal(isFortress(21),false);
 });

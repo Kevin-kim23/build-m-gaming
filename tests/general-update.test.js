@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import { freshState, parseSave, buyEquipment, setEquipmentDeployed, enhanceEquipment, perSecond, recruit, recruitOffer, unitCost, MAX_GOLD, MAX_SOLDIERS } from '../src/game.js';
 import { EQUIPMENT, deployedEquipment, equipmentPurchaseOffer, equipmentStats, enhancementCost } from '../src/equipment.js';
 import { fieldTheme, setFieldTheme } from '../src/field-theme.js';
-import { createBattle, advanceBattle, equipmentCombatStats, matchupMultiplier } from '../src/battle.js';
+import { equipmentCombatStats, UNIT_TRAITS } from '../src/battle.js';
+import { quietBattle, deployNow } from './lane-helpers.js';
 import { homeMarkup } from '../src/home-view.js';
 import { syncSwordControls } from '../src/sword-controls.js';
 import { drawEquipment } from '../src/equipment-art.js';
@@ -79,12 +80,11 @@ test('staff sergeant batches require Lv3 baton and school Lv2, charge exact sum 
   s.gold=sum;assert.equal(recruit(s,T,'staffSergeant',100).ok,true);assert.equal(s.staffSergeants,120);assert.equal(s.gold,0);
   assert.equal(parseSave(serializeSave(s),T).staffSergeants,120);
 });
-test('rocket fires in battle with its own stats while enemies keep their previous weapons',()=>{
+test('rocket launcher deploys as a long-range firepower unit with its own stats',()=>{
   const s=general();buyEquipment(s,T,'rocketLauncher');
-  let b=createBattle(s,1,{units:{},equipment:['rocketLauncher']});
-  assert.deepEqual(b.enemy.equipment.map(g=>g.id),['tank','selfPropelled','helicopter']);
-  const hp=b.enemy.hq.hp;for(let i=0;i<84;i++)b=advanceBattle(b,50);
-  assert.ok(Math.abs(b.enemy.hq.hp-(hp-equipmentCombatStats('rocketLauncher',0,10240).damage*matchupMultiplier(1,'rocketLauncher')))<1e-6);
+  const b=deployNow(quietBattle(s,1,['rocketLauncher']),'rocketLauncher'),u=b.player.units[0],stats=equipmentCombatStats('rocketLauncher',0,10240);
+  assert.equal(u.cls,'firepower');assert.equal(u.damage,stats.damage);assert.equal(u.intervalMs,stats.intervalMs);
+  assert.ok(u.range>UNIT_TRAITS.tank.range,'rockets outrange tanks');
 });
 test('home sword sits in the dock under the field (where the troop status row used to be), preserves icon and short text through cooldown updates',()=>{
   const html=homeMarkup(general());

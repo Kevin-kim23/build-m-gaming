@@ -3,7 +3,9 @@ import { FORMATIONS } from './formations.js';
 // 권장 전력을 시작값에서 끝값까지 부드럽게(등비) 늘린다. 값은 천 단위로 반올림하고 마지막은 정확히 끝값이다.
 const ramp=(from,to,n=20)=>Array.from({length:n},(_,i)=>i===n-1?to:Math.round(from*(to/from)**(i/(n-1))/1000)*1000);
 // 적 본부 체력 배율(권장 전력 기준). 뒤 나라일수록 높은 장비 레벨·수량을 가정하므로 같이 커진다. 수도 요새는 추가로 더 단단하다.
-const HQ_FACTOR=[5.5,17,45,100],FORTRESS_HQ_BONUS=[1.27,1.2,1.08,1.2];
+// 적이 장비를 출격시키는 간격(ms): 나라별 시작값에서 지역마다 조금씩 빨라진다.
+const SPAWN_MS=[3600,3600,3600,3600],SPAWN_STEP=[40,40,40,40];
+const HQ_FACTOR=[2.5,8,20,45],FORTRESS_HQ_BONUS=[1.27,1.2,1.08,1.2];
 // Original fictional geography. Shared border vertices keep the four nations contiguous.
 export const CONTINENT = Object.freeze({name:'아스테라',width:1000,height:2500,regionsPerCountry:20});
 const border12=[[205,1640],[310,1600],[415,1640],[520,1590],[625,1620],[720,1570],[830,1620]];
@@ -42,4 +44,5 @@ export const campaignStages=Object.freeze(COUNTRIES.flatMap(country=>country.pow
   hqPower:Math.round(power*HQ_FACTOR[country.index]*(i===19?FORTRESS_HQ_BONUS[country.index]:1)),enemyPower:power,
   enemyLevel:Math.min(10,4+country.index*2+Math.floor(i/7)),enemyUnitCount:10,
   enemyModifier:.4+country.index*.1+i*.006,
+  spawnMs:Math.round(SPAWN_MS[country.index]-i*SPAWN_STEP[country.index]),
 }))));

@@ -16,8 +16,8 @@ export function withCampaignIncome(state, baseIncome) {
 export const FIRST_CLEAR_REWARD_SECONDS = 1800;
 export const REPLAY_REWARD_SECONDS = 120;
 export const STAR_REWARD_PERCENT = Object.freeze([100, 100, 125, 150]); // 별 0~3개(0은 쓰지 않음)
-export const STAR_FAST_MS = 90_000, STAR_HP_RATIO = 0.5;
-// 별: 승리 1개, 90초 이내 또는 본부 체력 50% 이상 2개, 둘 다 3개. 저장하지 않고 이번 전리품에만 반영한다.
+export const STAR_FAST_MS = 75_000, STAR_HP_RATIO = 0.5;
+// 별: 승리 1개, 75초 이내 또는 본부 체력 50% 이상 2개, 둘 다 3개. 저장하지 않고 이번 전리품에만 반영한다.
 export function battleStars(battle) {
   if (battle?.status !== 'victory') return 0;
   const fast = battle.elapsedMs <= STAR_FAST_MS, healthy = battle.player.hq.hp >= battle.player.hq.maxHp * STAR_HP_RATIO;

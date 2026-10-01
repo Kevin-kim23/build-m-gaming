@@ -3,7 +3,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, buyEquipment, enhanceEquipment, buyAdditionalEquipment, setEquipmentDeployed, parseSave, perSecond, perTap, MAX_GOLD, MAX_OFFLINE_MS, accrue, SAVE_KEY } from '../src/game.js';
 import { EQUIPMENT, MAX_EQUIPMENT_COUNT, additionalEquipmentCost, additionalEquipmentOffer, equipmentStats, deployedEquipment } from '../src/equipment.js';
-import { createBattle, advanceBattle, equipmentCombatStats } from '../src/battle.js';
+import { equipmentCombatStats, UNIT_TRAITS } from '../src/battle.js';
+import { quietBattle, deployNow } from './lane-helpers.js';
 import { createGameSession } from '../src/session.js';
 import { RANKS, RANK_REQUIREMENTS } from '../src/ranks.js';
 const T = 1_800_000_000_000;
@@ -79,16 +80,14 @@ test('current saves reject missing, malformed and impossible quantities', () => 
   s.equipment.tank={level:9,deployed:true,count:2}; assert.equal(parseSave(serializeSave(s),T),null);
   s.equipment.tank.level=10;assert.equal(parseSave(serializeSave(s),T).equipment.tank.count,2);
 });
-test('one grouped volley adds all copies without accelerating or duplicating selected ids', () => {
-  const s = army();maxGun(s,'tank');s.equipment.tank.count=2;
+test('all copies of one equipment type deploy as one grouped unit without accelerating or duplicating selected ids', () => {
+  const s = army();maxGun(s,'tank');s.equipment.tank.count=2;s.campaignCleared=80;
   const one = equipmentCombatStats('tank',10,s.soldiers+3000);
-  let battle = createBattle(s,1,{units:{},equipment:['tank','tank']});
-  assert.equal(battle.player.equipment.length,1); assert.equal(battle.player.equipment[0].count,2);
-  assert.equal(battle.player.equipment[0].damage,one.damage*2);assert.equal(battle.player.equipment[0].intervalMs,one.intervalMs);
-  const hp = battle.enemy.hq.hp;
-  for(let ms=0;ms<one.intervalMs;ms+=50)battle=advanceBattle(battle,50);
-  assert.equal(battle.enemy.hq.hp,Math.max(0,hp-one.damage*2));
-  assert.ok(battle.enemy.equipment.every(g=>g.count===1));
+  const battle = deployNow(quietBattle(s,1,['tank','tank']),'tank');
+  assert.equal(battle.deck.length,1);assert.equal(battle.player.units.length,1);
+  const unit=battle.player.units[0];
+  assert.equal(unit.count,2);assert.equal(unit.damage,one.damage*2);assert.equal(unit.intervalMs,one.intervalMs);
+  assert.equal(unit.maxHp,UNIT_TRAITS.tank.hp*one.growth*2*((s.soldiers+3000)/1280),'hp scales with copies like damage');
 });
 test('large valid quantities retain exact arithmetic and clamp offline income to wallet limit', () => {
   const s = army();

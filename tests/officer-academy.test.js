@@ -9,7 +9,6 @@ import { createGameSession } from '../src/session.js';
 import { defaultLoadout, createBattle } from '../src/battle.js';
 import { UNITS } from '../src/units.js';
 import { groupArmy } from '../src/formations.js';
-import { unitPositions } from '../src/battle-art.js';
 import { schoolIcon } from '../src/school-art.js';
 import { schoolsMarkup, schoolDetailMarkup } from '../src/school-panels.js';
 import { officerDetails } from '../src/officer-art.js';
@@ -101,12 +100,12 @@ test('academy and officer purchases share checkpoint/backups and survive restart
   assert.equal(parseSave(values.get(SAVE_KEY+'-backup'),T).firstLieutenants,0);
   session.pause();session.start();assert.equal(session.state.officerSchoolLevel,2);assert.equal(session.state.firstLieutenants,1);assert.equal(session.state.gold,0);session.pause();
 });
-test('troops no longer deploy: loadout is equipment only and the enemy roster is unchanged',()=>{
+test('troops never deploy: loadout is equipment only and the battle starts with empty lanes',()=>{
   const s={...general(),officerSchoolLevel:5};for(const u of Object.values(UNITS))s[u.field]=Math.max(s[u.field],12);
   s.equipment.artillery={level:1,count:1,deployed:true};
   const loadout=defaultLoadout(s);assert.deepEqual(Object.keys(loadout),['equipment']);
   const battle=createBattle(s,1,loadout);
-  assert.equal(battle.player.units.length,0);assert.equal(battle.enemy.units.length,3);
+  assert.equal(battle.player.units.length,0);assert.equal(battle.enemy.units.length,0);assert.equal(battle.deck.length,1);
 });
 test('academy stages show true prices and recommended ranks, with distinct cached geometry',()=>{
   // Level-by-level details moved from the school card into its detail popup.

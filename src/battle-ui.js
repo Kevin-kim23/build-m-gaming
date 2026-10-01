@@ -1,7 +1,7 @@
 import { campaignBonusPercent, REGION_INCOME_PERCENT } from "./campaign-rewards.js";
-import { STAGES, battleAccess, defaultLoadout, normalizeLoadout, createBattle, advanceBattle, useSpecial, battleSlots } from './battle.js';
+import { STAGES, battleAccess, defaultLoadout, normalizeLoadout, createBattle, advanceBattle, deploy, battleSlots, BATTLE_RULES } from './battle.js';
 import { recordBattleVictory } from './battle-progress.js';
-import { drawBattle } from './battle-art.js';
+import { drawLane } from './lane-art.js';
 import { preparationMarkup, battlefieldMarkup } from './battle-markup.js';
 import { reportError } from './diagnostics.js';
 import { fmt, fmtGold } from './format.js';
@@ -79,26 +79,24 @@ export function createBattleUI(session) {
     paint(); sync(); schedule();
   }
   function view() {
-    const effects = [], sides = {};
-    for (const side of ['player', 'enemy']) {
-      const army = battle[side];
-      sides[side] = { hq: army.hq, fortress: army.fortress, troops: Object.fromEntries(army.units.map(u => [u.id,u.count])), equipment: army.equipment };
-      for (const gun of [...army.units, ...army.equipment])
-        if (gun.lastShotMs >= 0) effects.push({at:gun.lastShotMs, side, kind:gun.id});
-    }
-    return {elapsed:battle.elapsedMs, sides, effects};
+    return { elapsed: battle.elapsedMs, countryId: battle.countryId, player: battle.player, enemy: battle.enemy, fx: battle.fx };
   }
+  // 값이 바뀔 때만 글자·버튼 상태를 바꾼다(매 프레임 DOM 재생성 없음).
   function paint() {
     if (!battle || !$('#battle-canvas')) return;
-    drawBattle($('#battle-canvas'), view());
+    drawLane($('#battle-canvas'), view());
     text('#battle-player-hp', `${fmt(Math.ceil(battle.player.hq.hp))} / ${fmt(battle.player.hq.maxHp)}`);
     text('#battle-enemy-hp', `${fmt(Math.ceil(battle.enemy.hq.hp))} / ${fmt(battle.enemy.hq.maxHp)}`);
-    const seconds = Math.floor(battle.elapsedMs / 1000);
-    for (const gun of battle.player.equipment) {
-      const wait = Math.max(0, Math.ceil((gun.specialReadyMs - battle.elapsedMs) / 1000)), button = $(`[data-special="${gun.id}"]`);
+    const seconds = Math.floor(battle.elapsedMs / 1000), mana = Math.floor(battle.mana);
+    text('#battle-mana-text', `${mana} / ${BATTLE_RULES.manaMax}`);
+    const fill = $('#battle-mana-fill'), width = `${(mana / BATTLE_RULES.manaMax * 100).toFixed(0)}%`;
+    if (fill && fill.style.width !== width) fill.style.width = width;
+    for (const card of battle.deck) {
+      const button = $(`[data-deploy="${card.id}"]`);
       if (!button) continue;
-      text(`[data-special-state="${gun.id}"]`, wait ? `${wait}초` : '발사!');
-      const ready = wait === 0 && battle.status === 'running' && !paused;
+      const wait = Math.max(0, Math.ceil((card.readyMs - battle.elapsedMs) / 1000)), afford = battle.mana >= card.cost;
+      text(`[data-deploy-cost="${card.id}"]`, wait ? `재출격 ${wait}초` : afford ? `출격 · 마나 ${card.cost}` : `마나 ${card.cost} 필요`);
+      const ready = wait === 0 && afford && battle.status === 'running' && !paused;
       if (button.disabled === ready) button.disabled = !ready;
     }
     text('#battle-time', `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`);
@@ -119,23 +117,11 @@ export function createBattleUI(session) {
     }
     schedule();
   }
-  // 필살기 연출: 적 본부 위 피해 숫자(또는 회복 숫자)와 화면 흔들림. 클릭 때만 만들고 애니메이션이 끝나면 지운다.
-  function specialEffect(gun, damage, healed) {
-    const arena = $('#battle-arena'); if (!arena) return;
-    const note = document.createElement('span');
-    note.className = 'battle-float' + (damage > 0 ? '' : ' heal');
-    note.textContent = damage > 0 ? `-${fmt(Math.round(damage))}` : `+${fmt(Math.round(healed))}`;
-    note.style.left = `${35 + Math.random() * 30}%`;
-    note.addEventListener('animationend', () => note.remove(), { once: true });
-    arena.append(note);
-    if (damage > 0) { arena.classList.remove('shake'); void arena.offsetWidth; arena.classList.add('shake'); }
-  }
-  function special(id) {
+  function sortie(id) {
     if (!session.active || document.hidden || paused || battle?.status !== 'running') return;
-    const before = battle, gun = before.player.equipment.find(g => g.id === id);
-    battle = useSpecial(battle, id);
-    if (battle !== before) specialEffect(gun, before.enemy.hq.hp - battle.enemy.hq.hp, battle.player.hq.hp - before.player.hq.hp);
-    paint();
+    const next = deploy(battle, id);
+    if (next === battle) return;
+    battle = next; paint();
     if (battle.status !== 'running') finish();
   }
   function overlay(title, copy, result) {
@@ -146,7 +132,7 @@ export function createBattleUI(session) {
     $('#battle-resume').disabled = !session.active;
     $('#battle-result-actions').hidden = !result;
     $('#battle-pause').disabled = result;
-    dialog.querySelectorAll('[data-special]').forEach(button => { button.disabled = true; });
+    dialog.querySelectorAll('[data-deploy]').forEach(button => { button.disabled = true; });
   }
   function suspend() {
     if (battle?.status !== 'running' || !dialog.open) return;
@@ -169,7 +155,7 @@ export function createBattleUI(session) {
       copy = result?.ok ? (stageId === STAGES.length ? '아스테라 대륙의 모든 국가를 점령했어요!' : stageId % 20 === 0 ? `${COUNTRIES[Math.floor(stageId / 20)-1].name} 점령 완료! 다음 국가가 열렸어요.` : '지역 점령 완료! 다음 지역으로 진격할 수 있어요.') : '클리어 기록을 반영하지 못했어요. 작전 지도에서 확인해 주세요.';
       if (result?.ok) copy += result.firstClear ? ` 초당 수입 +${REGION_INCOME_PERCENT}% 획득! 누적 점령 보너스 +${campaignBonusPercent(session.state)}%.` : ` 재도전 보너스는 없으며 초당 수입 +${campaignBonusPercent(session.state)}%를 유지합니다.`;
       if (result?.ok) text('#battle-result-stars', '★'.repeat(result.stars) + '☆'.repeat(3 - result.stars) + (result.stars === 3 ? ' 완벽한 승리' : result.stars === 2 ? ' 훌륭한 승리' : ' 승리'));
-      if (result?.ok) copy += ` 전리품 ${fmtGold(result.gold)} 골드를 받았어요!${result.stars < 3 ? ' (별 3개: 90초 안에, 본부 체력 50% 이상으로 승리하면 전리품 +50%)' : ''}`;
+      if (result?.ok) copy += ` 전리품 ${fmtGold(result.gold)} 골드를 받았어요!${result.stars < 3 ? ' (별 3개: 75초 안에, 본부 체력 50% 이상으로 승리하면 전리품 +50%)' : ''}`;
       if (result?.achievements?.length) copy += ` 훈장 획득: ${result.achievements.map(id => ACHIEVEMENTS.find(a => a.id === id).title).join(', ')}. 홈 도전과제에서 확인하세요.`;
     }
     overlay(battle.status === 'victory' ? '승리' : battle.status === 'defeat' ? '패배' : '무승부', copy, true);
@@ -206,7 +192,7 @@ export function createBattleUI(session) {
     else if (target.hasAttribute('data-battle-back')) showStages();
     else if (target.hasAttribute('data-battle-retry')) prepare();
     else if (target.id === 'battle-start') start();
-    else if (target.dataset.special) special(target.dataset.special);
+    else if (target.dataset.deploy) sortie(target.dataset.deploy);
     else if (target.id === 'battle-pause') suspend();
     else if (target.id === 'battle-resume') resume();
   });

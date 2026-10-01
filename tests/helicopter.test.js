@@ -4,7 +4,8 @@ import assert from "node:assert/strict";
 import { freshState, buyEquipment, enhanceEquipment, setEquipmentDeployed, perSecond, perTap, parseSave, MAX_GOLD } from "../src/game.js";
 import { equipmentPurchaseOffer, equipmentStats, enhancementCost, HELICOPTER_STAGES } from "../src/equipment.js";
 import { equipmentStoreMarkup } from "../src/equipment-panels.js";
-import { createBattle, advanceBattle, defaultLoadout, equipmentCombatStats } from "../src/battle.js";
+import { defaultLoadout, equipmentCombatStats } from "../src/battle.js";
+import { quietBattle, until, deployNow } from "./lane-helpers.js";
 import { layoutFieldEquipment } from "../src/field-layout.js";
 import { drawEquipment } from "../src/equipment-art.js";
 const T = 1800000000000;
@@ -57,15 +58,16 @@ test("v9 saves retain schools and assets; old versions cannot inject helicopter 
     const s=army();s.equipment.helicopter=bad;assert.equal(parseSave(serializeSave(s),T),null);
   }
 });
-test("helicopter enters owned loadouts and fires automatically without changing existing enemy weapons",()=>{
+test("helicopter enters owned loadouts and flies out as an air unit and fires automatically",()=>{
   const s=army();assert.ok(!defaultLoadout(s).equipment.includes('helicopter'));
   buyEquipment(s,T,'helicopter');assert.ok(defaultLoadout(s).equipment.includes('helicopter'));
-  let b=createBattle(s,3,{units:{},equipment:['helicopter']});
-  assert.deepEqual(b.enemy.equipment.map(g=>g.id),['artillery','selfPropelled','tank']);
-  const hp=b.enemy.hq.hp;
-  for(let i=0;i<36;i++)b=advanceBattle(b,50);
-  assert.equal(b.enemy.hq.hp,hp-equipmentCombatStats('helicopter',0,5120).damage);
-  assert.equal(b.player.equipment[0].lastShotMs,1800);
+  s.campaignCleared=80;
+  let b=deployNow(quietBattle(s,3,['helicopter']),'helicopter');
+  const stats=equipmentCombatStats('helicopter',0,5120),unit=b.player.units[0];
+  assert.equal(unit.cls,'air');assert.equal(unit.damage,stats.damage);assert.equal(unit.intervalMs,stats.intervalMs);
+  const hp=b.enemy.hq.hp;b=until(b,30000);
+  assert.ok(b.enemy.hq.hp<hp,'the helicopter flew to the enemy base and attacked it automatically');
+  assert.ok(b.player.units[0]?.lastShotMs>0||b.status==='running');
 });
 test("four deployed equipment silhouettes fit narrow home fields",()=>{
   for(const width of [100,144,180,300]) {

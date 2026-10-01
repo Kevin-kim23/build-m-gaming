@@ -40,19 +40,21 @@ test('deployment is equipment only: no troop inputs, slot limit shown, stored eq
   assert.equal(inputTag(markup, 'data-battle-gear', 'tank'), undefined);
   assert.equal(inputTag(markup, 'data-battle-gear', 'selfPropelled'), undefined);
   assert.match(markup, /정찰 · 기갑 부대/);
-  assert.match(markup, /화력 ×0\.8/);
-  assert.match(markup, /상성 불리 ▼/);
+  assert.match(markup, /공중 &gt; 기갑 &gt; 화력/);
+  assert.match(markup, /이 지역에 불리 ▼/);
+  assert.match(markup, /마나 18/);
   assert.match(markup, /1,282 HP/);
   assert.match(markup, /장비는 소모되지 않으며 홈 배치 설정은 유지/);
   assert.doesNotMatch(markup, /undefined|NaN/);
 });
 
-test('battlefield shows one canvas plus a special button per deployed gear and keeps home economy controls out of battle', () => {
+test('battlefield shows one canvas, a mana bar and one deploy card per deployed gear and keeps home economy controls out of battle', () => {
   const markup = battlefieldMarkup(createBattle(army({ equipment: { artillery: { level: 3, deployed: true }, tank: { level: 3, deployed: true } } }), 1));
   const ids = [...markup.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
   assert.equal(ids.length, new Set(ids).size);
   assert.equal((markup.match(/<canvas\b/g) ?? []).length, 1);
-  assert.deepEqual([...markup.matchAll(/data-special="(\w+)"/g)].map(m => m[1]), ['artillery', 'tank']);
+  assert.deepEqual([...markup.matchAll(/data-deploy="(\w+)"/g)].map(m => m[1]), ['artillery', 'tank']);
+  assert.match(markup, /id="battle-mana-fill"/);
   for (const required of ['battle-canvas', 'battle-player-hp', 'battle-enemy-hp', 'battle-pause', 'battle-resume'])
     assert.ok(ids.includes(required));
   for (const homeControl of ['tap-zone', 'gold', 'open-shop', 'open-equipment'])
@@ -64,6 +66,6 @@ test('capital preparation shows the fortress warning and its shielded gear class
   const state = army({ campaignCleared: 19, equipment: { artillery: { level: 3, deployed: true } } });
   const capital = preparationMarkup(state, STAGES[19], defaultLoadout(state, 20));
   assert.match(capital, /요새 수도 · 방어 장갑/);
-  assert.match(capital, /기갑 장비 피해 -40%/);
+  assert.match(capital, /기지 피해 -40%/);
   assert.doesNotMatch(preparationMarkup(state, STAGES[0], defaultLoadout(state, 1)), /요새 수도/);
 });

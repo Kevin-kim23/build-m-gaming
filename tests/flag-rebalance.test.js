@@ -9,7 +9,8 @@ import {personalIcon} from '../src/personal-art.js';
 import {supremeRankSymbol} from '../src/rank-emblem.js';
 import {insignia,homeMarkup} from '../src/home-view.js';
 import {createBattle,equipmentCombatStats,STAGES} from '../src/battle.js';
-import {enemyBalanceFactor} from '../src/battle-balance.js';
+import {enemyStack} from '../src/battle-balance.js';
+import {until} from './lane-helpers.js';
 const T=1_800_000_000_000;
 const army=rank=>({...freshState(T),gold:MAX_GOLD,soldiers:Math.max(5000,RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000),sergeants:300,ncoSchoolLevel:5});
 
@@ -53,14 +54,16 @@ test('equipment income is integer, grows increasingly, and reaches 6x and 17x',(
     assert.equal(equipmentStats(20,d.id).tap,d.tap*17);
   }
 });
-test('player attack and healing upgrade rewards increase without raising enemy stage damage',()=>{
+test('player attack and healing upgrade rewards increase for players while enemy units keep their stage stats',()=>{
   for(const id of Object.keys(EQUIPMENT)){
     const old=equipmentCombatStats(id,15,1280,1,false),next=equipmentCombatStats(id,15);
     assert.ok((next.healing??next.damage)>(old.healing??old.damage));assert.equal(next.intervalMs,old.intervalMs);
   }
   const s={...army('소원수'),campaignCleared:80};s.equipment.tank={level:15,count:1,deployed:true};
-  const battle=createBattle(s,80,{units:{},equipment:['tank']}),stage=STAGES[79];
-  for(const g of battle.enemy.equipment)assert.ok(Math.abs(g.damage-equipmentCombatStats(g.id,stage.enemyLevel,stage.enemyPower,1,false).damage*stage.enemyModifier*enemyBalanceFactor(80))<1e-6);
+  const stage=STAGES[79];let battle=createBattle(s,80,{equipment:['tank']});
+  battle=until(battle,stage.spawnMs+3000); // 적이 출격할 때까지
+  const enemy=battle.enemy.units[0];assert.ok(enemy);
+  assert.ok(Math.abs(enemy.damage-equipmentCombatStats(enemy.id,stage.enemyLevel,stage.enemyPower,1,false).damage*stage.enemyModifier*enemyStack(80,stage.enemyLevel))<1e-6);
 });
 test('personal cards have only detail buttons, while home skill controls remain',()=>{
   const s=army('준원수'),html=personalMarkup(s);

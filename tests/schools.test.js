@@ -110,10 +110,10 @@ test('school upgrade is saved once with backup and cannot purchase twice after r
   session.pause();session.start();assert.equal(session.state.ncoSchoolLevel,1);
   assert.equal(session.change(s=>upgradeSchool(s,T,'nco')).reason,'gold');session.pause();
 });
-test('new grades power the headquarters but never enter battle; enemy roster stays at three',()=>{
+test('new grades power the base but never enter battle; only equipment cards exist',()=>{
   const s={...wealthy(),soldiers:1000,sergeants:40,staffSergeants:12,masterSergeants:12,sergeantMajors:12,lieutenants:12};
   s.equipment.artillery={level:1,count:1,deployed:true};
   const b=createBattle(s,1,defaultLoadout(s));
   assert.equal(b.player.units.length,0);
-  assert.equal(b.enemy.units.length,3,'new catalog entries must not silently double existing enemy strength');
+  assert.deepEqual(b.deck.map(c=>c.id),['artillery']);
 });

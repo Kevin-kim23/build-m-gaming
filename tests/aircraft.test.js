@@ -1,35 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState } from '../src/game.js';
-import { createBattle, advanceBattle, equipmentCombatStats, matchupMultiplier } from '../src/battle.js';
+import { advanceBattle, equipmentCombatStats, UNIT_TRAITS } from '../src/battle.js';
+import { quietBattle, until, deployNow } from './lane-helpers.js';
 import { drawEquipment } from '../src/equipment-art.js';
 import { EQUIPMENT } from '../src/equipment.js';
 const T=1_800_000_000_000;
 function supplyBattle(level=0,count=1){
-  const s={...freshState(T),soldiers:78920,sergeants:300,ncoSchoolLevel:1};
-  s.equipment.transport={level,count,deployed:true};
-  const b=createBattle(s,1,{units:{},equipment:['transport']});
-  b.enemy.units=[];b.enemy.equipment=[];return b;
+  const s={...freshState(T),soldiers:78920,sergeants:300,ncoSchoolLevel:1,campaignCleared:80};
+  s.equipment.transport={level,count,deployed:true};s.equipment.tank={level:5,count:1,deployed:true};
+  return quietBattle(s,1,['transport','tank']);
 }
-function until(b,time){while(b.elapsedMs<time&&b.status==='running')b=advanceBattle(b,50);return b;}
-test('transport heals its own damaged HQ on interval and never damages the opponent',()=>{
-  const initial=supplyBattle(),g=initial.player.equipment[0];initial.player.hq.hp-=5000;
-  const enemyHp=initial.enemy.hq.hp,damaged=initial.player.hq.hp;
-  assert.equal(g.damage,0);assert.ok(g.healing>0);
-  const before=until(initial,g.intervalMs-50);assert.equal(before.player.hq.hp,damaged);
-  const after=advanceBattle(before,50);assert.equal(after.player.hq.hp,damaged+g.healing);
-  assert.equal(after.enemy.hq.hp,enemyHp);assert.equal(initial.player.hq.hp,damaged);
+test('transport heals damaged friendly units by 12% on its interval, never overheals (the medic itself has no attack)',()=>{
+  let b=deployNow(supplyBattle(),'tank');b=deployNow(b,'transport');
+  const medic=b.player.units.find(u=>u.id==='transport'),maxHp=b.player.units.find(u=>u.id==='tank').maxHp;
+  assert.equal(medic.damage,0);assert.ok(medic.healing>0);
+  b.player.units.find(u=>u.id==='tank').hp=maxHp*.5;
+  const wait=medic.nextShotMs;
+  b=until(b,wait-50);assert.equal(b.player.units.find(u=>u.id==='tank').hp,maxHp*.5);
+  b=advanceBattle(b,50);assert.ok(Math.abs(b.player.units.find(u=>u.id==='tank').hp-maxHp*.62)<1e-6);
+  for(let i=0;i<600;i++)b=advanceBattle(b,50);
+  assert.ok(b.player.units.every(u=>u.hp<=u.maxHp+1e-9),'no overheal');
 });
-test('transport counts and upgrades improve healing with no overheal or resurrection',()=>{
+test('transport counts and upgrades improve healing amount and rate',()=>{
   const one=equipmentCombatStats('transport',0,81920),three=equipmentCombatStats('transport',20,81920,3);
   assert.ok(three.healing>one.healing*3);assert.ok(three.intervalMs<one.intervalMs);
-  let b=supplyBattle(20,1000);b.player.hq.hp=1;b=until(b,b.player.equipment[0].intervalMs);
-  assert.equal(b.player.hq.hp,b.player.hq.maxHp);
-  b=supplyBattle();b.player.hq.hp=1;
-  b.player.equipment[0].nextShotMs=50;b.enemy.equipment=[{damage:2,nextShotMs:50,intervalMs:1000}];
-  const dead=advanceBattle(b,50);assert.equal(dead.status,'defeat');assert.equal(dead.player.hq.hp,0);
+  assert.equal(UNIT_TRAITS.transport.kind,'heal');
 });
-test('fighter attacks scale with copies and every upgrade through twenty improves aircraft effects',()=>{
+test('fighter is an air unit whose attack scales with copies and every upgrade through twenty improves aircraft effects',()=>{
   for(const id of ['transport','fighter']){
     let before=equipmentCombatStats(id,0);
     for(let level=1;level<=20;level++){
@@ -37,10 +35,9 @@ test('fighter attacks scale with copies and every upgrade through twenty improve
       assert.ok(after.intervalMs<=before.intervalMs);before=after;
     }
   }
-  const s={...freshState(T),soldiers:78920,sergeants:300};s.equipment.fighter={level:20,count:2,deployed:false};
-  let b=createBattle(s,1,{units:{},equipment:['fighter']});b.enemy.hq.hp=b.enemy.hq.maxHp=100000;
-  b.enemy.units=[];b.enemy.equipment=[];const stats=equipmentCombatStats('fighter',20,81920,2);
-  b=until(b,stats.intervalMs);assert.ok(Math.abs(b.enemy.hq.hp-(100000-stats.damage*matchupMultiplier(1,'fighter')))<1e-6);assert.equal(b.player.hq.hp,81920);
+  const s={...freshState(T),soldiers:78920,sergeants:300,campaignCleared:80};s.equipment.fighter={level:20,count:2,deployed:false};
+  const b=deployNow(quietBattle(s,1,['fighter']),'fighter'),u=b.player.units[0],stats=equipmentCombatStats('fighter',20,81920,2);
+  assert.equal(u.cls,'air');assert.equal(u.count,2);assert.equal(u.damage,stats.damage);assert.equal(u.intervalMs,stats.intervalMs);
 });
 test('all equipment stages have cached sprites and fit the preview including glowing upgrades',()=>{
   const previous=globalThis.document;
