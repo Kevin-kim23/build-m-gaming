@@ -55,6 +55,7 @@
   color: #84917b;
   font-size: 10px;
 }
+#medal-list[data-all-hidden]:empty::after { content: "숨긴 훈장은 도전과제에서 다시 볼 수 있어요"; }
 #medal-list li { min-width: 0; min-height: 0; }
 #medal-list button {
   display: grid;
@@ -173,3 +174,6 @@
   .achievement-card h3 { font-size: 13px; }
   .achievement-progress { gap: 5px; }
 }
+
+.medal-visibility { justify-self: start; margin-top: 8px; min-height: 32px; padding: 4px 10px; border: 1px solid #6f7e58; border-radius: 6px; background: transparent; color: #cfd9b5; font-size: 11px; cursor: pointer; }
+.medal-visibility[aria-pressed="true"] { color: #e1ca92; border-color: #a99a62; background: #3a4130; }
