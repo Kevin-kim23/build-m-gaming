@@ -22,10 +22,6 @@ export function generalEmblem(tier) {
     <path d="M283 139 Q207 139 153 111 Q187 163 278 201L286 177Z" fill="${gold}" stroke="#e9c979" stroke-width="2"/>
     <path d="M274 152Q221 155 187 137M274 170Q236 166 218 160" fill="none" stroke="#fff1bd" stroke-width="2"/>
     ${Array.from({length:4+tier},(_,i)=>`<circle cx="${187+i*13}" cy="${141+i*5}" r="2" fill="#ffedaa"/>`).join('')}</g>`;
-  const leaves=Array.from({length:8},(_,i)=>{
-    const angle=(i*15+27)*Math.PI/180,x=300-Math.sin(angle)*83,y=168+Math.cos(angle)*84;
-    return `<g transform="rotate(${i*14-55} ${x} ${y})"><path d="M${x} ${y+11}q-18-7-9-23q15 4 9 23Z" fill="${gold}" stroke="#fff0a0" stroke-width=".7"/><path d="m${x} ${y+8}-7-15" stroke="#96703c" stroke-width="1"/></g>`;
-  }).join('');
   const stars=tier>=5 ? `<g transform="translate(268 137)">${supremeRankSymbol(tier)}</g>`
     : Array.from({length:tier},(_,i)=>star(300+(i-(tier-1)/2)*29,169,15,gold)).join('');
   const gems=tier>=3?`${star(74,92,7,'#f8e1a0')}${star(526,92,7,'#f8e1a0')}`:'';
@@ -36,7 +32,6 @@ export function generalEmblem(tier) {
     <g class="general-wing left">${wing}</g><g transform="translate(600 0) scale(-1 1)"><g class="general-wing right">${wing}</g></g>
     <g class="general-crest"><circle cx="300" cy="173" r="96" fill="none" stroke="#d2ad62" stroke-opacity=".4" stroke-width="1"/>
     <circle cx="300" cy="173" r="88" fill="none" stroke="#fff0b5" stroke-opacity=".35" stroke-width="2" stroke-dasharray="1 7"/>
-    ${leaves}<g transform="translate(600 0) scale(-1 1)">${leaves}</g>
     <path d="m300 98 70 23-8 85q-12 35-62 62-50-27-62-62l-8-85Z" fill="#251c10" stroke="#73552e" stroke-width="4"/>
     <path d="m300 101 67 22-8 80q-10 32-59 61-49-29-59-61l-8-80Z" fill="${gold}" stroke="#fff0b9" stroke-width="2"/>
     <path d="m300 111 55 19-7 70q-7 29-48 54-41-25-48-54l-7-70Z" fill="${enamel}" stroke="#a97c3f" stroke-width="2"/>

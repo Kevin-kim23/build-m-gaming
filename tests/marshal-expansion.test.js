@@ -60,15 +60,15 @@ test('renamed ranks retain the old ICBM, glaive and advanced academy unlock thre
   minor.advancedSchoolLevel=3;assert.equal(schoolOffer(minor,'advanced').reason,null);
 });
 
-test('marshal insignia keeps five, one, two and three stars with platinum exclusive to the final rank',()=>{
+test('marshal insignia keeps five, one, two and three stars without laurels and white stars for all three upper marshal ranks',()=>{
   for(const invalid of ['5',0,9,NaN,Infinity,5.5])assert.throws(()=>supremeRankSymbol(invalid),RangeError);
   for(const [tier,count] of [[5,5],[6,1],[7,2],[8,3]]){
     const svg=supremeRankSymbol(tier);
     assert.equal((svg.match(/data-rank-star/g)||[]).length,count);
-    assert.equal((svg.match(/data-laurel/g)||[]).length,2);
-    assert.equal((svg.match(/data-metal="platinum"/g)||[]).length,tier===8?3:0);
+    assert.equal((svg.match(/data-laurel/g)||[]).length,0);
+    assert.equal((svg.match(/data-metal="white"/g)||[]).length,tier>=6?count:0);
     const points=[...svg.matchAll(/points="([^"]+)"/g)].flatMap(m=>m[1].split(' ').map(p=>p.split(',').map(Number)));
-    for(const [x,y] of points){assert.ok(x>=0&&x<=64&&y>=0&&y<=64);if(tier>=6)assert.ok(y>=43);}
+    for(const [x,y] of points){assert.ok(x>=0&&x<=64&&y>=0&&y<=64);}
     assert.equal(supremeRankSymbol(tier),svg);
   }
 });

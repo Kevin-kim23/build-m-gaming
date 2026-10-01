@@ -71,11 +71,11 @@ test('personal cards have only detail buttons, while home skill controls remain'
   assert.match(detail,/최대 11강/);assert.match(detail,/Lv.10 · 장비 최대 20강/);assert.match(detail,/골드로 강화/);
   assert.equal(new Set(Array.from({length:10},(_,i)=>personalIcon('flag',i+1))).size,10);
 });
-test('junior marshal keeps five stars; minor marshal has one star and both share lower laurels',()=>{
+test('junior marshal keeps five stars; minor marshal has one star and both omit laurels',()=>{
   const marshal=supremeRankSymbol(5),grand=supremeRankSymbol(6);
   assert.equal((marshal.match(/data-rank-star/g)||[]).length,5);
   assert.equal((grand.match(/data-rank-star/g)||[]).length,1);
-  assert.equal((grand.match(/data-laurel/g)||[]).length,2);
+  assert.equal((grand.match(/data-laurel/g)||[]).length,0);
   assert.equal(supremeRankSymbol(5),marshal);assert.equal(supremeRankSymbol(6),grand);
   for(const [rank,symbol] of [['준원수',marshal],['소원수',grand]])assert.ok(insignia(RANKS.indexOf(rank)).includes(symbol));
 });
