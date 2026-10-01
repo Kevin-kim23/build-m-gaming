@@ -18,7 +18,7 @@ export function createBattleUI(session) {
   const dialog = document.querySelector('#battle-modal');
   const $ = (selector) => dialog.querySelector(selector);
   const campaignMap = createCampaignMap(dialog,()=>session.state);
-  let mode = 'stages', stageId = 1, loadout = null, battle = null;
+  let mode = 'stages', stageId = 1, loadout = null, loadoutStage = 0, battle = null;
   let raf = 0, lastFrame = 0, paused = false, finalized = false;
   let stagesKey = '', preparationKey = '';
   const mapKey = () => `${session.state.campaignCleared}:${armyKey()}:${battleAccess(session.state).unlocked}`;
@@ -49,7 +49,9 @@ export function createBattleUI(session) {
     stop(); campaignMap.stop(); battle = null; stageId = id; mode = 'prepare';
     dialog.classList.remove('in-campaign');
     preparationKey = armyKey();
-    loadout = normalizeLoadout(state, loadout ?? defaultLoadout(state));
+    // 다른 지역으로 가면 그 지역 상성에 맞춘 기본 출전을 다시 고른다. 같은 지역 안에서는 선택을 유지한다.
+    loadout = normalizeLoadout(state, loadout && loadoutStage === id ? loadout : defaultLoadout(state, id));
+    loadoutStage = id;
     dialog.innerHTML = preparationMarkup(state, stage, loadout);
     dialog.classList.remove('in-battle');
     dialog.scrollTop = 0;

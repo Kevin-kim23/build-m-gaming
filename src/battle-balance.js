@@ -58,3 +58,22 @@ export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, cou
     ),
   };
 }
+
+// 장비 분류와 적 부대 유형 상성(0.42). 유리 ×1.3, 불리 ×0.8, 그 외 ×1. 회복(보급차)에는 적용하지 않는다.
+export const GEAR_CLASS = Object.freeze({
+  artillery: "firepower", selfPropelled: "firepower", rocketLauncher: "firepower", icbm: "firepower",
+  tank: "armor", railgunTank: "armor", helicopter: "air", fighter: "air", transport: "support",
+});
+export const CLASS_NAMES = Object.freeze({ firepower: "화력", armor: "기갑", air: "공중", support: "지원" });
+export const ENEMY_TYPES = Object.freeze([
+  { id: "armored", name: "기갑 부대", strong: "air", weak: "firepower" },
+  { id: "airDefense", name: "방공 진지", strong: "firepower", weak: "air" },
+  { id: "artilleryNest", name: "포병 진지", strong: "armor", weak: "firepower" },
+]);
+export const MATCHUP = Object.freeze({ strong: 1.3, weak: 0.8 });
+// 지역 번호 순서대로 유형이 돌아가며, 지도에서 번호만으로 유형을 알 수 있다.
+export const stageEnemyType = (stageId) => ENEMY_TYPES[(stageId - 1) % ENEMY_TYPES.length];
+export function matchupMultiplier(stageId, gearId) {
+  const type = stageEnemyType(stageId), cls = GEAR_CLASS[gearId];
+  return cls === type.strong ? MATCHUP.strong : cls === type.weak ? MATCHUP.weak : 1;
+}

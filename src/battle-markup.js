@@ -1,4 +1,4 @@
-import { BATTLE_RULES, equipmentCombatStats, battleSlots } from './battle.js';
+import { BATTLE_RULES, equipmentCombatStats, battleSlots, stageEnemyType, matchupMultiplier, GEAR_CLASS, CLASS_NAMES } from './battle.js';
 import { armyPower } from './units.js';
 import { EQUIPMENT, equipmentCount } from './equipment.js';
 import { FORMATIONS } from './formations.js';
@@ -10,9 +10,10 @@ export function preparationMarkup(state, stage, loadout) {
   const hq = FORMATIONS.find((f) => armyPower(state) >= f.size);
   return header(`${stage.enemyName} · 지역 ${String(stage.region).padStart(2,'0')}`, stage.name) + `
     <div class="battle-matchup"><div><small>우리 본부</small><b>${hq.name}</b><span>${fmt(armyPower(state))} HP</span></div><i>VS</i><div><small>${stage.enemyName}</small><b>${stage.capital?'수도 사령부':'지역 사령부'}</b><span>${fmt(stage.hqPower)} HP</span></div></div>
+    <p class="battle-intel"><b>정찰 · ${stageEnemyType(stage.id).name}</b> <span>적 편성: ${['artillery','tank','selfPropelled'].map(id=>EQUIPMENT[id].name).join('·')} + 보병 사격</span><span>유리한 장비: <em class="good">${CLASS_NAMES[stageEnemyType(stage.id).strong]} ×1.3</em> · 불리한 장비: <em class="bad">${CLASS_NAMES[stageEnemyType(stage.id).weak]} ×0.8</em></span></p>
     <section class="deployment-section"><h3>출전 장비 <small id="battle-slot-count">최대 ${battleSlots(state)}칸 · 중령 3칸 · 준장·중장·대장 +1칸</small></h3><p class="battle-note">장비만 출전합니다. 병력은 전투력(본부 체력·공격력)으로만 반영돼요. 장비는 자동으로 공격하고, 전투 중 장비별 필살기 버튼을 눌러 큰 피해를 줍니다.</p><div class="deployment-gears">${Object.values(EQUIPMENT).filter(d => !!state.equipment[d.id]).map(d => {
-      const gun = state.equipment[d.id], combat = equipmentCombatStats(d.id, gun.level, armyPower(state), equipmentCount(state, d.id));
-      return `<label class="deployment-gear"><input type="checkbox" data-battle-gear="${d.id}" ${loadout.equipment.includes(d.id) ? 'checked' : ''}><span><b>${d.name} <em>+${gun.level}</em></b><small>[${fmt(equipmentCount(state, d.id))}문]</small><small>${combat.healing ? `보급 지원 · 본부 ${fmt(Math.round(combat.healing))} 회복` : `자동 공격 · ${fmt(Math.round(combat.damage))} 피해`} / ${(combat.intervalMs / 1000).toFixed(2)}초</small></span></label>`;
+      const gun = state.equipment[d.id], match = matchupMultiplier(stage.id, d.id), combat = equipmentCombatStats(d.id, gun.level, armyPower(state), equipmentCount(state, d.id));
+      return `<label class="deployment-gear"><input type="checkbox" data-battle-gear="${d.id}" ${loadout.equipment.includes(d.id) ? 'checked' : ''}><span><b>${d.name} <em>+${gun.level}</em> <i class="tag ${match > 1 ? 'good' : match < 1 ? 'bad' : ''}">${CLASS_NAMES[GEAR_CLASS[d.id]]}${match > 1 ? ' · 상성 유리 ▲' : match < 1 ? ' · 상성 불리 ▼' : ''}</i></b><small>[${fmt(equipmentCount(state, d.id))}문]</small><small>${combat.healing ? `보급 지원 · 본부 ${fmt(Math.round(combat.healing))} 회복` : `자동 공격 · ${fmt(Math.round(combat.damage * match))} 피해`} / ${(combat.intervalMs / 1000).toFixed(2)}초</small></span></label>`;
     }).join('') || '<p class="battle-note">보유한 장비가 없습니다. 상점에서 장비를 구매하면 출전할 수 있어요.</p>'}</div></section>
     <p class="battle-note">본부 체력은 총 보유 전력과 같으며 공격력도 함께 성장합니다. 장비는 소모되지 않으며 홈 배치 설정은 유지돼요. ${BATTLE_RULES.maxDurationMs / 60_000}분 안에 본부가 파괴되지 않으면 무승부입니다.</p>
     <p role="status" class="battle-message" id="battle-message"></p>

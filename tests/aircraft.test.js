@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState } from '../src/game.js';
-import { createBattle, advanceBattle, equipmentCombatStats } from '../src/battle.js';
+import { createBattle, advanceBattle, equipmentCombatStats, matchupMultiplier } from '../src/battle.js';
 import { drawEquipment } from '../src/equipment-art.js';
 import { EQUIPMENT } from '../src/equipment.js';
 const T=1_800_000_000_000;
@@ -40,7 +40,7 @@ test('fighter attacks scale with copies and every upgrade through twenty improve
   const s={...freshState(T),soldiers:78920,sergeants:300};s.equipment.fighter={level:20,count:2,deployed:false};
   let b=createBattle(s,1,{units:{},equipment:['fighter']});b.enemy.hq.hp=b.enemy.hq.maxHp=100000;
   b.enemy.units=[];b.enemy.equipment=[];const stats=equipmentCombatStats('fighter',20,81920,2);
-  b=until(b,stats.intervalMs);assert.equal(b.enemy.hq.hp,100000-stats.damage);assert.equal(b.player.hq.hp,81920);
+  b=until(b,stats.intervalMs);assert.ok(Math.abs(b.enemy.hq.hp-(100000-stats.damage*matchupMultiplier(1,'fighter')))<1e-6);assert.equal(b.player.hq.hp,81920);
 });
 test('all equipment stages have cached sprites and fit the preview including glowing upgrades',()=>{
   const previous=globalThis.document;

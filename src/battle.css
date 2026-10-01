@@ -88,3 +88,10 @@
 @keyframes battle-float { from { transform:translateY(0) scale(.8); opacity:1; } to { transform:translateY(-46px) scale(1.25); opacity:0; } }
 @keyframes battle-shake { 0%,100% { transform:translate(0,0); } 25% { transform:translate(-4px,2px); } 50% { transform:translate(4px,-2px); } 75% { transform:translate(-2px,-2px); } }
 @media (prefers-reduced-motion: reduce) { .battle-arena.shake { animation:none; } .battle-float { animation-duration:.01s; } }
+
+.battle-intel { margin:14px 0 0; padding:10px; border:1px solid #6d7d58; background:#222c22; border-radius:5px; font-size:11px; color:#c9d6b8; }
+.battle-intel b { display:block; font-size:13px; color:#f2dfad; }
+.battle-intel span { display:block; margin-top:4px; }
+.battle-intel .good,.deployment-gear .good { color:#9be08f; font-style:normal; }
+.battle-intel .bad,.deployment-gear .bad { color:#e8998a; font-style:normal; }
+.deployment-gear .tag { font-style:normal; font-size:10px; font-weight:normal; color:#aebf9e; margin-left:4px; }

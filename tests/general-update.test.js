@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { freshState, parseSave, buyEquipment, setEquipmentDeployed, enhanceEquipment, perSecond, recruit, recruitOffer, unitCost, MAX_GOLD, MAX_SOLDIERS } from '../src/game.js';
 import { EQUIPMENT, deployedEquipment, equipmentPurchaseOffer, equipmentStats, enhancementCost } from '../src/equipment.js';
 import { fieldTheme, setFieldTheme } from '../src/field-theme.js';
-import { createBattle, advanceBattle, equipmentCombatStats } from '../src/battle.js';
+import { createBattle, advanceBattle, equipmentCombatStats, matchupMultiplier } from '../src/battle.js';
 import { homeMarkup } from '../src/home-view.js';
 import { syncSwordControls } from '../src/sword-controls.js';
 import { drawEquipment } from '../src/equipment-art.js';
@@ -84,7 +84,7 @@ test('rocket fires in battle with its own stats while enemies keep their previou
   let b=createBattle(s,1,{units:{},equipment:['rocketLauncher']});
   assert.deepEqual(b.enemy.equipment.map(g=>g.id),['artillery','tank','selfPropelled']);
   const hp=b.enemy.hq.hp;for(let i=0;i<84;i++)b=advanceBattle(b,50);
-  assert.equal(b.enemy.hq.hp,hp-equipmentCombatStats('rocketLauncher',0,10240).damage);
+  assert.ok(Math.abs(b.enemy.hq.hp-(hp-equipmentCombatStats('rocketLauncher',0,10240).damage*matchupMultiplier(1,'rocketLauncher')))<1e-6);
 });
 test('home sword sits in the dock under the field (where the troop status row used to be), preserves icon and short text through cooldown updates',()=>{
   const html=homeMarkup(general());

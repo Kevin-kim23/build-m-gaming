@@ -39,6 +39,9 @@ test('deployment is equipment only: no troop inputs, slot limit shown, stored eq
   assert.match(inputTag(markup, 'data-battle-gear', 'artillery'), /\bchecked\b/);
   assert.equal(inputTag(markup, 'data-battle-gear', 'tank'), undefined);
   assert.equal(inputTag(markup, 'data-battle-gear', 'selfPropelled'), undefined);
+  assert.match(markup, /정찰 · 기갑 부대/);
+  assert.match(markup, /화력 ×0\.8/);
+  assert.match(markup, /상성 불리 ▼/);
   assert.match(markup, /1,282 HP/);
   assert.match(markup, /장비는 소모되지 않으며 홈 배치 설정은 유지/);
   assert.doesNotMatch(markup, /undefined|NaN/);

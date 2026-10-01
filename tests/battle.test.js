@@ -4,7 +4,7 @@ import { freshState } from "../src/game.js";
 import { EQUIPMENT } from "../src/equipment.js";
 import {
   BATTLE_RULES, STAGES, battleAccess, defaultLoadout, normalizeLoadout,
-  createBattle, advanceBattle, useSpecial, battleSlots, equipmentCombatStats,
+  createBattle, advanceBattle, useSpecial, battleSlots, equipmentCombatStats, matchupMultiplier, stageEnemyType,
 } from "../src/battle.js";
 
 function army(power = 1280, level = 3) {
@@ -160,4 +160,18 @@ test("the three-minute limit ends a surviving battle as a draw", () => {
   assert.equal(result.status, "draw");
   assert.ok(result.player.hq.hp > 0 && result.enemy.hq.hp > 0);
   assert.equal(advanceBattle(result, 250), result);
+});
+
+test("matchups: stage type rotates, strong x1.3, weak x0.8, healing untouched, default loadout prefers the advantage", () => {
+  assert.deepEqual([1, 2, 3, 4].map((id) => stageEnemyType(id).id), ["armored", "airDefense", "artilleryNest", "armored"]);
+  assert.equal(matchupMultiplier(1, "helicopter"), 1.3);
+  assert.equal(matchupMultiplier(1, "artillery"), 0.8);
+  assert.equal(matchupMultiplier(1, "tank"), 1);
+  assert.equal(matchupMultiplier(2, "artillery"), 1.3);
+  assert.equal(matchupMultiplier(3, "tank"), 1.3);
+  const s = army(); s.equipment.helicopter = { level: 3, deployed: true };
+  const b = createBattle(s, 1, { equipment: ["helicopter", "artillery"] });
+  const dmg = (id) => b.player.equipment.find((g) => g.id === id).damage;
+  assert.ok(dmg("helicopter") / equipmentCombatStats("helicopter", 3, 1280).damage > dmg("artillery") / equipmentCombatStats("artillery", 3, 1280).damage);
+  assert.ok(defaultLoadout(s, 1).equipment.includes("helicopter"));
 });

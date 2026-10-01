@@ -2,8 +2,8 @@ import { UNITS, armyPower } from "./units.js";
 import { EQUIPMENT, equipmentCount } from "./equipment.js";
 import { FORMATIONS } from "./formations.js";
 import { RANKS, rankForArmy } from "./ranks.js";
-import { ENEMY_EQUIPMENT, BATTLE_RULES, STAGES, infantryDamage, equipmentCombatStats } from "./battle-balance.js";
-export { BATTLE_RULES, STAGES, equipmentCombatStats } from "./battle-balance.js";
+import { ENEMY_EQUIPMENT, BATTLE_RULES, STAGES, infantryDamage, equipmentCombatStats, matchupMultiplier } from "./battle-balance.js";
+export { BATTLE_RULES, STAGES, equipmentCombatStats, matchupMultiplier, stageEnemyType, GEAR_CLASS, CLASS_NAMES } from "./battle-balance.js";
 
 export function battleAccess(state) {
   const rank = rankForArmy(state);
@@ -20,10 +20,10 @@ export function battleSlots(state) {
 }
 
 // 기본 출전: 보유 장비 중 1회 공격력이 센 순서로 빈 칸을 채운다.
-export function defaultLoadout(state) {
+export function defaultLoadout(state, stageId = 0) {
   const power = armyPower(state);
   const ranked = Object.keys(EQUIPMENT).filter((id) => state.equipment?.[id]).sort((a, b) => {
-    const dps = (id) => { const c = equipmentCombatStats(id, state.equipment[id].level, power, equipmentCount(state, id)); return (c.damage || c.healing) / c.intervalMs; };
+    const dps = (id) => { const c = equipmentCombatStats(id, state.equipment[id].level, power, equipmentCount(state, id)); return ((c.damage ? c.damage * (stageId ? matchupMultiplier(stageId, id) : 1) : c.healing)) / c.intervalMs; };
     return dps(b) - dps(a);
   });
   return normalizeLoadout(state, { equipment: ranked.slice(0, battleSlots(state)) });
@@ -39,7 +39,7 @@ export function normalizeLoadout(state, input = {}) {
   };
 }
 
-function makeSide(formation, power, units, equipment, multiplier = 1, playerUpgrades = true) {
+function makeSide(formation, power, units, equipment, multiplier = 1, playerUpgrades = true, stageId = 0) {
   return {
     hq: { id: formation.id, name: formation.name, maxHp: formation.size, hp: formation.size },
     units: Object.values(UNITS).filter((u) => units[u.id] > 0).map((u) => ({
@@ -49,7 +49,7 @@ function makeSide(formation, power, units, equipment, multiplier = 1, playerUpgr
     })),
     equipment: equipment.map(({ id, level, count = 1 }) => {
       const stats = equipmentCombatStats(id, level, power, count, playerUpgrades);
-      return { id, level, count, ...stats, damage: stats.damage * multiplier, lastShotMs: -1, nextShotMs: stats.intervalMs,
+      return { id, level, count, ...stats, damage: stats.damage * multiplier * (playerUpgrades && !stats.healing ? matchupMultiplier(stageId, id) : 1), lastShotMs: -1, nextShotMs: stats.intervalMs,
         ...(playerUpgrades ? { specialReadyMs: BATTLE_RULES.specialFirstReadyMs, lastSpecialMs: -1 } : {}) };
     }),
   };
@@ -72,7 +72,7 @@ export function createBattle(state, stageId, input = defaultLoadout(state)) {
     remainderMs: 0,
     nextEnemyVolleyMs: BATTLE_RULES.enemyVolleyMs,
     player: makeSide({...formation,size:power}, power, {},
-      loadout.equipment.map((id) => ({ id, level: state.equipment[id].level, count: equipmentCount(state, id) }))),
+      loadout.equipment.map((id) => ({ id, level: state.equipment[id].level, count: equipmentCount(state, id) })), 1, true, stageId),
     enemy: makeSide(enemyFormation, stage.enemyPower,
       Object.fromEntries(['soldier','sergeant','staffSergeant'].map((id) => [id, stage.enemyUnitCount])),
       ENEMY_EQUIPMENT.map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier, false),

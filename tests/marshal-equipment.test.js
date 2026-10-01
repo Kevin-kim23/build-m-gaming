@@ -6,7 +6,7 @@ import {RANKS,RANK_REQUIREMENTS} from '../src/ranks.js';
 import {EQUIPMENT,equipmentPurchaseOffer,equipmentStats} from '../src/equipment.js';
 import {personalStatus} from '../src/personal-equipment.js';
 import {personalDetailMarkup,personalLevelEffect} from '../src/personal-panels.js';
-import {equipmentCombatStats,createBattle,advanceBattle} from '../src/battle.js';
+import {equipmentCombatStats,createBattle,advanceBattle,matchupMultiplier} from '../src/battle.js';
 const T=1800000000000;
 const army=(rank='준원수')=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,gold:MAX_GOLD,ncoSchoolLevel:5});
 
@@ -93,6 +93,6 @@ test('new equipment fires automatically at its own pace and every upgrade improv
     let battle=createBattle(s,1,{units:{},equipment:[id]});battle.enemy.units=[];battle.enemy.equipment=[];battle.enemy.hq.hp=battle.enemy.hq.maxHp=1e12;
     const stats=equipmentCombatStats(id,0,s.soldiers+s.sergeants*10);
     while(battle.elapsedMs<stats.intervalMs)battle=advanceBattle(battle,50);
-    assert.equal(battle.enemy.hq.hp,1e12-stats.damage);
+    assert.ok(Math.abs(battle.enemy.hq.hp-(1e12-stats.damage*matchupMultiplier(1,id)))<1e-3);
   }
 });
