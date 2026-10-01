@@ -1,5 +1,4 @@
 import { personalIcon } from './personal-art.js';
-import { UNIT_LIST } from "./units.js";
 import { RANK_DEFINITIONS } from "./ranks.js";
 import { medalShelfMarkup } from "./achievement-markup.js";
 export const coin =
@@ -71,14 +70,7 @@ function fieldMarkup() {
 
 function dockMarkup() {
   return `<section class="home-dock" aria-label="내 부대">
-    <div class="roster">
-    <div class="roster-units">
-    ${UNIT_LIST.map(u=>`<div class="owned-unit" data-roster="${u.id}" ${u.id==='soldier'?'':'hidden'}>
-      <canvas data-home-unit="${u.id}" width="36" height="46" role="img" aria-label="${u.name}"></canvas>
-      <div><span>${u.name}</span><strong><b data-home-count="${u.id}">0</b><small>명</small></strong></div>
-    </div>`).join('')}
-    </div>
-    </div>
+    ${fieldToolsMarkup()}
     <div class="promotion-line">
     <span id="next-rank">
     </span>
@@ -121,10 +113,10 @@ function fieldToolsMarkup() {
     '<button class="home-skill home-revolver" data-use-revolver hidden><span class="sword-clock revolver-clock">' +
     '<svg class="sword-clock-ring" viewBox="0 0 48 48" aria-hidden="true" focusable="false" hidden><circle class="sword-clock-track" cx="24" cy="24" r="21"/><circle data-revolver-ring cx="24" cy="24" r="21" pathLength="100" stroke-dasharray="100 100" transform="rotate(-90 24 24)"/></svg>' +
     '<span class="revolver-mini-art">' + personalIcon('revolver') + '</span><span data-revolver-time hidden></span></span><span data-revolver-label>리볼버 사용</span></button></div>' +
-    '<div class="field-theme-picker"><span>연병장 배경</span><div role="group" aria-label="연병장 배경"><button data-field-theme="earth" aria-pressed="true">흙</button><button data-field-theme="concrete" aria-pressed="false">회색 시멘트</button></div></div></section>';
+    '<div class="field-theme-picker"><span class="sr-only">연병장 배경</span><div role="group" aria-label="연병장 배경"><button data-field-theme="earth" aria-pressed="true">흙</button><button data-field-theme="concrete" aria-pressed="false" aria-label="회색 시멘트">시멘트</button></div></div></section>';
 }
 export function homeMarkup(state) {
-  return `<main class="game">${headerMarkup(state)}${medalShelfMarkup()}${fieldToolsMarkup()}${fieldMarkup()}${dockMarkup()}${footerMarkup()}</main>`;
+  return `<main class="game">${headerMarkup(state)}${medalShelfMarkup()}${fieldMarkup()}${dockMarkup()}${footerMarkup()}</main>`;
 }
 
 export function insignia(index) {

@@ -23,9 +23,9 @@ test('schools remain in their own shop category with a single wallet and reveal 
   const unlocked=schoolsMarkup({...s,ncoSchoolLevel:5});
   assert.ok(unlocked.includes('data-school="officer"'));assert.ok(unlocked.includes('소장 이상'));
 });
-test('home supports every actual troop type once and campus drawings reuse their cached original SVG',()=>{
+test('home has no troop status row (counts live in the shop) and campus drawings reuse their cached original SVG',()=>{
   const html=homeMarkup(freshState(0));
-  for(const id of Object.keys(UNITS))assert.equal((html.match(new RegExp(`data-home-count="${id}"`,'g'))??[]).length,1);
+  assert.doesNotMatch(html,/data-home-count|data-roster|data-home-unit|class="roster"/);
   const icons=[];
   for(let level=1;level<=5;level++){
     const svg=schoolIcon('nco',level);assert.equal(svg,schoolIcon('nco',level));

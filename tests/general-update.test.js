@@ -85,10 +85,11 @@ test('rocket fires in battle with its own stats while enemies keep their previou
   const hp=b.enemy.hq.hp;for(let i=0;i<84;i++)b=advanceBattle(b,50);
   assert.equal(b.enemy.hq.hp,hp-equipmentCombatStats('rocketLauncher',0,10240).damage);
 });
-test('home sword follows medals before field, preserves icon and short text through cooldown updates',()=>{
+test('home sword sits in the dock under the field (where the troop status row used to be), preserves icon and short text through cooldown updates',()=>{
   const html=homeMarkup(general());
-  assert.ok(html.indexOf('medal-shelf')<html.indexOf('data-use-sword'));
-  assert.ok(html.indexOf('data-use-sword')<html.indexOf('id="tap-zone"'));
+  assert.ok(html.indexOf('medal-shelf')<html.indexOf('id="tap-zone"'));
+  assert.ok(html.indexOf('id="tap-zone"')<html.indexOf('data-use-sword'));
+  assert.ok(html.indexOf('data-use-sword')<html.indexOf('id="promotion-fill"'));
   assert.equal((html.match(/data-use-sword/g)||[]).length,1);
   assert.doesNotMatch(html,/30초 터치/);
   const label={textContent:'장군검 사용'},attrs={};

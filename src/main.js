@@ -3,9 +3,8 @@ import { autoTouchStatus } from "./personal-equipment.js";
 import { canChooseFieldTheme, fieldTheme, setFieldTheme } from './field-theme.js';
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
-import { UNIT_LIST, unitAccess } from "./units.js";
 import { schoolOffer } from "./schools.js";
-import { fmt, fmtGold } from "./format.js";
+import { fmtGold } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
 import { createGameSession } from "./session.js";
 import { createBattleUI } from "./battle-ui.js";
@@ -25,7 +24,7 @@ import {
   activateAutoTouch,
   perSecond,
 } from "./game.js";
-import { drawScene, drawFormationPortrait } from "./art.js";
+import { drawScene } from "./art.js";
 import { fieldSummary } from "./field-layout.js";
 import { ownedSchools } from "./field-schools.js";
 import {
@@ -87,11 +86,6 @@ function update() {
     const deployed = deployedEquipment(state);
     setText("#rank-name", RANKS[r]);
     $(".rank-mark").innerHTML = insignia(r);
-    for (const unit of UNIT_LIST) {
-      const owned=state[unit.field]??0;
-      setText(`[data-home-count="${unit.id}"]`,fmt(owned));
-      $(`[data-roster="${unit.id}"]`).hidden=!owned&&!unitAccess(state,unit).unlocked;
-    }
     setText("#formation-summary", fieldSummary(state));
     $("#formation-summary").hidden = power === 0;
     setText("#passive-rate", "+" + fmtGold(perSecond(state)) + " G");
@@ -192,8 +186,5 @@ setInterval(() => {
   const now = Date.now(), delay = autoTouchStatus(state, now).active ? 300 : 1000;
   if (!document.hidden && now - lastTick >= delay) { lastTick = now; session.tick(); }
 }, 100);
-document
-  .querySelectorAll("[data-home-unit]")
-  .forEach((c) => drawFormationPortrait(c, c.dataset.homeUnit));
 update();
 if (!document.hidden) session.start();
