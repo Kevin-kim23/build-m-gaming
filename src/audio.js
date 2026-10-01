@@ -12,7 +12,10 @@ export function createGameAudio(
     for (const voice of voices) {
       try {
         voice.oscillator.stop();
-      } catch {}
+      } catch (error) {
+        // Stopping a voice that already ended throws; only record anything else.
+        if (error?.name !== 'InvalidStateError') reportError('audio.stop', error);
+      }
       voice.oscillator.disconnect();
       voice.gain.disconnect();
     }

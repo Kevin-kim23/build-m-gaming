@@ -29,7 +29,15 @@
 /* Small drawn controls: keep the look, extend the tappable area. */
 #toggle-medals, #open-achievements, #medal-list button, .tile-detail { position: relative; }
 .tile-detail { position: absolute; }
-#toggle-medals::after, #open-achievements::after { content: ""; position: absolute; inset: -10px -4px; }
+/* The shelf links sit above the medal row and win where their areas meet. The medal row grows only
+   upward and into the shelf's own bottom padding, never into the field below (taps there earn gold). */
+#toggle-medals, #open-achievements { z-index: 1; }
+#toggle-medals::after, #open-achievements::after { content: ""; position: absolute; inset: -12px -4px -5px; }
 #medal-list { overflow: visible; }
-#medal-list button::after { content: ""; position: absolute; inset: -12px 0; }
+#medal-list button::after { content: ""; position: absolute; inset: -10px 0 -6px; }
 .tile-detail::after { content: ""; position: absolute; inset: -10px; border-radius: 50%; }
+
+/* Footer info button: a rarely used support link. It keeps the footer slim (about 30px tall) so the field
+   stays large; the hit area is padded sideways and into the footer padding only. */
+.footer-info { position: relative; padding: 0; border: 0; background: transparent; color: #a9b794; font: inherit; cursor: pointer; }
+.footer-info::after { content: ""; position: absolute; inset: -6px -10px -10px; }

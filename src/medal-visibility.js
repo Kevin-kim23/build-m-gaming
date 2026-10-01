@@ -1,4 +1,5 @@
 import { ACHIEVEMENTS } from './achievements.js';
+import { reportError } from './diagnostics.js';
 
 // Which earned medals appear on the home shelf. A per-device display preference:
 // it never touches the game save, and unknown or stale ids are dropped when read.
@@ -8,7 +9,8 @@ export function parseHiddenMedals(raw) {
   try {
     const list = JSON.parse(raw ?? '[]');
     return new Set(Array.isArray(list) ? list.filter((id) => KNOWN.has(id)) : []);
-  } catch {
+  } catch (error) {
+    reportError('medals.parseHidden', error);
     return new Set();
   }
 }

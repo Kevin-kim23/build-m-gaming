@@ -1,5 +1,6 @@
 import { personalIcon } from './personal-art.js';
 import { RANK_DEFINITIONS } from "./ranks.js";
+import { APP_VERSION } from "./version.js";
 import { medalShelfMarkup } from "./achievement-markup.js";
 export const coin =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10l5 5v10l-5 5H7l-5-5V7z" fill="#d9b55d"/><path d="M8 5h8l3 3v8l-3 3H8l-3-3V8z" fill="#e8cd84"/><path d="M14 8h-4v8h4v-4h-2" fill="none" stroke="#8a6932" stroke-width="2"/></svg>';
@@ -101,7 +102,7 @@ function footerMarkup() {
     <span id="save-status">
     <i>
     </i> 저장 확인 중</span>
-    <span>작은 시작, 위대한 부대.</span>
+    <button type="button" id="open-info" class="footer-info" aria-label="게임 정보와 오류 기록">정보 · v${APP_VERSION}</button>
     </footer>`;
 }
 

@@ -1,0 +1,45 @@
+import { Capacitor } from '@capacitor/core';
+import { APP_VERSION } from './version.js';
+import { errorLog, formatReport } from './error-log.js';
+import { infoPanelMarkup } from './info-panel.js';
+import { openDetail, onDetailAction } from './detail-popup.js';
+import { reportError } from './diagnostics.js';
+
+// The "정보" button in the footer: version, recent errors, and a copy button for bug reports.
+export function createInfoPanel(session) {
+  function snapshot() {
+    const entries = errorLog.list();
+    const info = {
+      version: APP_VERSION,
+      platform: Capacitor.getPlatform(),
+      status: session.status,
+      saveVersion: session.state.version,
+      entries,
+    };
+    info.report = formatReport({
+      ...info,
+      viewport: `${window.innerWidth}x${window.innerHeight} @${window.devicePixelRatio}`,
+      userAgent: navigator.userAgent,
+    });
+    return info;
+  }
+  const show = () => openDetail(infoPanelMarkup(snapshot()));
+  async function copy(dialog) {
+    const area = dialog.querySelector('#error-report'), status = dialog.querySelector('[data-copy-status]');
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(area.value);
+      copied = true;
+    } catch (error) {
+      reportError('info.copy', error);
+      try { area.select(); copied = document.execCommand('copy'); } catch (fallback) { reportError('info.copyFallback', fallback); }
+    }
+    status.textContent = copied ? '복사했어요. 문의할 때 붙여넣어 주세요.' : '자동 복사가 안 돼요. "복사할 내용 보기"를 열어 글을 길게 눌러 복사해 주세요.';
+    if (!copied) dialog.querySelector('.info-report').open = true;
+  }
+  onDetailAction((action, data, dialog) => {
+    if (action === 'copy-error-log') copy(dialog);
+    else if (action === 'clear-error-log') { errorLog.clear(); show(); }
+  });
+  document.querySelector('#open-info').addEventListener('click', show);
+}

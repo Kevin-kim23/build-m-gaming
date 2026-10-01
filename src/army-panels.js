@@ -12,7 +12,7 @@ import { drawEquipment } from './equipment-art.js';
 import { SHOP_CATEGORIES, shopMarkup } from './shop.js';
 import { drawFormationPortrait } from './art.js';
 import { showPromotion } from './promotion.js';
-import { openDetail, closeDetail, setDetailActions } from './detail-popup.js';
+import { openDetail, closeDetail, onDetailAction } from './detail-popup.js';
 import { unitDetailMarkup } from './unit-detail.js';
 import { equipmentDetailMarkup } from './equipment-detail.js';
 import { currentGuide } from './guide-ui.js';
@@ -224,7 +224,7 @@ export function createArmyPanels(session, audio) {
     else if (button.id === 'enhance-equipment') upgradeGun();
     else if (button.id === 'toggle-equipment') toggleEquipment();
   });
-  setDetailActions((action, data) => {
+  onDetailAction((action, data) => {
     if (action === 'shop-category') { closeDetail(); openShop(data.category); }
     else if (action === 'manage-equipment') { closeDetail(); openEquipment(data.id, 'military'); }
   });

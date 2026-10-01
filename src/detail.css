@@ -73,3 +73,15 @@
 .rank-next { margin: 12px 0 0; text-align: center; color: #b5c79c; font-size: 11px; line-height: 1.7; }
 .rank-guide .formation-guide-grid { margin-top: 8px; }
 .detail-head h2 small { display: inline; margin-left: 6px; font-size: 13px; letter-spacing: 0; color: #d6c18c; }
+/* Info screen */
+.info-title { margin: 14px 0 6px; font-size: 13px; color: #e0cf93; }
+.error-list { margin: 0 0 10px; padding: 0; list-style: none; display: grid; gap: 6px; max-height: 190px; overflow: auto; }
+.error-list li { padding: 7px 9px; background: #1f2b22; border-radius: 6px; font-size: 11px; line-height: 1.5; word-break: break-word; }
+.error-list time { color: #a8b690; }
+.error-list b { color: #f1dfab; }
+.error-list span { display: block; color: #cdd6bb; }
+.info-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 4px 0 6px; }
+.info-actions .detail-link:disabled { opacity: 0.45; cursor: default; }
+.info-status { min-height: 18px; margin: 0 0 8px; color: #b5c79c; font-size: 11px; }
+.info-report summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-size: 12px; color: #cfd9b5; }
+.info-report textarea { width: 100%; box-sizing: border-box; margin-bottom: 10px; padding: 8px; border: 1px solid #55664a; border-radius: 6px; background: #1b261e; color: #cdd6bb; font: 11px/1.5 Consolas, monospace; resize: vertical; }

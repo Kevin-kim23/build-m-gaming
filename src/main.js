@@ -4,6 +4,10 @@ import { canChooseFieldTheme, fieldTheme, setFieldTheme } from './field-theme.js
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
 import { createTapTracker } from "./multi-tap.js";
+import { Capacitor } from "@capacitor/core";
+import { App } from "@capacitor/app";
+import { createBackHandler } from "./back-button.js";
+import { showToast } from "./toast.js";
 import { schoolOffer } from "./schools.js";
 import { fmtGold } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
@@ -36,6 +40,7 @@ import {
 import { reportError, installErrorReporting } from "./diagnostics.js";
 import { createArmyPanels } from "./army-panels.js";
 import { createGuideUI } from "./guide-ui.js";
+import { createInfoPanel } from "./info-ui.js";
 import { openRankGuide } from "./rank-guide.js";
 import "./detail.css";
 import "./touch.css";
@@ -77,6 +82,7 @@ const battleUI = createBattleUI(session);
 const armyPanels = createArmyPanels(session, gameAudio);
 const achievementUI = createAchievementUI(session);
 const guideUI = createGuideUI();
+createInfoPanel(session);
 function update() {
   const power = armyPower(state),
     r = rank();
@@ -181,6 +187,18 @@ function pauseGame() {
   session.pause();
   hidePromotion();
   gameAudio.stop();
+}
+// Android back button (the plugin only exists inside the app, so the browser version skips this).
+// Registered once at startup: popups close first, then a second press within two seconds leaves.
+if (Capacitor.isNativePlatform()) {
+  const onBack = createBackHandler({
+    hint: showToast,
+    exit: () => {
+      pauseGame();
+      App.exitApp().catch((error) => reportError("app.exit", error));
+    },
+  });
+  App.addListener("backButton", onBack).catch((error) => reportError("app.backButton", error));
 }
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) pauseGame();

@@ -29,3 +29,11 @@ test('no stylesheet sets text smaller than 10px', () => {
     assert.equal(small.length, 0, `${file}: ${small.map((m) => m[0]).join(', ')}`);
   }
 });
+
+test('medal row hit area never reaches the field below and the shelf links stay on top', () => {
+  assert.match(touch, /#toggle-medals, #open-achievements \{ z-index: 1; \}/);
+  // Bottom inset of the medal row must stay inside the shelf padding (6px) so the field keeps its taps.
+  const [, top, bottom] = touch.match(/#medal-list button::after \{[^}]*inset: -(\d+)px 0 -(\d+)px;/);
+  assert.ok(Number(bottom) <= 6, `bottom ${bottom}px`);
+  assert.ok(Number(top) <= 10);
+});
