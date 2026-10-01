@@ -2,7 +2,7 @@
 .home-tabs:has(#open-battle:not([hidden])) { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
 #open-battle { position:relative; flex-wrap:wrap; gap:2px 5px; padding:4px; }
 #open-battle small { flex-basis:100%; }
-#open-battle small { font-size:9px; color:#adb99f; }
+#open-battle small { font-size:10px; color:#adb99f; }
 #battle-modal { box-sizing:border-box; width:min(100% - 16px,480px); max-height:calc(100dvh - 16px); margin:auto; padding:20px; border:1px solid #58674e; border-radius:12px; color:#e4e9d9; background:#1c251f; overflow:auto; overscroll-behavior:contain; font-family:inherit; }
 #battle-modal::backdrop { background:#070e0bd9; backdrop-filter:blur(4px); }
 #battle-modal * { box-sizing:border-box; }
@@ -26,7 +26,7 @@
 .stage-card.cleared { border-color:#70995c; }
 .stage-number { font-size:23px; font-weight:800; color:#9fb486; font-variant-numeric:tabular-nums; }
 .stage-card b { font-size:13px; display:block; }
-.stage-card small { display:block; margin-top:6px; font-size:9px; color:#a9b69a; }
+.stage-card small { display:block; margin-top:6px; font-size:10px; color:#a9b69a; }
 .stage-card em { margin-left:auto; font-size:10px; font-style:normal; color:#e3cb88; white-space:nowrap; }
 .battle-session-note { color:#98a98c; font-size:10px; margin:12px 0 0; line-height:1.5; }
 .battle-matchup { display:flex; justify-content:space-evenly; align-items:center; text-align:center; padding:18px 4px; background:#263328; border:1px solid #40543e; border-radius:6px; }
@@ -71,5 +71,5 @@
 .battle-hp-summary span:last-child { color:#e6b4ad; }
 .battle-controls { text-align:center; margin:12px 0 4px; font-size:13px; font-weight:bold; color:#e1dab1; }
 .battle-controls small { display:block; margin-top:5px; font-size:10px; font-weight:normal; color:#a6b799; }
-@media(max-width:350px) { #battle-modal { padding:12px; } .stage-card{gap:7px;padding:12px 7px;} .stage-card em{font-size:9px;} .stage-card small{font-size:8px;} .battle-hp-summary{font-size:9px;} }
+@media(max-width:350px) { #battle-modal { padding:12px; } .stage-card{gap:7px;padding:12px 7px;} .stage-card em{font-size:10px;} .stage-card small{font-size:10px;} .battle-hp-summary{font-size:10px;} }
 @media(prefers-reduced-motion:reduce) { #battle-modal::backdrop,.battle-overlay { backdrop-filter:none; } }

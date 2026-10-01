@@ -1,4 +1,4 @@
-import { personalMarkup } from "../src/personal-panels.js";
+import { personalMarkup, personalDetailMarkup } from "../src/personal-panels.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { freshState, recruit, recruitOffer, unitCost, parseSave, perSecond, perTap, MAX_GOLD, MAX_SOLDIERS, SAVE_KEY } from "../src/game.js";
@@ -68,9 +68,9 @@ test('general ranks require 5000 soldiers, 300 sergeants and the unchanged power
 test('sword is hidden until colonel, locked there, granted at brigadier and explains its active skill',()=>{
   assert.doesNotMatch(markup(army(880),'personal'),/장군검|general-sword-art/);
   const locked=markup(army(),'personal');assert.match(locked,/장군검/);assert.match(locked,/준장 진급 시 자동 지급/);
-  assert.match(locked,/Lv.2/);assert.match(locked,/하사 100명 한 번에 모집/);
+  assert.match(locked,/Lv.2/);assert.match(personalDetailMarkup(army(),'commandBaton').body,/하사 100명 한 번에 모집/);
   const s={...army(10000),sergeants:300},stats=[perSecond(s),perTap(s)],owned=markup(s,'personal');
-  assert.match(owned,/보유 중 · 진급 보상/);assert.match(owned,/30초 동안 터치 골드 2배/);
+  assert.match(owned,/보유 중 · 진급 보상/);assert.match(personalDetailMarkup(s,'generalSword').body,/30초 동안 터치 골드 2배/);
   assert.deepEqual([perSecond(s),perTap(s)],stats);
   const recruits=markup(s,'recruit');
   for(const type of ['soldier','sergeant','staffSergeant'])assert.equal((recruits.match(new RegExp(`data-buy-bulk="${type}"`,'g'))??[]).length,1);

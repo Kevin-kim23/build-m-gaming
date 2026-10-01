@@ -1,6 +1,5 @@
 .medal-shelf {
   flex-shrink: 0;
-  height: 74px;
   padding: 0 23px 6px;
   background: #263227;
 }
@@ -11,7 +10,19 @@
   justify-content: space-between;
   gap: 8px;
 }
-#medal-count { color: #aab49c; font-size: 9px; }
+#medal-count { color: #aab49c; font-size: 10px; }
+.medal-shelf-actions { display: flex; align-items: center; gap: 4px; }
+#toggle-medals {
+  height: 24px;
+  padding: 2px 8px;
+  border: 0;
+  background: transparent;
+  color: #aab49c;
+  font-size: 10px;
+  cursor: pointer;
+}
+.medal-shelf.medals-hidden #medal-list { display: none; }
+.medal-shelf.medals-hidden { padding-bottom: 0; }
 #open-achievements {
   height: 24px;
   padding: 2px 0 2px 10px;
@@ -24,14 +35,13 @@
 }
 #medal-list {
   display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
-  grid-template-rows: repeat(2, 21px);
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+  grid-template-rows: 21px;
   grid-auto-flow: row;
   direction: ltr;
-  column-gap: 2px;
-  row-gap: 2px;
+  column-gap: 1px;
   min-width: 0;
-  height: 44px;
+  height: 21px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -40,11 +50,12 @@
 #medal-list:empty::after {
   content: "첫 편제를 만들고 훈장을 모아보세요";
   grid-column: 1 / -1;
-  grid-row: 1 / 3;
+  grid-row: 1;
   align-self: center;
   color: #84917b;
   font-size: 10px;
 }
+#medal-list[data-all-hidden]:empty::after { content: "숨긴 훈장은 도전과제에서 다시 볼 수 있어요"; }
 #medal-list li { min-width: 0; min-height: 0; }
 #medal-list button {
   display: grid;
@@ -69,7 +80,7 @@
   #medal-list .medal-new { animation: none; }
 }
 .achievement-medal-svg { display: block; image-rendering: pixelated; }
-#medal-list .achievement-medal-svg { width: 18px; height: 21px; }
+#medal-list .achievement-medal-svg { width: 15px; height: 21px; }
 #achievement-modal {
   width: min(440px, calc(100vw - 24px));
   max-height: min(760px, calc(100dvh - 28px));
@@ -90,7 +101,7 @@
   justify-content: space-between;
   gap: 12px;
 }
-.achievement-dialog-heading small { color: #acb99a; letter-spacing: 2px; font-size: 9px; }
+.achievement-dialog-heading small { color: #acb99a; letter-spacing: 2px; font-size: 10px; }
 #achievements-title { margin: 4px 0 0; font-size: 23px; }
 #close-achievements {
   flex-shrink: 0;
@@ -134,7 +145,7 @@
 .achievement-card h3 { margin: 0; color: #e2e3cd; font-size: 14px; }
 .achievement-category { margin:14px 0 3px; font-size:12px; color:#e5cc8b; }
 .achievement-category-note { margin:0 0 3px; color:#abb69e; font-size:10px; line-height:1.6; }
-.achievement-status { color: #98ab90; font-size: 9px; white-space: nowrap; }
+.achievement-status { color: #98ab90; font-size: 10px; white-space: nowrap; }
 .achievement-card.earned .achievement-status { color: #e1ca92; }
 .achievement-card-content > p { margin: 6px 0 9px; color: #a8b69b; font-size: 10px; line-height: 1.6; }
 .achievement-progress { display: flex; align-items: center; gap: 8px; }
@@ -153,9 +164,9 @@
 .achievement-progress progress::-moz-progress-bar { background: #aabf81; }
 .achievement-card.earned progress::-webkit-progress-value { background: #d5bf80; }
 .achievement-card.earned progress::-moz-progress-bar { background: #d5bf80; }
-.achievement-progress span { flex-shrink: 0; color: #b9c7a9; font: 9px Consolas, monospace; }
+.achievement-progress span { flex-shrink: 0; color: #b9c7a9; font: 10px Consolas, monospace; }
 @media (max-width: 360px), (max-height: 650px) {
-  .medal-shelf { padding-inline: 16px; height: 68px; }
+  .medal-shelf { padding-inline: 16px; }
   .medal-shelf-heading { height: 19px; }
   #achievement-modal { padding: 15px; }
   .achievement-card { padding: 11px 9px; grid-template-columns: 38px minmax(0, 1fr); gap: 9px; }
@@ -163,3 +174,6 @@
   .achievement-card h3 { font-size: 13px; }
   .achievement-progress { gap: 5px; }
 }
+
+.medal-visibility { justify-self: start; margin-top: 8px; min-height: 32px; padding: 4px 10px; border: 1px solid #6f7e58; border-radius: 6px; background: transparent; color: #cfd9b5; font-size: 11px; cursor: pointer; }
+.medal-visibility[aria-pressed="true"] { color: #e1ca92; border-color: #a99a62; background: #3a4130; }

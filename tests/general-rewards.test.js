@@ -8,6 +8,8 @@ import { createGameSession } from '../src/session.js';
 import { equipmentPanelMarkup } from '../src/equipment-panels.js';
 import { shopMarkup, SHOP_CATEGORIES } from '../src/shop.js';
 import { personalIcon } from '../src/personal-art.js';
+import { personalDetailMarkup } from '../src/personal-panels.js';
+import { equipmentDetailMarkup } from '../src/equipment-detail.js';
 const T=1_800_000_000_000;
 const army=(rank='중장')=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,ncoSchoolLevel:5});
 
@@ -108,9 +110,11 @@ test('equipment owns military/personal navigation; shop no longer exposes person
   assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','equipment','schools']);
   assert.doesNotMatch(shopMarkup(s,'',()=>''),/data-personal-equipment|data-shop-category="personal"/);
   for(const id of ['commandBaton','generalSword','divisionFlag','generalRevolver'])assert.match(personal,new RegExp(`data-personal-equipment="${id}"`));
-  assert.match(personal,/50초 동안 터치 골드 2배/);assert.match(personal,/현재 단계까지의 강화비/);
+  // Effect text lives in each item's detail popup, not in the compact card.
+  assert.match(personalDetailMarkup(s,'generalSword').body,/50초 동안 터치 골드 2배/);assert.match(personalDetailMarkup(s,'divisionFlag').body,/현재 단계까지의 강화비/);
+  assert.doesNotMatch(personal,/50초 동안|현재 단계까지의 강화비/);for(const id of ['commandBaton','generalSword','divisionFlag','generalRevolver'])assert.match(personal,new RegExp(`data-detail-personal="${id}"`));
   assert.match(personal,/data-use-revolver/);assert.doesNotMatch(personal,/data-select-equipment/);
-  assert.match(military,/data-equipment-category="personal"/);assert.equal((military.match(/data-level=/g)??[]).length,20);
+  assert.match(military,/data-equipment-category="personal"/);assert.doesNotMatch(military,/data-level=|equipment-stage|enhancement-next/);assert.equal((equipmentDetailMarkup(s,'tank').body.match(/data-level=/g)??[]).length,20);
 });
 test('new ceremonial art is detailed, distinct and reused across renders',()=>{
   const flag=personalIcon('flag',1),upgraded=personalIcon('flag',2),revolver=personalIcon('revolver');

@@ -1,8 +1,11 @@
 .school-intro { color:#b5c4a5; font-size:12px; line-height:1.8; }
-.school-card { margin:14px 0; padding:16px; border:1px solid #65744d; border-radius:8px; background:#2c3a2b; }
+.school-card { margin:12px 0; padding:12px; border:1px solid #65744d; border-radius:8px; background:#2c3a2b; }
 .school-heading { display:flex; align-items:center; gap:14px; }
-.school-art { width:110px; height:83px; flex-shrink:0; image-rendering:pixelated; }
-.school-heading h3 { margin:5px 0; font-size:18px; }
+.school-art { width:88px; height:66px; flex-shrink:0; image-rendering:pixelated; }
+.school-heading h3 { margin:3px 0; font-size:16px; }
+.school-heading > div { min-width:0; flex:1; }
+.school-detail { flex:0 0 auto; align-self:flex-start; min-height:32px; padding:4px 9px; border:1px solid #6f7e58; border-radius:6px; background:transparent; color:#cfd9b5; font-size:11px; cursor:pointer; }
+.school-requirement { margin:6px 0; }
 .school-heading b { color:#e4cf90; font-size:12px; }
 .school-requirement { color:#c4caad; font-size:11px; line-height:1.8; }
 .school-levels { padding:0; list-style:none; margin:12px 0; display:grid; gap:6px; }
@@ -17,4 +20,6 @@
 .school-recruit-link { width:100%; }
 .roster .roster-units { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(114px,1fr); overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; padding-bottom:3px; }
 .roster .owned-unit strong b { font-size:14px; white-space:nowrap; }
-@media(max-width:360px) { .school-card { padding:12px; } .school-art { width:84px; height:68px; } .school-heading { gap:8px; } }
+@media(max-width:360px) { .school-card { padding:10px; } .school-art { width:72px; height:56px; } .school-heading { gap:8px; } }
+
+.detail-art-wide svg { width:auto; max-width:100%; height:100%; }

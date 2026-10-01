@@ -1,4 +1,4 @@
-import { personalMarkup } from "../src/personal-panels.js";
+import { personalMarkup, personalDetailMarkup } from "../src/personal-panels.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { freshState } from "../src/game.js";
@@ -21,8 +21,8 @@ test("shop shows just the selected category and shares one wallet, title and liv
     assert.equal(html.includes('data-unit="soldier"'), id === "recruit");
     assert.equal(html.includes('data-buy-equipment="artillery"'), id === "equipment");
     assert.equal(html.includes('data-personal-equipment='), id === "personal");
-    assert.equal(html.includes('class="formation-guide"'), id === "recruit");
-    assert.equal(html.includes('class="rank-steps"'), id === "recruit");
+    // Rank and formation guides moved to the rank badge popup.
+    assert.doesNotMatch(html, /formation-guide|rank-steps/);
   }
   assert.match(markup(s), /data-shop-content="recruit"/);
   assert.doesNotMatch(markup(s, "recruit"), /<details[^>]*\sopen(?:\s|>)/);
@@ -40,7 +40,7 @@ test("personal equipment stays unnamed before major, previews locked at major an
   assert.match(owned, /보유 중 · 중령 진급 보상/);
   assert.match(owned, /Lv\.1/);
   assert.match(owned, /class="personal-recruit-link" data-shop-category="recruit"/);
-  assert.match(owned, /골드는 별도로 지불/);
+  assert.match(personalDetailMarkup(state(1280), "commandBaton").body, /골드는 별도로 지불/);
   assert.doesNotMatch(owned, /data-buy=|data-buy-equipment=|data-buy-bulk=|data-enhance/);
 });
 
@@ -51,7 +51,6 @@ test("baton adds exactly one 100-soldier action without replacing one-unit recru
   const html = markup(state(1280), "recruit");
   assert.equal((html.match(/data-buy-bulk="soldier"/g) ?? []).length, 1);
   assert.equal((html.match(/data-bulk-price/g) ?? []).length, 1);
-  assert.equal((html.match(/data-bulk-label/g) ?? []).length, 1);
   assert.match(html, /일반병 100명 모집/);
   for (const id of ["soldier", "sergeant", "staffSergeant"])
     assert.match(html, new RegExp(`data-buy="${id}"`));

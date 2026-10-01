@@ -1,16 +1,22 @@
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
-import { fmt, fmtGold } from './format.js';
+import { fmt, fmtGold, fmtGoldCost } from './format.js';
 import { coin, insignia } from './home-view.js';
 import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, buyAdditionalEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool, activateSword, activateAutoTouch } from './game.js';
 import { SCHOOLS } from './schools.js';
-import { renderSchools } from './school-panels.js';
-import { rankForArmy, LAST_RANK, promotionProgress } from './ranks.js';
+import { renderSchools, schoolDetailMarkup } from './school-panels.js';
+import { rankForArmy } from './ranks.js';
 import { COMMAND_BATON, BULK_RECRUIT, commandBatonStatus, generalSwordStatus, GENERAL_SWORD, generalSwordDuration, divisionFlagStatus, generalRevolverStatus } from './personal-equipment.js';
 import { EQUIPMENT, equipmentOf, visibleEquipment, deploymentOffer } from './equipment.js';
 import { panelTabs, equipmentPanelMarkup, renderEquipmentStore, renderEquipmentPanel } from './equipment-panels.js';
+import { drawEquipment } from './equipment-art.js';
 import { SHOP_CATEGORIES, shopMarkup } from './shop.js';
 import { drawFormationPortrait } from './art.js';
 import { showPromotion } from './promotion.js';
+import { openDetail, closeDetail, setDetailActions } from './detail-popup.js';
+import { unitDetailMarkup } from './unit-detail.js';
+import { equipmentDetailMarkup } from './equipment-detail.js';
+import { currentGuide } from './guide-ui.js';
+import { personalDetailMarkup } from './personal-panels.js';
 import './shop.css';
 import './schools.css';
 
@@ -20,7 +26,7 @@ export function createArmyPanels(session, audio) {
   const $ = selector => dialog.querySelector(selector);
   let activePanel = 'shop', category = 'recruit', activeEquipment = 'artillery';
   let equipmentCategory = 'military', equipmentRank = -1;
-  let shopRank = -1, catalogRank = -1, equipmentCatalogKey = '';
+  let catalogRank = -1, equipmentCatalogKey = '';
   let ncoLevel = -1, officerLevel = -1;
   const state = () => session.state;
   const text = (selector, value) => {
@@ -38,6 +44,13 @@ export function createArmyPanels(session, audio) {
     const s = state(), rank = rankForArmy(s);
     if (catalogRank !== rank || ncoLevel !== s.ncoSchoolLevel || officerLevel !== s.officerSchoolLevel) { openShop(); return; }
     text('#shop-gold', fmtGold(s.gold));
+    // First-five-minutes guide: say what to do and pulse the matching control.
+    const guide = currentGuide(s);
+    text('#shop-guide', guide ? guide.text : '');
+    const pulse = (selector, on) => $(selector)?.classList.toggle('guide-pulse', on);
+    pulse('[data-shop-category="schools"]', !!guide?.pulse && guide.target === 'school');
+    pulse('[data-shop-category="equipment"]', !!guide?.pulse && guide.target === 'equipment');
+    pulse('[data-unit="soldier"] [data-buy]', category === 'recruit' && !!guide?.pulse && guide.target === 'shop');
     if (category === 'equipment') renderEquipmentStore(s, dialog);
     if (category === 'schools') renderSchools(s, dialog);
     if (category !== 'recruit') return;
@@ -46,35 +59,17 @@ export function createArmyPanels(session, audio) {
       if (!card) continue;
       const offer = recruitOffer(s, unit.id);
       const field = (name, value) => text(`[data-unit="${unit.id}"] [data-field="${name}"]`, value);
-      field('owned', `보유 ${fmt(offer.owned)}명`);
-      field('price', fmtGold(offer.cost));
-      field('unlock', offer.locked ? `🔒 필요: ${offer.requirement}` : `전력 +${unit.power} · ${offer.requirement}`);
-      field('label', offer.reason === 'locked' ? `잠금 · ${offer.requirement} 필요`
-        : offer.reason === 'limit' ? '전력 한도 도달'
-        : offer.reason === 'gold' ? `${fmtGold(offer.cost - s.gold)} G 부족` : `${unit.name} 1명 모집`);
+      field('owned', `보유 ${fmt(offer.owned)}`);
+      field('price', fmtGoldCost(offer.cost));
+      field('hint', offer.locked ? `🔒 ${offer.requirement}` : offer.reason === 'limit' ? '전력 한도' : '');
       card.classList.toggle('locked', offer.locked);
       card.querySelector('[data-buy]').disabled = !offer.canBuy;
     }
     for (const bulkButton of dialog.querySelectorAll('[data-buy-bulk]')) {
-      const id = bulkButton.dataset.buyBulk, unit = UNITS[id];
+      const id = bulkButton.dataset.buyBulk;
       const offer = recruitOffer(s, id, COMMAND_BATON.recruitAmount);
-      const scope = `[data-bulk-unit="${id}"]`;
-      text(`${scope} [data-bulk-price]`, fmtGold(offer.cost));
-      text(`${scope} [data-bulk-label]`, offer.reason === 'locked' ? `잠금 · ${offer.requirement}`
-        : offer.reason === 'limit' ? `${COMMAND_BATON.recruitAmount}명 모집할 전력 여유 부족`
-        : offer.reason === 'gold' ? `${fmtGold(offer.cost - s.gold)} G 부족`
-        : `${unit.name} ${COMMAND_BATON.recruitAmount}명 모집`);
+      text(`[data-bulk-unit="${id}"] [data-bulk-price]`, fmtGoldCost(offer.cost));
       bulkButton.disabled = !offer.canBuy;
-    }
-    text('#shop-next', rank === LAST_RANK ? `${RANKS[rank]} 달성!`
-      : `${RANKS[rank + 1]} 진급 조건: ${promotionProgress(s).text}`);
-    if (shopRank !== rank) {
-      shopRank = rank;
-      dialog.querySelectorAll('.rank-step').forEach(tile => {
-        const i = Number(tile.dataset.rank);
-        tile.classList.toggle('reached', i <= rank);
-        tile.classList.toggle('current', i === rank);
-      });
     }
   }
   function openShop(nextCategory = category) {
@@ -83,18 +78,10 @@ export function createArmyPanels(session, audio) {
     catalogRank = rankForArmy(state());
     ncoLevel = state().ncoSchoolLevel;
     officerLevel = state().officerSchoolLevel;
-    shopRank = -1;
     dialog.innerHTML = panelTabs('shop') + shopMarkup(state(), coin, insignia, category);
     if (!dialog.open) dialog.showModal();
     updateShop();
     dialog.querySelectorAll('[data-portrait]').forEach(c => drawFormationPortrait(c, c.dataset.portrait));
-    // Formation portraits are created only if their initially collapsed guide is opened.
-    const guide = $('.formation-guide');
-    if (guide) guide.addEventListener('toggle', () => {
-      if (!guide.open || guide.dataset.drawn) return;
-      guide.querySelectorAll('[data-formation]').forEach(c => drawFormationPortrait(c, c.dataset.formation));
-      guide.dataset.drawn = 'true';
-    });
     dialog.scrollTop = 0;
     lockPanel();
   }
@@ -122,6 +109,14 @@ export function createArmyPanels(session, audio) {
     else if (equipmentRank !== rankForArmy(state()) || equipmentCatalogKey !== visibleEquipment(state()).map(d => d.id).join(':')) openEquipment();
     else updateEquipment();
     lockPanel();
+  }
+  function showUnitDetail(id) {
+    const popup = openDetail(unitDetailMarkup(state(), UNITS[id]));
+    popup.querySelectorAll('[data-portrait]').forEach(c => drawFormationPortrait(c, c.dataset.portrait));
+  }
+  function showEquipmentDetail(id) {
+    const popup = openDetail(equipmentDetailMarkup(state(), id, { manage: activePanel === 'shop' }));
+    popup.querySelectorAll('[data-gun-preview]').forEach(c => drawEquipment(c, equipmentOf(state(), id)?.level ?? 0, id));
   }
   function buyUnit(id, quantity = 1) {
     const previousBatonLevel = commandBatonStatus(state()).level;
@@ -214,6 +209,10 @@ export function createArmyPanels(session, audio) {
       const result = session.change(s => activateSword(s));
       if (result?.ok) text('#equipment-message', `${generalSwordDuration(state())/1000}초 동안 터치 골드가 2배입니다!`);
     }
+    else if (button.dataset.detailUnit) showUnitDetail(button.dataset.detailUnit);
+    else if (button.dataset.detailSchool) openDetail(schoolDetailMarkup(state(), button.dataset.detailSchool));
+    else if (button.dataset.detailEquipment) showEquipmentDetail(button.dataset.detailEquipment);
+    else if (button.dataset.detailPersonal) openDetail(personalDetailMarkup(state(), button.dataset.detailPersonal));
     else if (button.dataset.buy) buyUnit(button.dataset.buy);
     else if (button.dataset.buyBulk) buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount);
     else if (button.dataset.buyAdditional) purchaseAdditionalGun(button.dataset.buyAdditional);
@@ -224,6 +223,10 @@ export function createArmyPanels(session, audio) {
     else if (button.id === 'equipment-to-shop') openShop('equipment');
     else if (button.id === 'enhance-equipment') upgradeGun();
     else if (button.id === 'toggle-equipment') toggleEquipment();
+  });
+  setDetailActions((action, data) => {
+    if (action === 'shop-category') { closeDetail(); openShop(data.category); }
+    else if (action === 'manage-equipment') { closeDetail(); openEquipment(data.id, 'military'); }
   });
   dialog.addEventListener('close', () => document.querySelector(activePanel === 'equipment' ? '#open-equipment' : '#open-shop').focus());
   return { openShop, openEquipment, sync };

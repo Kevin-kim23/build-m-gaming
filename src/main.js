@@ -3,9 +3,9 @@ import { autoTouchStatus } from "./personal-equipment.js";
 import { canChooseFieldTheme, fieldTheme, setFieldTheme } from './field-theme.js';
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
-import { UNIT_LIST, unitAccess } from "./units.js";
+import { createTapTracker } from "./multi-tap.js";
 import { schoolOffer } from "./schools.js";
-import { fmt, fmtGold } from "./format.js";
+import { fmtGold } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
 import { createGameSession } from "./session.js";
 import { createBattleUI } from "./battle-ui.js";
@@ -25,7 +25,7 @@ import {
   activateAutoTouch,
   perSecond,
 } from "./game.js";
-import { drawScene, drawFormationPortrait } from "./art.js";
+import { drawScene } from "./art.js";
 import { fieldSummary } from "./field-layout.js";
 import { ownedSchools } from "./field-schools.js";
 import {
@@ -35,6 +35,10 @@ import {
 } from "./ranks.js";
 import { reportError, installErrorReporting } from "./diagnostics.js";
 import { createArmyPanels } from "./army-panels.js";
+import { createGuideUI } from "./guide-ui.js";
+import { openRankGuide } from "./rank-guide.js";
+import "./detail.css";
+import "./touch.css";
 import { hidePromotion } from "./promotion.js";
 import { createGameAudio } from "./audio.js";
 import {
@@ -72,6 +76,7 @@ const zone = $("#tap-zone"),
 const battleUI = createBattleUI(session);
 const armyPanels = createArmyPanels(session, gameAudio);
 const achievementUI = createAchievementUI(session);
+const guideUI = createGuideUI();
 function update() {
   const power = armyPower(state),
     r = rank();
@@ -85,11 +90,6 @@ function update() {
     const deployed = deployedEquipment(state);
     setText("#rank-name", RANKS[r]);
     $(".rank-mark").innerHTML = insignia(r);
-    for (const unit of UNIT_LIST) {
-      const owned=state[unit.field]??0;
-      setText(`[data-home-count="${unit.id}"]`,fmt(owned));
-      $(`[data-roster="${unit.id}"]`).hidden=!owned&&!unitAccess(state,unit).unlocked;
-    }
     setText("#formation-summary", fieldSummary(state));
     $("#formation-summary").hidden = power === 0;
     setText("#passive-rate", "+" + fmtGold(perSecond(state)) + " G");
@@ -121,6 +121,7 @@ function update() {
   zone.setAttribute("aria-label", "화면 터치해서 골드 " + tap + " 획득");
   syncSwordControls(document.querySelector('.field-tools'), state, session.active);
   syncRevolverControls(document.querySelector('.field-tools'), state, session.active);
+  guideUI.sync(state);
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
     ["nco","officer"].some(id=>schoolOffer(state,id).canBuy) ||
@@ -138,12 +139,25 @@ function update() {
   armyPanels.sync();
 }
 
-zone.addEventListener("click", (event) => {
+// Every finger that touches the field earns gold at once (up to four fingers). Pointer events are
+// used instead of click because phones drop clicks while another finger is still down.
+const taps = createTapTracker();
+function earnTap(point) {
   const amount = session.tap();
   if (!amount) return;
-  tapFeedback(zone, $("#gold"), event, amount);
+  tapFeedback(zone, $("#gold"), point, amount);
   gameAudio.tap(state.sound);
+}
+zone.addEventListener("pointerdown", (event) => {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  if (!taps.down(event.pointerId, event.timeStamp)) return;
+  try { zone.setPointerCapture?.(event.pointerId); } catch (error) { reportError("tap.capture", error); }
+  earnTap({ clientX: event.clientX, clientY: event.clientY, detail: 1 });
 });
+for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
+  zone.addEventListener(type, (event) => taps.up(event.pointerId));
+// Keyboard and assistive-technology activation arrives as a click without a pointer (detail 0).
+zone.addEventListener("click", (event) => { if (event.detail === 0) earnTap(event); });
 $(".field-tools [data-use-sword]").onclick = () => session.change(s => activateSword(s));
 $(".field-tools [data-use-revolver]").onclick = () => session.change(s => activateAutoTouch(s));
 document.querySelector('.field-theme-picker').addEventListener('click', event => {
@@ -157,10 +171,12 @@ $("#sound").onclick = async () => {
   if (!state.sound) gameAudio.stop();
   else gameAudio.tap(true);
 };
+$("#open-ranks").onclick = () => openRankGuide(state, insignia);
 $("#open-shop").onclick = () => armyPanels.openShop();
 $("#open-equipment").onclick = () => armyPanels.openEquipment();
 $("#open-battle").onclick = () => battleUI.open();
 function pauseGame() {
+  taps.clear();
   battleUI.suspend();
   session.pause();
   hidePromotion();
@@ -189,8 +205,5 @@ setInterval(() => {
   const now = Date.now(), delay = autoTouchStatus(state, now).active ? 300 : 1000;
   if (!document.hidden && now - lastTick >= delay) { lastTick = now; session.tick(); }
 }, 100);
-document
-  .querySelectorAll("[data-home-unit]")
-  .forEach((c) => drawFormationPortrait(c, c.dataset.homeUnit));
 update();
 if (!document.hidden) session.start();

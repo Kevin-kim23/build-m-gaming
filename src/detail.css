@@ -1,0 +1,75 @@
+/* Shared detail popup: a centered card above the shop sheet. */
+#detail-modal {
+  width: min(420px, calc(100% - 28px));
+  max-height: 84dvh;
+  margin: auto;
+  padding: 0 18px 18px;
+  overflow: auto;
+  color: #e8e9d7;
+  background: #263126;
+  border: 1px solid #8b986d;
+  border-radius: 12px;
+  box-shadow: 0 12px 60px #000a;
+  overscroll-behavior: contain;
+}
+#detail-modal::backdrop { background: #0b140dbb; }
+.detail-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 -18px;
+  padding: 14px 18px 10px;
+  background: #263126;
+  border-bottom: 1px solid #47543c;
+}
+.detail-head small { display: block; color: #a8b690; font-size: 10px; letter-spacing: 0.4px; }
+.detail-head h2 { margin: 2px 0 0; font-size: 18px; }
+.detail-close {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #5e6b4e;
+  border-radius: 6px;
+  background: #323f2f;
+  color: #e8e9d7;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.detail-body { padding-top: 12px; font-size: 12px; line-height: 1.7; color: #cdd6bb; }
+.detail-body p { margin: 0 0 10px; }
+.detail-art {
+  display: grid;
+  place-items: center;
+  margin: 0 auto 12px;
+  width: 112px;
+  height: 140px;
+  background: radial-gradient(ellipse at center, #45503b, #17281f);
+  border: 1px solid #667253;
+  border-radius: 7px;
+}
+.detail-art canvas, .detail-art svg { max-width: 100%; max-height: 100%; image-rendering: pixelated; }
+.detail-stats { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0 0 12px; padding: 10px 12px; background: #1f2b22; border-radius: 7px; }
+.detail-stats dt { color: #a8b690; }
+.detail-stats dd { margin: 0; text-align: right; color: #f1dfab; font-weight: 700; }
+.detail-link {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #8b986d;
+  border-radius: 6px;
+  background: #495e3e;
+  color: #ece3bd;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Rank / formation guide */
+.rank-guide .rank-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; margin-top: 8px; }
+.rank-guide .rank-step { flex: none; min-height: 0; }
+.rank-guide-title { margin: 14px 0 4px; font-size: 13px; color: #e0cf93; }
+.rank-next { margin: 12px 0 0; text-align: center; color: #b5c79c; font-size: 11px; line-height: 1.7; }
+.rank-guide .formation-guide-grid { margin-top: 8px; }
+.detail-head h2 small { display: inline; margin-left: 6px; font-size: 13px; letter-spacing: 0; color: #d6c18c; }

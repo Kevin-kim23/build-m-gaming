@@ -42,7 +42,7 @@
 @keyframes salute-ember { 0%{opacity:0;transform:translate(0,0) rotate(0)} 12%{opacity:1} 100%{opacity:0;transform:translate(var(--flight-x),var(--flight-y)) rotate(var(--spark-turn)) scale(.2)} }
 @keyframes general-dust { 0%{opacity:0;transform:translate(0,0)} 25%{opacity:.7} 100%{opacity:0;transform:translate(var(--dust-drift),-170px)} }
 @media(max-width:360px) { .general-promotion{padding-top:20px;padding-bottom:65px} .general-salute{bottom:103px;width:21%} .general-caption{font-size:10px} .general-emblem{margin-bottom:-10px} }
-@media(max-height:540px) and (min-width:540px) { .general-promotion{width:410px;padding:4px 0 10px} .general-emblem{width:80%;margin:-20px auto -42px} .general-eyebrow{font-size:8px} .general-honor{margin:4px 0;font-size:11px} .general-title h2{font-size:32px} .general-caption{margin-top:7px} .general-continue{margin-top:12px} .general-salute{bottom:40px;width:23%} }
+@media(max-height:540px) and (min-width:540px) { .general-promotion{width:410px;padding:4px 0 10px} .general-emblem{width:80%;margin:-20px auto -42px} .general-eyebrow{font-size:10px} .general-honor{margin:4px 0;font-size:11px} .general-title h2{font-size:32px} .general-caption{margin-top:7px} .general-continue{margin-top:12px} .general-salute{bottom:40px;width:23%} }
 @media(prefers-reduced-motion:reduce) {
   .promotion-layer.is-general::backdrop,.general-promotion,.general-wing,.general-crest,.general-rank-stars,.general-aura,.general-orbit,.salute-barrel { animation:none; }
   .salute-shot,.general-dust,.general-aura { display:none; }
