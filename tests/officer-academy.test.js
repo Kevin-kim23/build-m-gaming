@@ -10,7 +10,7 @@ import { UNITS } from '../src/units.js';
 import { groupArmy } from '../src/formations.js';
 import { unitPositions } from '../src/battle-art.js';
 import { schoolIcon } from '../src/school-art.js';
-import { schoolsMarkup } from '../src/school-panels.js';
+import { schoolsMarkup, schoolDetailMarkup } from '../src/school-panels.js';
 import { officerDetails } from '../src/officer-art.js';
 const T=1_800_000_000_000;
 const general=()=>({...freshState(T),soldiers:17480,sergeants:300,ncoSchoolLevel:5,gold:MAX_GOLD});
@@ -111,7 +111,9 @@ test('all ten troop types participate in battle without increasing the enemy ros
   }
 });
 test('academy stages show true prices and recommended ranks, with distinct cached geometry',()=>{
-  const html=schoolsMarkup({...general(),officerSchoolLevel:3});
+  // Level-by-level details moved from the school card into its detail popup.
+  const html=schoolDetailMarkup({...general(),officerSchoolLevel:3},'officer').body;
+  assert.ok(!schoolsMarkup({...general(),officerSchoolLevel:3}).includes('school-levels'));
   for(const g of OFFICER_GRADES)assert.ok(html.includes(g.name+' 모집'));
   for(const price of ['150,000,000', '30억', '200억', '2,500억', '9,000억'])
     assert.ok(html.includes(price+' G'));

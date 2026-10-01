@@ -3,7 +3,7 @@ import { fmt, fmtGold, fmtGoldCost } from './format.js';
 import { coin, insignia } from './home-view.js';
 import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, buyAdditionalEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool, activateSword, activateAutoTouch } from './game.js';
 import { SCHOOLS } from './schools.js';
-import { renderSchools } from './school-panels.js';
+import { renderSchools, schoolDetailMarkup } from './school-panels.js';
 import { rankForArmy } from './ranks.js';
 import { COMMAND_BATON, BULK_RECRUIT, commandBatonStatus, generalSwordStatus, GENERAL_SWORD, generalSwordDuration, divisionFlagStatus, generalRevolverStatus } from './personal-equipment.js';
 import { EQUIPMENT, equipmentOf, visibleEquipment, deploymentOffer } from './equipment.js';
@@ -201,6 +201,7 @@ export function createArmyPanels(session, audio) {
       if (result?.ok) text('#equipment-message', `${generalSwordDuration(state())/1000}초 동안 터치 골드가 2배입니다!`);
     }
     else if (button.dataset.detailUnit) showUnitDetail(button.dataset.detailUnit);
+    else if (button.dataset.detailSchool) openDetail(schoolDetailMarkup(state(), button.dataset.detailSchool));
     else if (button.dataset.detailEquipment) showEquipmentDetail(button.dataset.detailEquipment);
     else if (button.dataset.buy) buyUnit(button.dataset.buy);
     else if (button.dataset.buyBulk) buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount);
