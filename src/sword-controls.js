@@ -1,5 +1,5 @@
 import { personalIcon } from "./personal-art.js";
-import { swordSkillStatus, generalSwordStatus, generalSwordDuration, autoTouchStatus } from "./personal-equipment.js";
+import { swordSkillStatus, generalSwordStatus, generalSwordDuration, autoTouchStatus, AUTO_TOUCH } from "./personal-equipment.js";
 const time = ms => {
   const seconds = Math.ceil(ms / 1000);
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
@@ -44,6 +44,12 @@ export function syncRevolverControls(root,state,writable,now=Date.now()) {
     button.classList.toggle('skill-active',skill.active);
     if(button.querySelector('[data-revolver-label]')){
       const timer=button.querySelector('[data-revolver-time]');
+      const ring=button.querySelector('[data-revolver-ring]');
+      if(ring){
+        ring.ownerSVGElement.toggleAttribute('hidden',!skill.active);
+        // Same clockwise erase as the sword: full at twelve, empty when the minute ends.
+        ring.setAttribute('stroke-dashoffset',String(-100*(1-skill.activeMs/AUTO_TOUCH.durationMs)));
+      }
       timer.hidden=skill.remainingMs===0;
       const remaining=skill.active?`${Math.ceil(skill.activeMs/1000)}초`:time(skill.remainingMs);
       if(timer.textContent!==remaining)timer.textContent=remaining;

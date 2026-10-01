@@ -118,7 +118,9 @@ function fieldToolsMarkup() {
     '<svg class="sword-clock-ring" viewBox="0 0 48 48" aria-hidden="true" focusable="false" hidden><circle class="sword-clock-track" cx="24" cy="24" r="21"/><circle data-sword-ring cx="24" cy="24" r="21" pathLength="100" stroke-dasharray="100 100" transform="rotate(-90 24 24)"/></svg>' +
     '<span data-sword-art>' + personalIcon('sword') + '</span><span data-sword-time hidden></span></span>' +
     '<span data-sword-label>장군검 사용</span></button>' +
-    '<button class="home-skill home-revolver" data-use-revolver hidden><span class="sword-clock revolver-clock"><span class="revolver-mini-art">' + personalIcon('revolver') + '</span><span data-revolver-time hidden></span></span><span data-revolver-label>리볼버 사용</span></button></div>' +
+    '<button class="home-skill home-revolver" data-use-revolver hidden><span class="sword-clock revolver-clock">' +
+    '<svg class="sword-clock-ring" viewBox="0 0 48 48" aria-hidden="true" focusable="false" hidden><circle class="sword-clock-track" cx="24" cy="24" r="21"/><circle data-revolver-ring cx="24" cy="24" r="21" pathLength="100" stroke-dasharray="100 100" transform="rotate(-90 24 24)"/></svg>' +
+    '<span class="revolver-mini-art">' + personalIcon('revolver') + '</span><span data-revolver-time hidden></span></span><span data-revolver-label>리볼버 사용</span></button></div>' +
     '<div class="field-theme-picker"><span>연병장 배경</span><div role="group" aria-label="연병장 배경"><button data-field-theme="earth" aria-pressed="true">흙</button><button data-field-theme="concrete" aria-pressed="false">회색 시멘트</button></div></div></section>';
 }
 export function homeMarkup(state) {

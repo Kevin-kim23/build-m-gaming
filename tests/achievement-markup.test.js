@@ -60,3 +60,11 @@ test("earned medals remain complete, selection is unique and markup never change
   assert.match(retained, /max="1280" value="1280"/);
   assert.doesNotMatch(achievementListMarkup(s, '<script>'), /<script>| selected/);
 });
+
+test('medal shelf is one row of every medal, with a hide button', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../src/achievements.css', import.meta.url), 'utf8');
+  assert.ok(css.includes(`grid-template-columns: repeat(${ACHIEVEMENTS.length}, minmax(0, 1fr))`));
+  assert.ok(!/grid-template-rows: repeat\(2/.test(css));
+  assert.match(medalShelfMarkup(), /id="toggle-medals"[^>]*aria-expanded="true"[^>]*aria-controls="medal-list"/);
+});

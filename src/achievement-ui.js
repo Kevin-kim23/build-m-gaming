@@ -2,13 +2,25 @@ import { ACHIEVEMENTS } from './achievements.js';
 import { armyPower } from './units.js';
 import { medalSvg } from './achievement-art.js';
 import { achievementDescription, achievementListMarkup } from './achievement-markup.js';
+import { reportError } from './diagnostics.js';
 import './achievements.css';
+
+// Per-device display preference, kept out of the game save. Written only when the button is pressed.
+const HIDE_KEY = 'budae-kiugi-ui-medals-hidden';
+function readHidden() {
+  try { return localStorage.getItem(HIDE_KEY) === '1'; } catch (error) { reportError('achievements.readHidden', error); return false; }
+}
+function writeHidden(hidden) {
+  try { localStorage.setItem(HIDE_KEY, hidden ? '1' : '0'); } catch (error) { reportError('achievements.saveHidden', error); }
+}
 
 // Update medals only when earned IDs change; income ticks never rebuild this UI.
 export function createAchievementUI(session) {
   const list = document.querySelector('#medal-list');
   const count = document.querySelector('#medal-count');
   const opener = document.querySelector('#open-achievements');
+  const shelf = document.querySelector('.medal-shelf');
+  const toggle = document.querySelector('#toggle-medals');
   const dialog = document.querySelector('#achievement-modal');
   let shown = [], initialized = false, selectedId = null, returnFocus = opener;
   let renderedPower = -1, renderedCampaign = -1;
@@ -50,6 +62,17 @@ export function createAchievementUI(session) {
     }
     if (dialog.open && (changed || renderedPower !== armyPower(session.state) || renderedCampaign !== (session.state.campaignCleared ?? 0))) renderList();
   }
+  function setHidden(hidden) {
+    shelf.classList.toggle('medals-hidden', hidden);
+    toggle.textContent = hidden ? '보이기' : '숨기기';
+    toggle.setAttribute('aria-expanded', String(!hidden));
+  }
+  setHidden(readHidden());
+  toggle.addEventListener('click', () => {
+    const hidden = !shelf.classList.contains('medals-hidden');
+    setHidden(hidden);
+    writeHidden(hidden);
+  });
   opener.addEventListener('click', () => open());
   list.addEventListener('click', event => {
     const button = event.target.closest('[data-medal]');
