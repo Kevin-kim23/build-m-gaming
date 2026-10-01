@@ -82,7 +82,7 @@ const battleUI = createBattleUI(session);
 const armyPanels = createArmyPanels(session, gameAudio);
 const achievementUI = createAchievementUI(session);
 const guideUI = createGuideUI();
-createInfoPanel(session);
+const infoUI = createInfoPanel(session);
 function update() {
   const power = armyPower(state),
     r = rank();
@@ -136,6 +136,7 @@ function update() {
     )
   );
   setText("#save-status", session.status);
+  infoUI.sync();
   zone.disabled = !session.active;
   $("#sound").disabled = !session.active;
   const access = battleAccess(state);

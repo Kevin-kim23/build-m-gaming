@@ -50,3 +50,18 @@ test('the home footer carries the version and the info button', () => {
   assert.match(html, /<button type="button" id="open-info"[^>]*>정보 · v/);
   assert.equal((html.match(/id="open-info"/g) ?? []).length, 1);
 });
+
+test('blocked saves explain preservation, copying diagnostics and retry without offering reset', () => {
+  const { body } = infoPanelMarkup({ ...base, entries: [], saveNotice: {
+    kind: 'blocked', canRetry: true, title: '저장 기록 확인', message: '기존 기록은 보관해요. <safe>',
+  } });
+  assert.match(body, /기존 기록은 보관해요\. &lt;safe&gt;/);
+  assert.match(body, /data-detail-action="retry-save"/);
+  assert.match(body, /data-detail-action="copy-error-log"/);
+  assert.doesNotMatch(body, /초기화|저장 삭제/);
+  const recovered = infoPanelMarkup({ ...base, entries: [], saveNotice: {
+    kind: 'recovered', canRetry: false, title: '보조 저장 복구', message: '최근 진행 일부는 없을 수 있어요.',
+  } });
+  assert.match(recovered.body, /최근 진행 일부/);
+  assert.doesNotMatch(recovered.body, /data-detail-action="retry-save"/);
+});

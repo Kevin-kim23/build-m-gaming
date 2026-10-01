@@ -1,6 +1,6 @@
 {
   "name": "budae-kiugi",
-  "version": "0.34.0",
+  "version": "0.35.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "test": "node --test tests/*.test.js",
-    "android:sync": "npm run build && cap sync android"
+    "android:sync": "npm run build && cap sync android",
+    "qa:save": "vite --config tools/save-qa.config.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

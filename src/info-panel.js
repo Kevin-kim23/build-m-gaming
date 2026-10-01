@@ -4,14 +4,15 @@ const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (ch) => ({ '&': 
 const row = (name, value) => `<dt>${name}</dt><dd>${escapeHtml(value)}</dd>`;
 
 // Content of the "게임 정보" popup. Error text comes from the running app, so it is always escaped.
-export function infoPanelMarkup({ version, platform, status, saveVersion, entries, report }) {
+export function infoPanelMarkup({ version, platform, status, saveVersion, entries, report, saveNotice = null }) {
+  const guidance = saveNotice ? `<section class="save-guidance"><h3>${escapeHtml(saveNotice.title)}</h3><p>${escapeHtml(saveNotice.message)}</p>${saveNotice.canRetry ? '<button type="button" class="detail-link" data-detail-action="retry-save">저장 다시 확인</button>' : ''}</section>` : '';
   const list = entries.length
     ? `<ol class="error-list">${entries.slice().reverse().map((e) => `<li><time>${formatTime(e.at)}</time> <b>${escapeHtml(e.area)}</b>${(e.count ?? 1) > 1 ? ` ×${e.count}` : ''}<span>${escapeHtml(e.message)}</span></li>`).join('')}</ol>`
     : '<p>기록된 오류가 없어요. 문제가 생기면 여기에 쌓입니다.</p>';
   return {
     kicker: 'INFO',
     title: '게임 정보',
-    body: `<dl class="detail-stats">${row('버전', `v${version}`)}${row('실행 환경', platform)}${row('저장 상태', status)}${row('저장 형식', saveVersion)}</dl>
+    body: `${guidance}<dl class="detail-stats">${row('버전', `v${version}`)}${row('실행 환경', platform)}${row('저장 상태', status)}${row('저장 형식', saveVersion)}</dl>
       <h3 class="info-title">최근 오류 기록 · ${entries.length}개</h3>${list}
       <div class="info-actions"><button type="button" class="detail-link" data-detail-action="copy-error-log">문의용 정보 복사</button><button type="button" class="detail-link" data-detail-action="clear-error-log"${entries.length ? '' : ' disabled'}>기록 지우기</button></div>
       <p class="info-status" data-copy-status role="status"></p>

@@ -119,7 +119,7 @@ function fieldToolsMarkup() {
     '<div class="field-theme-picker"><span class="sr-only">연병장 배경</span><div role="group" aria-label="연병장 배경"><button data-field-theme="earth" aria-pressed="true">흙</button><button data-field-theme="concrete" aria-pressed="false" aria-label="회색 시멘트">시멘트</button></div></div></section>';
 }
 export function homeMarkup(state) {
-  return `<main class="game">${headerMarkup(state)}${medalShelfMarkup()}${fieldMarkup()}${dockMarkup()}${footerMarkup()}</main>`;
+  return `<main class="game">${headerMarkup(state)}<aside id="save-notice" class="save-notice" role="status" hidden><strong data-save-notice-title></strong><button type="button" id="review-save">저장 확인</button></aside>${medalShelfMarkup()}${fieldMarkup()}${dockMarkup()}${footerMarkup()}</main>`;
 }
 
 export function insignia(index) {

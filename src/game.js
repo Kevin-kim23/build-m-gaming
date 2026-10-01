@@ -1,13 +1,10 @@
 export { parseSave } from './save.js';
-import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMoney } from './money.js';
 export { MAX_GOLD, serializeSave } from './money.js';
 import { rankForArmy } from "./ranks.js";
 import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
-import { NEW_OFFICER_GRADES } from './officer-progression.js';
 import { schoolOffer } from "./schools.js";
-import { ALLIED_ARMY_SIZE } from "./formations.js";
-import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, GENERAL_SWORD, generalSwordDuration } from "./personal-equipment.js";
+import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, generalSwordDuration } from "./personal-equipment.js";
 import { settleAutoTouch } from './auto-touch.js';
 import { withCampaignIncome } from './campaign-rewards.js';
 import { reconcileAchievements } from "./achievements.js";
@@ -22,10 +19,9 @@ import {
 } from "./equipment.js";
 export { UNITS, armyPower } from "./units.js";
 export { RANKS, RANK_REQUIREMENTS, rankFor } from "./ranks.js";
-export const SAVE_KEY = "budae-kiugi-recruits-v3";
-export const LEGACY_KEY = "budae-kiugi-tap-save-v2";
+export { SAVE_KEY, LEGACY_KEY, MAX_SOLDIERS, freshState } from './state.js';
+import { MAX_SOLDIERS } from './state.js';
 export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
-export const MAX_SOLDIERS = ALLIED_ARMY_SIZE * 4;
 export const perTap = (s, now = Date.now()) =>
   (1 + troopIncome(s, "tap") + equipmentIncome(s).tap) * swordSkillStatus(s, now).multiplier;
 export const perSecond = (s) =>
@@ -98,36 +94,6 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
     locked,
     reason,
     canBuy: reason === null,
-  };
-}
-export function freshState(now = Date.now()) {
-  return {
-    version: 18,
-    fieldTheme: 'earth',
-    swordActivatedAt: null,
-    swordDurationMs: GENERAL_SWORD.durationMs,
-    autoTouchActivatedAt: null,
-    autoTouchTicks: 0,
-    ncoSchoolLevel: 0,
-    officerSchoolLevel: 0,
-    advancedSchoolLevel: 0,
-    battleCleared: 0,
-    campaignCleared: 0,
-    earnedAchievements: [],
-    gold: 0,
-    taps: 0,
-    soldiers: 0,
-    sergeants: 0,
-    staffSergeants: 0,
-    masterSergeants: 0,
-    sergeantMajors: 0,
-    lieutenants: 0,
-    ...Object.fromEntries([...NEW_OFFICER_GRADES,...ADVANCED_OFFICERS].map(unit=>[unit.field,0])),
-    equipment: emptyEquipment(),
-    sound: false,
-    lastAccrual: now,
-    incomeRemainder: 0,
-    revision: 0,
   };
 }
 export function accrue(s, now = Date.now()) {

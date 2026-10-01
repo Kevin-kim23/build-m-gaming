@@ -14,6 +14,7 @@ export function createInfoPanel(session) {
       platform: Capacitor.getPlatform(),
       status: session.status,
       saveVersion: session.state.version,
+      saveNotice: session.saveNotice,
       entries,
     };
     info.report = formatReport({
@@ -40,6 +41,17 @@ export function createInfoPanel(session) {
   onDetailAction((action, data, dialog) => {
     if (action === 'copy-error-log') copy(dialog);
     else if (action === 'clear-error-log') { errorLog.clear(); show(); }
+    else if (action === 'retry-save') { session.retryLoad(); show(); }
   });
   document.querySelector('#open-info').addEventListener('click', show);
+  const notice = document.querySelector('#save-notice');
+  document.querySelector('#review-save').addEventListener('click', show);
+  let lastTitle;
+  return { sync() {
+    const current = session.saveNotice, title = current?.title ?? '';
+    if (title === lastTitle) return;
+    lastTitle = title;
+    notice.hidden = !current;
+    notice.querySelector('[data-save-notice-title]').textContent = title;
+  } };
 }
