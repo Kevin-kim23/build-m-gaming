@@ -1,5 +1,5 @@
 import { campaignBonusPercent, REGION_INCOME_PERCENT } from "./campaign-rewards.js";
-import { STAGES, battleAccess, defaultLoadout, normalizeLoadout, createBattle, advanceBattle, fireVolley } from './battle.js';
+import { STAGES, battleAccess, defaultLoadout, normalizeLoadout, createBattle, advanceBattle, useSpecial, battleSlots } from './battle.js';
 import { recordBattleVictory } from './battle-progress.js';
 import { drawBattle } from './battle-art.js';
 import { preparationMarkup, battlefieldMarkup } from './battle-markup.js';
@@ -56,18 +56,15 @@ export function createBattleUI(session) {
     sync();
   }
   function selection() {
-    const raw = {units: {}, equipment: []};
-    dialog.querySelectorAll('[data-battle-unit]').forEach(input => {
-      raw.units[input.dataset.battleUnit] = Number(input.value);
-    });
+    const raw = {equipment: []};
     dialog.querySelectorAll('[data-battle-gear]:checked').forEach(input => raw.equipment.push(input.dataset.battleGear));
     return normalizeLoadout(session.state, raw);
   }
   function start() {
     if (!session.active || document.hidden) return;
     loadout = selection();
-    if (!Object.values(loadout.units).some(n => n > 0) && !loadout.equipment.length) {
-      text('#battle-message', '병력이나 장비를 하나 이상 선택해 주세요.'); return;
+    if (!loadout.equipment.length) {
+      text('#battle-message', '출전할 장비를 하나 이상 선택해 주세요. (최대 ' + battleSlots(session.state) + '칸)'); return;
     }
     try { battle = createBattle(session.state, stageId, loadout); }
     catch (error) {
@@ -78,7 +75,6 @@ export function createBattleUI(session) {
     dialog.innerHTML = battlefieldMarkup(battle);
     dialog.classList.add('in-battle'); dialog.scrollTop = 0;
     paint(); sync(); schedule();
-    $('#battle-field').focus({preventScroll:true});
   }
   function view() {
     const effects = [], sides = {};
@@ -96,6 +92,13 @@ export function createBattleUI(session) {
     text('#battle-player-hp', `${fmt(Math.ceil(battle.player.hq.hp))} / ${fmt(battle.player.hq.maxHp)}`);
     text('#battle-enemy-hp', `${fmt(Math.ceil(battle.enemy.hq.hp))} / ${fmt(battle.enemy.hq.maxHp)}`);
     const seconds = Math.floor(battle.elapsedMs / 1000);
+    for (const gun of battle.player.equipment) {
+      const wait = Math.max(0, Math.ceil((gun.specialReadyMs - battle.elapsedMs) / 1000)), button = $(`[data-special="${gun.id}"]`);
+      if (!button) continue;
+      text(`[data-special-state="${gun.id}"]`, wait ? `${wait}초` : '발사!');
+      const ready = wait === 0 && battle.status === 'running' && !paused;
+      if (button.disabled === ready) button.disabled = !ready;
+    }
     text('#battle-time', `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`);
   }
   function schedule() {
@@ -114,9 +117,9 @@ export function createBattleUI(session) {
     }
     schedule();
   }
-  function shoot() {
+  function special(id) {
     if (!session.active || document.hidden || paused || battle?.status !== 'running') return;
-    battle = fireVolley(battle);
+    battle = useSpecial(battle, id);
     paint();
     if (battle.status !== 'running') finish();
   }
@@ -128,7 +131,7 @@ export function createBattleUI(session) {
     $('#battle-resume').disabled = !session.active;
     $('#battle-result-actions').hidden = !result;
     $('#battle-pause').disabled = result;
-    $('#battle-field').disabled = true;
+    dialog.querySelectorAll('[data-special]').forEach(button => { button.disabled = true; });
   }
   function suspend() {
     if (battle?.status !== 'running' || !dialog.open) return;
@@ -139,7 +142,6 @@ export function createBattleUI(session) {
     if (!session.active || document.hidden || battle?.status !== 'running') return;
     paused = false; lastFrame = 0;
     $('#battle-overlay').hidden = true;
-    $('#battle-field').disabled = false;
     schedule();
   }
   function finish() {
@@ -188,9 +190,18 @@ export function createBattleUI(session) {
     else if (target.hasAttribute('data-battle-back')) showStages();
     else if (target.hasAttribute('data-battle-retry')) prepare();
     else if (target.id === 'battle-start') start();
-    else if (target.id === 'battle-field') shoot();
+    else if (target.dataset.special) special(target.dataset.special);
     else if (target.id === 'battle-pause') suspend();
     else if (target.id === 'battle-resume') resume();
+  });
+  // 출전 칸 수를 넘겨 체크하면 방금 체크한 장비를 되돌리고 안내한다.
+  dialog.addEventListener('change', event => {
+    if (mode !== 'prepare' || !event.target.matches('[data-battle-gear]')) return;
+    const limit = battleSlots(session.state);
+    if (dialog.querySelectorAll('[data-battle-gear]:checked').length > limit) {
+      event.target.checked = false;
+      text('#battle-message', `출전 장비는 최대 ${limit}칸까지예요. 다른 장비를 먼저 해제하세요.`);
+    } else text('#battle-message', '');
   });
   dialog.addEventListener('keydown', event => {
     const target=event.target.closest('g[data-country],g[data-region]');

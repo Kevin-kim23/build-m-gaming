@@ -4,7 +4,7 @@ import { freshState } from "../src/game.js";
 import { EQUIPMENT } from "../src/equipment.js";
 import {
   BATTLE_RULES, STAGES, battleAccess, defaultLoadout, normalizeLoadout,
-  createBattle, advanceBattle, fireVolley, equipmentCombatStats,
+  createBattle, advanceBattle, useSpecial, battleSlots, equipmentCombatStats,
 } from "../src/battle.js";
 
 function army(power = 1280, level = 3) {
@@ -13,13 +13,11 @@ function army(power = 1280, level = 3) {
     equipment: Object.fromEntries(["artillery", "tank", "selfPropelled"].map((id) => [id, { level, deployed: true }])),
   };
 }
-function simulate(state, stageId, tapsPerSecond = 2, loadout) {
-  let battle = createBattle(state, stageId, loadout), nextTap = 0;
+// 필살기를 쓸 수 있을 때마다 바로 쓰는 플레이어(special=false면 자동 공격만).
+function simulate(state, stageId, special = true, loadout) {
+  let battle = createBattle(state, stageId, loadout);
   while (battle.status === "running") {
-    if (tapsPerSecond > 0 && battle.elapsedMs >= nextTap) {
-      battle = fireVolley(battle);
-      nextTap += 1000 / tapsPerSecond;
-    }
+    if (special) for (const gun of battle.player.equipment) battle = useSpecial(battle, gun.id);
     battle = advanceBattle(battle, 50);
   }
   return battle;
@@ -47,19 +45,25 @@ test("eighty conquest regions enforce sequential progress across four countries"
   assert.equal(createBattle(s, 2).stageId, 2);
 });
 
-test("deployment clamps actual headcounts and rejects unknown or unowned equipment", () => {
+test("deployment is equipment only, limited by rank slots, and rejects unknown or unowned equipment", () => {
   const s = army();
-  s.staffSergeants = 3;
   s.equipment.tank = null;
   s.equipment.artillery.deployed = false;
-  const chosen = normalizeLoadout(s, {
-    units: { soldier: 99.5, sergeant: -1, staffSergeant: 9, alien: 10 },
-    equipment: ["artillery", "artillery", "tank", "unknown"],
-  });
-  assert.deepEqual(chosen, { units: { soldier: 10, sergeant: 0, staffSergeant: 3, masterSergeant: 0, sergeantMajor: 0, lieutenant: 0, firstLieutenant: 0, captain: 0, major: 0, lieutenantColonel: 0, colonel: 0, brigadierGeneral: 0, majorGeneral: 0, lieutenantGeneral: 0, general: 0 }, equipment: ["artillery"] });
-  assert.equal(normalizeLoadout(s, { units: { soldier: NaN } }).units.soldier, 0);
-  assert.deepEqual(defaultLoadout(s).equipment, ["artillery", "selfPropelled"]);
-  assert.throws(() => createBattle(army(), 1, { units: {}, equipment: [] }), RangeError);
+  const chosen = normalizeLoadout(s, { units: { soldier: 5 }, equipment: ["artillery", "artillery", "tank", "unknown"] });
+  assert.deepEqual(chosen, { equipment: ["artillery"] });
+  assert.deepEqual(defaultLoadout(s).equipment.sort(), ["artillery", "selfPropelled"]);
+  assert.throws(() => createBattle(army(), 1, { equipment: [] }), RangeError);
+  assert.equal(createBattle(army(), 1, { units: { soldier: 10 }, equipment: ["tank"] }).player.units.length, 0);
+});
+
+test("slots: 3 at lieutenant colonel, +1 each at brigadier, lieutenant general and general", () => {
+  assert.equal(battleSlots(army(1280)), 3);
+  assert.equal(battleSlots(army(20480)), 3);
+  const slots = [327680, 655360, 1310720].map((p) => battleSlots({ ...army(p), soldiers: p - 10000 }));
+  assert.ok(slots.every((n) => n >= 3 && n <= 6));
+  const many = { ...army(327680), equipment: Object.fromEntries(Object.keys(EQUIPMENT).map((id) => [id, { level: 1, deployed: true }])) };
+  assert.equal(normalizeLoadout(many, { equipment: Object.keys(EQUIPMENT) }).equipment.length, battleSlots(many));
+  assert.equal(defaultLoadout(many).equipment.length, battleSlots(many));
 });
 
 test("campaign headquarters HP grows continuously with total army power", () => {
@@ -76,21 +80,21 @@ test("campaign headquarters HP grows continuously with total army power", () => 
   }
 });
 
-test("one accepted tap fires all deployed infantry and never changes the original save or battle", () => {
+test("a special fires one deployed gear for burst damage, then waits for its cooldown, without touching the save", () => {
   const state = army(), saved = structuredClone(state), initial = createBattle(state, 1);
-  const before = structuredClone(initial), fired = fireVolley(initial);
-  assert.deepEqual(initial, before);
-  assert.ok(Math.abs(initial.enemy.hq.hp - fired.enemy.hq.hp -
-    fired.player.units.reduce((n, u) => n + u.damage, 0)) < 1e-8);
-  assert.ok(fired.player.units.every((u) => u.lastShotMs === 0));
-  assert.equal(fireVolley(fired), fired);
-  const ready = advanceBattle(fired, BATTLE_RULES.volleyCooldownMs);
-  assert.notEqual(fireVolley(ready), ready);
+  assert.equal(useSpecial(initial, "artillery"), initial, "not ready before the first-ready time");
+  const ready = advanceBattle({ ...initial, elapsedMs: BATTLE_RULES.specialFirstReadyMs, remainderMs: 0 }, 50);
+  const before = structuredClone(ready), fired = useSpecial(ready, "artillery");
+  assert.deepEqual(ready, before);
+  const gun = ready.player.equipment.find((g) => g.id === "artillery");
+  assert.ok(Math.abs(ready.enemy.hq.hp - fired.enemy.hq.hp - gun.damage * BATTLE_RULES.specialMultiplier) < 1e-8);
+  assert.equal(fired.player.equipment.find((g) => g.id === "artillery").specialReadyMs, ready.elapsedMs + BATTLE_RULES.specialCooldownMs);
+  assert.equal(useSpecial(fired, "artillery"), fired);
+  assert.equal(useSpecial(ready, "unknown"), ready);
+  assert.notEqual(useSpecial(ready, "tank"), ready);
   assert.deepEqual(state, saved);
   state.equipment.artillery.level = 10;
-  state.soldiers = 9999;
   assert.equal(fired.player.equipment.find((g) => g.id === "artillery").level, 3);
-  assert.equal(fired.player.units.find((u) => u.id === "soldier").count, 10);
 });
 
 test("all ten enhancements increase both damage and automatic attack speed", () => {
@@ -106,7 +110,6 @@ test("all ten enhancements increase both damage and automatic attack speed", () 
   assert.throws(() => equipmentCombatStats("tank", 21), RangeError);
   const colonel = createBattle(army(5120), 3), general = createBattle(army(10240), 3);
   assert.equal(colonel.player.hq.hp * 2, general.player.hq.hp);
-  assert.equal(general.player.units[0].damage, colonel.player.units[0].damage * 2);
   assert.equal(general.player.equipment[0].damage, colonel.player.equipment[0].damage * 2);
 });
 
@@ -126,7 +129,7 @@ test("both sides' equipment and enemy infantry attack without player taps", () =
   for (let i = 0; i < 70; i++) b = advanceBattle(b, 50);
   assert.ok(b.player.hq.hp < b.player.hq.maxHp);
   assert.ok(b.enemy.hq.hp < b.enemy.hq.maxHp);
-  assert.ok(b.player.units.every((u) => u.lastShotMs === -1));
+  assert.equal(b.player.units.length, 0);
   assert.ok(b.enemy.units.every((u) => u.lastShotMs > 0));
   assert.ok(b.player.equipment.every((g) => g.lastShotMs > 0));
   assert.ok(b.enemy.equipment.every((g) => g.lastShotMs > 0));
@@ -140,13 +143,13 @@ test("simultaneous headquarters destruction draws and a finished battle cannot f
   assert.equal(done.status, "draw");
   assert.equal(done.player.hq.hp, 0);
   assert.equal(done.enemy.hq.hp, 0);
-  assert.equal(fireVolley(done), done);
+  assert.equal(useSpecial(done, "artillery"), done);
   assert.equal(advanceBattle(done, 250), done);
 });
 
 test("conquest opening requires a developed army and cannot be won by the old entry force", () => {
   assert.equal(simulate(army(327680,10),1).status,'victory');
-  assert.equal(simulate(army(1280,10),1,6).status,'defeat');
+  assert.equal(simulate(army(1280,10),1).status,'defeat');
 });
 
 test("the three-minute limit ends a surviving battle as a draw", () => {

@@ -59,7 +59,6 @@
 .battle-toolbar button { background:#2f4030; color:#d8e5c8; border:1px solid #4d6245; border-radius:4px; padding:7px; font-size:10px !important; }
 .battle-arena { position:relative; width:min(100%,calc((100dvh - 260px) * .64286)); min-width:220px; margin:0 auto; }
 #battle-field { display:block; padding:0; margin:0; width:100%; aspect-ratio:360/560; border:1px solid #687759; background:#344530; border-radius:5px; overflow:hidden; touch-action:manipulation; user-select:none; -webkit-tap-highlight-color:transparent; }
-#battle-modal #battle-field:disabled { opacity:1; }
 #battle-canvas { display:block; width:100%; height:100%; image-rendering:pixelated; }
 .battle-overlay { position:absolute; inset:0; display:grid; place-items:center; padding:14px; border-radius:5px; background:#111e15cc; backdrop-filter:blur(2px); }
 .battle-overlay>div { width:100%; text-align:center; padding:20px 12px; background:#1b2a20f5; border:1px solid #9ba272; border-radius:8px; }
@@ -73,3 +72,10 @@
 .battle-controls small { display:block; margin-top:5px; font-size:10px; font-weight:normal; color:#a6b799; }
 @media(max-width:350px) { #battle-modal { padding:12px; } .stage-card{gap:7px;padding:12px 7px;} .stage-card em{font-size:10px;} .stage-card small{font-size:10px;} .battle-hp-summary{font-size:10px;} }
 @media(prefers-reduced-motion:reduce) { #battle-modal::backdrop,.battle-overlay { backdrop-filter:none; } }
+
+.battle-specials { display:grid; grid-template-columns:repeat(auto-fit,minmax(86px,1fr)); gap:6px; margin:10px 0 0; }
+.battle-specials button { min-height:46px; padding:6px 4px; border:1px solid #c9a24a; background:#4a3a18; color:#f6e6b0; border-radius:5px; cursor:pointer; }
+.battle-specials button b { display:block; font-size:12px; }
+.battle-specials button small { display:block; margin-top:2px; font-size:11px; color:#e8d79c; }
+.battle-specials button:not(:disabled) { background:#8a6a1e; box-shadow:0 0 8px #e0b84a99; }
+.battle-specials button:disabled { opacity:.6; cursor:default; }

@@ -13,26 +13,29 @@ export function battleAccess(state) {
   };
 }
 
-export function defaultLoadout(state) {
-  return normalizeLoadout(state, {
-    units: Object.fromEntries(Object.values(UNITS).map((u) => [u.id, BATTLE_RULES.maxUnitsPerType])),
-    equipment: Object.keys(EQUIPMENT),
-  });
+// 출전 장비 칸: 중령 3칸, 준장 4칸, 중장 5칸, 대장 이상 6칸.
+export function battleSlots(state) {
+  const rank = rankForArmy(state);
+  return 3 + ["준장", "중장", "대장"].filter((name) => rank >= RANKS.indexOf(name)).length;
 }
 
-// Unknown keys, duplicate equipment and invalid counts never enter a battle.
+// 기본 출전: 보유 장비 중 1회 공격력이 센 순서로 빈 칸을 채운다.
+export function defaultLoadout(state) {
+  const power = armyPower(state);
+  const ranked = Object.keys(EQUIPMENT).filter((id) => state.equipment?.[id]).sort((a, b) => {
+    const dps = (id) => { const c = equipmentCombatStats(id, state.equipment[id].level, power, equipmentCount(state, id)); return (c.damage || c.healing) / c.intervalMs; };
+    return dps(b) - dps(a);
+  });
+  return normalizeLoadout(state, { equipment: ranked.slice(0, battleSlots(state)) });
+}
+
+// 모르는 장비·중복·미보유 장비는 걸러내고, 칸 수를 넘으면 앞에서부터 자른다. 병력은 출전하지 않는다.
 export function normalizeLoadout(state, input = {}) {
+  const wanted = Array.isArray(input?.equipment) ? input.equipment : [];
   return {
-    units: Object.fromEntries(Object.values(UNITS).map((u) => {
-      const requested = input?.units?.[u.id], owned = state[u.field] ?? 0;
-      const count = Number.isFinite(requested) && Number.isSafeInteger(owned)
-        ? Math.max(0, Math.min(BATTLE_RULES.maxUnitsPerType, owned, Math.floor(requested)))
-        : 0;
-      return [u.id, count];
-    })),
-    equipment: Object.keys(EQUIPMENT).filter((id) =>
-      Array.isArray(input?.equipment) && input.equipment.includes(id) && !!state.equipment?.[id],
-    ),
+    equipment: Object.keys(EQUIPMENT)
+      .filter((id) => wanted.includes(id) && !!state.equipment?.[id])
+      .slice(0, battleSlots(state)),
   };
 }
 
@@ -46,7 +49,8 @@ function makeSide(formation, power, units, equipment, multiplier = 1, playerUpgr
     })),
     equipment: equipment.map(({ id, level, count = 1 }) => {
       const stats = equipmentCombatStats(id, level, power, count, playerUpgrades);
-      return { id, level, count, ...stats, damage: stats.damage * multiplier, lastShotMs: -1, nextShotMs: stats.intervalMs };
+      return { id, level, count, ...stats, damage: stats.damage * multiplier, lastShotMs: -1, nextShotMs: stats.intervalMs,
+        ...(playerUpgrades ? { specialReadyMs: BATTLE_RULES.specialFirstReadyMs, lastSpecialMs: -1 } : {}) };
     }),
   };
 }
@@ -60,15 +64,14 @@ export function createBattle(state, stageId, input = defaultLoadout(state)) {
   if (!Object.values(UNITS).every((u) => Number.isSafeInteger(state[u.field] ?? 0) && (state[u.field] ?? 0) >= 0))
     throw new RangeError("Invalid battle army");
   const loadout = normalizeLoadout(state, input);
-  if (!Object.values(loadout.units).some(Boolean) && !loadout.equipment.length)
-    throw new RangeError("Battle deployment is empty");
+  if (!loadout.equipment.length) throw new RangeError("Battle deployment is empty");
   const power = armyPower(state), formation = FORMATIONS.find((f) => f.size <= power);
   const enemyFormation = {...FORMATIONS.find((f) => f.id === stage.formationId),size:stage.hqPower};
   return {
     stageId, stageName: stage.name, enemyName:stage.enemyName, countryId:stage.countryId, status: "running", elapsedMs: 0,
-    remainderMs: 0, lastVolleyMs: -BATTLE_RULES.volleyCooldownMs,
+    remainderMs: 0,
     nextEnemyVolleyMs: BATTLE_RULES.enemyVolleyMs,
-    player: makeSide({...formation,size:power}, power, loadout.units,
+    player: makeSide({...formation,size:power}, power, {},
       loadout.equipment.map((id) => ({ id, level: state.equipment[id].level, count: equipmentCount(state, id) }))),
     enemy: makeSide(enemyFormation, stage.enemyPower,
       Object.fromEntries(['soldier','sergeant','staffSergeant'].map((id) => [id, stage.enemyUnitCount])),
@@ -112,12 +115,14 @@ function equipmentFire(side, now) {
   return { damage, healing };
 }
 
-export function fireVolley(battle) {
-  if (battle.status !== "running" || !battle.player.units.length ||
-      battle.elapsedMs - battle.lastVolleyMs < BATTLE_RULES.volleyCooldownMs) return battle;
-  const next = cloneBattle(battle);
-  next.lastVolleyMs = next.elapsedMs;
-  settle(next, volley(next.player, next.elapsedMs), 0);
+// 필살기: 출전 장비 하나의 1회 공격력(보급차는 회복량)의 N배를 즉시 사용한다. 쓰면 재사용 대기.
+export function useSpecial(battle, gearId) {
+  const gear = battle.player.equipment.find((g) => g.id === gearId);
+  if (battle.status !== "running" || !gear || battle.elapsedMs < gear.specialReadyMs) return battle;
+  const next = cloneBattle(battle), target = next.player.equipment.find((g) => g.id === gearId);
+  target.specialReadyMs = next.elapsedMs + BATTLE_RULES.specialCooldownMs;
+  target.lastSpecialMs = target.lastShotMs = next.elapsedMs;
+  settle(next, target.damage * BATTLE_RULES.specialMultiplier, 0, (target.healing ?? 0) * BATTLE_RULES.specialMultiplier);
   return next;
 }
 

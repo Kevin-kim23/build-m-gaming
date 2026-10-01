@@ -6,7 +6,7 @@ import { campaignMarkup } from '../src/campaign-map.js';
 import { freshState,parseSave,MAX_SOLDIERS } from '../src/game.js';
 import { UNITS,armyPower } from '../src/units.js';
 import { EQUIPMENT } from '../src/equipment.js';
-import { createBattle,advanceBattle,fireVolley } from '../src/battle.js';
+import { createBattle,advanceBattle,useSpecial } from '../src/battle.js';
 import { recordBattleVictory } from '../src/battle-progress.js';
 import { RANKS,rankForArmy,GENERAL_MIN_SOLDIERS } from '../src/ranks.js';
 const T=1_800_000_000_000;
@@ -27,10 +27,10 @@ function army(power,level=8,copies=1){
   for(const [i,id]of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'].entries())state.equipment[id]={level,count:copies,deployed:i>0};
   return state;
 }
-function simulate(state,id,taps=2){
-  let battle=createBattle(state,id),nextTap=0;
+function simulate(state,id,special=true){
+  let battle=createBattle(state,id);
   while(battle.status==='running'){
-    if(taps>0&&battle.elapsedMs>=nextTap){battle=fireVolley(battle);nextTap+=1000/taps;}
+    if(special)for(const gun of battle.player.equipment)battle=useSpecial(battle,gun.id);
     battle=advanceBattle(battle,50);
   }return battle;
 }
@@ -57,7 +57,7 @@ test('only conquest of all twenty regions unlocks the next country, including re
   assert.equal(countryProgress(state,'veloc').unlocked,true);assert.equal(createBattle(state,21).stageId,21);
   assert.equal(recordBattleVictory(state,result).firstClear,false);assert.equal(state.campaignCleared,20);
 });
-test('every recommended force can win its region with two taps per second and stated equipment',()=>{
+test('every recommended force can win its region using specials as soon as they are ready',()=>{
   for(const stage of campaignStages){
     const state=army(stage.recommendedPower,stage.id<=20?8:10,stage.id<=20?1:3),before=structuredClone(state);
     assert.equal(RANKS[rankForArmy(state)],stage.recommendedRank);

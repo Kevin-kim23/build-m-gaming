@@ -6,7 +6,7 @@ import { OFFICER_GRADES, NEW_OFFICER_GRADES } from '../src/officer-progression.j
 import { schoolOffer } from '../src/schools.js';
 import { RANKS, rankForArmy, RANK_REQUIREMENTS } from '../src/ranks.js';
 import { createGameSession } from '../src/session.js';
-import { defaultLoadout, createBattle, fireVolley } from '../src/battle.js';
+import { defaultLoadout, createBattle } from '../src/battle.js';
 import { UNITS } from '../src/units.js';
 import { groupArmy } from '../src/formations.js';
 import { unitPositions } from '../src/battle-art.js';
@@ -101,16 +101,12 @@ test('academy and officer purchases share checkpoint/backups and survive restart
   assert.equal(parseSave(values.get(SAVE_KEY+'-backup'),T).firstLieutenants,0);
   session.pause();session.start();assert.equal(session.state.officerSchoolLevel,2);assert.equal(session.state.firstLieutenants,1);assert.equal(session.state.gold,0);session.pause();
 });
-test('all fifteen troop types participate in battle without increasing the enemy roster',()=>{
+test('troops no longer deploy: loadout is equipment only and the enemy roster is unchanged',()=>{
   const s={...general(),officerSchoolLevel:5};for(const u of Object.values(UNITS))s[u.field]=Math.max(s[u.field],12);
-  const loadout=defaultLoadout(s);assert.equal(Object.values(loadout.units).length,15);assert.ok(Object.values(loadout.units).every(n=>n===10));
-  const battle=createBattle(s,1,loadout),shot=fireVolley(battle);
-  assert.equal(shot.player.units.length,15);assert.ok(shot.player.units.every(u=>u.lastShotMs===0));assert.equal(shot.enemy.units.length,3);
-  const positions=unitPositions(loadout.units,'player');assert.equal(positions.length,150);
-  for(const [i,p] of positions.entries()){
-    assert.ok(p.x-p.width/2>=0&&p.x+p.width/2<=360&&p.y-p.height/2>290&&p.y+p.height/2<400);
-    for(const other of positions.slice(i+1))assert.ok(Math.abs(p.x-other.x)>=(p.width+other.width)/2||Math.abs(p.y-other.y)>=(p.height+other.height)/2);
-  }
+  s.equipment.artillery={level:1,count:1,deployed:true};
+  const loadout=defaultLoadout(s);assert.deepEqual(Object.keys(loadout),['equipment']);
+  const battle=createBattle(s,1,loadout);
+  assert.equal(battle.player.units.length,0);assert.equal(battle.enemy.units.length,3);
 });
 test('academy stages show true prices and recommended ranks, with distinct cached geometry',()=>{
   // Level-by-level details moved from the school card into its detail popup.

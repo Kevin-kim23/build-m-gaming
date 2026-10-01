@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {freshState,activateSword,tapGold,perTap,perSecond,accrue,parseSave,SAVE_KEY,MAX_GOLD} from "../src/game.js";
 import {swordSkillStatus} from "../src/personal-equipment.js";
-import {createBattle,fireVolley} from "../src/battle.js";
+import {createBattle,useSpecial} from "../src/battle.js";
 import {createGameSession} from "../src/session.js";
 import {syncSwordControls} from "../src/sword-controls.js";
 import {personalIcon} from "../src/personal-art.js";
@@ -43,10 +43,11 @@ test('schema ten gains unused skill; schema eleven validates and preserves times
   }
   const s=general();activateSword(s,T);assert.equal(parseSave(serializeSave(s),T).swordActivatedAt,T);
 });
-test('skill never changes automatic income or infantry damage in battle',()=>{
-  const s=general(),initial=createBattle(s,1),income=perSecond(s);
+test('skill never changes automatic income or battle stats',()=>{
+  const s=general();s.equipment.artillery={level:1,count:1,deployed:true};
+  const initial=createBattle(s,1),income=perSecond(s);
   activateSword(s,T);const boosted=createBattle(s,1);
-  assert.deepEqual(fireVolley(boosted),fireVolley(initial));assert.equal(perSecond(s),income);
+  assert.deepEqual(useSpecial(boosted,'artillery'),useSpecial(initial,'artillery'));assert.equal(perSecond(s),income);
 });
 test('activation saves cooldown immediately; restart cannot activate again; inactive sessions cannot use it',()=>{
   let now=T;const values=new Map([[SAVE_KEY,serializeSave(general())]]),writes=[];

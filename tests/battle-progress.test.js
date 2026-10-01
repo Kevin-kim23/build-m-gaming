@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, parseSave, SAVE_KEY } from '../src/game.js';
 import { FIELD_ARMY_SIZE } from '../src/formations.js';
-import { createBattle, fireVolley, advanceBattle } from '../src/battle.js';
+import { createBattle, useSpecial, advanceBattle } from '../src/battle.js';
 import { recordBattleVictory } from '../src/battle-progress.js';
 import { createGameSession } from '../src/session.js';
 import { reconcileAchievements } from '../src/achievements.js';
@@ -11,11 +11,12 @@ const T = 1800000000000;
 const army = () => {
   const state = { ...freshState(T), soldiers: FIELD_ARMY_SIZE - 600,
     sergeants: 40, staffSergeants: 10, gold: 1234567, taps: 123 };
+  for (const id of ['artillery', 'tank', 'selfPropelled']) state.equipment[id] = { level: 3, count: 1, deployed: true };
   reconcileAchievements(state); return state;
 };
 function win(state, stage = 1) {
   let battle = createBattle(state, stage);
-  while(battle.status==='running'){battle=fireVolley(battle);battle=advanceBattle(battle,150);}
+  while(battle.status==='running'){for(const g of battle.player.equipment)battle=useSpecial(battle,g.id);battle=advanceBattle(battle,150);}
   assert.equal(battle.status, 'victory');
   return battle;
 }

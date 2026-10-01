@@ -5,10 +5,11 @@ import { campaignStages } from './campaign.js';
 export const BATTLE_RULES = Object.freeze({
   stepMs: 50,
   maxFrameMs: 250,
-  volleyCooldownMs: 150,
   enemyVolleyMs: 1800,
   maxDurationMs: 180_000,
-  maxUnitsPerType: 10,
+  specialFirstReadyMs: 8000,
+  specialCooldownMs: 14000,
+  specialMultiplier: 8,
 });
 
 export const STAGES = campaignStages;
@@ -33,7 +34,7 @@ export function combatScale(totalPower) {
   return totalPower / BATTALION_SIZE;
 }
 
-// Overall army strength improves deployed troops; headcounts remain capped at ten.
+// 적 보병 사격 세기(적 전용). 아군은 병력을 전투에 내보내지 않는다(0.40).
 export function infantryDamage(unit, count, totalPower) {
   return count * (0.12 + Math.sqrt(unit.power) * 0.07) * combatScale(totalPower);
 }

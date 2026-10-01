@@ -30,32 +30,29 @@ test('country preview exposes twenty regions but only a sequential ready action'
  assert.match(stagesMarkup(state,'serdin',1),/다시 도전/);
 });
 
-test('deployment shows actual owned troop limits and includes stored equipment without inventing units', () => {
+test('deployment is equipment only: no troop inputs, slot limit shown, stored equipment included', () => {
   const state = army({ soldiers: 2, sergeants: 128,
     equipment: { artillery: { level: 3, deployed: false }, tank: null, selfPropelled: null } });
   const markup = preparationMarkup(state, STAGES[0], defaultLoadout(state));
-  assert.match(inputTag(markup, 'data-battle-unit', 'soldier'), /max="2"/);
-  assert.match(inputTag(markup, 'data-battle-unit', 'soldier'), /value="2"/);
-  assert.match(inputTag(markup, 'data-battle-unit', 'sergeant'), /max="10"/);
-  assert.match(inputTag(markup, 'data-battle-unit', 'sergeant'), /value="10"/);
-  assert.equal(inputTag(markup, 'data-battle-unit', 'staffSergeant'), undefined);
+  assert.doesNotMatch(markup, /data-battle-unit/);
+  assert.match(markup, /최대 3칸/);
   assert.match(inputTag(markup, 'data-battle-gear', 'artillery'), /\bchecked\b/);
   assert.equal(inputTag(markup, 'data-battle-gear', 'tank'), undefined);
   assert.equal(inputTag(markup, 'data-battle-gear', 'selfPropelled'), undefined);
   assert.match(markup, /1,282 HP/);
-  assert.match(markup, /병력·장비는 소모되지 않으며 홈 배치 설정은 유지/);
+  assert.match(markup, /장비는 소모되지 않으며 홈 배치 설정은 유지/);
   assert.doesNotMatch(markup, /undefined|NaN/);
 });
 
-test('battlefield owns one accessible firing target and keeps home economy controls out of battle', () => {
-  const markup = battlefieldMarkup(createBattle(army(), 1));
+test('battlefield shows one canvas plus a special button per deployed gear and keeps home economy controls out of battle', () => {
+  const markup = battlefieldMarkup(createBattle(army({ equipment: { artillery: { level: 3, deployed: true }, tank: { level: 3, deployed: true } } }), 1));
   const ids = [...markup.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
   assert.equal(ids.length, new Set(ids).size);
   assert.equal((markup.match(/<canvas\b/g) ?? []).length, 1);
-  assert.match(markup, /<button[^>]*id="battle-field"[^>]*aria-label="전원 사격"/);
+  assert.deepEqual([...markup.matchAll(/data-special="(\w+)"/g)].map(m => m[1]), ['artillery', 'tank']);
   for (const required of ['battle-canvas', 'battle-player-hp', 'battle-enemy-hp', 'battle-pause', 'battle-resume'])
     assert.ok(ids.includes(required));
   for (const homeControl of ['tap-zone', 'gold', 'open-shop', 'open-equipment'])
     assert.ok(!ids.includes(homeControl));
-  assert.match(markup, /전투 터치는 골드를 지급하지 않아요/);
+  assert.match(markup, /전투 중 터치는 골드를 지급하지 않아요/);
 });
