@@ -1,3 +1,4 @@
+import { fmt } from "./format.js";
 // Browser text stays sharp independently of the pixel-art canvas scaling.
 // Called only after the cached scene changes (army, equipment or dimensions).
 import { schoolIcon } from './school-art.js';
@@ -18,7 +19,7 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
     label.textContent = item.text;
     if (item.gearCount) {
       const count = document.createElement("span");
-      count.className = "field-equipment-count"; count.textContent = `[${item.gearCount.toLocaleString("ko-KR")}문]`;
+      count.className = "field-equipment-count"; count.textContent = `[${fmt(item.gearCount)}문]`;
       label.append(count);
     }
     label.style.left = `${item.x / width * 100}%`;

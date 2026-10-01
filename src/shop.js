@@ -1,4 +1,4 @@
-import { fmt } from "./format.js";
+import { fmt, fmtGold } from "./format.js";
 import { equipmentStoreMarkup } from "./equipment-panels.js";
 import { UNITS, unitAccess } from "./units.js";
 import { schoolsMarkup } from "./school-panels.js";
@@ -32,7 +32,7 @@ function recruitmentMarkup(s, coin, insignia) {
      <div class="recruit-visual"><canvas data-portrait="${unit.id}" width="80" height="100" role="img" aria-label="${unit.name} 픽셀 그림"></canvas></div>
      <div class="recruit-info"><span class="item-class">${unit.id === "soldier" ? "기본 병력" : "전력 " + unit.power + " · 간부"}</span>
       <h3>${unit.name}</h3><span data-field="owned"></span>
-      <p>한 명마다 <b>초당 +${fmt(unit.passive)} G</b><br>한 명마다 <b>터치 +${fmt(unit.tap)} G</b></p>
+      <p>한 명마다 <b>초당 +${fmtGold(unit.passive)} G</b><br>한 명마다 <b>터치 +${fmtGold(unit.tap)} G</b></p>
      </div>
     </div>
     <p class="unit-unlock" data-field="unlock">${unitAccess(s,unit).requirement}</p>

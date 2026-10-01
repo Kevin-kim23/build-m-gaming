@@ -24,7 +24,7 @@ export { UNITS, armyPower } from "./units.js";
 export { RANKS, RANK_REQUIREMENTS, rankFor } from "./ranks.js";
 export const SAVE_KEY = "budae-kiugi-recruits-v3";
 export const LEGACY_KEY = "budae-kiugi-tap-save-v2";
-export const MAX_GOLD = 1_000_000_000_000;
+export const MAX_GOLD = 100_000_000_000_000;
 export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
 export const MAX_SOLDIERS = FIELD_ARMY_SIZE * 4;
 export const perTap = (s, now = Date.now()) =>

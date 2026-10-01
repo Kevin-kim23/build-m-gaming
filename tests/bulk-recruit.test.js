@@ -10,8 +10,8 @@ const T = 1800000000000;
 const army = (power = 1280) => ({
   ...freshState(T), soldiers: power - 400, sergeants: 40, gold: MAX_GOLD,
 });
-const expectedBatchCost = (owned) =>
-  Array.from({ length: 100 }, (_, index) => unitCost(owned + index)).reduce((sum, cost) => sum + cost, 0);
+const expectedBatchCost = (owned, type = 'soldier') =>
+  Array.from({ length: 100 }, (_, index) => unitCost(owned + index, type)).reduce((sum, cost) => sum + cost, 0);
 
 test("level one command baton is previewed at major and automatically owned from lieutenant colonel", async () => {
   const { COMMAND_BATON, commandBatonStatus } = await import("../src/personal-equipment.js");
@@ -63,17 +63,18 @@ test("a hundred recruits are atomic when money or only ninety-nine power slots r
   assert.equal(recruit(atLimit, T, "soldier", 100).reason, "limit");
   assert.deepEqual(atLimit, beforeLimitFailure);
   const exactCapacity = army(MAX_SOLDIERS - 100);
-  assert.equal(recruitOffer(exactCapacity, "soldier", 100).reason, "gold");
+  assert.equal(recruit(exactCapacity, T, "soldier", 100).ok, true);
+  assert.equal(exactCapacity.soldiers + exactCapacity.sergeants * 10, MAX_SOLDIERS);
 });
 
 test("batch totals above the wallet limit remain unaffordable instead of being discounted to MAX_GOLD", () => {
-  const s = army(MAX_SOLDIERS - 100), original = structuredClone(s);
-  const cost = expectedBatchCost(s.soldiers), offer = recruitOffer(s, "soldier", 100);
+  const s = { ...army(), soldiers: 5000, sergeants: 130000, ncoSchoolLevel: 1 }, original = structuredClone(s);
+  const cost = expectedBatchCost(s.sergeants, 'sergeant'), offer = recruitOffer(s, "sergeant", 100);
   assert.ok(cost > MAX_GOLD);
   assert.ok(Number.isSafeInteger(cost));
   assert.equal(offer.cost, cost);
   assert.equal(offer.canBuy, false);
-  assert.equal(recruit(s, T, "soldier", 100).reason, "gold");
+  assert.equal(recruit(s, T, "sergeant", 100).reason, "gold");
   assert.deepEqual(s, original);
 });
 

@@ -69,7 +69,8 @@ test('bonus accrual is consistent across fractional ticks, offline time, reloads
   restored.gold=MAX_GOLD-1;accrue(restored,T+12000);assert.equal(restored.gold,MAX_GOLD);assert.equal(restored.incomeRemainder,0);
   for(const id of ['helicopter','rocketLauncher','transport','fighter'])restored.equipment[id]={level:20,count:100000,deployed:true};
   restored.gold=0;assert.ok(Number.isSafeInteger(perSecond(restored)));
-  accrue(restored,T+14000);assert.equal(restored.gold,MAX_GOLD);assert.equal(restored.incomeRemainder,0);
+  accrue(restored,T+12000+Math.ceil(MAX_GOLD/perSecond(restored))*1000);
+  assert.equal(restored.gold,MAX_GOLD);assert.equal(restored.incomeRemainder,0);
 });
 test('country details follow the viewed nation and explain locked entries outside the map',()=>{
   const nodes=Object.fromEntries(['title','detail','status','entry'].map(k=>['[data-country-'+k+']',{textContent:'',dataset:{},setAttribute(k,v){this[k]=v;}}]));

@@ -1,6 +1,6 @@
 import { personalMarkup } from "./personal-panels.js";
 import { repeatPurchaseMarkup, renderRepeatPurchase } from "./equipment-repeat-ui.js";
-import { fmt } from "./format.js";
+import { fmt, fmtGold } from "./format.js";
 import {
   EQUIPMENT,
   MAX_DEPLOYED_EQUIPMENT, deployedEquipment, deploymentOffer,
@@ -23,7 +23,7 @@ export function panelTabs(mode) {
 export function equipmentStoreMarkup(s) {
   const items = visibleEquipment(s);
   if (!items.length) return "";
-  return `<section class="equipment-store"><h3>장비 구매</h3>${items.map((d) => `<article class="unit-card" data-equipment="${d.id}" aria-label="${d.name} 구매"><div class="equipment-store-head"><canvas data-gun-preview width="220" height="124" role="img" aria-label="${d.name}"></canvas><div><span class="item-class">${d.unlockRank} 해금</span><h3>${d.name}</h3><span class="equipment-quantity" data-gear-count></span><p data-gear-income></p></div></div><p data-gear-status class="unit-unlock"></p><div class="price-line"><span>구매 비용</span><strong>${fmt(d.cost)} <small>G</small></strong></div><button class="buy" data-buy-equipment="${d.id}"></button><button class="equipment-link" data-manage-equipment="${d.id}" hidden>장비 탭에서 강화·관리</button><p class="unit-price-note">빈자리에 자동 배치 · 4칸이 차면 보관 · 사단기 Lv.2부터 최대 20강</p>${repeatPurchaseMarkup(d.id)}</article>`).join("")}</section>`;
+  return `<section class="equipment-store"><h3>장비 구매</h3>${items.map((d) => `<article class="unit-card" data-equipment="${d.id}" aria-label="${d.name} 구매"><div class="equipment-store-head"><canvas data-gun-preview width="220" height="124" role="img" aria-label="${d.name}"></canvas><div><span class="item-class">${d.unlockRank} 해금</span><h3>${d.name}</h3><span class="equipment-quantity" data-gear-count></span><p data-gear-income></p></div></div><p data-gear-status class="unit-unlock"></p><div class="price-line"><span>구매 비용</span><strong>${fmtGold(d.cost)} <small>G</small></strong></div><button class="buy" data-buy-equipment="${d.id}"></button><button class="equipment-link" data-manage-equipment="${d.id}" hidden>장비 탭에서 강화·관리</button><p class="unit-price-note">빈자리에 자동 배치 · 4칸이 차면 보관 · 사단기 Lv.2부터 최대 20강</p>${repeatPurchaseMarkup(d.id)}</article>`).join("")}</section>`;
 }
 export function renderEquipmentStore(s, root) {
   root.querySelectorAll("[data-equipment]").forEach((card) => {
@@ -41,14 +41,14 @@ export function renderEquipmentStore(s, root) {
     button.hidden = !!gun;
     const count = equipmentCount(s, id), stats = equipmentStats(gun?.level ?? 0, id);
     card.querySelector("[data-gear-count]").textContent = `[${fmt(count)}문]`;
-    card.querySelector("[data-gear-income]").textContent = `초당 +${fmt(stats.passive * (count || 1))} G · 터치 +${fmt(stats.tap * (count || 1))} G${gun ? " · 보유 합계" : " · 1문 기준"}`;
+    card.querySelector("[data-gear-income]").textContent = `초당 +${fmtGold(stats.passive * (count || 1))} G · 터치 +${fmtGold(stats.tap * (count || 1))} G${gun ? " · 보유 합계" : " · 1문 기준"}`;
     button.textContent =
       offer.reason === "owned"
         ? "구매 완료"
         : offer.locked
           ? "잠금 · " + d.unlockRank + "부터 구매"
           : offer.reason === "gold"
-            ? fmt(offer.cost - s.gold) + " G 부족"
+            ? fmtGold(offer.cost - s.gold) + " G 부족"
             : d.name + " 구매";
     card.querySelector("[data-manage-equipment]").hidden = !gun;
     card.classList.toggle("locked", offer.locked);
@@ -71,7 +71,7 @@ export function equipmentPanelMarkup(s, id, category = "military") {
   );
 }
 export function renderEquipmentPanel(s, root, id) {
-  text(root, "equipment-gold", fmt(s.gold));
+  text(root, "equipment-gold", fmtGold(s.gold));
   if (!root.querySelector("#equipment-level")) return;
   text(root, "deployment-count", `연병장 ${deployedEquipment(s).length} / ${MAX_DEPLOYED_EQUIPMENT}칸 사용 · 같은 종류는 한 칸에 묶입니다.`);
   const d = EQUIPMENT[id],
@@ -97,7 +97,7 @@ export function renderEquipmentPanel(s, root, id) {
       ? ""
       : purchase.locked
         ? d.unlockRank + " 진급 후 상점에서 구매할 수 있어요."
-        : "상점에서 " + fmt(d.cost) + " 골드로 구매할 수 있어요.",
+        : "상점에서 " + fmtGold(d.cost) + " 골드로 구매할 수 있어요.",
   );
   root.querySelector("#equipment-to-shop").hidden = !!gun;
   root.querySelector("#owned-equipment").hidden = !gun;
@@ -110,8 +110,8 @@ export function renderEquipmentPanel(s, root, id) {
       e.classList.toggle("filled", !!gun && Number(e.dataset.level) <= level),
     );
   if (!gun) return;
-  text(root, "equipment-passive", "+" + fmt(stats.passive * equipmentCount(s, id)) + " G");
-  text(root, "equipment-tap", "+" + fmt(stats.tap * equipmentCount(s, id)) + " G");
+  text(root, "equipment-passive", "+" + fmtGold(stats.passive * equipmentCount(s, id)) + " G");
+  text(root, "equipment-tap", "+" + fmtGold(stats.tap * equipmentCount(s, id)) + " G");
   text(
     root,
     "toggle-equipment",
@@ -134,13 +134,13 @@ export function renderEquipmentPanel(s, root, id) {
     max
       ? (offer.limit === 10 ? "중장 · 사단기 Lv.2부터 20강까지 확장됩니다." : "모든 강화가 완료되었습니다.")
       : "1문당 초당 " +
-          fmt(stats.passive) +
+          fmtGold(stats.passive) +
           " → " +
-          fmt(next.passive) +
+          fmtGold(next.passive) +
           " G · 터치 " +
-          fmt(stats.tap) +
+          fmtGold(stats.tap) +
           " → " +
-          fmt(next.tap) +
+          fmtGold(next.tap) +
           " G",
   );
   text(
@@ -148,14 +148,14 @@ export function renderEquipmentPanel(s, root, id) {
     "enhancement-appearance",
     max ? equipmentStage(id, level) : "다음 외형: " + equipmentStage(id, level + 1),
   );
-  text(root, "enhancement-cost", max ? "완료" : fmt(offer.cost) + " G · " + fmt(equipmentCount(s,id)) + "문 합계");
+  text(root, "enhancement-cost", max ? "완료" : fmtGold(offer.cost) + " G · " + fmt(equipmentCount(s,id)) + "문 합계");
   text(
     root,
     "enhance-equipment",
     max
       ? "최대 강화 완료"
       : offer.reason === "gold"
-        ? fmt(offer.cost - s.gold) + " G 부족"
+        ? fmtGold(offer.cost - s.gold) + " G 부족"
         : level + 1 + "강으로 강화",
   );
   root.querySelector("#enhance-equipment").disabled = !offer.canUpgrade;

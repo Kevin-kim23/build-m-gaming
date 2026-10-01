@@ -5,7 +5,7 @@ import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
 import { UNIT_LIST, unitAccess } from "./units.js";
 import { schoolOffer } from "./schools.js";
-import { fmt } from "./format.js";
+import { fmt, fmtGold } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
 import { createGameSession } from "./session.js";
 import { createBattleUI } from "./battle-ui.js";
@@ -75,8 +75,9 @@ const achievementUI = createAchievementUI(session);
 function update() {
   const power = armyPower(state),
     r = rank();
-  setText("#gold", fmt(state.gold));
-  $("#gold").classList.toggle("large-balance", state.gold >= 1e9);
+  const goldLabel = fmtGold(state.gold);
+  setText("#gold", goldLabel);
+  $("#gold").classList.toggle("large-balance", goldLabel.length >= 12);
   $("#sound").setAttribute("aria-checked", String(state.sound));
   if (rosterDirty) {
     rosterDirty = false;
@@ -91,7 +92,7 @@ function update() {
     }
     setText("#formation-summary", fieldSummary(state));
     $("#formation-summary").hidden = power === 0;
-    setText("#passive-rate", "+" + fmt(perSecond(state)) + " G");
+    setText("#passive-rate", "+" + fmtGold(perSecond(state)) + " G");
     const conquestBonus = campaignBonusPercent(state);
     setText("#campaign-income-bonus", `점령 +${conquestBonus}%`);
     $("#campaign-income-bonus").hidden = !conquestBonus;
@@ -115,8 +116,8 @@ function update() {
     button.setAttribute('aria-pressed', String(fieldTheme(state) === button.dataset.fieldTheme));
   }
   const tap = perTap(state);
-  setText("#tap-rate", "+" + fmt(tap) + " G");
-  setText("#tap-hint-rate", "한 번에 +" + fmt(tap) + " G");
+  setText("#tap-rate", "+" + fmtGold(tap) + " G");
+  setText("#tap-hint-rate", "한 번에 +" + fmtGold(tap) + " G");
   zone.setAttribute("aria-label", "화면 터치해서 골드 " + tap + " 획득");
   syncSwordControls(document.querySelector('.field-tools'), state, session.active);
   syncRevolverControls(document.querySelector('.field-tools'), state, session.active);

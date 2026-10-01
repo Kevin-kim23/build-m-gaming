@@ -43,7 +43,7 @@ test('sergeant batch is atomic for insufficient gold, capacity and wallet-limit 
   }
   const exact={...army(),soldiers:MAX_SOLDIERS-400-1000};
   assert.equal(recruit(exact,T,'sergeant',100).ok,true);
-  const expensive={...army(10000),sergeants:10000};
+  const expensive={...army(10000),sergeants:120000};
   assert.ok(recruitOffer(expensive,'sergeant',100).cost>MAX_GOLD);
   assert.equal(recruit(expensive,T,'sergeant',100).reason,'gold');
 });

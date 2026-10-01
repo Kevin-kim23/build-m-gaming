@@ -1,9 +1,9 @@
-import { fmt } from "./format.js";
+import { fmtGold } from "./format.js";
 export function tapFeedback(zone, gold, event, amount) {
   const bounds = zone.getBoundingClientRect(),
     label = document.createElement("span");
   label.className = "gold-float";
-  label.textContent = `+${fmt(amount)} G`;
+  label.textContent = `+${fmtGold(amount)} G`;
   const x = event.detail === 0 ? bounds.width / 2 : event.clientX - bounds.left,
     y = event.detail === 0 ? bounds.height * 0.49 : event.clientY - bounds.top;
   label.style.left = `${Math.max(40, Math.min(bounds.width - 46, x))}px`;

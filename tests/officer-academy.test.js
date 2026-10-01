@@ -112,7 +112,9 @@ test('all ten troop types participate in battle without increasing the enemy ros
 });
 test('academy stages show true prices and recommended ranks, with distinct cached geometry',()=>{
   const html=schoolsMarkup({...general(),officerSchoolLevel:3});
-  for(const g of OFFICER_GRADES){assert.ok(html.includes(g.name+' 모집'));assert.ok(html.includes(g.academyCost.toLocaleString('ko-KR')+' G'));}
+  for(const g of OFFICER_GRADES)assert.ok(html.includes(g.name+' 모집'));
+  for(const price of ['150,000,000', '3,000,000,000', '20,000,000,000', '2,500억', '9,000억'])
+    assert.ok(html.includes(price+' G'));
   assert.match(html,/추가 계급 제한 없이 골드/);
   const images=OFFICER_GRADES.map(g=>schoolIcon('officer',g.schoolLevel).replace(/aria-label="[^"]*"/,''));
   assert.equal(new Set(images).size,5);
