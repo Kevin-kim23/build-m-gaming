@@ -87,7 +87,7 @@ export function createBattle(state, stageId, input = defaultLoadout(state)) {
 }
 
 function cloneSide(side) {
-  return { hq: { ...side.hq }, units: side.units.map((u) => ({ ...u })), equipment: side.equipment.map((g) => ({ ...g })) };
+  return { hq: { ...side.hq }, fortress: side.fortress, units: side.units.map((u) => ({ ...u })), equipment: side.equipment.map((g) => ({ ...g })) };
 }
 function cloneBattle(battle) {
   return { ...battle, player: cloneSide(battle.player), enemy: cloneSide(battle.enemy) };

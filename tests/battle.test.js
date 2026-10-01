@@ -186,3 +186,12 @@ test("enemy gear differs by stage type but total enemy gear power stays equal to
     assert.ok(Math.abs(raw(type.gear, enemyBalanceFactor(id)) - raw(ENEMY_EQUIPMENT)) / raw(ENEMY_EQUIPMENT) < 0.03); // 간격은 50ms 단위로 반올림되므로 오차 3% 허용
   }
 });
+
+test("the fortress marker survives battle steps so the fortress picture keeps showing", () => {
+  const s = army(327680); s.equipment.artillery = { level: 3, deployed: true };
+  let b = createBattle({ ...s, campaignCleared: 80 }, 20);
+  assert.equal(b.enemy.fortress, "serdin");
+  b = advanceBattle(advanceBattle(b, 50), 50);
+  assert.equal(b.enemy.fortress, "serdin");
+  assert.equal(createBattle({ ...s, campaignCleared: 80 }, 19).enemy.fortress, null);
+});
