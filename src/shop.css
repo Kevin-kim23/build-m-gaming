@@ -179,3 +179,18 @@
 .tile-hint { min-height: 0; margin: 1px 0 0; font-size: 8px; line-height: 1.25; color: #d6b88c; word-break: keep-all; }
 .tile-hint:empty { display: none; }
 .tile-detail { position: absolute; top: 1px; right: 1px; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: #1f2b22aa; color: #e8e2b8; font-size: 12px; line-height: 1; cursor: pointer; }
+
+/* Equipment tiles: two columns. */
+.equip-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0; align-items: stretch; }
+.equip-tile { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 6px 7px; text-align: center; background: #2c3929; border: 1px solid #596849; border-radius: 7px; }
+.equip-tile.locked { border-style: dashed; background: #293327; }
+.equip-tile.locked .equip-visual, .equip-tile.locked h3, .equip-tile.locked .tile-stats { opacity: 0.6; }
+.equip-visual { position: relative; width: 100%; height: 66px; display: grid; place-items: center; background: #3a4a36; border-radius: 4px; box-shadow: inset 0 0 0 2px #2f3d2d; }
+.equip-visual canvas { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.equip-tile h3 { margin: 3px 0 0; font-size: 13px; line-height: 1.25; word-break: keep-all; }
+.equip-tile h3 small { font-size: 10px; font-weight: 400; color: #dace99; }
+.equip-stats { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0 8px; }
+.equip-tile .tile-price { font-size: 12px; }
+.equip-tile .tile-buttons .buy { min-height: 32px; font-size: 11px; }
+.equip-tile [hidden] { display: none; }
+.detail-art-wide { width: 100%; height: 150px; }

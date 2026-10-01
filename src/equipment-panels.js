@@ -20,42 +20,7 @@ const text = (root, id, value) => {
 export function panelTabs(mode) {
   return `<nav class="panel-tabs" role="tablist" aria-label="부대 메뉴"><button role="tab" aria-selected="${mode === "shop"}" data-panel="shop">상점</button><button role="tab" aria-selected="${mode === "equipment"}" data-panel="equipment">장비</button></nav>`;
 }
-export function equipmentStoreMarkup(s) {
-  const items = visibleEquipment(s);
-  if (!items.length) return "";
-  return `<section class="equipment-store"><h3>장비 구매</h3>${items.map((d) => `<article class="unit-card" data-equipment="${d.id}" aria-label="${d.name} 구매"><div class="equipment-store-head"><canvas data-gun-preview width="220" height="124" role="img" aria-label="${d.name}"></canvas><div><span class="item-class">${d.unlockRank} 해금</span><h3>${d.name}</h3><span class="equipment-quantity" data-gear-count></span><p data-gear-income></p></div></div><p data-gear-status class="unit-unlock"></p><div class="price-line"><span>구매 비용</span><strong>${fmtGoldCost(d.cost)} <small>G</small></strong></div><button class="buy" data-buy-equipment="${d.id}"></button><button class="equipment-link" data-manage-equipment="${d.id}" hidden>장비 탭에서 강화·관리</button><p class="unit-price-note">빈자리에 자동 배치 · 4칸이 차면 보관 · 사단기 Lv.2부터 최대 20강</p>${repeatPurchaseMarkup(d.id)}</article>`).join("")}</section>`;
-}
-export function renderEquipmentStore(s, root) {
-  root.querySelectorAll("[data-equipment]").forEach((card) => {
-    const id = card.dataset.equipment,
-      d = EQUIPMENT[id],
-      offer = equipmentPurchaseOffer(s, id),
-      gun = equipmentOf(s, id);
-    card.querySelector("[data-gear-status]").textContent = gun
-      ? "보유 중 · +" + gun.level + "강"
-      : offer.locked
-        ? "🔒 " + d.unlockRank + " 진급 시 해금"
-        : "구매 가능 · 강화는 장비 탭에서";
-    const button = card.querySelector("[data-buy-equipment]");
-    button.disabled = !offer.canBuy;
-    button.hidden = !!gun;
-    const count = equipmentCount(s, id), stats = equipmentStats(gun?.level ?? 0, id);
-    card.querySelector("[data-gear-count]").textContent = `[${fmt(count)}문]`;
-    card.querySelector("[data-gear-income]").textContent = `초당 +${fmtGold(stats.passive * (count || 1))} G · 터치 +${fmtGold(stats.tap * (count || 1))} G${gun ? " · 보유 합계" : " · 1문 기준"}`;
-    button.textContent =
-      offer.reason === "owned"
-        ? "구매 완료"
-        : offer.locked
-          ? "잠금 · " + d.unlockRank + "부터 구매"
-          : offer.reason === "gold"
-            ? fmtGoldCost(offer.cost - s.gold) + " G 부족"
-            : d.name + " 구매";
-    card.querySelector("[data-manage-equipment]").hidden = !gun;
-    card.classList.toggle("locked", offer.locked);
-    drawEquipment(card.querySelector("canvas"), gun?.level ?? 0, id);
-  });
-  renderRepeatPurchase(s, root);
-}
+export { equipmentStoreMarkup, renderEquipmentStore } from "./equipment-tiles.js";
 export function equipmentPanelMarkup(s, id, category = "military") {
   const items = visibleEquipment(s),
     d = EQUIPMENT[id];

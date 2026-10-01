@@ -8,11 +8,13 @@ import { rankForArmy } from './ranks.js';
 import { COMMAND_BATON, BULK_RECRUIT, commandBatonStatus, generalSwordStatus, GENERAL_SWORD, generalSwordDuration, divisionFlagStatus, generalRevolverStatus } from './personal-equipment.js';
 import { EQUIPMENT, equipmentOf, visibleEquipment, deploymentOffer } from './equipment.js';
 import { panelTabs, equipmentPanelMarkup, renderEquipmentStore, renderEquipmentPanel } from './equipment-panels.js';
+import { drawEquipment } from './equipment-art.js';
 import { SHOP_CATEGORIES, shopMarkup } from './shop.js';
 import { drawFormationPortrait } from './art.js';
 import { showPromotion } from './promotion.js';
 import { openDetail, closeDetail, setDetailActions } from './detail-popup.js';
 import { unitDetailMarkup } from './unit-detail.js';
+import { equipmentDetailMarkup } from './equipment-detail.js';
 import './shop.css';
 import './schools.css';
 
@@ -102,6 +104,10 @@ export function createArmyPanels(session, audio) {
   function showUnitDetail(id) {
     const popup = openDetail(unitDetailMarkup(state(), UNITS[id]));
     popup.querySelectorAll('[data-portrait]').forEach(c => drawFormationPortrait(c, c.dataset.portrait));
+  }
+  function showEquipmentDetail(id) {
+    const popup = openDetail(equipmentDetailMarkup(state(), id));
+    popup.querySelectorAll('[data-gun-preview]').forEach(c => drawEquipment(c, equipmentOf(state(), id)?.level ?? 0, id));
   }
   function buyUnit(id, quantity = 1) {
     const previousBatonLevel = commandBatonStatus(state()).level;
@@ -195,6 +201,7 @@ export function createArmyPanels(session, audio) {
       if (result?.ok) text('#equipment-message', `${generalSwordDuration(state())/1000}초 동안 터치 골드가 2배입니다!`);
     }
     else if (button.dataset.detailUnit) showUnitDetail(button.dataset.detailUnit);
+    else if (button.dataset.detailEquipment) showEquipmentDetail(button.dataset.detailEquipment);
     else if (button.dataset.buy) buyUnit(button.dataset.buy);
     else if (button.dataset.buyBulk) buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount);
     else if (button.dataset.buyAdditional) purchaseAdditionalGun(button.dataset.buyAdditional);
@@ -208,6 +215,7 @@ export function createArmyPanels(session, audio) {
   });
   setDetailActions((action, data) => {
     if (action === 'shop-category') { closeDetail(); openShop(data.category); }
+    else if (action === 'manage-equipment') { closeDetail(); openEquipment(data.id, 'military'); }
   });
   dialog.addEventListener('close', () => document.querySelector(activePanel === 'equipment' ? '#open-equipment' : '#open-shop').focus());
   return { openShop, openEquipment, sync };
