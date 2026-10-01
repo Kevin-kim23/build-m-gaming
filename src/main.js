@@ -3,6 +3,7 @@ import { autoTouchStatus } from "./personal-equipment.js";
 import { canChooseFieldTheme, fieldTheme, setFieldTheme } from './field-theme.js';
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
+import { createTapTracker } from "./multi-tap.js";
 import { schoolOffer } from "./schools.js";
 import { fmtGold } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
@@ -138,12 +139,25 @@ function update() {
   armyPanels.sync();
 }
 
-zone.addEventListener("click", (event) => {
+// Every finger that touches the field earns gold at once (up to four fingers). Pointer events are
+// used instead of click because phones drop clicks while another finger is still down.
+const taps = createTapTracker();
+function earnTap(point) {
   const amount = session.tap();
   if (!amount) return;
-  tapFeedback(zone, $("#gold"), event, amount);
+  tapFeedback(zone, $("#gold"), point, amount);
   gameAudio.tap(state.sound);
+}
+zone.addEventListener("pointerdown", (event) => {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  if (!taps.down(event.pointerId, event.timeStamp)) return;
+  try { zone.setPointerCapture?.(event.pointerId); } catch (error) { reportError("tap.capture", error); }
+  earnTap({ clientX: event.clientX, clientY: event.clientY, detail: 1 });
 });
+for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
+  zone.addEventListener(type, (event) => taps.up(event.pointerId));
+// Keyboard and assistive-technology activation arrives as a click without a pointer (detail 0).
+zone.addEventListener("click", (event) => { if (event.detail === 0) earnTap(event); });
 $(".field-tools [data-use-sword]").onclick = () => session.change(s => activateSword(s));
 $(".field-tools [data-use-revolver]").onclick = () => session.change(s => activateAutoTouch(s));
 document.querySelector('.field-theme-picker').addEventListener('click', event => {
@@ -162,6 +176,7 @@ $("#open-shop").onclick = () => armyPanels.openShop();
 $("#open-equipment").onclick = () => armyPanels.openEquipment();
 $("#open-battle").onclick = () => battleUI.open();
 function pauseGame() {
+  taps.clear();
   battleUI.suspend();
   session.pause();
   hidePromotion();

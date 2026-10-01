@@ -12,7 +12,9 @@
 .rank { position: relative; display: flex; align-items: center; gap: 8px; }
 .rank-open { position: absolute; inset: -6px -8px; padding: 0; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
 .rank-open:focus-visible { outline: 2px solid #bfd18c; }
-.rank h1::after { content: " ▾"; font-size: 11px; color: #a0ab91; }
+/* A clearly visible "open the rank guide" chip beside the rank name. */
+.rank h1 { display: flex; align-items: center; gap: 7px; }
+.rank h1::after { content: "▾"; flex: 0 0 auto; display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid #b7b481; border-radius: 7px; background: #3b4731; color: #f3e7b8; font-size: 15px; line-height: 1; letter-spacing: 0; }
 .rank small { font-size: 10px; color: #a0ab91; white-space: nowrap; }
 .rank h1 { font-size: 20px; margin: 3px 0 0; letter-spacing: -0.7px; font-weight: 650; }
 .gold-counter { min-width: 0; text-align: right; }
@@ -75,3 +77,6 @@
 @media(max-width:360px) { .field-tools { gap:4px; } .home-skills { gap:4px; } .home-skill { gap:3px; padding-inline:4px; font-size:10px; } .field-theme-picker button { padding-inline:6px; font-size:10px; } }
 
 #campaign-income-bonus { margin-left:4px; color:#e0ce91; font-size:10px; white-space:nowrap; }
+
+/* The field takes several simultaneous touches; the browser must not claim them for panning or zooming. */
+#tap-zone { touch-action: none; }
