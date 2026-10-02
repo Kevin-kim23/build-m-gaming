@@ -126,7 +126,7 @@
 .battle-cards .deploy-card b { font-size:10px; word-break:keep-all; }
 .battle-cards .deploy-card .card-art { width:min(100%,50px); height:auto; aspect-ratio:56/68; }
 .battle-cards .deploy-card .card-cost { top:-7px; left:-4px; }
-.battle-cards .deploy-card small { display:block; font-size:9px; margin:0; color:#cfe0b8; }
+.battle-cards .deploy-card small { display:block; font-size:10px; margin:0; color:#cfe0b8; }
 .battle-cards button:not(:disabled) { background:linear-gradient(#4f6a3c,#2f4128); box-shadow:0 0 8px #a9d27a88; }
 .battle-cards button:disabled { opacity:.55; filter:grayscale(.4); }
 .battle-cards button[aria-pressed="true"] { outline:3px solid #fff1b8; box-shadow:0 0 12px #ffe08acc; transform:translateY(-4px); }
