@@ -227,7 +227,7 @@ export function createBattleUI(session, audio = null) {
       // Mark handled first: change() notifies the home UI synchronously.
       const result = session.change(s => recordBattleVictory(s, battle));
       if (result?.ok) {
-        stars = '★'.repeat(result.stars) + '☆'.repeat(3 - result.stars);
+        stars = '★'.repeat(result.stars) + '☆'.repeat(3 - result.stars) + (result.newBest && !result.firstClear ? ' 신기록!' : '');
         loot = `+${fmtGold(result.gold)} G`;
         const bits = [];
         if (result.firstClear) bits.push(stageId === STAGES.length ? '대륙 정복 완료!' : stageId % 20 === 0 ? `${COUNTRIES[Math.floor(stageId / 20)-1].name} 점령!` : '지역 점령!', `초당 수입 +${REGION_INCOME_PERCENT}%`);

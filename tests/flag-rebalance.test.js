@@ -28,7 +28,7 @@ test('paid flag levels add one enhancement step and promotion alone keeps level 
 test('previous copies collapse once while level, deployment, exact gold and troops survive',()=>{
   const s={...army('준원수'),version:17,gold:MAX_GOLD-123n};
   for(const [i,id] of Object.keys(EQUIPMENT).entries())s.equipment[id]={level:i===0?20:10+i,count:35+i,deployed:i<4};
-  const migrated=parseSave(serializeSave(s),T);assert.equal(migrated.version,21);
+  const migrated=parseSave(serializeSave(s),T);assert.equal(migrated.version,22);
   for(const key of ['gold','soldiers','sergeants','lastAccrual'])assert.equal(migrated[key],s[key]);
   for(const item of Object.values(EQUIPMENT))assert.deepEqual(migrated.equipment[item.id],item.introducedVersion>17?null:{...s.equipment[item.id],count:1});
   assert.equal(enhanceEquipment(migrated,T,'artillery').reason,'max');

@@ -7,7 +7,7 @@ import { GENERAL_SWORD } from './personal-equipment.js';
 import { AUTO_TOUCH, PERSONAL_EQUIPMENT } from './personal-catalog.js';
 import { reconcileAchievements } from './achievements.js';
 import { emptyEquipment, EQUIPMENT, deployedEquipment, MAX_DEPLOYED_EQUIPMENT } from './equipment.js';
-import { freshState, MAX_SOLDIERS, SAVE_VERSION } from './state.js';
+import { freshState, MAX_SOLDIERS, SAVE_VERSION, CAMPAIGN_STAGE_COUNT } from './state.js';
 import { validateSave, requireSave, SaveValidationError } from './save-validation.js';
 
 // Pure parsing: callers decide when to report a diagnostic. Missing saves are not errors.
@@ -29,7 +29,7 @@ export function inspectSave(raw, now = Date.now()) {
     } };
   }
 }
-// Compatibility API for existing callers and version 2–21 migrations.
+// Compatibility API for existing callers and version 2–22 migrations.
 export function parseSave(raw, now = Date.now()) { return inspectSave(raw, now).state; }
 
 function migrateSave(s, now) {
@@ -50,6 +50,7 @@ function migrateSave(s, now) {
     advancedSchoolLevel: s.version >= 17 ? s.advancedSchoolLevel : 0,
     battleCleared: s.version >= 7 ? s.battleCleared : 0,
     campaignCleared: s.version >= 15 ? s.campaignCleared : 0,
+    campaignStars: s.version >= 22 ? [...s.campaignStars] : Array(CAMPAIGN_STAGE_COUNT).fill(0),
     earnedAchievements: s.version >= 8 ? [...s.earnedAchievements] : [],
     gold,
     taps: s.taps,

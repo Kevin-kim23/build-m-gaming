@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { freshState, parseSave, SAVE_KEY } from '../src/game.js';
+import { freshState, parseSave, SAVE_KEY, serializeSave } from '../src/game.js';
 import { FIELD_ARMY_SIZE } from '../src/formations.js';
 import { createBattle } from '../src/battle.js';
 import { play } from './lane-helpers.js';
@@ -24,10 +24,10 @@ function win(state, stage = 1) {
 test('a real victory records progress, its medal and the loot gold without changing troops', () => {
   const state = army(), before = structuredClone(state), battle = win(state);
   const result = recordBattleVictory(state, battle);
-  assert.deepEqual({ ...result, gold: undefined, stars: undefined }, { ok: true, firstClear: true, gold: undefined, stars: undefined, achievements: ['firstVictory'] });
+  assert.deepEqual({ ...result, gold: undefined, stars: undefined }, { ok: true, firstClear: true, gold: undefined, stars: undefined, newBest: true, achievements: ['firstVictory'] });
   assert.ok(result.stars >= 1 && result.stars <= 3);
   assert.equal(state.gold, before.gold + result.gold);
-  assert.deepEqual({ ...state, gold: 0 }, { ...before, gold: 0, campaignCleared: 1, earnedAchievements: [...before.earnedAchievements, 'firstVictory'] });
+  assert.deepEqual({ ...state, gold: 0 }, { ...before, gold: 0, campaignCleared: 1, campaignStars: [result.stars, ...Array(79).fill(0)], earnedAchievements: [...before.earnedAchievements, 'firstVictory'] });
   assert.equal(battle.enemy.hq.hp, 0);
   assert.ok(battle.player.hq.hp > 0);
 });
@@ -52,10 +52,10 @@ test('replayed victories are idempotent and stage progress cannot skip ahead or 
   assert.equal(recordBattleVictory(state, { ...first, stageId: 3 }).reason, 'sequence');
   assert.equal(state.campaignCleared, 0);
   recordBattleVictory(state, first);
-  assert.deepEqual({ ...recordBattleVictory(state, first), gold: 0, stars: 0 }, { ok: true, firstClear: false, gold: 0, stars: 0, achievements: [] });
+  assert.deepEqual({ ...recordBattleVictory(state, first), gold: 0, stars: 0 }, { ok: true, firstClear: false, gold: 0, stars: 0, newBest: false, achievements: [] });
   recordBattleVictory(state, win(state, 2));
   assert.equal(state.campaignCleared, 2);
-  assert.deepEqual({ ...recordBattleVictory(state, first), gold: 0, stars: 0 }, { ok: true, firstClear: false, gold: 0, stars: 0, achievements: [] });
+  assert.deepEqual({ ...recordBattleVictory(state, first), gold: 0, stars: 0 }, { ok: true, firstClear: false, gold: 0, stars: 0, newBest: false, achievements: [] });
   assert.equal(state.campaignCleared, 2);
 });
 
@@ -147,4 +147,31 @@ test('stars: 1 for any win, 2 for fast OR healthy HQ, 3 for both; they scale onl
   assert.equal(battleGoldReward(10, true, 0, 2), 22500);
   assert.equal(battleGoldReward(10, true, 0, 3), 27000);
   assert.equal(battleGoldReward(10, false, 0, 3), 1800);
+});
+
+test('the best star per region is saved, never lowered, and shown only for conquered regions', async () => {
+  const { STAGES } = await import('../src/battle.js');
+  assert.equal(STAGES.length, (await import('../src/state.js')).CAMPAIGN_STAGE_COUNT);
+  const state = army(), battle = win(state);
+  const worse = { ...battle, elapsedMs: 150000, player: { ...battle.player, hq: { ...battle.player.hq, hp: battle.player.hq.maxHp * 0.1 } } };
+  const better = { ...battle, elapsedMs: 10000, player: { ...battle.player, hq: { ...battle.player.hq, hp: battle.player.hq.maxHp } } };
+  assert.equal(recordBattleVictory(state, worse).newBest, true);
+  assert.equal(state.campaignStars[0], 1);
+  assert.equal(recordBattleVictory(state, better).newBest, true);
+  assert.equal(state.campaignStars[0], 3);
+  assert.equal(recordBattleVictory(state, worse).newBest, false);
+  assert.equal(state.campaignStars[0], 3, 'a worse replay never lowers the record');
+  assert.equal(state.campaignStars[1], 0);
+});
+
+test('format 22 saves keep stars, format 21 and older saves migrate with zero stars, impossible star records are rejected', () => {
+  const s = army(); s.campaignCleared = 3; s.campaignStars = [3, 2, 1, ...Array(77).fill(0)];
+  const loaded = parseSave(serializeSave(s), T);
+  assert.equal(loaded.version, 22); assert.deepEqual(loaded.campaignStars, s.campaignStars);
+  const old = { ...s, version: 21 }; delete old.campaignStars;
+  const migrated = parseSave(JSON.stringify(old), T);
+  assert.equal(migrated.version, 22); assert.deepEqual(migrated.campaignStars, Array(80).fill(0));
+  assert.equal(migrated.campaignCleared, 3); assert.equal(migrated.gold, s.gold);
+  for (const bad of [[3], Array(80).fill(4), Array(80).fill(-1), Array(80).fill(0.5), [0, 0, 0, 0, 2, ...Array(75).fill(0)], null, 'x'])
+    assert.equal(parseSave(serializeSave({ ...s, campaignStars: bad }), T), null);
 });

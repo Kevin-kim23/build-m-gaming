@@ -55,7 +55,7 @@ test('existing version sixteen conquests apply retroactively and survive reload 
   for(const cleared of [1,19,20,79,80]){
     const original={...state(),campaignCleared:cleared,gold:123456};
     const loaded=parseSave(serializeSave(original),T);assert.ok(loaded);
-    assert.equal(loaded.version,21);assert.equal(loaded.gold,original.gold);assert.equal(loaded.soldiers,original.soldiers);
+    assert.equal(loaded.version,22);assert.equal(loaded.gold,original.gold);assert.equal(loaded.soldiers,original.soldiers);
     assert.deepEqual(loaded.equipment,original.equipment);assert.equal(campaignBonusPercent(loaded),cleared);
     assert.equal(perSecond(loaded),perSecond(original));
     assert.deepEqual(parseSave(serializeSave(loaded),T),loaded);

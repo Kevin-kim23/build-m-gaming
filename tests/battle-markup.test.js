@@ -13,11 +13,11 @@ function inputTag(markup, attribute, id) {
   return markup.match(new RegExp(`<input\\b[^>]*${attribute}="${id}"[^>]*>`))?.[0];
 }
 
-test('continent preview shows four nations, three locked, and map movement controls',()=>{
+test('continent preview shows four nations, three locked, and a single locate button instead of arrow/zoom buttons',()=>{
  const html=stagesMarkup({...freshState(0),soldiers:4});
  assert.match(html,/아스테라 대륙/);assert.equal((html.match(/class="nation-tab /g)??[]).length,4);
  assert.equal((html.match(/class="country-hit locked"/g)??[]).length,3);
- for(const d of ['up','down','left','right'])assert.match(html,new RegExp('data-pan="'+d+'"'));
+ assert.match(html,/data-locate/);assert.doesNotMatch(html,/data-pan=|data-zoom=|atlas-controls/,'only one map button: gestures replace arrows and zoom');assert.match(html,/손가락으로 끌어 이동/);
  assert.doesNotMatch(html,/undefined|NaN/);
 });
 test('country preview exposes twenty regions but only a sequential ready action',()=>{
@@ -97,4 +97,15 @@ test('deck cards are pictures with name and mana badge, marked advantageous or d
   assert.doesNotMatch(inputTag(markup, 'data-battle-gear', 'artillery'), /\bchecked\b/);
   assert.match(markup, /gear-tile mini bad/);
   assert.match(quickDeckMarkup(army({ equipment: {} }), STAGES[0], []), /보유한 장비가 없어요/);
+});
+
+test('the map shows each conquered region\'s best stars and the selected region\'s record; unconquered regions show none', () => {
+  const state = army({ soldiers: 880, sergeants: 40, campaignCleared: 3, campaignStars: [3, 1, 0, ...Array(77).fill(0)], equipment: { artillery: { level: 3, deployed: true } } });
+  const html = stagesMarkup(state, 'serdin', 2, ['artillery']);
+  assert.equal((html.match(/class="region-stars"/g) ?? []).length, 3, 'one star row per conquered region');
+  assert.match(html, /aria-label="최고 별 3개">★★★</);
+  assert.match(html, /aria-label="최고 별 1개">★☆☆</);
+  assert.match(html, /aria-label="최고 별 0개">☆☆☆</);
+  assert.match(html, /최고 <span class="best-stars">★☆☆</);
+  assert.doesNotMatch(stagesMarkup(state, 'serdin', 4, ['artillery']), /최고 <span/);
 });

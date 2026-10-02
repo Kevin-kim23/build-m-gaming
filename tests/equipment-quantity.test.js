@@ -65,7 +65,7 @@ test('v12 quantity migration preserves all assets, deployment, theme and running
   for(const [i,id] of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'].entries())old.equipment[id]={level:i+5,deployed:i<4};
   const next = parseSave(serializeSave(old),T);
   for(const key of ['gold','soldiers','sergeants','fieldTheme','swordActivatedAt','taps','battleCleared'])assert.equal(next[key],old[key]);
-  assert.equal(next.version, 21);
+  assert.equal(next.version, 22);
   for(const id of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'])assert.deepEqual(next.equipment[id],{...old.equipment[id],count:1});
   assert.equal(next.equipment.transport,null);assert.equal(next.equipment.fighter,null);
   old.equipment.tank.count = 900;

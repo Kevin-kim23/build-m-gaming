@@ -78,7 +78,7 @@ test('legacy combat records are preserved without skipping any new conquest regi
   for(const version of [7,8,9,10,11,12,13,14]){
     const old={...freshState(T),version,battleCleared:10,campaignCleared:80,gold:1234567,soldiers:5000,sergeants:300};
     const migrated=parseSave(JSON.stringify(old),T);assert.ok(migrated);
-    assert.equal(migrated.version,21);assert.equal(migrated.battleCleared,10);assert.equal(migrated.campaignCleared,0);
+    assert.equal(migrated.version,22);assert.equal(migrated.battleCleared,10);assert.equal(migrated.campaignCleared,0);
     assert.equal(migrated.gold,old.gold);assert.equal(migrated.soldiers,old.soldiers);
   }
   for(const cleared of [0,19,20,39,40,59,60,79,80]){
@@ -110,7 +110,8 @@ test('region UI exposes all twenty regions, lock reasons, replay, next-country a
     assert.equal((html.match(/class="region-hit /g)??[]).length,20);
     assert.match(html,new RegExp(c.names[19]));assert.match(html,/최종 수도전/);assert.match(html,/전투 시작/);
     assert.doesNotMatch(html,/undefined|NaN/);
-    for(const control of ['data-world','data-zoom="in"','data-zoom="out"','data-locate'])assert.ok(html.includes(control));
+    for(const control of ['data-world','data-locate'])assert.ok(html.includes(control));
+    assert.ok(!html.includes('data-zoom')&&!html.includes('data-pan'));
   }
 });
 
