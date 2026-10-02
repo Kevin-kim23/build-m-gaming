@@ -5,7 +5,7 @@ const ramp=(from,to,n=20)=>Array.from({length:n},(_,i)=>i===n-1?to:Math.round(fr
 // 적 본부 체력 배율(권장 전력 기준). 뒤 나라일수록 높은 장비 레벨·수량을 가정하므로 같이 커진다. 수도 요새는 추가로 더 단단하다.
 // 적이 장비를 출격시키는 간격(ms): 나라별 시작값에서 지역마다 조금씩 빨라진다.
 const SPAWN_MS=[3600,3600,3600,3600],SPAWN_STEP=[40,40,40,40];
-const HQ_FACTOR=[2.5,8,20,45],FORTRESS_HQ_BONUS=[1.27,1.2,1.08,1.2];
+const HQ_FACTOR=[2.5,2.7,3.3,4.5],FORTRESS_HQ_BONUS=[1.27,1.2,1.08,1.2];
 // Original fictional geography. Shared border vertices keep the four nations contiguous.
 export const CONTINENT = Object.freeze({name:'아스테라',width:1000,height:2500,regionsPerCountry:20});
 const border12=[[205,1640],[310,1600],[415,1640],[520,1590],[625,1620],[720,1570],[830,1620]];

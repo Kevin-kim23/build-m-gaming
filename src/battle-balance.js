@@ -75,7 +75,7 @@ export function matchupMultiplier(stageId, gearId) {
 }
 
 // 난이도 기준 장비(레벨, 보유 수량). 나라별 적 본부 체력 배율은 이 장비로 맞춘다.
-export const REFERENCE_GEAR = Object.freeze([[8, 1], [12, 3], [16, 6], [20, 10]].map(Object.freeze));
+export const REFERENCE_GEAR = Object.freeze([[8, 1], [12, 1], [16, 1], [20, 1]].map(Object.freeze));
 
 export function combatScale(totalPower) {
   if (!Number.isFinite(totalPower) || totalPower <= 0)
