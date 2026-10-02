@@ -1,13 +1,13 @@
-import { BATTLE_RULES, UNIT_TRAITS, equipmentCombatStats, battleSlots, stageEnemyType, matchupMultiplier, GEAR_CLASS, CLASS_NAMES, fortressShieldClass } from './battle.js';
+import { BATTLE_RULES, UNIT_TRAITS, equipmentCombatStats, stageEnemyType, matchupMultiplier, GEAR_CLASS, CLASS_NAMES, fortressShieldClass } from './battle.js';
 import { armyPower } from './units.js';
 import { EQUIPMENT, equipmentCount } from './equipment.js';
 import { FORMATIONS } from './formations.js';
-import { fmt, fmtGold } from './format.js';
+import { fmt } from './format.js';
 
 // 전투 화면은 글을 최소로 둡니다(클래시 로얄처럼). 설명은 모두 "상세보기"(ⓘ) 팝업(battleDetailMarkup)에 있습니다.
-const header = (eyebrow, title, info = '') => `<header class="battle-header"><div><small>${eyebrow}</small><h2 id="battle-title">${title}</h2></div>${info}<button data-battle-close aria-label="전투 메뉴 닫기">×</button></header>`;
 const infoButton = '<button class="info-btn" data-battle-info aria-label="상세보기">ⓘ</button>';
 export { campaignMarkup as stagesMarkup } from './campaign-map.js';
+export { quickDeckMarkup, stageTagsMarkup } from './quick-deck.js';
 
 const gearLine = (state, stage, id) => {
   const gun = state.equipment[id], match = matchupMultiplier(stage.id, id), trait = UNIT_TRAITS[id], combat = equipmentCombatStats(id, gun.level, armyPower(state), equipmentCount(state, id));
@@ -33,19 +33,6 @@ export function battleDetailMarkup(state, stage) {
   };
 }
 
-export function preparationMarkup(state, stage, loadout) {
-  const type = stageEnemyType(stage.id), shield = fortressShieldClass(stage.id), slots = battleSlots(state);
-  return header(`${stage.enemyName} · 지역 ${String(stage.region).padStart(2,'0')}`, stage.name, infoButton) + `
-    <div class="prep-vs"><div><small>우리 기지</small><b>${fmtGold(armyPower(state))}</b></div><i>VS</i><div class="enemy"><small>${stage.capital ? '수도 요새' : '적 기지'}</small><b>${fmtGold(stage.hqPower)}</b></div></div>
-    <p class="prep-tags"><span class="chip">${type.name}</span><span class="chip good">${CLASS_NAMES[type.counter]} 유리</span>${shield ? `<span class="chip bad">요새 · ${CLASS_NAMES[shield]} 약화</span>` : ''}</p>
-    <section class="deployment-section"><h3>출전 장비 <b id="battle-slot-count">${loadout.equipment.length} / ${slots}</b></h3><div class="deployment-gears gear-grid">${Object.values(EQUIPMENT).filter(d => !!state.equipment[d.id]).map(d => {
-      const gun = state.equipment[d.id], match = matchupMultiplier(stage.id, d.id), trait = UNIT_TRAITS[d.id];
-      return `<label class="deployment-gear"><input type="checkbox" data-battle-gear="${d.id}" data-info="${gearLine(state, stage, d.id)}" ${loadout.equipment.includes(d.id) ? 'checked' : ''}><span class="gear-tile ${match > 1 ? 'good' : match < 1 ? 'bad' : ''}"><i class="card-cost" aria-label="마나 ${trait.cost}">${trait.cost}</i><canvas class="card-art" data-card-art="${d.id}" data-level="${gun.level}" width="112" height="136" aria-hidden="true"></canvas><b>${d.name}</b><small>+${gun.level} · ${CLASS_NAMES[GEAR_CLASS[d.id]]}${match > 1 ? ' ▲' : match < 1 ? ' ▼' : ''}</small><em class="gear-check-mark" aria-hidden="true">✓</em></span></label>`;
-    }).join('') || '<p class="battle-note">보유한 장비가 없습니다. 상점에서 구매해 보세요.</p>'}</div></section>
-    <p role="status" class="battle-message" id="battle-message"></p>
-    <div class="battle-actions"><button data-battle-back>지역 지도</button><button class="battle-primary" id="battle-start">전투 시작</button></div>
-    <p class="battle-session-note" data-battle-session></p>`;
-}
 export function battlefieldMarkup(battle) {
   return `<header class="battle-header slim"><div><small>STAGE ${String(battle.stageId).padStart(2,'0')}</small><h2 id="battle-title">${battle.stageName}</h2></div><b id="battle-time">0:00</b>${infoButton}<button id="battle-pause" aria-label="일시정지">⏸</button><button data-battle-close aria-label="전투 메뉴 닫기">×</button></header>
     <div class="battle-arena" id="battle-arena"><div id="battle-field"><canvas id="battle-canvas" width="360" height="440" aria-hidden="true"></canvas></div>

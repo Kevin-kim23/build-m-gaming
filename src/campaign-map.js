@@ -3,12 +3,13 @@ import { countryBriefMarkup, updateCountryBrief } from './campaign-brief.js';
 import { COUNTRIES,CONTINENT,countryProgress,campaignStages } from './campaign.js';
 import { countryRegions,polygonPath,clampCamera,countryCamera,campaignHomeCamera } from './campaign-geometry.js';
 import { mapDefs,oceanArt,countryLand,nationalLand,settlement } from './campaign-art.js';
-import { battleAccess } from './battle.js';
+import { battleAccess, battleSlots } from './battle.js';
+import { stageTagsMarkup, quickDeckMarkup } from './quick-deck.js';
 import { armyPower } from './units.js';
 import { fmt } from './format.js';
 
 
-export function campaignMarkup(state,countryId=null,selectedId=null){
+export function campaignMarkup(state,countryId=null,selectedId=null,deckIds=null){
   const country=COUNTRIES.find(c=>c.id===countryId),cleared=state.campaignCleared??0;
   const nextCountry=country&&countryProgress(state,country.id).complete?COUNTRIES[country.index+1]:null;
   const previousCountry=country&&country.index>0&&cleared>=country.firstStage-1?COUNTRIES[country.index-1]:null;
@@ -42,13 +43,17 @@ export function campaignMarkup(state,countryId=null,selectedId=null){
     <div class="atlas-pan" role="group" aria-label="지도 이동"><button data-pan="left" aria-label="지도 서쪽으로 이동">←</button><button data-pan="up" aria-label="지도 북쪽으로 이동">↑</button><button data-locate aria-label="현재 진격 지역으로 이동">◎</button><button data-pan="down" aria-label="지도 남쪽으로 이동">↓</button><button data-pan="right" aria-label="지도 동쪽으로 이동">→</button></div>
     <div class="atlas-zoom"><button data-zoom="in" aria-label="지도 확대">＋</button><button data-zoom="out" aria-label="지도 축소">−</button></div>
   </div><div class="atlas-coordinate" aria-live="polite" id="map-position"></div>
-  ${country?`<section class="region-brief" aria-label="선택한 지역"><div><small>${selected?.capital?'최종 수도전':'REGION '+String(selected?.region??1).padStart(2,'0')}</small><h3>${selected?.name??'지역을 선택하세요'}</h3><p>권장 전력 <strong>${fmt(selected?.recommendedPower??0)}</strong> · 내 전력 ${fmt(armyPower(state))}</p></div><button class="battle-primary" data-stage="${selected?.id??country.firstStage}" ${!access.unlocked||!selected||selected.id>cleared+1?'disabled':''}>${!access.unlocked?'중령부터 출전':selected?.id<=cleared?'다시 도전':selected?.id===cleared+1?'진격 준비 →':'이전 지역 점령 필요'}</button><p class="region-reward">${selected?.id<=cleared?"점령 보너스 획득 완료":"최초 점령 보상"} · 초당 수입 +${REGION_INCOME_PERCENT}%</p><p class="region-strategy">${selected?.capital?(selected.id===80?'마지막 수도 점령으로 대륙 정복이 완료됩니다. ':'수도를 점령하면 다음 국가가 열립니다. '):''}병종별 10명 · 장비 자동 공격 · 병력 소모 없음</p></section>`:
+  ${country?`<section class="region-brief" aria-label="선택한 지역"><div class="brief-head"><div><small>${selected?.capital?'최종 수도전':'REGION '+String(selected?.region??1).padStart(2,'0')}</small><h3>${selected?.name??'지역을 선택하세요'}</h3></div>${selected?`<button class="info-btn" data-battle-info data-info-stage="${selected.id}" aria-label="${selected.name} 상세보기">ⓘ</button>`:''}</div>
+    <p class="brief-line">권장 전력 <strong>${fmt(selected?.recommendedPower??0)}</strong> · 내 전력 ${fmt(armyPower(state))}</p>
+    ${selected&&access.unlocked&&selected.id<=cleared+1?`<div class="prep-tags">${stageTagsMarkup(selected)}</div><div class="brief-deck-head"><span>출전 장비</span><b id="battle-slot-count">${(deckIds??[]).length} / ${battleSlots(state)}</b></div>${quickDeckMarkup(state,selected,deckIds??[])}<p role="status" class="battle-message" id="battle-message"></p>`:''}
+    <button class="battle-primary" data-stage="${selected?.id??country.firstStage}" ${!access.unlocked||!selected||selected.id>cleared+1?'disabled':''}>${!access.unlocked?'중령부터 출전':selected?.id<=cleared?'다시 도전':selected?.id===cleared+1?'전투 시작':'이전 지역 점령 필요'}</button>
+    ${selected&&selected.id<=cleared+1?`<p class="region-reward">${selected.id<=cleared?'점령 보너스 획득 완료':'최초 점령 보상'} · 초당 수입 +${REGION_INCOME_PERCENT}%</p>`:''}</section>`:
   countryBriefMarkup()}
   <p class="battle-session-note" data-battle-session></p>`;
 }
 
 // Camera animation is short-lived. Idle maps have no animation loop or storage writes.
-export function createCampaignMap(dialog,getState){
+export function createCampaignMap(dialog,getState,getDeck=()=>null){
   let countryId=null,selectedId=null,camera=null,animation=0;
   const aspect=()=>{const r=dialog.querySelector('.atlas-window').getBoundingClientRect();return r.width/Math.max(1,r.height);};
   function stop(){cancelAnimationFrame(animation);animation=0;}
@@ -82,7 +87,7 @@ export function createCampaignMap(dialog,getState){
     const point=countryRegions(country.id).find(r=>r.id===selectedId)?.point??country.label;
     return clampCamera({width,height,x:full.x+(full.width-width)/2,y:point[1]-height*.65});
   }
-  function render(){dialog.innerHTML=campaignMarkup(getState(),countryId,selectedId);dialog.classList.add('in-campaign');dialog.classList.remove('in-battle');}
+  function render(){dialog.innerHTML=campaignMarkup(getState(),countryId,selectedId,selectedId?getDeck(selectedId):null);dialog.classList.add('in-campaign');dialog.classList.remove('in-battle');}
   function show(id=null){
     stop();countryId=id;
     if(id&&!countryProgress(getState(),id).unlocked)countryId=null;

@@ -3,7 +3,7 @@ import { STAGES, battleAccess, defaultLoadout, normalizeLoadout, createBattle, a
 import { recordBattleVictory } from './battle-progress.js';
 import { drawLane, LANE_CENTERS, LANE_CANVAS } from './lane-art.js';
 import { unitSprite } from './unit-sprites.js';
-import { preparationMarkup, battlefieldMarkup, battleDetailMarkup } from './battle-markup.js';
+import { battlefieldMarkup, battleDetailMarkup } from './battle-markup.js';
 import { openDetail } from './detail-popup.js';
 import { reportError } from './diagnostics.js';
 import { fmt, fmtGold } from './format.js';
@@ -19,10 +19,17 @@ import { ACHIEVEMENTS } from './achievements.js';
 export function createBattleUI(session, audio = null) {
   const dialog = document.querySelector('#battle-modal');
   const $ = (selector) => dialog.querySelector(selector);
-  const campaignMap = createCampaignMap(dialog,()=>session.state);
+  // 지도 아래 출전 덱: 지역을 바꾸면 그 지역 상성에 맞춘 기본 덱을 다시 고르고, 같은 지역 안에서는 고른 덱을 유지한다.
+  function deckFor(id) {
+    const state = session.state;
+    loadout = normalizeLoadout(state, loadout && loadoutStage === id ? loadout : defaultLoadout(state, id));
+    loadoutStage = id;
+    return loadout.equipment;
+  }
+  const campaignMap = createCampaignMap(dialog,()=>session.state,deckFor);
   let mode = 'stages', stageId = 1, loadout = null, loadoutStage = 0, battle = null;
   let raf = 0, lastFrame = 0, paused = false, finalized = false, selected = null, drag = null, suppressClick = false;
-  let stagesKey = '', preparationKey = '';
+  let stagesKey = '';
   // 연출 상태(저장하지 않음): 기지 피격 번쩍임·흔들림 시각, 이전 체력, 이미 처리한 효과 시각, 효과음 간격
   let fx = { flash: { player: -1e9, enemy: -1e9 }, shakeAt: -1e9, prevHp: null, seenFx: 0, accum: { player: 0, enemy: 0 }, lastFloat: { player: 0, enemy: 0 }, lastSound: {} };
   const sound = (kind, gap = 120) => {
@@ -55,42 +62,32 @@ export function createBattleUI(session, audio = null) {
     stop(); battle = null; mode = 'stages';
     stagesKey = mapKey();
     campaignMap.show(countryId);
-    dialog.classList.remove('in-battle');
-    dialog.scrollTop = 0;
-    sync();
-  }
-  function prepare(id = stageId) {
-    const state = session.state;
-    if (!battleAccess(state).unlocked || id > (state.campaignCleared ?? 0) + 1) return;
-    const stage = STAGES.find(s => s.id === id);
-    if (!stage) return;
-    stop(); campaignMap.stop(); battle = null; stageId = id; mode = 'prepare';
-    dialog.classList.remove('in-campaign');
-    preparationKey = armyKey();
-    // 다른 지역으로 가면 그 지역 상성에 맞춘 기본 출전을 다시 고른다. 같은 지역 안에서는 선택을 유지한다.
-    loadout = normalizeLoadout(state, loadout && loadoutStage === id ? loadout : defaultLoadout(state, id));
-    loadoutStage = id;
-    dialog.innerHTML = preparationMarkup(state, stage, loadout);
     paintCardArt();
     dialog.classList.remove('in-battle');
     dialog.scrollTop = 0;
     sync();
+  }
+  function quickStart(id) {
+    const state = session.state;
+    if (!battleAccess(state).unlocked || id > (state.campaignCleared ?? 0) + 1 || !STAGES.some(stage => stage.id === id)) return;
+    stageId = id; loadoutStage = id; start();
   }
   function selection() {
     const raw = {equipment: []};
     dialog.querySelectorAll('[data-battle-gear]:checked').forEach(input => raw.equipment.push(input.dataset.battleGear));
     return normalizeLoadout(session.state, raw);
   }
-  function start() {
+  // 지도에서 시작(체크한 덱) 또는 결과 화면에서 다시/다음(주어진 덱)으로 바로 전투를 시작한다.
+  function start(deck = null) {
     if (!session.active || document.hidden) return;
-    loadout = selection();
+    loadout = deck ? normalizeLoadout(session.state, { equipment: deck }) : selection();
     if (!loadout.equipment.length) {
       text('#battle-message', '출전할 장비를 하나 이상 선택해 주세요. (최대 ' + battleSlots(session.state) + '칸)'); return;
     }
     try { battle = createBattle(session.state, stageId, loadout); }
     catch (error) {
       reportError('battle.start', error);
-      text('#battle-message', '출전 조건이 바뀌었어요. 작전 지도로 돌아가 다시 준비해 주세요.'); return;
+      text('#battle-message', '출전 조건이 바뀌었어요. 작전 지도에서 다시 선택해 주세요.'); return;
     }
     stop(); campaignMap.stop(); mode = 'battle'; paused = false; finalized = false; selected = null;
     fx = { flash: { player: -1e9, enemy: -1e9 }, shakeAt: -1e9, prevHp: null, seenFx: 0, accum: { player: 0, enemy: 0 }, lastFloat: { player: 0, enemy: 0 }, lastSound: {} };
@@ -186,8 +183,8 @@ export function createBattleUI(session, audio = null) {
     selected = selected === id ? null : id; paint();
   }
   // 상세보기(ⓘ): 설명은 화면에 늘어놓지 않고 이 팝업에서 본다. 전투 중이면 먼저 일시정지한다.
-  function showInfo() {
-    const stage = STAGES.find(s => s.id === stageId); if (!stage) return;
+  function showInfo(id = stageId) {
+    const stage = STAGES.find(s => s.id === id); if (!stage) return;
     if (mode === 'battle') suspend();
     openDetail(battleDetailMarkup(session.state, stage));
   }
@@ -250,11 +247,8 @@ export function createBattleUI(session, audio = null) {
   function sync() {
     if (!dialog.open) return;
     if (mode === 'stages' && stagesKey !== mapKey()) { showStages(); return; }
-    if (mode === 'prepare' && preparationKey !== armyKey()) {
-      loadout = selection(); prepare(); return;
-    }
     text('[data-battle-session]', session.active ? '' : session.status);
-    if (mode === 'prepare' && $('#battle-start')) $('#battle-start').disabled = !session.active;
+    if (mode === 'stages') dialog.querySelectorAll('[data-stage]').forEach(button => { if (!session.active) button.disabled = true; });
     if (mode === 'stages') {
       const cleared = session.state.campaignCleared ?? 0, access = battleAccess(session.state);
       dialog.querySelectorAll('[data-stage]').forEach(button => { button.disabled = !access.unlocked || Number(button.dataset.stage) > cleared + 1; });
@@ -272,13 +266,13 @@ export function createBattleUI(session, audio = null) {
     const target = event.target.closest('button,[data-country],[data-region]');
     if (suppressClick && target?.dataset?.deploy) { suppressClick = false; return; }
     if (!target || target.disabled || target.getAttribute('aria-disabled')==='true') return;
-    if (mode==='stages' && campaignMap.handle(target)) return;
+    if (mode==='stages' && campaignMap.handle(target)) { paintCardArt(); return; }
     if (target.hasAttribute('data-battle-close')) close();
-    else if (target.hasAttribute('data-stage')) prepare(Number(target.dataset.stage));
+    else if (target.hasAttribute('data-stage')) quickStart(Number(target.dataset.stage));
     else if (target.hasAttribute('data-battle-back')) showStages();
-    else if (target.hasAttribute('data-battle-retry')) prepare();
-    else if (target.hasAttribute('data-battle-next')) prepare(stageId + 1);
-    else if (target.hasAttribute('data-battle-info')) showInfo();
+    else if (target.hasAttribute('data-battle-retry')) start(loadout.equipment);
+    else if (target.hasAttribute('data-battle-next')) { stageId += 1; loadoutStage = stageId; start(deckFor(stageId)); }
+    else if (target.hasAttribute('data-battle-info')) showInfo(Number(target.dataset.infoStage) || stageId);
     else if (target.id === 'battle-start') start();
     else if (target.dataset.deploy) pickCard(target.dataset.deploy);
     else if (target.dataset.lane !== undefined) sortie(Number(target.dataset.lane));
@@ -287,13 +281,15 @@ export function createBattleUI(session, audio = null) {
   });
   // 출전 칸 수를 넘겨 체크하면 방금 체크한 장비를 되돌리고 안내한다.
   dialog.addEventListener('change', event => {
-    if (mode !== 'prepare' || !event.target.matches('[data-battle-gear]')) return;
+    if (mode !== 'stages' || !event.target.matches('[data-battle-gear]')) return;
     const limit = battleSlots(session.state);
     if (dialog.querySelectorAll('[data-battle-gear]:checked').length > limit) {
       event.target.checked = false;
       text('#battle-message', `출전 장비는 최대 ${limit}칸까지예요. 다른 장비를 먼저 해제하세요.`);
     } else text('#battle-message', '');
     text('#battle-slot-count', `${dialog.querySelectorAll('[data-battle-gear]:checked').length} / ${limit}`);
+    const shown = Number($('[data-stage]')?.dataset.stage);
+    if (shown) { loadout = selection(); loadoutStage = shown; }   // 지도에서 고른 덱을 기억(같은 지역을 다시 열어도 유지)
   });
   // 카드를 끌어 레인에 놓기(클래시 로얄 방식). 거의 안 움직이면 '카드 선택 → 레인 터치'로 동작한다.
   function laneAt(event) {

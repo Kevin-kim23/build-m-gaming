@@ -108,7 +108,7 @@ test('region UI exposes all twenty regions, lock reasons, replay, next-country a
     const state={...army(c.powers[19]),campaignCleared:c.lastStage-1};
     const html=campaignMarkup(state,c.id,c.lastStage);
     assert.equal((html.match(/class="region-hit /g)??[]).length,20);
-    assert.match(html,new RegExp(c.names[19]));assert.match(html,/최종 수도전/);assert.match(html,/진격 준비/);
+    assert.match(html,new RegExp(c.names[19]));assert.match(html,/최종 수도전/);assert.match(html,/전투 시작/);
     assert.doesNotMatch(html,/undefined|NaN/);
     for(const control of ['data-world','data-zoom="in"','data-zoom="out"','data-locate'])assert.ok(html.includes(control));
   }
