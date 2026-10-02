@@ -52,7 +52,8 @@ test('battlefield shows one canvas, a mana bar and one deploy card per deployed 
   const markup = battlefieldMarkup(createBattle(army({ equipment: { artillery: { level: 3, deployed: true }, tank: { level: 3, deployed: true } } }), 1));
   const ids = [...markup.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
   assert.equal(ids.length, new Set(ids).size);
-  assert.equal((markup.match(/<canvas\b/g) ?? []).length, 1);
+  assert.equal((markup.match(/id="battle-canvas"/g) ?? []).length, 1);
+  assert.equal((markup.match(/data-card-art=/g) ?? []).length, 2, 'each deploy card shows its equipment picture');
   assert.deepEqual([...markup.matchAll(/data-deploy="(\w+)"/g)].map(m => m[1]), ['artillery', 'tank']);
   assert.match(markup, /id="battle-mana-fill"/);
   assert.deepEqual([...markup.matchAll(/data-lane="(\d)"/g)].map(m => m[1]), ['0', '1', '2'], 'three lane buttons');
@@ -71,4 +72,15 @@ test('capital preparation shows the fortress warning and its shielded gear class
   assert.match(capital, /요새 수도 · 방어 장갑/);
   assert.match(capital, /기지 피해 -40%/);
   assert.doesNotMatch(preparationMarkup(state, STAGES[0], defaultLoadout(state, 1)), /요새 수도/);
+});
+
+test('preparation shows equipment as picture cards (image + name + mana badge) with a details line, not a text list', () => {
+  const state = army({ soldiers: 2, sergeants: 128, equipment: { artillery: { level: 3, deployed: true }, tank: { level: 5, deployed: true } } });
+  const markup = preparationMarkup(state, STAGES[0], defaultLoadout(state));
+  assert.equal((markup.match(/data-card-art=/g) ?? []).length, 2);
+  assert.match(markup, /class="gear-tile[^"]*"[^>]*>.*?견인포/s);
+  assert.match(markup, /class="card-cost"[^>]*>18</);
+  assert.match(markup, /id="battle-gear-info"/);
+  assert.match(inputTag(markup, 'data-battle-gear', 'tank'), /data-info="전차 \+5 \[1문\] · 마나 24/);
+  assert.doesNotMatch(markup, /자동 공격 ·/);
 });

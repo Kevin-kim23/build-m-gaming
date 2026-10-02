@@ -1,7 +1,8 @@
 import { campaignBonusPercent, REGION_INCOME_PERCENT } from "./campaign-rewards.js";
 import { STAGES, battleAccess, defaultLoadout, normalizeLoadout, createBattle, advanceBattle, deploy, battleSlots, BATTLE_RULES } from './battle.js';
 import { recordBattleVictory } from './battle-progress.js';
-import { drawLane } from './lane-art.js';
+import { drawLane, LANE_CENTERS, LANE_CANVAS } from './lane-art.js';
+import { unitSprite } from './unit-sprites.js';
 import { preparationMarkup, battlefieldMarkup } from './battle-markup.js';
 import { reportError } from './diagnostics.js';
 import { fmt, fmtGold } from './format.js';
@@ -19,7 +20,7 @@ export function createBattleUI(session) {
   const $ = (selector) => dialog.querySelector(selector);
   const campaignMap = createCampaignMap(dialog,()=>session.state);
   let mode = 'stages', stageId = 1, loadout = null, loadoutStage = 0, battle = null;
-  let raf = 0, lastFrame = 0, paused = false, finalized = false, selected = null;
+  let raf = 0, lastFrame = 0, paused = false, finalized = false, selected = null, drag = null, suppressClick = false;
   let stagesKey = '', preparationKey = '';
   const mapKey = () => `${session.state.campaignCleared}:${armyKey()}:${battleAccess(session.state).unlocked}`;
   const armyKey = () => Object.values(UNITS).map(u => session.state[u.field]).join(':') + '|' +
@@ -28,6 +29,14 @@ export function createBattleUI(session) {
     const node = $(selector), next = String(value);
     if (node && node.textContent !== next) node.textContent = next;
   };
+  // 카드 그림: 전투 화면과 같은 위에서 본 장비 그림을 카드 칸에 한 번 그린다(캐시된 그림을 복사만 함).
+  function paintCardArt() {
+    dialog.querySelectorAll('canvas[data-card-art]').forEach(canvas => {
+      const ctx = canvas.getContext('2d'); if (!ctx) return;
+      ctx.imageSmoothingEnabled = false; ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(unitSprite(canvas.dataset.cardArt, 'player', Number(canvas.dataset.level) || 0), 0, 0, canvas.width, canvas.height);
+    });
+  }
   function stop() { cancelAnimationFrame(raf); raf = 0; lastFrame = 0; }
   function close() {
     stop(); campaignMap.stop(); battle = null;
@@ -53,6 +62,7 @@ export function createBattleUI(session) {
     loadout = normalizeLoadout(state, loadout && loadoutStage === id ? loadout : defaultLoadout(state, id));
     loadoutStage = id;
     dialog.innerHTML = preparationMarkup(state, stage, loadout);
+    paintCardArt();
     dialog.classList.remove('in-battle');
     dialog.scrollTop = 0;
     sync();
@@ -75,6 +85,7 @@ export function createBattleUI(session) {
     }
     stop(); campaignMap.stop(); mode = 'battle'; paused = false; finalized = false; selected = null;
     dialog.innerHTML = battlefieldMarkup(battle);
+    paintCardArt();
     dialog.classList.add('in-battle'); dialog.scrollTop = 0;
     paint(); sync(); schedule();
   }
@@ -95,7 +106,7 @@ export function createBattleUI(session) {
       const button = $(`[data-deploy="${card.id}"]`);
       if (!button) continue;
       const wait = Math.max(0, Math.ceil((card.readyMs - battle.elapsedMs) / 1000)), afford = battle.mana >= card.cost;
-      text(`[data-deploy-cost="${card.id}"]`, wait ? `재출격 ${wait}초` : afford ? `출격 · 마나 ${card.cost}` : `마나 ${card.cost} 필요`);
+      text(`[data-deploy-cost="${card.id}"]`, wait ? `${wait}초` : afford ? '출격!' : '마나 부족');
       const ready = wait === 0 && afford && battle.status === 'running' && !paused;
       if (button.disabled === ready) button.disabled = !ready;
       if (!ready && selected === card.id) selected = null;
@@ -198,6 +209,7 @@ export function createBattleUI(session) {
   }
   dialog.addEventListener('click', event => {
     const target = event.target.closest('button,[data-country],[data-region]');
+    if (suppressClick && target?.dataset?.deploy) { suppressClick = false; return; }
     if (!target || target.disabled || target.getAttribute('aria-disabled')==='true') return;
     if (mode==='stages' && campaignMap.handle(target)) return;
     if (target.hasAttribute('data-battle-close')) close();
@@ -213,12 +225,58 @@ export function createBattleUI(session) {
   // 출전 칸 수를 넘겨 체크하면 방금 체크한 장비를 되돌리고 안내한다.
   dialog.addEventListener('change', event => {
     if (mode !== 'prepare' || !event.target.matches('[data-battle-gear]')) return;
+    text('#battle-gear-info', event.target.dataset.info);
     const limit = battleSlots(session.state);
     if (dialog.querySelectorAll('[data-battle-gear]:checked').length > limit) {
       event.target.checked = false;
       text('#battle-message', `출전 장비는 최대 ${limit}칸까지예요. 다른 장비를 먼저 해제하세요.`);
     } else text('#battle-message', '');
   });
+  // 카드를 끌어 레인에 놓기(클래시 로얄 방식). 거의 안 움직이면 '카드 선택 → 레인 터치'로 동작한다.
+  function laneAt(event) {
+    const arena = $('#battle-arena'); if (!arena) return null;
+    const box = arena.getBoundingClientRect();
+    if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) return null;
+    const x = (event.clientX - box.left) / box.width * LANE_CANVAS.width;
+    let lane = 0;
+    LANE_CENTERS.forEach((center, i) => { if (Math.abs(x - center) < Math.abs(x - LANE_CENTERS[lane])) lane = i; });
+    return lane;
+  }
+  function markLane(lane) {
+    dialog.querySelectorAll('[data-lane]').forEach(button => button.classList.toggle('over', Number(button.dataset.lane) === lane));
+  }
+  function endDrag() {
+    drag?.ghost?.remove(); markLane(null); drag = null;
+  }
+  dialog.addEventListener('pointerdown', event => {
+    const card = event.target.closest?.('[data-deploy]');
+    if (mode !== 'battle' || !card || card.disabled || event.button > 0) return;
+    endDrag();
+    drag = { id: card.dataset.deploy, pointerId: event.pointerId, x: event.clientX, y: event.clientY, moved: false, ghost: null, card };
+    try { card.setPointerCapture(event.pointerId); } catch (error) { reportError('battle.dragCapture', error); }
+  });
+  dialog.addEventListener('pointermove', event => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    if (!drag.moved) {
+      if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < 10) return;
+      drag.moved = true; selected = drag.id; paint();
+      const ghost = document.createElement('div'); ghost.className = 'drag-ghost';
+      const art = drag.card.querySelector('canvas'), copy = document.createElement('canvas');
+      copy.width = art.width; copy.height = art.height; copy.getContext('2d').drawImage(art, 0, 0);
+      ghost.append(copy); dialog.append(ghost); drag.ghost = ghost;
+    }
+    drag.ghost.style.transform = `translate(${event.clientX}px, ${event.clientY}px) translate(-50%, -60%)`;
+    markLane(laneAt(event));
+  });
+  dialog.addEventListener('pointerup', event => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    const wasDrag = drag.moved, lane = wasDrag ? laneAt(event) : null;
+    endDrag();
+    if (!wasDrag) return;
+    suppressClick = true; setTimeout(() => { suppressClick = false; }, 0);
+    if (lane === null) { selected = null; paint(); } else sortie(lane);
+  });
+  dialog.addEventListener('pointercancel', event => { if (drag && event.pointerId === drag.pointerId) { endDrag(); selected = null; if (battle) paint(); } });
   dialog.addEventListener('keydown', event => {
     const target=event.target.closest('g[data-country],g[data-region]');
     if(target && ['Enter',' '].includes(event.key)){event.preventDefault();campaignMap.handle(target);}
