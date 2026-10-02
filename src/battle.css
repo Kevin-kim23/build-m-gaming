@@ -133,3 +133,44 @@
 .lane-hit.over { border-color:#fff1b8; background:#ffe08a55; animation:none; }
 .drag-ghost { position:fixed; left:0; top:0; z-index:40; pointer-events:none; opacity:.92; filter:drop-shadow(0 6px 6px #0008); }
 .drag-ghost canvas { width:64px; height:78px; image-rendering:pixelated; display:block; }
+
+/* 클래시 로얄식 정리: 전투 화면은 글을 줄이고, 설명은 ⓘ 상세보기로 */
+.battle-header.slim { margin-bottom:8px; gap:8px; }
+.battle-header.slim h2 { font-size:16px; margin:2px 0 0; }
+.battle-header.slim>b { font-size:15px; color:#f2dfad; font-variant-numeric:tabular-nums; min-width:40px; text-align:center; }
+.battle-header.slim>button { width:36px; height:36px; font-size:18px !important; }
+.info-btn { background:#303e31; border:1px solid #4d5c48; color:#dce4cb; border-radius:50%; width:36px; height:36px; font-size:18px !important; line-height:1; }
+.prep-vs { display:flex; justify-content:space-evenly; align-items:center; text-align:center; padding:12px 4px; background:#263328; border:1px solid #40543e; border-radius:8px; }
+.prep-vs small,.prep-vs b { display:block; }
+.prep-vs small { font-size:10px; color:#a5b593; }
+.prep-vs b { margin-top:4px; font-size:20px; color:#d4e4bd; }
+.prep-vs .enemy b { color:#e8aeaa; }
+.prep-vs i { font-style:normal; color:#7a8a6a; font-weight:700; }
+.prep-tags { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 0; }
+.chip { padding:3px 10px; border-radius:12px; background:#2c3a2f; border:1px solid #4d5c48; font-size:11px; color:#dce4cb; }
+.chip.good { border-color:#6aa65f; color:#9be08f; } .chip.bad { border-color:#9a5a52; color:#e8998a; }
+.deployment-section h3 b { font-size:12px; color:#edd49b; }
+.detail-section { margin:0 0 14px; } .detail-section h3 { font-size:14px; margin:0 0 6px; } .detail-section p { margin:0 0 6px; font-size:12px; line-height:1.6; }
+.detail-list { margin:0; padding-left:16px; font-size:12px; line-height:1.6; }
+/* 기지 체력은 각 기지 위에 막대+숫자로 */
+.base-hp { position:absolute; left:27%; width:46%; z-index:3; pointer-events:none; text-align:center; }
+.base-hp.enemy { top:8.5%; } .base-hp.player { top:81%; }
+.base-hp-bar { height:14px; border:2px solid #101814; border-radius:7px; background:#1b2420; overflow:hidden; box-shadow:0 2px 0 #0006; }
+.base-hp-bar i { display:block; height:100%; width:100%; transition:width .25s ease-out; }
+.base-hp.enemy .base-hp-bar i { background:linear-gradient(#ff8a7a,#d94c3f); }
+.base-hp.player .base-hp-bar i { background:linear-gradient(#9be08f,#4ca33f); }
+.base-hp b { display:block; margin-top:2px; font-size:12px; color:#fff; text-shadow:0 1px 2px #000,0 0 4px #000; font-variant-numeric:tabular-nums; }
+.base-hp.low .base-hp-bar { animation:hp-low .7s ease-in-out infinite alternate; }
+.base-float { position:absolute; left:50%; z-index:4; pointer-events:none; font:700 18px system-ui; color:#fff; text-shadow:0 2px 0 #000,0 0 6px #000; animation:base-float .9s ease-out forwards; }
+.base-float.enemy { top:15%; color:#ffe08a; } .base-float.player { top:79%; color:#ff8a7a; }
+.battle-overlay.result>div { padding:26px 16px; }
+.battle-overlay.result h3 { font-size:38px; margin:6px 0; }
+.battle-stars { font-size:34px !important; letter-spacing:8px !important; color:#ffd36a !important; min-height:40px; margin:6px 0; }
+.battle-stars.pop { animation:star-pop .7s cubic-bezier(.2,1.6,.4,1) both; }
+.battle-loot { font-size:22px !important; font-weight:700; color:#ffe08a !important; margin:4px 0 8px; }
+.battle-overlay #battle-result-actions { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+.battle-overlay #battle-result-actions button[hidden] { display:none; }
+@keyframes hp-low { from { box-shadow:0 0 0 #ff4a3a00; } to { box-shadow:0 0 10px #ff4a3a; } }
+@keyframes base-float { from { transform:translate(-50%,0); opacity:1; } to { transform:translate(-50%,-34px); opacity:0; } }
+@keyframes star-pop { from { transform:scale(.2); opacity:0; } to { transform:scale(1); opacity:1; } }
+@media (prefers-reduced-motion: reduce) { .base-hp.low .base-hp-bar,.battle-stars.pop { animation:none; } .base-float { animation-duration:.01s; } }

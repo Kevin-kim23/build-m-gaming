@@ -53,7 +53,7 @@ function makeUnit(battle, side, id, level, count, power, modifier = 1, upgrades 
     uid: battle.nextUid++, id, side, cls: trait.cls, kind: trait.kind, level, count, dir,
     lane, x: startX, hp, maxHp: hp,
     damage: (stats.damage ?? 0) * modifier, healing: (stats.healing ?? 0) * stack,
-    intervalMs: stats.intervalMs, nextShotMs: battle.elapsedMs + stats.intervalMs / 2, lastShotMs: -1,
+    bornMs: battle.elapsedMs, intervalMs: stats.intervalMs, nextShotMs: battle.elapsedMs + stats.intervalMs / 2, lastShotMs: -1,
     range: trait.range, speed: trait.speed,
   };
 }
@@ -106,7 +106,7 @@ export function deploy(battle, gearId, lane = 1) {
     next.enemy.hq.hp = Math.max(0, next.enemy.hq.hp - unit.damage * BATTLE_RULES.strikeMultiplier * shield);
     next.fx.push({ at: next.elapsedMs, kind: "strike", side: "player", id: gearId, x: BATTLE_RULES.laneLength });
     finish(next);
-  } else next.player.units.push(unit);
+  } else { next.player.units.push(unit); next.fx.push({ at: next.elapsedMs, kind: "spawn", side: "player", id: gearId, lane, from: unit.x }); }
   return next;
 }
 
@@ -124,6 +124,8 @@ export const enemyLane = (stageId, n) => (Math.imul((stageId * 7919 + n * 104729
 function spawnEnemy(b, stage) {
   const type = stageEnemyType(b.stageId), id = type.pool[b.enemy.spawned % type.pool.length];
   b.enemy.units.push(makeUnit(b, "enemy", id, stage.enemyLevel, 1, stage.enemyPower, stage.enemyModifier, false, enemyStack(b.stageId, stage.enemyLevel), enemyLane(b.stageId, b.enemy.spawned)));
+  const born = b.enemy.units[b.enemy.units.length - 1];
+  b.fx.push({ at: b.elapsedMs, kind: "spawn", side: "enemy", id: born.id, lane: born.lane, from: born.x });
   b.enemy.spawned++;
   b.enemy.nextSpawnMs += stage.spawnMs;
 }

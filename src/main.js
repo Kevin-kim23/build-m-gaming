@@ -78,7 +78,7 @@ function setText(selector, value) {
 $("#app").innerHTML = homeMarkup(state);
 const zone = $("#tap-zone"),
   canvas = $("#field");
-const battleUI = createBattleUI(session);
+const battleUI = createBattleUI(session, gameAudio);
 const armyPanels = createArmyPanels(session, gameAudio);
 const achievementUI = createAchievementUI(session);
 const guideUI = createGuideUI();

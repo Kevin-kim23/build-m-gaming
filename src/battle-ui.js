@@ -3,7 +3,8 @@ import { STAGES, battleAccess, defaultLoadout, normalizeLoadout, createBattle, a
 import { recordBattleVictory } from './battle-progress.js';
 import { drawLane, LANE_CENTERS, LANE_CANVAS } from './lane-art.js';
 import { unitSprite } from './unit-sprites.js';
-import { preparationMarkup, battlefieldMarkup } from './battle-markup.js';
+import { preparationMarkup, battlefieldMarkup, battleDetailMarkup } from './battle-markup.js';
+import { openDetail } from './detail-popup.js';
 import { reportError } from './diagnostics.js';
 import { fmt, fmtGold } from './format.js';
 import { UNITS } from './units.js';
@@ -15,13 +16,21 @@ import { COUNTRIES } from './campaign.js';
 import { ACHIEVEMENTS } from './achievements.js';
 
 // Owns one dialog and one animation loop; the economic session stays separate.
-export function createBattleUI(session) {
+export function createBattleUI(session, audio = null) {
   const dialog = document.querySelector('#battle-modal');
   const $ = (selector) => dialog.querySelector(selector);
   const campaignMap = createCampaignMap(dialog,()=>session.state);
   let mode = 'stages', stageId = 1, loadout = null, loadoutStage = 0, battle = null;
   let raf = 0, lastFrame = 0, paused = false, finalized = false, selected = null, drag = null, suppressClick = false;
   let stagesKey = '', preparationKey = '';
+  // 연출 상태(저장하지 않음): 기지 피격 번쩍임·흔들림 시각, 이전 체력, 이미 처리한 효과 시각, 효과음 간격
+  let fx = { flash: { player: -1e9, enemy: -1e9 }, shakeAt: -1e9, prevHp: null, seenFx: 0, accum: { player: 0, enemy: 0 }, lastFloat: { player: 0, enemy: 0 }, lastSound: {} };
+  const sound = (kind, gap = 120) => {
+    const now = performance.now();
+    if (now - (fx.lastSound[kind] ?? -1e9) < gap) return;
+    fx.lastSound[kind] = now; audio?.battle(kind, session.state.sound);
+  };
+  const haptic = (pattern) => { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) navigator.vibrate?.(pattern); };
   const mapKey = () => `${session.state.campaignCleared}:${armyKey()}:${battleAccess(session.state).unlocked}`;
   const armyKey = () => Object.values(UNITS).map(u => session.state[u.field]).join(':') + '|' +
     Object.keys(EQUIPMENT).map(id => session.state.equipment[id] ? `${session.state.equipment[id].level}/${session.state.equipment[id].count ?? 1}` : '-').join(':');
@@ -84,20 +93,55 @@ export function createBattleUI(session) {
       text('#battle-message', '출전 조건이 바뀌었어요. 작전 지도로 돌아가 다시 준비해 주세요.'); return;
     }
     stop(); campaignMap.stop(); mode = 'battle'; paused = false; finalized = false; selected = null;
+    fx = { flash: { player: -1e9, enemy: -1e9 }, shakeAt: -1e9, prevHp: null, seenFx: 0, accum: { player: 0, enemy: 0 }, lastFloat: { player: 0, enemy: 0 }, lastSound: {} };
     dialog.innerHTML = battlefieldMarkup(battle);
     paintCardArt();
     dialog.classList.add('in-battle'); dialog.scrollTop = 0;
     paint(); sync(); schedule();
   }
   function view() {
-    return { elapsed: battle.elapsedMs, countryId: battle.countryId, player: battle.player, enemy: battle.enemy, fx: battle.fx };
+    const now = performance.now(), flash = (side) => Math.max(0, 1 - (now - fx.flash[side]) / 380);
+    return { elapsed: battle.elapsedMs, countryId: battle.countryId, player: battle.player, enemy: battle.enemy, fx: battle.fx, flash: { player: flash('player'), enemy: flash('enemy') }, shake: Math.max(0, 3 * (1 - (now - fx.shakeAt) / 260)) };
   }
   // 값이 바뀔 때만 글자·버튼 상태를 바꾼다(매 프레임 DOM 재생성 없음).
+  // 기지 위에 남은 체력을 막대와 숫자로 보여 준다(값이 바뀔 때만 DOM을 건드림). 25% 이하면 깜빡이며 경고.
+  function baseHp(side) {
+    const hq = battle[side].hq, frac = Math.max(0, Math.min(1, hq.hp / hq.maxHp));
+    text(`#battle-${side}-hp`, fmtGold(Math.ceil(hq.hp)));
+    const fill = $(`#base-hp-${side}-fill`), width = `${(frac * 100).toFixed(1)}%`;
+    if (fill && fill.style.width !== width) fill.style.width = width;
+    const box = $(`#base-hp-${side}`); if (box) box.classList.toggle('low', frac <= 0.25);
+  }
+  // 새로 일어난 일에 반응: 기지 피격(번쩍임·흔들림·숫자·진동·소리), 출격·사격·폭발 소리.
+  function react() {
+    const hp = { player: battle.player.hq.hp, enemy: battle.enemy.hq.hp }, now = performance.now();
+    if (fx.prevHp) for (const side of ['player', 'enemy']) {
+      const drop = fx.prevHp[side] - hp[side];
+      if (drop > 0) {
+        fx.flash[side] = now; fx.accum[side] += drop;
+        if (side === 'player') { fx.shakeAt = now; sound('hit', 220); haptic(30); }
+        if (now - fx.lastFloat[side] > 320) { floatNumber(side, fx.accum[side]); fx.accum[side] = 0; fx.lastFloat[side] = now; }
+      }
+    }
+    fx.prevHp = hp;
+    for (const f of battle.fx) {
+      if (f.at <= fx.seenFx) continue;
+      if (f.kind === 'death') sound('boom', 140); else if (f.kind === 'strike') sound('boom', 100); else if (f.kind === 'shot' && f.side === 'player') sound('shot', 200); else if (f.kind === 'spawn' && f.side === 'player') sound('deploy', 60);
+    }
+    fx.seenFx = battle.elapsedMs;
+  }
+  // 기지 위로 떠오르는 피해 숫자(가끔만 만들고 애니메이션이 끝나면 지운다)
+  function floatNumber(side, amount) {
+    const arena = $('#battle-arena'); if (!arena || amount <= 0) return;
+    const note = document.createElement('span');
+    note.className = `base-float ${side}`; note.textContent = `-${fmtGold(Math.round(amount))}`;
+    note.addEventListener('animationend', () => note.remove(), { once: true });
+    arena.append(note);
+  }
   function paint() {
     if (!battle || !$('#battle-canvas')) return;
     drawLane($('#battle-canvas'), view());
-    text('#battle-player-hp', `${fmt(Math.ceil(battle.player.hq.hp))} / ${fmt(battle.player.hq.maxHp)}`);
-    text('#battle-enemy-hp', `${fmt(Math.ceil(battle.enemy.hq.hp))} / ${fmt(battle.enemy.hq.maxHp)}`);
+    baseHp('player'); baseHp('enemy'); react();
     const seconds = Math.floor(battle.elapsedMs / 1000), mana = Math.floor(battle.mana);
     text('#battle-mana-text', `${mana} / ${BATTLE_RULES.manaMax}`);
     const fill = $('#battle-mana-fill'), width = `${(mana / BATTLE_RULES.manaMax * 100).toFixed(0)}%`;
@@ -141,16 +185,22 @@ export function createBattleUI(session) {
     if (!session.active || document.hidden || paused || battle?.status !== 'running') return;
     selected = selected === id ? null : id; paint();
   }
+  // 상세보기(ⓘ): 설명은 화면에 늘어놓지 않고 이 팝업에서 본다. 전투 중이면 먼저 일시정지한다.
+  function showInfo() {
+    const stage = STAGES.find(s => s.id === stageId); if (!stage) return;
+    if (mode === 'battle') suspend();
+    openDetail(battleDetailMarkup(session.state, stage));
+  }
   function sortie(lane) {
     if (!selected || !session.active || document.hidden || paused || battle?.status !== 'running') return;
     const next = deploy(battle, selected, lane);
     if (next === battle) return;
-    selected = null; battle = next; paint();
+    selected = null; battle = next; haptic(15); paint();
     if (battle.status !== 'running') finish();
   }
   function overlay(title, copy, result) {
-    $('#battle-overlay').hidden = false;
-    text('#battle-result-tag', result ? '작전 종료' : '작전 대기');
+    const box = $('#battle-overlay'); box.hidden = false; box.classList.toggle('result', result);
+    text('#battle-result-tag', result ? '작전 종료' : '일시정지');
     text('#battle-result-title', title); text('#battle-result-copy', copy);
     $('#battle-resume').hidden = result;
     $('#battle-resume').disabled = !session.active;
@@ -161,7 +211,8 @@ export function createBattleUI(session) {
   function suspend() {
     if (battle?.status !== 'running' || !dialog.open) return;
     paused = true; stop();
-    overlay('일시정지', session.active ? '준비되면 전투를 계속하세요.' : '현재 게임 창의 조작 권한을 기다리고 있어요.', false);
+    overlay('일시정지', session.active ? '' : '현재 게임 창의 조작 권한을 기다리고 있어요.', false);
+    text('#battle-result-stars', ''); text('#battle-result-loot', '');
   }
   function resume() {
     if (!session.active || document.hidden || battle?.status !== 'running') return;
@@ -169,20 +220,30 @@ export function createBattleUI(session) {
     $('#battle-overlay').hidden = true;
     schedule();
   }
+  // 결과 화면: 제목 · 별 · 전리품 · 짧은 한 줄 · 버튼(다음 지역/다시 도전/작전 지도). 자세한 설명은 길게 쓰지 않는다.
   function finish() {
     if (finalized) return;
     finalized = true; stop();
-    let copy = '병력과 장비는 그대로 유지됩니다. 부대를 정비하고 다시 도전하세요.';
-    if (battle.status === 'victory') {
+    const won = battle.status === 'victory';
+    let copy = won ? '' : '장비는 그대로예요. 정비하고 다시 도전하세요.', loot = '', stars = '', canNext = false;
+    if (won) {
       // Mark handled first: change() notifies the home UI synchronously.
       const result = session.change(s => recordBattleVictory(s, battle));
-      copy = result?.ok ? (stageId === STAGES.length ? '아스테라 대륙의 모든 국가를 점령했어요!' : stageId % 20 === 0 ? `${COUNTRIES[Math.floor(stageId / 20)-1].name} 점령 완료! 다음 국가가 열렸어요.` : '지역 점령 완료! 다음 지역으로 진격할 수 있어요.') : '클리어 기록을 반영하지 못했어요. 작전 지도에서 확인해 주세요.';
-      if (result?.ok) copy += result.firstClear ? ` 초당 수입 +${REGION_INCOME_PERCENT}% 획득! 누적 점령 보너스 +${campaignBonusPercent(session.state)}%.` : ` 재도전 보너스는 없으며 초당 수입 +${campaignBonusPercent(session.state)}%를 유지합니다.`;
-      if (result?.ok) text('#battle-result-stars', '★'.repeat(result.stars) + '☆'.repeat(3 - result.stars) + (result.stars === 3 ? ' 완벽한 승리' : result.stars === 2 ? ' 훌륭한 승리' : ' 승리'));
-      if (result?.ok) copy += ` 전리품 ${fmtGold(result.gold)} 골드를 받았어요!${result.stars < 3 ? ' (별 3개: 75초 안에, 본부 체력 50% 이상으로 승리하면 전리품 +50%)' : ''}`;
-      if (result?.achievements?.length) copy += ` 훈장 획득: ${result.achievements.map(id => ACHIEVEMENTS.find(a => a.id === id).title).join(', ')}. 홈 도전과제에서 확인하세요.`;
+      if (result?.ok) {
+        stars = '★'.repeat(result.stars) + '☆'.repeat(3 - result.stars);
+        loot = `+${fmtGold(result.gold)} G`;
+        const bits = [];
+        if (result.firstClear) bits.push(stageId === STAGES.length ? '대륙 정복 완료!' : stageId % 20 === 0 ? `${COUNTRIES[Math.floor(stageId / 20)-1].name} 점령!` : '지역 점령!', `초당 수입 +${REGION_INCOME_PERCENT}%`);
+        if (result.achievements?.length) bits.push(`훈장 ${result.achievements.map(id => ACHIEVEMENTS.find(a => a.id === id).title).join(', ')}`);
+        copy = bits.join(' · ');
+        canNext = stageId < STAGES.length && (session.state.campaignCleared ?? 0) >= stageId;
+      } else copy = '클리어 기록을 반영하지 못했어요. 작전 지도에서 확인해 주세요.';
     }
-    overlay(battle.status === 'victory' ? '승리' : battle.status === 'defeat' ? '패배' : '무승부', copy, true);
+    overlay(won ? '승리' : battle.status === 'defeat' ? '패배' : '무승부', copy, true);
+    text('#battle-result-stars', stars); text('#battle-result-loot', loot);
+    const next = $('[data-battle-next]'); if (next) next.hidden = !canNext;
+    if (stars) $('#battle-result-stars').classList.add('pop');
+    sound(won ? 'win' : 'lose', 0); haptic(won ? [30, 60, 30, 60, 90] : [120]);
     sync();
     $('#battle-result-title').setAttribute('role','status');
   }
@@ -192,7 +253,7 @@ export function createBattleUI(session) {
     if (mode === 'prepare' && preparationKey !== armyKey()) {
       loadout = selection(); prepare(); return;
     }
-    text('[data-battle-session]', session.status);
+    text('[data-battle-session]', session.active ? '' : session.status);
     if (mode === 'prepare' && $('#battle-start')) $('#battle-start').disabled = !session.active;
     if (mode === 'stages') {
       const cleared = session.state.campaignCleared ?? 0, access = battleAccess(session.state);
@@ -216,6 +277,8 @@ export function createBattleUI(session) {
     else if (target.hasAttribute('data-stage')) prepare(Number(target.dataset.stage));
     else if (target.hasAttribute('data-battle-back')) showStages();
     else if (target.hasAttribute('data-battle-retry')) prepare();
+    else if (target.hasAttribute('data-battle-next')) prepare(stageId + 1);
+    else if (target.hasAttribute('data-battle-info')) showInfo();
     else if (target.id === 'battle-start') start();
     else if (target.dataset.deploy) pickCard(target.dataset.deploy);
     else if (target.dataset.lane !== undefined) sortie(Number(target.dataset.lane));
@@ -225,12 +288,12 @@ export function createBattleUI(session) {
   // 출전 칸 수를 넘겨 체크하면 방금 체크한 장비를 되돌리고 안내한다.
   dialog.addEventListener('change', event => {
     if (mode !== 'prepare' || !event.target.matches('[data-battle-gear]')) return;
-    text('#battle-gear-info', event.target.dataset.info);
     const limit = battleSlots(session.state);
     if (dialog.querySelectorAll('[data-battle-gear]:checked').length > limit) {
       event.target.checked = false;
       text('#battle-message', `출전 장비는 최대 ${limit}칸까지예요. 다른 장비를 먼저 해제하세요.`);
     } else text('#battle-message', '');
+    text('#battle-slot-count', `${dialog.querySelectorAll('[data-battle-gear]:checked').length} / ${limit}`);
   });
   // 카드를 끌어 레인에 놓기(클래시 로얄 방식). 거의 안 움직이면 '카드 선택 → 레인 터치'로 동작한다.
   function laneAt(event) {
