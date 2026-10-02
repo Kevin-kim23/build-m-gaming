@@ -1,17 +1,23 @@
-import { artSurface, brush } from './pixel-detail.js';
+import { artSurface, brush, overheadDetails } from './pixel-detail.js';
+import { drawOverheadRocket } from './rocket-art.js';
+import { drawOverheadHelicopter } from './helicopter-art.js';
+import { drawOverheadAircraft } from './aircraft-art.js';
+import { overheadEnhancement } from './enhancement-art.js';
+import { drawOverheadStrategic } from './strategic-art.js';
 
-// 가로 전장용 장비 옆모습 그림(오른쪽을 보는 모습). 아군은 초록, 적은 붉은 갈색 팔레트.
-// 그림 교체 지점은 이 파일 하나입니다: 전투 화면은 unitSprite(id, side, level)만 부릅니다.
-//  - 지금은 코드로 그린 픽셀 그림을 한 번만 그려 캐시합니다.
+// 세로 레인 전장용 "위에서 본" 장비·기지 그림(위쪽을 보는 모습). 아군은 초록, 적은 붉은 갈색 팔레트.
+// 그림 교체 지점은 이 파일 하나입니다: 전투 화면은 unitSprite / baseSprite만 부릅니다.
+//  - 지금은 코드로 그린 픽셀 그림을 한 번만 그려 캐시합니다(홈·상점의 장비 그림과 같은 부품을 씁니다).
 //  - 나중에 더 고퀄리티 PNG로 바꾸려면 registerImageSprite(id, side, url)로 등록하세요(README "그림 교체 방법").
-export const SPRITE_SIZE = Object.freeze({ width: 44, height: 28 });
+export const SPRITE_SIZE = Object.freeze({ width: 56, height: 68 });
 const PAL = Object.freeze({
-  player: { dark: '#243a2f', body: '#5f8764', light: '#9fc09a', shade: '#3f5f47', metal: '#8fa09a', glass: '#9fd6e0', mark: '#e2ead3', glow: '#a0f0f4' },
-  enemy: { dark: '#4f2f2c', body: '#a8655f', light: '#d9a79a', shade: '#7a4640', metal: '#9a8686', glass: '#e0c28a', mark: '#f6d6c8', glow: '#ffb089' },
+  player: { dark: '#273f36', body: '#688768', light: '#a6bea0', mark: '#e2ead3', flag: '#8dbbbb' },
+  enemy: { dark: '#694947', body: '#bc8480', light: '#e4b8ad', mark: '#f9d7ca', flag: '#cd7c79' },
 });
 const cache = new Map(), images = new Map();
+const rect = (c, x, y, w, h, color) => { c.fillStyle = color; c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
 
-// 상위 호환 확장 지점: 같은 id·진영의 이미지 파일을 등록하면 코드 그림 대신 사용합니다.
+// 같은 id·진영의 이미지 파일을 등록하면 코드 그림 대신 사용합니다.
 export function registerImageSprite(id, side, url) {
   const image = new Image();
   image.src = url;
@@ -20,118 +26,74 @@ export function registerImageSprite(id, side, url) {
 }
 export const levelTier = (level) => (level >= 15 ? 3 : level >= 10 ? 2 : level >= 5 ? 1 : 0);
 
-function wheels(r, p, xs, y, rad = 3) {
-  for (const x of xs) { r(x - rad, y - rad, rad * 2, rad * 2, p.dark); r(x - rad + 1, y - rad + 1, rad * 2 - 2, rad * 2 - 2, p.metal); r(x - 1, y - 1, 2, 2, p.dark); }
+function emblem(c, x, y, side) {
+  const p = PAL[side];
+  if (side === 'enemy') { rect(c, x + 2, y, 2, 2, p.mark); rect(c, x, y + 2, 6, 2, p.mark); rect(c, x + 2, y + 4, 2, 2, p.mark); rect(c, x + 2, y + 2, 2, 2, p.dark); }
+  else { rect(c, x, y, 2, 6, p.mark); rect(c, x + 4, y, 2, 6, p.mark); }
 }
-function tracks(r, p, x, y, w) {
-  r(x, y, w, 7, p.dark); r(x + 1, y + 1, w - 2, 1, p.shade);
-  for (let i = x + 3; i < x + w - 2; i += 5) { r(i - 2, y + 2, 4, 4, p.shade); r(i - 1, y + 3, 2, 2, p.metal); }
+function drawTrackedOrTowed(c, id, level, side) {
+  const p = PAL[side];
+  if (id === 'artillery') {
+    rect(c, 15, 42, 5, 20, p.dark); rect(c, 36, 42, 5, 20, p.dark);
+    rect(c, 10, 58, 10, 4, p.body); rect(c, 36, 58, 10, 4, p.body);
+    rect(c, 7, 33, 8, 14, '#293934'); rect(c, 41, 33, 8, 14, '#293934');
+    rect(c, 10, 36, 3, 8, p.light); rect(c, 43, 36, 3, 8, p.light);
+    rect(c, 14, 29, 28, 16, p.dark); rect(c, 16, 29, 24, 11, p.body);
+    rect(c, 15, 27, 26, 4, p.light); rect(c, 24, 34, 9, 15, p.body);
+    rect(c, 25, 5, 6, 29, p.dark); rect(c, 26, 5, 2, 27, p.light);
+    return;
+  }
+  const spg = id === 'selfPropelled', rear = spg ? 61 : 56;
+  rect(c, 8, 22, 9, rear - 18, '#2a3833'); rect(c, 39, 22, 9, rear - 18, '#2a3833');
+  for (let y = 25; y < rear; y += 5) { rect(c, 9, y, 7, 2, '#667166'); rect(c, 40, y, 7, 2, '#667166'); }
+  rect(c, 16, 22, 24, rear - 22, p.dark); rect(c, 18, 22, 20, rear - 25, p.body);
+  rect(c, 19, 22, 18, 3, p.light); rect(c, 20, rear - 9, 16, 4, p.dark);
+  rect(c, spg ? 17 : 20, spg ? 32 : 29, spg ? 22 : 16, spg ? 19 : 16, p.dark);
+  rect(c, spg ? 19 : 22, spg ? 32 : 28, spg ? 18 : 12, spg ? 16 : 14, p.light);
+  rect(c, 25, spg ? 1 : 9, 6, spg ? 34 : 24, p.dark); rect(c, 26, spg ? 1 : 9, 2, spg ? 34 : 23, p.light);
+  rect(c, 23, spg ? 41 : 35, 9, 6, p.body);
+  if (side === 'enemy') { rect(c, 15, 19, 26, 3, p.dark); rect(c, 17, 22, 3, 6, p.light); }
 }
-const DRAW = {
-  tank(r, p, tier) {
-    tracks(r, p, 6, 18, 28);
-    r(8, 12, 24, 7, p.body); r(8, 12, 24, 2, p.light); r(8, 17, 24, 2, p.shade);
-    r(13, 6, 14, 7, p.body); r(13, 6, 14, 2, p.light); r(14, 11, 12, 2, p.shade);
-    r(26, 8, 14, 3, p.dark); r(26, 8, 14, 1, p.metal); r(38, 7, 3, 5, p.dark);
-    r(17, 4, 4, 3, p.dark); r(18, 3, 2, 1, p.light);
-    if (tier >= 1) r(9, 14, 22, 1, p.mark);
-    if (tier >= 2) { r(14, 8, 12, 1, p.mark); r(10, 12, 2, 5, p.dark); }
-    if (tier >= 3) { r(30, 12, 3, 5, p.metal); r(5, 10, 2, 8, p.light); }
-  },
-  artillery(r, p, tier) {
-    wheels(r, p, [14, 26], 22, 4);
-    r(10, 14, 20, 4, p.shade); r(8, 20, 8, 2, p.dark); r(26, 20, 10, 2, p.dark);
-    r(16, 8, 8, 8, p.body); r(16, 8, 8, 2, p.light); r(23, 6, 3, 10, p.dark);
-    for (let i = 0; i < 4; i++) r(24 + i * 3, 9 - i, 4, 3, i % 2 ? p.metal : p.dark);
-    r(36, 4, 4, 5, p.dark);
-    if (tier >= 1) r(17, 12, 6, 1, p.mark);
-    if (tier >= 2) r(10, 12, 3, 5, p.light);
-    if (tier >= 3) r(30, 8, 2, 4, p.glow);
-  },
-  selfPropelled(r, p, tier) {
-    tracks(r, p, 4, 19, 32);
-    r(6, 11, 28, 9, p.body); r(6, 11, 28, 2, p.light); r(6, 18, 28, 2, p.shade);
-    r(8, 5, 16, 7, p.body); r(8, 5, 16, 2, p.light); r(9, 10, 14, 2, p.shade);
-    r(22, 7, 20, 3, p.dark); r(22, 7, 20, 1, p.metal); r(40, 6, 3, 5, p.dark);
-    r(12, 3, 5, 3, p.dark);
-    if (tier >= 1) r(8, 14, 24, 1, p.mark);
-    if (tier >= 2) { r(30, 12, 3, 6, p.dark); r(4, 12, 2, 6, p.light); }
-    if (tier >= 3) { r(36, 7, 4, 1, p.glow); r(10, 7, 12, 1, p.mark); }
-  },
-  rocketLauncher(r, p, tier) {
-    wheels(r, p, [10, 20, 32], 23, 3);
-    r(4, 15, 36, 5, p.shade); r(4, 15, 36, 1, p.light);
-    r(4, 8, 11, 8, p.body); r(5, 9, 5, 4, p.glass); r(4, 8, 11, 2, p.light);
-    for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) { r(18 + i * 7, 4 + j * 5 - i, 6, 4, p.dark); r(22 + i * 7, 5 + j * 5 - i, 2, 2, tier >= 1 ? p.glow : p.mark); }
-    if (tier >= 2) r(15, 12, 3, 5, p.mark);
-    if (tier >= 3) r(6, 6, 2, 3, p.glow);
-  },
-  helicopter(r, p, tier) {
-    r(2, 3, 38, 1, p.dark); r(8, 2, 26, 1, p.metal);       // 메인 로터
-    r(20, 3, 2, 3, p.dark);
-    r(10, 6, 18, 10, p.body); r(10, 6, 18, 2, p.light); r(10, 14, 18, 2, p.shade);
-    r(24, 7, 6, 6, p.glass); r(25, 8, 3, 2, '#ffffff66');
-    r(2, 8, 10, 4, p.body); r(0, 5, 3, 8, p.shade); r(0, 4, 4, 1, p.metal); // 꼬리
-    r(8, 18, 22, 1, p.dark); r(12, 16, 1, 2, p.dark); r(26, 16, 1, 2, p.dark);
-    r(30, 12, 8, 2, p.dark); r(36, 11, 2, 1, tier >= 1 ? p.glow : p.mark);
-    if (tier >= 2) { r(14, 10, 8, 1, p.mark); }
-    if (tier >= 3) { r(11, 4, 2, 2, p.glow); }
-  },
-  fighter(r, p, tier) {
-    r(4, 10, 36, 5, p.body); r(4, 10, 36, 1, p.light); r(4, 14, 36, 1, p.shade);
-    r(34, 11, 8, 3, p.light); r(40, 12, 3, 1, p.dark);
-    r(26, 7, 8, 4, p.glass); r(27, 8, 4, 1, '#ffffff66');
-    r(14, 14, 16, 3, p.shade); r(8, 15, 8, 2, p.dark);
-    r(2, 4, 8, 8, p.body); r(2, 4, 3, 8, p.dark); r(8, 6, 2, 2, p.light);   // 꼬리 날개
-    r(0, 11, 5, 3, p.glow); r(0, 12, 3, 1, '#ffffff');
-    if (tier >= 1) r(14, 11, 12, 1, p.mark);
-    if (tier >= 2) r(22, 17, 6, 2, p.dark);
-    if (tier >= 3) r(30, 9, 2, 1, p.glow);
-  },
-  transport(r, p, tier) {
-    r(2, 8, 38, 9, p.body); r(2, 8, 38, 2, p.light); r(2, 15, 38, 2, p.shade);
-    r(34, 9, 7, 5, p.glass); r(0, 3, 6, 6, p.shade); r(0, 3, 2, 6, p.dark);
-    r(10, 4, 20, 3, p.metal); r(10, 4, 20, 1, p.light);                       // 높은 날개
-    r(12, 7, 2, 3, p.dark); r(26, 7, 2, 3, p.dark);
-    r(16, 10, 8, 6, '#e8f0e0'); r(19, 11, 2, 4, '#cf4a45'); r(17, 12, 6, 2, '#cf4a45'); // 적십자
-    r(10, 18, 20, 2, p.dark); r(14, 17, 2, 2, p.dark); r(26, 17, 2, 2, p.dark);
-    if (tier >= 2) r(4, 13, 10, 1, p.mark);
-    if (tier >= 3) { r(8, 4, 2, 2, p.glow); r(30, 4, 2, 2, p.glow); }
-  },
-  railgunTank(r, p, tier) {
-    tracks(r, p, 5, 19, 30);
-    r(7, 12, 26, 8, p.body); r(7, 12, 26, 2, p.light); r(7, 18, 26, 2, p.shade);
-    r(11, 6, 16, 7, p.shade); r(11, 6, 16, 2, p.light);
-    r(26, 7, 17, 2, p.dark); r(26, 10, 17, 2, p.dark); r(26, 9, 17, 1, p.glow);
-    for (let x = 28; x < 42; x += 4) { r(x, 6, 1, 7, p.metal); r(x, 8, 1, 2, p.glow); }
-    r(14, 3, 6, 3, p.dark); r(15, 4, 4, 1, p.glow);
-    if (tier >= 1) r(8, 14, 24, 1, p.glow);
-    if (tier >= 3) r(6, 9, 3, 4, p.glow);
-  },
-  icbm(r, p, tier) {
-    // 발사대 + 세워진 미사일: 받침 빔, 유도 레일, 동체 줄무늬, 탄두, 꼬리 날개, 배기 불꽃
-    r(4, 22, 36, 4, p.dark); r(6, 21, 32, 1, p.metal); r(4, 25, 36, 1, p.shade);
-    for (let x = 8; x < 38; x += 6) r(x, 22, 2, 3, p.light);
-    r(14, 14, 3, 8, p.shade); r(27, 14, 3, 8, p.shade); r(13, 13, 5, 1, p.metal); r(26, 13, 5, 1, p.metal);
-    r(19, 4, 6, 18, p.light); r(19, 4, 2, 18, p.mark); r(23, 4, 2, 18, p.shade);
-    r(20, 1, 4, 3, '#cf4a45'); r(21, 0, 2, 1, p.dark); r(19, 4, 6, 1, p.dark);
-    r(20, 9, 4, 2, p.dark); r(20, 14, 4, 1, p.dark); r(19, 18, 6, 1, p.metal);
-    r(16, 17, 3, 5, p.body); r(25, 17, 3, 5, p.body);
-    if (tier >= 1) r(20, 6, 4, 1, p.glow);
-    if (tier >= 2) { r(21, 22, 2, 3, p.glow); r(8, 19, 2, 2, p.mark); }
-    if (tier >= 3) { r(34, 18, 3, 3, p.glow); r(18, 11, 8, 1, p.mark); }
-  },
-};
+function drawGear(id, level, side) {
+  const canvas = artSurface(SPRITE_SIZE.width, SPRITE_SIZE.height), c = canvas.getContext('2d'), p = PAL[side];
+  rect(c, 12, 30, 36, 31, '#22392c44');
+  if (id === 'railgunTank' || id === 'icbm') { drawOverheadStrategic(c, level, p, id); overheadEnhancement(c, level); emblem(c, 25, 46, side); return canvas; }
+  if (id === 'transport' || id === 'fighter') { drawOverheadAircraft(c, level, p, id); overheadEnhancement(c, level); return canvas; }
+  if (id === 'rocketLauncher') drawOverheadRocket(c, level, p);
+  else if (id === 'helicopter') drawOverheadHelicopter(c, level, p);
+  else drawTrackedOrTowed(c, id, level, side);
+  // 강화 한 단계마다 보이는 장갑·장식 블록이 하나씩 늘어난다.
+  for (let i = 0; i < level; i++) rect(c, i % 2 ? 36 : 17, 24 + Math.floor(i / 2) * 5, 4, 3, i >= 8 ? '#e0c98c' : p.light);
+  if (level >= 4) rect(c, 24, 5, 8, 3, p.body);
+  if (level >= 7) { rect(c, 38, 10, 1, 23, p.light); rect(c, 36, 11, 5, 2, p.flag); }
+  overheadDetails(c, id, level, p); overheadEnhancement(c, level); emblem(c, 25, 47, side);
+  return canvas;
+}
 
 export function unitSprite(id, side, level = 0) {
-  const tier = levelTier(level), key = `${id}:${side}:${tier}`;
+  const key = `${id}:${side}:${level}`;
   if (cache.has(key)) return cache.get(key);
   const image = images.get(`${id}:${side}`);
-  if (image?.complete && image.naturalWidth) { cache.set(key, image); return image; }
-  const canvas = artSurface(SPRITE_SIZE.width, SPRITE_SIZE.height), c = canvas.getContext('2d');
-  const r = brush(c), p = PAL[side] ?? PAL.player;
-  r(5, SPRITE_SIZE.height - 4, SPRITE_SIZE.width - 8, 2, '#1d2a2440'); // 그림자
-  (DRAW[id] ?? DRAW.tank)(r, p, tier);
+  const sprite = image?.complete && image.naturalWidth ? image : drawGear(id, level, side);
+  cache.set(key, sprite);
+  return sprite;
+}
+
+const TIERS = ['battalion', 'regiment', 'division', 'corps', 'fieldArmy', 'armyGroup', 'alliedArmy', 'grandAlliedArmy', 'supremeCommand'];
+// 일반 기지(위에서 본 모습): 계급이 높을수록 크고 장식이 늘어난다.
+export function baseSprite(id, side) {
+  const key = `base:${side}:${id}`;
+  if (cache.has(key)) return cache.get(key);
+  const tier = Math.max(0, TIERS.indexOf(id)), w = 62 + tier * 10, h = 42 + tier * 5;
+  const canvas = artSurface(w + 18, h + 12), c = canvas.getContext('2d'), p = PAL[side], r = brush(c);
+  r(5, 6, w + 3, h + 2, '#26372d55'); r(2, 2, w, h, p.dark); r(5, 5, w - 6, h - 6, p.body);
+  r(5, 5, w - 6, 3, p.light); r(5, 7, 3, h - 8, p.light); r(12, 12, w - 23, h - 21, p.dark); r(14, 14, w - 27, h - 25, p.body);
+  for (let col = 0; col <= tier + 1; col++) { r(15 + col * 13, 15, 8, 6, p.light); r(16 + col * 13, 16, 6, 2, '#5a7675'); }
+  r(14, h - 13, 13, 6, p.light); r(16, h - 12, 9, 4, p.dark); emblem(c, w / 2 - 3, h / 2, side);
+  r(w + 7, 0, 2, 25, p.dark); r(w + 9, 1, 8, 7, p.flag);
+  for (let x = 8; x < w - 8; x += 8) { r(x, 8, 4, 1, p.light); r(x, h - 6, 4, 1, p.dark); }
+  for (let y = 15; y < h - 10; y += 7) { r(w - 10, y, 3, 2, p.light); r(w - 9, y + 1, 2, 1, p.dark); }
+  if (tier >= 7) { const metal = tier === 8 ? '#d8e8f1' : '#e4ce92'; for (const x of [5, w - 20]) { r(x, h / 2 - 5, 14, 19, p.dark); r(x + 2, h / 2 - 3, 10, 2, metal); } r(w / 2 - 15, h / 2 - 12, 30, 2, metal); }
   cache.set(key, canvas);
   return canvas;
 }

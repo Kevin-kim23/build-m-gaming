@@ -45,13 +45,13 @@ const scaleHp = (id, level, count, power, upgrades) => {
   return { stats, hp: UNIT_TRAITS[id].hp * (stats.growth ?? 1) * count * (power / 1280) };
 };
 
-function makeUnit(battle, side, id, level, count, power, modifier = 1, upgrades = true, stack = 1) {
+function makeUnit(battle, side, id, level, count, power, modifier = 1, upgrades = true, stack = 1, lane = 1) {
   const trait = UNIT_TRAITS[id], scaled = scaleHp(id, level, count, power, upgrades), stats = scaled.stats, hp = scaled.hp * stack;
   modifier *= stack;
   const dir = side === "player" ? 1 : -1, startX = side === "player" ? 40 : BATTLE_RULES.laneLength - 40;
   return {
     uid: battle.nextUid++, id, side, cls: trait.cls, kind: trait.kind, level, count, dir,
-    x: startX, hp: hp * (side === "enemy" ? 1 : 1), maxHp: hp,
+    lane, x: startX, hp, maxHp: hp,
     damage: (stats.damage ?? 0) * modifier, healing: (stats.healing ?? 0) * stack,
     intervalMs: stats.intervalMs, nextShotMs: battle.elapsedMs + stats.intervalMs / 2, lastShotMs: -1,
     range: trait.range, speed: trait.speed,
@@ -92,14 +92,15 @@ function cloneBattle(b) {
   return { ...b, deck: b.deck.map((c) => ({ ...c })), player: side(b.player), enemy: side(b.enemy), fx: [...b.fx] };
 }
 
-// 카드를 눌러 장비 출격. 마나 부족·재출격 대기·없는 장비면 같은 battle을 그대로 돌려준다.
-export function deploy(battle, gearId) {
+// 카드를 눌러 레인(0 왼쪽·1 가운데·2 오른쪽)으로 장비 출격. 마나 부족·재출격 대기·없는 장비·없는 레인이면 같은 battle을 그대로 돌려준다.
+export function deploy(battle, gearId, lane = 1) {
   const card = battle.deck.find((c) => c.id === gearId);
+  if (!Number.isInteger(lane) || lane < 0 || lane >= BATTLE_RULES.lanes) return battle;
   if (battle.status !== "running" || !card || battle.mana < card.cost || battle.elapsedMs < card.readyMs) return battle;
   const next = cloneBattle(battle), c = next.deck.find((x) => x.id === gearId);
   next.mana -= c.cost;
   c.readyMs = next.elapsedMs + UNIT_TRAITS[gearId].cooldownMs;
-  const unit = makeUnit(next, "player", gearId, c.level, c.count, next.player.power);
+  const unit = makeUnit(next, "player", gearId, c.level, c.count, next.player.power, 1, true, 1, lane);
   if (unit.kind === "strike") {
     const shield = fortressShieldClass(next.stageId) === unit.cls && next.enemy.fortress ? FORTRESS_SHIELD : 1;
     next.enemy.hq.hp = Math.max(0, next.enemy.hq.hp - unit.damage * BATTLE_RULES.strikeMultiplier * shield);
@@ -117,9 +118,12 @@ function finish(b) {
   else if (b.elapsedMs >= BATTLE_RULES.maxDurationMs) b.status = "draw";
 }
 
+// 적이 올 레인: 지역 번호와 출격 순서로 정해지는 고정 규칙(예고 없이 바로 등장, 같은 지역은 항상 같은 순서).
+export const enemyLane = (stageId, n) => (Math.imul((stageId * 7919 + n * 104729) >>> 0, 2654435761) >>> 16) % BATTLE_RULES.lanes;
+
 function spawnEnemy(b, stage) {
   const type = stageEnemyType(b.stageId), id = type.pool[b.enemy.spawned % type.pool.length];
-  b.enemy.units.push(makeUnit(b, "enemy", id, stage.enemyLevel, 1, stage.enemyPower, stage.enemyModifier, false, enemyStack(b.stageId, stage.enemyLevel)));
+  b.enemy.units.push(makeUnit(b, "enemy", id, stage.enemyLevel, 1, stage.enemyPower, stage.enemyModifier, false, enemyStack(b.stageId, stage.enemyLevel), enemyLane(b.stageId, b.enemy.spawned)));
   b.enemy.spawned++;
   b.enemy.nextSpawnMs += stage.spawnMs;
 }
@@ -138,15 +142,15 @@ function step(b, stage) {
       if (u.kind === "heal") {
         if (now >= u.nextShotMs) {
           u.nextShotMs = now + u.intervalMs; u.lastShotMs = now;
-          for (const a of allies) if (Math.abs(a.x - u.x) <= u.range && a.hp < a.maxHp) heal.set(a, (heal.get(a) ?? 0) + a.maxHp * BATTLE_RULES.healPercent);
+          for (const a of allies) if (a.lane === u.lane && Math.abs(a.x - u.x) <= u.range && a.hp < a.maxHp) heal.set(a, (heal.get(a) ?? 0) + a.maxHp * BATTLE_RULES.healPercent);
         }
         // 회복 장비는 가장 앞선 아군보다 60 뒤에서 멈춰 따라간다.
-        const front = Math.max(-Infinity, ...allies.filter((a) => a !== u).map((a) => a.x * u.dir));
+        const front = Math.max(-Infinity, ...allies.filter((a) => a !== u && a.lane === u.lane).map((a) => a.x * u.dir));
         if (!(front - u.x * u.dir < 60)) u.x += u.dir * u.speed * dt;
         continue;
       }
       let target = null, best = u.range + 1;
-      for (const f of foes) { const d = Math.abs(f.x - u.x); if (d <= u.range && d < best) { best = d; target = f; } }
+      for (const f of foes) { if (f.lane !== u.lane) continue; const d = Math.abs(f.x - u.x); if (d <= u.range && d < best) { best = d; target = f; } }
       const baseDist = Math.abs(baseX - u.x);
       if (!target && baseDist <= u.range) target = "base";
       if (!target) { u.x += u.dir * u.speed * dt; continue; }
@@ -155,10 +159,10 @@ function step(b, stage) {
       if (target === "base") {
         const shield = side === "player" && b.enemy.fortress && fortressShieldClass(b.stageId) === u.cls ? FORTRESS_SHIELD : 1;
         if (side === "player") toEnemyBase += u.damage * shield; else toPlayerBase += u.damage;
-        b.fx.push({ at: now, kind: "shot", side, id: u.id, from: u.x, to: baseX });
+        b.fx.push({ at: now, kind: "shot", side, id: u.id, lane: u.lane, from: u.x, to: baseX });
       } else {
         damage.set(target, (damage.get(target) ?? 0) + u.damage * classMatchup(u.cls, target.cls, b.stageId));
-        b.fx.push({ at: now, kind: "shot", side, id: u.id, from: u.x, to: target.x });
+        b.fx.push({ at: now, kind: "shot", side, id: u.id, lane: u.lane, from: u.x, to: target.x });
       }
     }
   }
@@ -172,14 +176,14 @@ function step(b, stage) {
     if (!target) continue;
     t.nextShotMs = now + BATTLE_RULES.turretIntervalMs;
     damage.set(target, (damage.get(target) ?? 0) + t.damage);
-    b.fx.push({ at: now, kind: "shot", side, id: "turret", from: baseX, to: target.x });
+    b.fx.push({ at: now, kind: "shot", side, id: "turret", lane: target.lane, from: baseX, to: target.x });
   }
   for (const [u, d] of damage) u.hp -= d;
   for (const [u, h] of heal) u.hp = Math.min(u.maxHp, u.hp + h);
   b.enemy.hq.hp = Math.max(0, b.enemy.hq.hp - toEnemyBase);
   b.player.hq.hp = Math.max(0, b.player.hq.hp - toPlayerBase);
   for (const s of ["player", "enemy"]) {
-    for (const u of b[s].units) if (u.hp <= 0) b.fx.push({ at: now, kind: "death", side: s, id: u.id, from: u.x });
+    for (const u of b[s].units) if (u.hp <= 0) b.fx.push({ at: now, kind: "death", side: s, id: u.id, lane: u.lane, from: u.x });
     b[s].units = b[s].units.filter((u) => u.hp > 0);
   }
   b.fx = b.fx.filter((f) => now - f.at < 600).slice(-60);

@@ -7,7 +7,8 @@ export const BATTLE_RULES = Object.freeze({
   stepMs: 50,
   maxFrameMs: 250,
   maxDurationMs: 180_000,
-  laneLength: 1000,        // 전장 길이(왼쪽 아군 기지 0 ~ 오른쪽 적 기지 1000)
+  lanes: 3,                // 세로 레인 수(왼쪽·가운데·오른쪽). 아래 우리 기지에서 위 적 기지로 올라간다
+  laneLength: 1000,        // 레인 길이(우리 기지 0 ~ 적 기지 1000)
   manaMax: 100,
   manaStart: 40,
   manaPerSecond: 8,

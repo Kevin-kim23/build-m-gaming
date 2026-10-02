@@ -5,7 +5,7 @@ import { EQUIPMENT } from "../src/equipment.js";
 import {
   BATTLE_RULES, STAGES, UNIT_TRAITS, battleAccess, defaultLoadout, normalizeLoadout,
   createBattle, advanceBattle, deploy, battleSlots, equipmentCombatStats, matchupMultiplier, stageEnemyType,
-  classMatchup, fortressShieldClass, isFortress,
+  classMatchup, fortressShieldClass, isFortress, enemyLane,
 } from "../src/battle.js";
 import { enemyStack } from "../src/battle-balance.js";
 import { quietBattle, until, deployNow, play } from "./lane-helpers.js";
@@ -227,4 +227,37 @@ test("all ten enhancements increase both damage and automatic attack speed", () 
   assert.throws(() => equipmentCombatStats("tank", 21), RangeError);
   const colonel = createBattle(army(5120), 3), general = createBattle(army(10240), 3);
   assert.equal(colonel.player.hq.hp * 2, general.player.hq.hp);
+});
+
+test("lanes: a card goes to the chosen lane (0 left, 1 middle, 2 right); invalid lanes do nothing", () => {
+  const b = createBattle(army(), 1);
+  for (const lane of [0, 1, 2]) assert.equal(deploy(b, "tank", lane).player.units[0].lane, lane);
+  assert.equal(deploy(b, "tank").player.units[0].lane, 1, "default is the middle lane");
+  for (const lane of [-1, 3, 1.5, "1", NaN, null]) assert.equal(deploy(b, "tank", lane), b);
+  assert.equal(BATTLE_RULES.lanes, 3);
+});
+
+test("units only fight foes in their own lane and ignore other lanes until they reach a base", () => {
+  const state = army(); state.equipment.artillery = { level: 3, deployed: true };
+  let b = deployNow(quietBattle(state, 1, ["artillery"]), "artillery", 0);
+  const u = b.player.units[0];
+  b.enemy.units.push({ ...u, side: "enemy", uid: 99, dir: -1, lane: 2, x: 500, hp: 1e12, maxHp: 1e12, damage: 0, nextShotMs: Infinity });
+  b = until(b, 6000);
+  assert.equal(b.enemy.units[0].hp, 1e12, "no damage across lanes");
+  assert.ok(b.player.units[0].x > u.x, "the unit keeps marching up its own lane");
+  let c = deployNow(quietBattle(state, 1, ["artillery"]), "artillery", 2);
+  c.enemy.units.push({ ...c.player.units[0], side: "enemy", uid: 99, dir: -1, lane: 2, x: c.player.units[0].x + 40, hp: 1e12, maxHp: 1e12, damage: 0, nextShotMs: Infinity });
+  c = until(c, 6000);
+  assert.ok(c.enemy.units[0].hp < 1e12, "same lane: the artillery shoots it");
+});
+
+test("enemies appear without warning in a fixed, repeatable lane order that uses all three lanes", () => {
+  for (const id of [1, 20, 41]) {
+    const lanes = Array.from({ length: 30 }, (_, n) => enemyLane(id, n));
+    assert.deepEqual(lanes, Array.from({ length: 30 }, (_, n) => enemyLane(id, n)), "deterministic");
+    assert.ok(lanes.every((l) => [0, 1, 2].includes(l)));
+    for (const l of [0, 1, 2]) assert.ok(lanes.filter((x) => x === l).length >= 4, `lane ${l} is used for stage ${id}`);
+  }
+  let b = createBattle(army(), 1); b = until(b, BATTLE_RULES.enemyFirstSpawnMs + 100);
+  assert.equal(b.enemy.units[0].lane, enemyLane(1, 0));
 });

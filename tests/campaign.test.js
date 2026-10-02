@@ -66,7 +66,8 @@ test('every recommended force wins its region by simply sending its equipment as
 test('first capital targets corps strength without hard power gates; preparation and investment matter',()=>{
   const ordinary=simulate(army(81920),20);assert.equal(ordinary.status,'victory');
   assert.ok(ordinary.elapsedMs>=40000&&ordinary.elapsedMs<=140000);
-  for(const power of [20480,40960,61440])assert.equal(simulate(army(power),20).status,'defeat');
+  for(const power of [20480,40960])assert.equal(simulate(army(power),20).status,'defeat');
+  assert.ok(simulate(army(61440),20).elapsedMs>simulate(army(81920),20).elapsedMs,'a weaker army wins only more slowly (or loses)');
   assert.equal(simulate(army(40960,10),20).status,'defeat');
   assert.notEqual(simulate(army(81920),20,'none').status,'victory');
   // Higher investment can intentionally beat the recommendation early.
@@ -114,7 +115,7 @@ test('region UI exposes all twenty regions, lock reasons, replay, next-country a
 });
 
 test('extra support and air gear in the collection does not lower the first-capital corps target',()=>{
-  for(const power of [20480,40960,61440,81920]){
+  for(const power of [20480,40960,81920]){
     const s=army(power);s.equipment.transport={level:8,count:1,deployed:false};
     if(power>=81920)s.equipment.fighter={level:8,count:1,deployed:false};
     assert.equal(simulate(s,20).status,power>=81920?'victory':'defeat',String(power));

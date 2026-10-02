@@ -55,6 +55,9 @@ test('battlefield shows one canvas, a mana bar and one deploy card per deployed 
   assert.equal((markup.match(/<canvas\b/g) ?? []).length, 1);
   assert.deepEqual([...markup.matchAll(/data-deploy="(\w+)"/g)].map(m => m[1]), ['artillery', 'tank']);
   assert.match(markup, /id="battle-mana-fill"/);
+  assert.deepEqual([...markup.matchAll(/data-lane="(\d)"/g)].map(m => m[1]), ['0', '1', '2'], 'three lane buttons');
+  assert.match(markup, /aria-label="왼쪽 레인에 출격"/);
+  assert.match(markup, /width="360" height="440"/);
   for (const required of ['battle-canvas', 'battle-player-hp', 'battle-enemy-hp', 'battle-pause', 'battle-resume'])
     assert.ok(ids.includes(required));
   for (const homeControl of ['tap-zone', 'gold', 'open-shop', 'open-equipment'])

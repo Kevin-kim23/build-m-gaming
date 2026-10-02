@@ -19,7 +19,7 @@ export function createBattleUI(session) {
   const $ = (selector) => dialog.querySelector(selector);
   const campaignMap = createCampaignMap(dialog,()=>session.state);
   let mode = 'stages', stageId = 1, loadout = null, loadoutStage = 0, battle = null;
-  let raf = 0, lastFrame = 0, paused = false, finalized = false;
+  let raf = 0, lastFrame = 0, paused = false, finalized = false, selected = null;
   let stagesKey = '', preparationKey = '';
   const mapKey = () => `${session.state.campaignCleared}:${armyKey()}:${battleAccess(session.state).unlocked}`;
   const armyKey = () => Object.values(UNITS).map(u => session.state[u.field]).join(':') + '|' +
@@ -73,7 +73,7 @@ export function createBattleUI(session) {
       reportError('battle.start', error);
       text('#battle-message', '출전 조건이 바뀌었어요. 작전 지도로 돌아가 다시 준비해 주세요.'); return;
     }
-    stop(); campaignMap.stop(); mode = 'battle'; paused = false; finalized = false;
+    stop(); campaignMap.stop(); mode = 'battle'; paused = false; finalized = false; selected = null;
     dialog.innerHTML = battlefieldMarkup(battle);
     dialog.classList.add('in-battle'); dialog.scrollTop = 0;
     paint(); sync(); schedule();
@@ -98,7 +98,15 @@ export function createBattleUI(session) {
       text(`[data-deploy-cost="${card.id}"]`, wait ? `재출격 ${wait}초` : afford ? `출격 · 마나 ${card.cost}` : `마나 ${card.cost} 필요`);
       const ready = wait === 0 && afford && battle.status === 'running' && !paused;
       if (button.disabled === ready) button.disabled = !ready;
+      if (!ready && selected === card.id) selected = null;
+      const pressed = String(selected === card.id);
+      if (button.getAttribute('aria-pressed') !== pressed) button.setAttribute('aria-pressed', pressed);
     }
+    const lanesOn = !!selected && battle.status === 'running' && !paused;
+    dialog.querySelectorAll('[data-lane]').forEach(lane => {
+      if (lane.disabled === lanesOn) lane.disabled = !lanesOn;
+      lane.classList.toggle('ready', lanesOn);
+    });
     text('#battle-time', `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`);
   }
   function schedule() {
@@ -117,11 +125,16 @@ export function createBattleUI(session) {
     }
     schedule();
   }
-  function sortie(id) {
+  // 카드를 고른 뒤 레인을 누르면 출격한다. 카드를 다시 누르면 선택이 풀린다.
+  function pickCard(id) {
     if (!session.active || document.hidden || paused || battle?.status !== 'running') return;
-    const next = deploy(battle, id);
+    selected = selected === id ? null : id; paint();
+  }
+  function sortie(lane) {
+    if (!selected || !session.active || document.hidden || paused || battle?.status !== 'running') return;
+    const next = deploy(battle, selected, lane);
     if (next === battle) return;
-    battle = next; paint();
+    selected = null; battle = next; paint();
     if (battle.status !== 'running') finish();
   }
   function overlay(title, copy, result) {
@@ -132,7 +145,7 @@ export function createBattleUI(session) {
     $('#battle-resume').disabled = !session.active;
     $('#battle-result-actions').hidden = !result;
     $('#battle-pause').disabled = result;
-    dialog.querySelectorAll('[data-deploy]').forEach(button => { button.disabled = true; });
+    dialog.querySelectorAll('[data-deploy],[data-lane]').forEach(button => { button.disabled = true; });
   }
   function suspend() {
     if (battle?.status !== 'running' || !dialog.open) return;
@@ -192,7 +205,8 @@ export function createBattleUI(session) {
     else if (target.hasAttribute('data-battle-back')) showStages();
     else if (target.hasAttribute('data-battle-retry')) prepare();
     else if (target.id === 'battle-start') start();
-    else if (target.dataset.deploy) sortie(target.dataset.deploy);
+    else if (target.dataset.deploy) pickCard(target.dataset.deploy);
+    else if (target.dataset.lane !== undefined) sortie(Number(target.dataset.lane));
     else if (target.id === 'battle-pause') suspend();
     else if (target.id === 'battle-resume') resume();
   });
