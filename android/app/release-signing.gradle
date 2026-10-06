@@ -1,0 +1,29 @@
+import groovy.json.JsonSlurper
+
+// Upload credentials live outside the checkout and are never included in the app.
+def signingPath = System.getenv('BUDAE_SIGNING_FILE') ?:
+        new File(System.getProperty('user.home'), '.budae-kiugi/signing/upload-signing.json').path
+def credentialsFile = new File(signingPath)
+def signingCredentials = credentialsFile.isFile() ? new JsonSlurper().parse(credentialsFile) : null
+if (signingCredentials != null) {
+    ['storeFile', 'storePassword', 'keyAlias', 'keyPassword'].each {
+        if (!(signingCredentials[it] instanceof String) || !signingCredentials[it].trim())
+            throw new GradleException('Incomplete upload signing configuration: ' + it)
+    }
+    def uploadStore = new File(signingCredentials.storeFile)
+    if (!uploadStore.isAbsolute() || !uploadStore.isFile())
+        throw new GradleException('Upload keystore must be an existing absolute file path.')
+    android.signingConfigs {
+        upload {
+            storeFile uploadStore
+            storePassword signingCredentials.storePassword
+            keyAlias signingCredentials.keyAlias
+            keyPassword signingCredentials.keyPassword
+        }
+    }
+    android.buildTypes.release.signingConfig = android.signingConfigs.upload
+}
+gradle.taskGraph.whenReady { graph ->
+    if (signingCredentials == null && graph.allTasks.any { it.project == project && it.name.toLowerCase().contains('release') })
+        throw new GradleException('Release signing is not configured. See docs/ANDROID_RELEASE.md. Never use the debug key for Play uploads.')
+}

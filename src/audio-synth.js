@@ -76,6 +76,7 @@ export function createSynthAudio(
         else if (kind === "hit") { tone(120, t, 0.16, 0.05, "square"); tone(80, t + 0.05, 0.2, 0.04, "sawtooth"); }
         else if (kind === "win") for (const [i, f] of [523, 659, 784, 1047].entries()) tone(f, t + i * 0.12, 0.26, 0.04, "triangle");
         else if (kind === "lose") for (const [i, f] of [392, 330, 262].entries()) tone(f, t + i * 0.18, 0.34, 0.04, "triangle");
+        else if (kind === "draw") for (const [i, f] of [392, 440, 392].entries()) tone(f, t + i * 0.16, 0.22, 0.03, "triangle");
       });
     },
     promotion(rank, enabled) {

@@ -66,22 +66,18 @@ test('sound assets contain effects only and retired background tracks cannot be 
   for(const id of ['home','map','serdin-early','norgard-capital']) assert.equal(audioUrl(id),null);
 });
 
-test('game effects survive pause/resume, mute and backgrounding without late or repeated loading',async()=>{
-  const f=soundFixture(),requests=[];
-  const audio=createGameAudio(()=>f.context,{generated:true,effects:{
-    fetchAudio:url=>{requests.push(url);return f.fetchAudio();}, now:()=>1000,
-  }});
-  const ready=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
-  audio.configure({enabled:true,active:true});audio.unlock();audio.prepareBattle();await ready();
-  assert.equal(requests.length,40);assert.ok(requests.every(url=>url.startsWith('./audio/sfx/')));
-  audio.tap(true);audio.battle('shot',true,'tank');assert.equal(f.nodes.length,2);
-  audio.stop();assert.ok(f.nodes.every(node=>node.stopped&&node.disconnected));
-  audio.battle('shot',true,'tank');assert.equal(f.nodes.length,3,'new action after resume plays');
-  audio.configure({enabled:false,active:true});audio.tap(false);audio.unlock();
-  assert.equal(f.nodes.length,3);assert.ok(f.nodes.every(node=>node.disconnected));
-  audio.configure({enabled:true,active:false});audio.battle('shot',true,'tank');audio.unlock();
-  assert.equal(f.nodes.length,3);
-  audio.configure({enabled:true,active:true});audio.unlock();audio.prepareBattle();audio.tap(true);
-  assert.equal(f.nodes.length,4);assert.equal(requests.length,40,'cached effects reused after resume');
+test('synthesized effects stop on mute/background and resume only for new actions',()=>{
+  let starts=0,stops=0;
+  const context={currentTime:0,state:'running',destination:{},resume:async()=>{},
+    createGain:()=>({connect(){},disconnect(){},gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}}}),
+    createOscillator:()=>({connect(){},disconnect(){},frequency:{setValueAtTime(){}},start(){starts++;},stop(){stops++;}})};
+  const audio=createGameAudio(()=>context);
+  audio.configure({enabled:true,active:true});audio.tap(true);assert.equal(starts,1);
+  audio.configure({enabled:false,active:true});assert.ok(stops>=2);
+  audio.tap(true);assert.equal(starts,1,'muted even if caller passes true');
+  audio.configure({enabled:true,active:false});audio.battle('shot',true);assert.equal(starts,1);
+  audio.configure({enabled:true,active:true});audio.unlock();audio.prepareBattle();assert.equal(starts,1);
+  audio.tap(true);assert.equal(starts,2);
+  audio.stop();audio.battle('draw',true);assert.equal(starts,5);
   audio.stop();
 });

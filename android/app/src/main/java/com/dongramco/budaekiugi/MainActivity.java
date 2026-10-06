@@ -1,4 +1,4 @@
-package com.budaekiugi.prototype;
+package com.dongramco.budaekiugi;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { AUDIO_IDS } from '../src/audio-catalog.js';
-import { verifyAudioAssets } from '../tools/audio-assets.mjs';
+import { verifyAudioAssets } from '../tools/archived-audio-assets.mjs';
 
 async function fixture(t) {
   const directory = await mkdtemp(join(tmpdir(), 'budae-audio-check-'));

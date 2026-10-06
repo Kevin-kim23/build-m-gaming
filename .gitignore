@@ -5,6 +5,10 @@ android/local.properties
 android/**/build/
 *.keystore
 *.jks
+*.p12
+*.pfx
+*signing*.json
+*keystore*.properties
 .env
 .env.*
 !.env.example

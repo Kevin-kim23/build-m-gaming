@@ -10,10 +10,10 @@ def appVersionCode = appVersionParts[0] * 1000000 + appVersionParts[1] * 1000 + 
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.budaekiugi.prototype"
+    namespace = "com.dongramco.budaekiugi"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.budaekiugi.prototype"
+        applicationId "com.dongramco.budaekiugi"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode appVersionCode
@@ -32,6 +32,8 @@ android {
         }
     }
 }
+
+apply from: 'release-signing.gradle'
 
 repositories {
     flatDir{

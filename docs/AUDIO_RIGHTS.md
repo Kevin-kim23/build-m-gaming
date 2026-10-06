@@ -1,8 +1,14 @@
+# 현재 적용 · 0.52.0 합성 효과음만 사용 · 2026-10-06
+
+사용자 요청으로 생성 효과음40개도 배포 대상에서 제외했습니다. 앱은 src/audio-synth.js의 Web Audio 합성음만 사용하며 ElevenLabs 요청·MP3 로딩이 없습니다. 이전 manifest는 docs/audio-manifest-0.51.2.json에 출처 기록으로 보관합니다. 아래의 생성 음원 권리 검토는 과거 제작 기록이며 현재 배포 목록이 아닙니다. 게임 전체의 법률 검토는 아직 별도입니다.
+
+---
+
 # 현재 적용 · 0.51.2 효과음 전용 · 2026-10-06
 
 사용자 요청으로 배경음악 재생 코드와 앱용 음악18곡을 제거했다. 현재 앱·웹 빌드·새 비공개 ZIP에는 기존 효과음40개만 포함한다. 효과음 파일·생성ID·해시는 그대로이며 새 외부 에셋/서비스를 추가하거나 유료 생성하지 않았다. 아래는 이전 제작 당시의 권리 검토 기록으로, 음악 조건을 현재 사용 중인 자산으로 오인하지 않는다. 음악을 다시 도입하면 당시 조건을 새로 확인한다.
 
-기존 효과음의 Creator 증빙 보관·최종 청취·공개 원본 배포 제외 지침은 유지한다. 현재 배포 목록은 `public/audio/manifest.json`, 복원 절차는 [AUDIO_SETUP.md](AUDIO_SETUP.md)를 따른다. 로컬 비공개 보관본과 ElevenLabs 제작 내역은 앱의 배포 파일이 아니다.
+기존 효과음의 Creator 증빙 보관·최종 청취·공개 원본 배포 제외 지침은 유지한다. 현재 배포 목록은 `docs/audio-manifest-0.51.2.json`, 복원 절차는 [AUDIO_SETUP.md](AUDIO_SETUP.md)를 따른다. 로컬 비공개 보관본과 ElevenLabs 제작 내역은 앱의 배포 파일이 아니다.
 
 ---
 
@@ -13,7 +19,7 @@
 - 제공자: ElevenLabs. 음악 모델 `eleven_music_v2`, 효과음 모델 `eleven_text_to_sound_v2`.
 - 생성 당시 요금제는 **사용자가 확인한 Creator**다. 계정의 청구서·음악 상품 이용권까지 도구로 독립 확인한 것은 아니다. 출시 담당자는 생성일이 포함된 구독 증빙을 비공개로 보관한다.
 - 제작 요청: `tools/audio-plan.mjs`. 아티스트·기존 곡·게임 OST·국가를 모방하라는 요청, 타인 음성·음원 업로드 없이 제작했다.
-- 생성 식별자·모델·파일 해시: `public/audio/manifest.json`. 연결 작업: [ElevenLabs 프로젝트](https://elevenlabs.io/app/flows/ednCDWCqnmkvVHvoooSf).
+- 생성 식별자·모델·파일 해시: `docs/audio-manifest-0.51.2.json`. 연결 작업: [ElevenLabs 프로젝트](https://elevenlabs.io/app/flows/ednCDWCqnmkvVHvoooSf).
 - 음악 18곡(국가 4개 × 4단계 + 홈·지도), 효과음 40종. 효과음은 기본 4개 후보 생성을 요청하고, 실제 성공한 후보에서 무음·시작 지연을 검사해 1개를 선택했다. 마지막 6종의 추가 후보는 서비스 대기열 제한으로 거절되어 성공한 1개씩을 사용했다. 이미 생성된 음원에 중복 비용이 생기지 않도록 재호출하지 않았다. 자동 선별은 청취 심사를 대신하지 않는다.
 
 ## 공식 조건과 이번 적용
@@ -30,7 +36,7 @@
 
 - `private-audio/`: 생성 원본과 제작 기록. Git에서 제외한다.
 - `public/audio/music/`, `public/audio/sfx/`: 가공한 앱용 MP3. Git에서 제외하지만 로컬 웹 빌드·Android 패키지에 포함한다.
-- `public/audio/manifest.json`, 제작 프롬프트·코드·이 문서: 공개 Git에 보관한다. 서명된 다운로드 URL·계정 인증 토큰·API 키는 넣지 않는다.
+- `docs/audio-manifest-0.51.2.json`, 제작 프롬프트·코드·이 문서: 공개 Git에 보관한다. 서명된 다운로드 URL·계정 인증 토큰·API 키는 넣지 않는다.
 - 집 컴퓨터로 옮길 때 음원 ZIP은 **본인만 접근 가능한 저장소 또는 직접 복사**로 전달한다. 공개 GitHub 릴리스·첨부에 올리지 않는다. 복원 방법은 [AUDIO_SETUP.md](AUDIO_SETUP.md)를 따른다.
 - 게임은 ElevenLabs API를 호출하지 않는다. 이용자의 게임 저장·음성·개인정보를 ElevenLabs로 전송하는 기능을 추가하지 않았다.
 

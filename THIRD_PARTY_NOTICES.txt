@@ -2350,14 +2350,8 @@ Repository: https://github.com/sveltejs/zimmerframe
 
 
 -------------------------------------------------------------------------------
-Game audio generated with ElevenLabs (2026-10-06)
+Game audio (0.52.0 onward)
 -------------------------------------------------------------------------------
-Music: eleven_music_v2. Sound effects: eleven_text_to_sound_v2.
-Creator plan confirmed by the project owner at generation time.
-These generated audio assets are subject to ElevenLabs terms; they are not
-licensed under the open-source software licenses listed above.
-They are integrated game assets, not a separately licensed music library.
-https://elevenlabs.io/music-terms
-https://elevenlabs.io/eleven-music-model-specific-terms
-Provenance and review: docs/AUDIO_RIGHTS.md, public/audio/manifest.json.
-Raw generated music and sound files are excluded from the public source repo.
+Effects are synthesized locally by the game code (Web Audio). No generated music
+or sound recordings from ElevenLabs are included in this release. Historical
+provenance is retained in docs/AUDIO_RIGHTS.md and docs/audio-manifest-0.51.2.json.

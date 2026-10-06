@@ -40,3 +40,7 @@ npm run qa:marshal → http://127.0.0.1:4197/__marshal-check. 실제4173과 다�
 ## 효과음 검증 (0.51.2)
 
 `npm run audio:verify`는 효과음40개의 파일/해시와 불필요한 음원 잔존 여부를 확인합니다. `npm run android:sync`는 이 검사와 빌드 후 복사합니다. 과거 음악 폴더가 남으면 먼저 삭제해야 합니다. 제작·복원은 [AUDIO_SETUP.md](../docs/AUDIO_SETUP.md)를 참고하세요.
+
+## 0.52.0 현재 오디오·안드로이드 도구
+
+현재 audio:verify는 음원 복원을 요구하지 않고 과거 녹음 파일/ZIP 혼입을 차단합니다. android:doctor/key/apk/release 명령은 docs/ANDROID_RELEASE.md를 참고하세요. 과거 음원 가공 도구는 출시 경로에서 사용하지 않습니다.
