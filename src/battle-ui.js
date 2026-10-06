@@ -60,14 +60,14 @@ export function createBattleUI(session, audio = null) {
   function stop() { cancelAnimationFrame(raf); raf = 0; lastFrame = 0; }
   function close() {
     stop(); campaignMap.stop(); battle = null;
-    audio?.pauseMusic?.(false); audio?.scene?.('home');
+    audio?.stop?.();
     if (dialog.open) dialog.close();
   }
   function showStages(countryId = campaignMap.countryId) {
     stop(); battle = null; mode = 'stages';
     stagesKey = mapKey();
     campaignMap.show(countryId);
-    audio?.pauseMusic?.(false); audio?.scene?.('map'); audio?.prepareBattle?.();
+    audio?.stop?.(); audio?.prepareBattle?.();
     paintCardArt();
     dialog.classList.remove('in-battle');
     dialog.scrollTop = 0;
@@ -97,7 +97,7 @@ export function createBattleUI(session, audio = null) {
     }
     stop(); campaignMap.stop(); mode = 'battle'; paused = false; finalized = false; selected = null;
     audioEvents.reset(); healedAt.clear();
-    audio?.pauseMusic?.(false); audio?.scene?.('battle',stageId); audio?.prepareBattle?.();
+    audio?.stop?.(); audio?.prepareBattle?.();
     fx = { flash: { player: -1e9, enemy: -1e9 }, shakeAt: -1e9, prevHp: null, accum: { player: 0, enemy: 0 }, lastFloat: { player: 0, enemy: 0 }, lastSound: {} };
     dialog.innerHTML = battlefieldMarkup(battle);
     paintCardArt();
@@ -226,14 +226,13 @@ export function createBattleUI(session, audio = null) {
   function suspend() {
     if (battle?.status !== 'running' || !dialog.open) return;
     paused = true; stop();
-    audio?.pauseMusic?.(true);
+    audio?.stop?.();
     overlay('일시정지', session.active ? '' : '현재 게임 창의 조작 권한을 기다리고 있어요.', false);
     text('#battle-result-stars', ''); text('#battle-result-loot', '');
   }
   function resume() {
     if (!session.active || document.hidden || battle?.status !== 'running') return;
     paused = false; lastFrame = 0;
-    audio?.pauseMusic?.(false);
     $('#battle-overlay').hidden = true;
     schedule();
   }
@@ -362,6 +361,6 @@ export function createBattleUI(session, audio = null) {
     if(target && ['Enter',' '].includes(event.key)){event.preventDefault();campaignMap.handle(target);}
   });
   dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
-  dialog.addEventListener('close', () => { stop(); campaignMap.stop(); battle = null; audio?.pauseMusic?.(false); audio?.scene?.('home'); document.querySelector('#open-battle')?.focus(); });
+  dialog.addEventListener('close', () => { stop(); campaignMap.stop(); battle = null; audio?.stop?.(); document.querySelector('#open-battle')?.focus(); });
   return {open, sync, suspend};
 }
