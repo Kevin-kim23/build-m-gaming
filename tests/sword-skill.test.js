@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {freshState,activateSword,tapGold,perTap,perSecond,accrue,parseSave,SAVE_KEY,MAX_GOLD} from "../src/game.js";
 import {swordSkillStatus} from "../src/personal-equipment.js";
-import {createBattle,fireVolley} from "../src/battle.js";
+import {createBattle,deploy} from "../src/battle.js";
 import {createGameSession} from "../src/session.js";
 import {syncSwordControls} from "../src/sword-controls.js";
 import {personalIcon} from "../src/personal-art.js";
@@ -35,7 +35,7 @@ test('reload, offline income and clock rollback cannot extend or resurrect a sav
 });
 test('schema ten gains unused skill; schema eleven validates and preserves timestamps',()=>{
   const old={...general(),version:10};delete old.swordActivatedAt;
-  const migrated=parseSave(serializeSave(old),T);assert.equal(migrated.version, 21);assert.equal(migrated.swordActivatedAt,null);
+  const migrated=parseSave(serializeSave(old),T);assert.equal(migrated.version, 22);assert.equal(migrated.swordActivatedAt,null);
   assert.equal(migrated.gold,old.gold);assert.equal(migrated.sergeants,300);
   old.swordActivatedAt=T;assert.equal(parseSave(serializeSave(old),T).swordActivatedAt,null);
   for(const bad of [undefined,-1,1.5,'12',{},100000000000001]) {
@@ -43,10 +43,11 @@ test('schema ten gains unused skill; schema eleven validates and preserves times
   }
   const s=general();activateSword(s,T);assert.equal(parseSave(serializeSave(s),T).swordActivatedAt,T);
 });
-test('skill never changes automatic income or infantry damage in battle',()=>{
-  const s=general(),initial=createBattle(s,1),income=perSecond(s);
+test('skill never changes automatic income or battle stats',()=>{
+  const s=general();s.equipment.artillery={level:1,count:1,deployed:true};
+  const initial=createBattle(s,1),income=perSecond(s);
   activateSword(s,T);const boosted=createBattle(s,1);
-  assert.deepEqual(fireVolley(boosted),fireVolley(initial));assert.equal(perSecond(s),income);
+  assert.deepEqual(deploy(boosted,'artillery'),deploy(initial,'artillery'));assert.equal(perSecond(s),income);
 });
 test('activation saves cooldown immediately; restart cannot activate again; inactive sessions cannot use it',()=>{
   let now=T;const values=new Map([[SAVE_KEY,serializeSave(general())]]),writes=[];

@@ -5,7 +5,7 @@ import { freshState, recruit, recruitOffer, unitCost, perSecond, perTap, armyPow
 import { schoolOffer } from '../src/schools.js';
 import { UNITS } from '../src/units.js';
 import { rankForArmy, RANKS } from '../src/ranks.js';
-import { defaultLoadout, createBattle, fireVolley } from '../src/battle.js';
+import { defaultLoadout, createBattle } from '../src/battle.js';
 import { groupArmy } from '../src/formations.js';
 import { createGameSession } from '../src/session.js';
 import { SAVE_KEY } from '../src/game.js';
@@ -89,7 +89,7 @@ test('v8 migration preserves assets and previously unlocked NCO access without g
     const old={...freshState(T),version:8,gold:4321,soldiers,sergeants,staffSergeants,battleCleared:3};
     old.ncoSchoolLevel=5;old.officerSchoolLevel=1;old.lieutenants=999;
     const s=parseSave(serializeSave(old),T);
-    assert.equal(s.version, 21);assert.equal(s.ncoSchoolLevel,level);assert.equal(s.officerSchoolLevel,0);
+    assert.equal(s.version, 22);assert.equal(s.ncoSchoolLevel,level);assert.equal(s.officerSchoolLevel,0);
     assert.equal(s.gold,4321);assert.equal(s.battleCleared,3);assert.equal(s.lieutenants,0);
     assert.equal(s.masterSergeants,0);assert.equal(s.sergeantMajors,0);
   }
@@ -110,12 +110,10 @@ test('school upgrade is saved once with backup and cannot purchase twice after r
   session.pause();session.start();assert.equal(session.state.ncoSchoolLevel,1);
   assert.equal(session.change(s=>upgradeSchool(s,T,'nco')).reason,'gold');session.pause();
 });
-test('new grades participate in capped deployments and one tap fires every deployed grade',()=>{
+test('new grades power the base but never enter battle; only equipment cards exist',()=>{
   const s={...wealthy(),soldiers:1000,sergeants:40,staffSergeants:12,masterSergeants:12,sergeantMajors:12,lieutenants:12};
-  const loadout=defaultLoadout(s);assert.equal(Object.values(loadout.units).length,15);
-  assert.ok(Object.entries(loadout.units).every(([id,n])=>n===Math.min(10,s[UNITS[id].field])));
-  const b=createBattle(s,1,loadout),shot=fireVolley(b);
-  assert.equal(shot.player.units.length,6);assert.ok(shot.player.units.every(u=>u.lastShotMs===0));
-  assert.ok(shot.enemy.hq.hp<b.enemy.hq.hp);
-  assert.equal(b.enemy.units.length,3,'new catalog entries must not silently double existing enemy strength');
+  s.equipment.artillery={level:1,count:1,deployed:true};
+  const b=createBattle(s,1,defaultLoadout(s));
+  assert.equal(b.player.units.length,0);
+  assert.deepEqual(b.deck.map(c=>c.id),['artillery']);
 });

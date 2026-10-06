@@ -6,7 +6,9 @@ import {RANKS,RANK_REQUIREMENTS} from '../src/ranks.js';
 import {EQUIPMENT,equipmentPurchaseOffer,equipmentStats} from '../src/equipment.js';
 import {personalStatus} from '../src/personal-equipment.js';
 import {personalDetailMarkup,personalLevelEffect} from '../src/personal-panels.js';
-import {equipmentCombatStats,createBattle,advanceBattle} from '../src/battle.js';
+import {equipmentCombatStats,createBattle,BATTLE_RULES} from '../src/battle.js';
+import {armyPower} from '../src/units.js';
+import {quietBattle,deployNow} from './lane-helpers.js';
 const T=1800000000000;
 const army=(rank='준원수')=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,gold:MAX_GOLD,ncoSchoolLevel:5});
 
@@ -73,7 +75,7 @@ test('v19 adds empty military slots and Lv.1 glaive while preserving all paid ge
   delete s.personalLevels.marshalGlaive;delete s.equipment.railgunTank;delete s.equipment.icbm;
   s.equipment.tank={level:20,count:1,deployed:true};s.swordActivatedAt=T-1000;s.swordDurationMs=90000;
   s.autoTouchActivatedAt=T-900;s.autoTouchDurationMs=120000;s.autoTouchTicks=3;
-  const next=parseSave(serializeSave(s),T);assert.equal(next.version,21);assert.equal(next.gold,s.gold);
+  const next=parseSave(serializeSave(s),T);assert.equal(next.version,22);assert.equal(next.gold,s.gold);
   for(const id of Object.keys(s.personalLevels))assert.equal(next.personalLevels[id],7);
   assert.equal(next.personalLevels.marshalGlaive,1);assert.equal(next.equipment.icbm,null);assert.equal(next.equipment.railgunTank,null);
   for(const key of ['swordActivatedAt','swordDurationMs','autoTouchActivatedAt','autoTouchDurationMs','autoTouchTicks'])assert.equal(next[key],s[key]);
@@ -83,16 +85,20 @@ test('v19 adds empty military slots and Lv.1 glaive while preserving all paid ge
   s.equipment.icbm={level:20,count:1,deployed:false};s.personalLevels.marshalGlaive=10;
   assert.equal(parseSave(serializeSave(s),T).equipment.icbm,null);assert.equal(parseSave(serializeSave(s),T).personalLevels.marshalGlaive,1);
 });
-test('new equipment fires automatically at its own pace and every upgrade improves combat',()=>{
+test('new equipment deploys with its own stats and every upgrade improves combat',()=>{
   assert.ok(equipmentCombatStats('icbm',0).damage>equipmentCombatStats('railgunTank',0).damage);
   assert.ok(equipmentCombatStats('icbm',0).intervalMs>equipmentCombatStats('railgunTank',0).intervalMs);
   for(const id of ['railgunTank','icbm']){
     let previous=equipmentCombatStats(id,0);
     for(let level=1;level<=20;level++){const stats=equipmentCombatStats(id,level);assert.ok(stats.damage>previous.damage);assert.ok(stats.intervalMs<=previous.intervalMs);previous=stats;}
     const s=army();s.equipment[id]={level:0,count:1,deployed:false};
-    let battle=createBattle(s,1,{units:{},equipment:[id]});battle.enemy.units=[];battle.enemy.equipment=[];battle.enemy.hq.hp=battle.enemy.hq.maxHp=1e12;
-    const stats=equipmentCombatStats(id,0,s.soldiers+s.sergeants*10);
-    while(battle.elapsedMs<stats.intervalMs)battle=advanceBattle(battle,50);
-    assert.equal(battle.enemy.hq.hp,1e12-stats.damage);
+    const quiet=quietBattle({...s,campaignCleared:80},1,[id]);quiet.enemy.hq.hp=quiet.enemy.hq.maxHp=1e15;
+    const battle=deployNow(quiet,id),stats=equipmentCombatStats(id,0,armyPower({...s,campaignCleared:80}));
+    if(id==='icbm'){
+      // ICBM은 전진하지 않고 마나로 즉시 일제 타격: 적 기지에 1회 공격력의 배수만큼 직격한다.
+      assert.equal(battle.player.units.length,0);
+      const start=1e15;
+      assert.ok(Math.abs(start-battle.enemy.hq.hp-stats.damage*BATTLE_RULES.strikeMultiplier)<start*1e-9);
+    } else { assert.equal(battle.player.units[0].damage,stats.damage);assert.equal(battle.player.units[0].intervalMs,stats.intervalMs); }
   }
 });

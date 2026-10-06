@@ -5,7 +5,9 @@ import { GENERAL_SWORD, AUTO_TOUCH, emptyPersonalLevels } from './personal-catal
 import { emptyEquipment } from './equipment.js';
 
 // Shared defaults and limits have no dependency on game actions or save parsing.
-export const SAVE_VERSION = 21;
+export const SAVE_VERSION = 22;
+// 지역마다 지금까지 받은 최고 별(0~3). 지역 수는 campaign.js의 80개와 같고 tests/campaign.test.js가 일치를 확인한다.
+export const CAMPAIGN_STAGE_COUNT = 80;
 export const SAVE_KEY = "budae-kiugi-recruits-v3";
 export const LEGACY_KEY = "budae-kiugi-tap-save-v2";
 
@@ -26,6 +28,7 @@ export function freshState(now = Date.now()) {
     advancedSchoolLevel: 0,
     battleCleared: 0,
     campaignCleared: 0,
+    campaignStars: Array(CAMPAIGN_STAGE_COUNT).fill(0),
     earnedAchievements: [],
     gold: 0,
     taps: 0,

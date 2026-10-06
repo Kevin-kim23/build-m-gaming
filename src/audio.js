@@ -33,7 +33,10 @@ export function createGameAudio(
       reportError("audio.play", error);
     }
   }
+  // 전투처럼 소리가 많이 겹치는 곳에서도 동시에 울리는 소리는 MAX_VOICES개까지만 만든다.
+  const MAX_VOICES = 12;
   function tone(frequency, start, duration, volume, type = "sine") {
+    if (voices.size >= MAX_VOICES) return;
     const oscillator = context.createOscillator(),
       gain = context.createGain();
     const voice = { oscillator, gain };
@@ -62,6 +65,17 @@ export function createGameAudio(
       play(enabled, (t) => {
         tone(540, t, 0.12, 0.03);
         tone(810, t + 0.1, 0.2, 0.035);
+      });
+    },
+    // 전투 효과음: deploy(출격), shot(사격), boom(폭발), hit(기지 피격), win, lose. 호출하는 쪽이 너무 자주 부르지 않게 간격을 둔다.
+    battle(kind, enabled) {
+      play(enabled, (t) => {
+        if (kind === "deploy") { tone(300, t, 0.09, 0.035, "square"); tone(450, t + 0.07, 0.12, 0.03, "square"); }
+        else if (kind === "shot") tone(180, t, 0.06, 0.02, "sawtooth");
+        else if (kind === "boom") { tone(90, t, 0.22, 0.05, "sawtooth"); tone(55, t + 0.03, 0.28, 0.04, "square"); }
+        else if (kind === "hit") { tone(120, t, 0.16, 0.05, "square"); tone(80, t + 0.05, 0.2, 0.04, "sawtooth"); }
+        else if (kind === "win") for (const [i, f] of [523, 659, 784, 1047].entries()) tone(f, t + i * 0.12, 0.26, 0.04, "triangle");
+        else if (kind === "lose") for (const [i, f] of [392, 330, 262].entries()) tone(f, t + i * 0.18, 0.34, 0.04, "triangle");
       });
     },
     promotion(rank, enabled) {

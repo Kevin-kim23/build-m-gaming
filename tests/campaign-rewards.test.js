@@ -33,15 +33,17 @@ test('troops and deployed copies receive passive bonuses, while stored equipment
   assert.equal(s.autoTouchTicks,200);
   assert.equal(s.gold-noBonus.gold,(perSecond(s)-perSecond(noBonus))*60);
 });
-test('first victory settles the old rate before raising it, without a gold award; replays never stack',()=>{
+test('first victory settles the old rate, then pays 30 min of loot; replays pay 2 min and never stack income',()=>{
   const s=state(),old=perSecond(s);
   assert.equal(recordBattleVictory(s,victory(1),T+1000).firstClear,true);
-  assert.equal(s.gold,old);assert.equal(s.campaignCleared,1);
   const updated=perSecond(s);assert.equal(updated,old+Math.floor(old/100));
+  assert.equal(s.gold,old+updated*1800);assert.equal(s.campaignCleared,1); // 정산 후 30분치 전리품
+  const g1=s.gold;
   assert.equal(recordBattleVictory(s,victory(1),T+2000).firstClear,false);
-  assert.equal(s.gold,old+updated);assert.equal(s.campaignCleared,1);
+  assert.equal(s.gold,g1+updated+updated*120);assert.equal(s.campaignCleared,1); // 1초 수입 + 재도전 2분치
+  const g2=s.gold;
   assert.equal(recordBattleVictory(s,victory(2),T+2000).firstClear,true);
-  assert.equal(s.gold,old+updated);assert.equal(campaignBonusPercent(s),2);
+  assert.ok(s.gold>g2);assert.equal(campaignBonusPercent(s),2);
 });
 test('defeats and out-of-order victories cannot grant income or conquest progress',()=>{
   const s=state(),before=structuredClone(s);
@@ -53,7 +55,7 @@ test('existing version sixteen conquests apply retroactively and survive reload 
   for(const cleared of [1,19,20,79,80]){
     const original={...state(),campaignCleared:cleared,gold:123456};
     const loaded=parseSave(serializeSave(original),T);assert.ok(loaded);
-    assert.equal(loaded.version,21);assert.equal(loaded.gold,original.gold);assert.equal(loaded.soldiers,original.soldiers);
+    assert.equal(loaded.version,22);assert.equal(loaded.gold,original.gold);assert.equal(loaded.soldiers,original.soldiers);
     assert.deepEqual(loaded.equipment,original.equipment);assert.equal(campaignBonusPercent(loaded),cleared);
     assert.equal(perSecond(loaded),perSecond(original));
     assert.deepEqual(parseSave(serializeSave(loaded),T),loaded);

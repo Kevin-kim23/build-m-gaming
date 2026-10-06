@@ -1,142 +1,206 @@
-import { UNITS, armyPower } from "./units.js";
 import { EQUIPMENT, equipmentCount } from "./equipment.js";
 import { FORMATIONS } from "./formations.js";
+import { armyPower } from "./units.js";
 import { RANKS, rankForArmy } from "./ranks.js";
-import { ENEMY_EQUIPMENT, BATTLE_RULES, STAGES, infantryDamage, equipmentCombatStats } from "./battle-balance.js";
-export { BATTLE_RULES, STAGES, equipmentCombatStats } from "./battle-balance.js";
+import {
+  BATTLE_RULES, STAGES, UNIT_TRAITS, FORTRESS_SHIELD, equipmentCombatStats, classMatchup,
+  stageEnemyType, fortressShieldClass, isFortress, GEAR_CLASS, CLASS_NAMES, matchupMultiplier, enemyStack,
+} from "./battle-balance.js";
+export { BATTLE_RULES, STAGES, UNIT_TRAITS, equipmentCombatStats, matchupMultiplier, stageEnemyType,
+  GEAR_CLASS, CLASS_NAMES, fortressShieldClass, isFortress, classMatchup } from "./battle-balance.js";
 
+// 가로 전장 전투 규칙(순수 함수). 화면 코드는 battle-ui.js / lane-art.js 쪽에 있다.
+// 흐름: 마나가 차면 장비(카드)를 출격 → 장비가 적 기지 쪽으로 전진하며 가까운 적을 쏨 → 상대 기지 체력을 0으로.
 export function battleAccess(state) {
   const rank = rankForArmy(state);
-  return {
-    visible: rank >= RANKS.indexOf("일병"),
-    unlocked: rank >= RANKS.indexOf("중령"),
+  return { visible: rank >= RANKS.indexOf("일병"), unlocked: rank >= RANKS.indexOf("중령") };
+}
+
+// 출전 장비 칸: 중령 3칸, 준장 4칸, 중장 5칸, 대장 이상 6칸.
+export function battleSlots(state) {
+  const rank = rankForArmy(state);
+  return 3 + ["준장", "중장", "대장"].filter((name) => rank >= RANKS.indexOf(name)).length;
+}
+
+// 기본 출전: 보유 장비 중 초당 공격력이 센 순서로 빈 칸을 채우되, 이 지역 적을 상대로 유리한 분류를 앞에 둔다.
+export function defaultLoadout(state, stageId = 0) {
+  const power = armyPower(state);
+  const score = (id) => {
+    const c = equipmentCombatStats(id, state.equipment[id].level, power, equipmentCount(state, id));
+    return ((c.damage || c.healing || 1) / c.intervalMs) * (stageId ? matchupMultiplier(stageId, id) : 1);
   };
+  const ranked = Object.keys(EQUIPMENT).filter((id) => state.equipment?.[id]).sort((a, b) => score(b) - score(a));
+  return normalizeLoadout(state, { equipment: ranked.slice(0, battleSlots(state)) });
 }
 
-export function defaultLoadout(state) {
-  return normalizeLoadout(state, {
-    units: Object.fromEntries(Object.values(UNITS).map((u) => [u.id, BATTLE_RULES.maxUnitsPerType])),
-    equipment: Object.keys(EQUIPMENT),
-  });
-}
-
-// Unknown keys, duplicate equipment and invalid counts never enter a battle.
+// 모르는 장비·중복·미보유 장비는 걸러내고, 칸 수를 넘으면 앞에서부터 자른다.
 export function normalizeLoadout(state, input = {}) {
+  const wanted = Array.isArray(input?.equipment) ? input.equipment : [];
+  return { equipment: Object.keys(EQUIPMENT).filter((id) => wanted.includes(id) && !!state.equipment?.[id]).slice(0, battleSlots(state)) };
+}
+
+const scaleHp = (id, level, count, power, upgrades) => {
+  const stats = equipmentCombatStats(id, level, power, count, upgrades);
+  // 체력은 공격력과 같은 성장 곡선(전력·수량·레벨)을 따른다.
+  return { stats, hp: UNIT_TRAITS[id].hp * (stats.growth ?? 1) * count * (power / 1280) };
+};
+
+function makeUnit(battle, side, id, level, count, power, modifier = 1, upgrades = true, stack = 1, lane = 1) {
+  const trait = UNIT_TRAITS[id], scaled = scaleHp(id, level, count, power, upgrades), stats = scaled.stats, hp = scaled.hp * stack;
+  modifier *= stack;
+  const dir = side === "player" ? 1 : -1, startX = side === "player" ? 40 : BATTLE_RULES.laneLength - 40;
   return {
-    units: Object.fromEntries(Object.values(UNITS).map((u) => {
-      const requested = input?.units?.[u.id], owned = state[u.field] ?? 0;
-      const count = Number.isFinite(requested) && Number.isSafeInteger(owned)
-        ? Math.max(0, Math.min(BATTLE_RULES.maxUnitsPerType, owned, Math.floor(requested)))
-        : 0;
-      return [u.id, count];
-    })),
-    equipment: Object.keys(EQUIPMENT).filter((id) =>
-      Array.isArray(input?.equipment) && input.equipment.includes(id) && !!state.equipment?.[id],
-    ),
+    uid: battle.nextUid++, id, side, cls: trait.cls, kind: trait.kind, level, count, dir,
+    lane, x: startX, hp, maxHp: hp,
+    damage: (stats.damage ?? 0) * modifier, healing: (stats.healing ?? 0) * stack,
+    bornMs: battle.elapsedMs, intervalMs: stats.intervalMs, nextShotMs: battle.elapsedMs + stats.intervalMs / 2, lastShotMs: -1,
+    range: trait.range, speed: trait.speed,
   };
 }
 
-function makeSide(formation, power, units, equipment, multiplier = 1, playerUpgrades = true) {
-  return {
-    hq: { id: formation.id, name: formation.name, maxHp: formation.size, hp: formation.size },
-    units: Object.values(UNITS).filter((u) => units[u.id] > 0).map((u) => ({
-      id: u.id, count: units[u.id],
-      damage: infantryDamage(u, units[u.id], power) * multiplier,
-      lastShotMs: -1,
-    })),
-    equipment: equipment.map(({ id, level, count = 1 }) => {
-      const stats = equipmentCombatStats(id, level, power, count, playerUpgrades);
-      return { id, level, count, ...stats, damage: stats.damage * multiplier, lastShotMs: -1, nextShotMs: stats.intervalMs };
-    }),
-  };
-}
+const turretDamage = (power, mult) => (power / 1280) * BATTLE_RULES.turretPower * mult;
 
-export function createBattle(state, stageId, input = defaultLoadout(state)) {
+export function createBattle(state, stageId, input = defaultLoadout(state, stageId)) {
   const stage = STAGES.find((s) => s.id === stageId);
   const cleared = state.campaignCleared ?? 0;
   if (!stage || !battleAccess(state).unlocked || !Number.isInteger(cleared) || cleared < 0 ||
       cleared > STAGES.length || stage.id > cleared + 1)
     throw new RangeError("Battle is locked");
-  if (!Object.values(UNITS).every((u) => Number.isSafeInteger(state[u.field] ?? 0) && (state[u.field] ?? 0) >= 0))
-    throw new RangeError("Invalid battle army");
   const loadout = normalizeLoadout(state, input);
-  if (!Object.values(loadout.units).some(Boolean) && !loadout.equipment.length)
-    throw new RangeError("Battle deployment is empty");
+  if (!loadout.equipment.length) throw new RangeError("Battle deployment is empty");
   const power = armyPower(state), formation = FORMATIONS.find((f) => f.size <= power);
-  const enemyFormation = {...FORMATIONS.find((f) => f.id === stage.formationId),size:stage.hqPower};
+  const enemyFormation = FORMATIONS.find((f) => f.id === stage.formationId);
   return {
-    stageId, stageName: stage.name, enemyName:stage.enemyName, countryId:stage.countryId, status: "running", elapsedMs: 0,
-    remainderMs: 0, lastVolleyMs: -BATTLE_RULES.volleyCooldownMs,
-    nextEnemyVolleyMs: BATTLE_RULES.enemyVolleyMs,
-    player: makeSide({...formation,size:power}, power, loadout.units,
-      loadout.equipment.map((id) => ({ id, level: state.equipment[id].level, count: equipmentCount(state, id) }))),
-    enemy: makeSide(enemyFormation, stage.enemyPower,
-      Object.fromEntries(['soldier','sergeant','staffSergeant'].map((id) => [id, stage.enemyUnitCount])),
-      ENEMY_EQUIPMENT.map((id) => ({ id, level: stage.enemyLevel })), stage.enemyModifier, false),
+    stageId, stageName: stage.name, enemyName: stage.enemyName, countryId: stage.countryId, status: "running",
+    elapsedMs: 0, remainderMs: 0, mana: BATTLE_RULES.manaStart, nextUid: 1, fx: [],
+    deck: loadout.equipment.map((id) => ({
+      id, level: state.equipment[id].level, count: equipmentCount(state, id), cost: UNIT_TRAITS[id].cost, readyMs: 0,
+    })),
+    player: { hq: { id: formation.id, name: formation.name, maxHp: power, hp: power }, fortress: null, units: [], power,
+      turret: { damage: turretDamage(power, 1), nextShotMs: BATTLE_RULES.turretIntervalMs } },
+    enemy: {
+      hq: { id: enemyFormation.id, name: enemyFormation.name, maxHp: stage.hqPower, hp: stage.hqPower },
+      fortress: isFortress(stageId) ? stage.countryId : null, units: [], spawned: 0,
+      nextSpawnMs: BATTLE_RULES.enemyFirstSpawnMs, power: stage.enemyPower,
+      turret: { damage: turretDamage(stage.enemyPower, isFortress(stageId) ? BATTLE_RULES.fortressTurret : 1) * stage.enemyModifier * enemyStack(stageId, stage.enemyLevel) / Math.max(1, enemyStack(stageId, stage.enemyLevel)), nextShotMs: BATTLE_RULES.turretIntervalMs },
+    },
   };
 }
 
-function cloneSide(side) {
-  return { hq: { ...side.hq }, units: side.units.map((u) => ({ ...u })), equipment: side.equipment.map((g) => ({ ...g })) };
-}
-function cloneBattle(battle) {
-  return { ...battle, player: cloneSide(battle.player), enemy: cloneSide(battle.enemy) };
-}
-function settle(battle, playerDamage, enemyDamage, playerHealing = 0, enemyHealing = 0) {
-  battle.enemy.hq.hp = Math.max(0, battle.enemy.hq.hp - playerDamage);
-  battle.player.hq.hp = Math.max(0, battle.player.hq.hp - enemyDamage);
-  if(battle.player.hq.hp>0)battle.player.hq.hp=Math.min(battle.player.hq.maxHp,battle.player.hq.hp+playerHealing);
-  if(battle.enemy.hq.hp>0)battle.enemy.hq.hp=Math.min(battle.enemy.hq.maxHp,battle.enemy.hq.hp+enemyHealing);
-  if (!battle.enemy.hq.hp && !battle.player.hq.hp) battle.status = "draw";
-  else if (!battle.enemy.hq.hp) battle.status = "victory";
-  else if (!battle.player.hq.hp) battle.status = "defeat";
-  else if (battle.elapsedMs >= BATTLE_RULES.maxDurationMs) battle.status = "draw";
-}
-function volley(side, now) {
-  let damage = 0;
-  for (const unit of side.units) {
-    unit.lastShotMs = now;
-    damage += unit.damage;
-  }
-  return damage;
-}
-function equipmentFire(side, now) {
-  let damage = 0, healing = 0;
-  for (const gun of side.equipment) {
-    if (now < gun.nextShotMs) continue;
-    gun.lastShotMs = now;
-    gun.nextShotMs += gun.intervalMs;
-    damage += gun.damage;
-    healing += gun.healing ?? 0;
-  }
-  return { damage, healing };
+function cloneBattle(b) {
+  const side = (s) => ({ ...s, hq: { ...s.hq }, units: s.units.map((u) => ({ ...u })) });
+  return { ...b, deck: b.deck.map((c) => ({ ...c })), player: side(b.player), enemy: side(b.enemy), fx: [...b.fx] };
 }
 
-export function fireVolley(battle) {
-  if (battle.status !== "running" || !battle.player.units.length ||
-      battle.elapsedMs - battle.lastVolleyMs < BATTLE_RULES.volleyCooldownMs) return battle;
-  const next = cloneBattle(battle);
-  next.lastVolleyMs = next.elapsedMs;
-  settle(next, volley(next.player, next.elapsedMs), 0);
+// 카드를 눌러 레인(0 왼쪽·1 가운데·2 오른쪽)으로 장비 출격. 마나 부족·재출격 대기·없는 장비·없는 레인이면 같은 battle을 그대로 돌려준다.
+export function deploy(battle, gearId, lane = 1) {
+  const card = battle.deck.find((c) => c.id === gearId);
+  if (!Number.isInteger(lane) || lane < 0 || lane >= BATTLE_RULES.lanes) return battle;
+  if (battle.status !== "running" || !card || battle.mana < card.cost || battle.elapsedMs < card.readyMs) return battle;
+  const next = cloneBattle(battle), c = next.deck.find((x) => x.id === gearId);
+  next.mana -= c.cost;
+  c.readyMs = next.elapsedMs + UNIT_TRAITS[gearId].cooldownMs;
+  const unit = makeUnit(next, "player", gearId, c.level, c.count, next.player.power, 1, true, 1, lane);
+  if (unit.kind === "strike") {
+    const shield = fortressShieldClass(next.stageId) === unit.cls && next.enemy.fortress ? FORTRESS_SHIELD : 1;
+    next.enemy.hq.hp = Math.max(0, next.enemy.hq.hp - unit.damage * BATTLE_RULES.strikeMultiplier * shield);
+    next.fx.push({ at: next.elapsedMs, kind: "strike", side: "player", id: gearId, x: BATTLE_RULES.laneLength });
+    finish(next);
+  } else { next.player.units.push(unit); next.fx.push({ at: next.elapsedMs, kind: "spawn", side: "player", id: gearId, lane, from: unit.x }); }
   return next;
+}
+
+function finish(b) {
+  const e = b.enemy.hq.hp <= 0, p = b.player.hq.hp <= 0;
+  if (e && p) b.status = "draw";
+  else if (e) b.status = "victory";
+  else if (p) b.status = "defeat";
+  else if (b.elapsedMs >= BATTLE_RULES.maxDurationMs) b.status = "draw";
+}
+
+// 적이 올 레인: 지역 번호와 출격 순서로 정해지는 고정 규칙(예고 없이 바로 등장, 같은 지역은 항상 같은 순서).
+export const enemyLane = (stageId, n) => (Math.imul((stageId * 7919 + n * 104729) >>> 0, 2654435761) >>> 16) % BATTLE_RULES.lanes;
+
+function spawnEnemy(b, stage) {
+  const type = stageEnemyType(b.stageId), id = type.pool[b.enemy.spawned % type.pool.length];
+  b.enemy.units.push(makeUnit(b, "enemy", id, stage.enemyLevel, 1, stage.enemyPower, stage.enemyModifier, false, enemyStack(b.stageId, stage.enemyLevel), enemyLane(b.stageId, b.enemy.spawned)));
+  const born = b.enemy.units[b.enemy.units.length - 1];
+  b.fx.push({ at: b.elapsedMs, kind: "spawn", side: "enemy", id: born.id, lane: born.lane, from: born.x });
+  b.enemy.spawned++;
+  b.enemy.nextSpawnMs += stage.spawnMs;
+}
+
+function step(b, stage) {
+  const dt = BATTLE_RULES.stepMs / 1000, now = b.elapsedMs, L = BATTLE_RULES.laneLength;
+  b.mana = Math.min(BATTLE_RULES.manaMax, b.mana + BATTLE_RULES.manaPerSecond * dt);
+  if (now >= b.enemy.nextSpawnMs) spawnEnemy(b, stage);
+  const damage = new Map(), heal = new Map();
+  let toEnemyBase = 0, toPlayerBase = 0;
+  const sides = { player: b.player.units, enemy: b.enemy.units };
+  for (const side of ["player", "enemy"]) {
+    const foes = sides[side === "player" ? "enemy" : "player"], allies = sides[side];
+    const baseX = side === "player" ? L : 0;
+    for (const u of allies) {
+      if (u.kind === "heal") {
+        if (now >= u.nextShotMs) {
+          u.nextShotMs = now + u.intervalMs; u.lastShotMs = now;
+          for (const a of allies) if (a.lane === u.lane && Math.abs(a.x - u.x) <= u.range && a.hp < a.maxHp) heal.set(a, (heal.get(a) ?? 0) + a.maxHp * BATTLE_RULES.healPercent);
+        }
+        // 회복 장비는 가장 앞선 아군보다 60 뒤에서 멈춰 따라간다.
+        const front = Math.max(-Infinity, ...allies.filter((a) => a !== u && a.lane === u.lane).map((a) => a.x * u.dir));
+        if (!(front - u.x * u.dir < 60)) u.x += u.dir * u.speed * dt;
+        continue;
+      }
+      let target = null, best = u.range + 1;
+      for (const f of foes) { if (f.lane !== u.lane) continue; const d = Math.abs(f.x - u.x); if (d <= u.range && d < best) { best = d; target = f; } }
+      const baseDist = Math.abs(baseX - u.x);
+      if (!target && baseDist <= u.range) target = "base";
+      if (!target) { u.x += u.dir * u.speed * dt; continue; }
+      if (now < u.nextShotMs) continue;
+      u.nextShotMs = now + u.intervalMs; u.lastShotMs = now;
+      if (target === "base") {
+        const shield = side === "player" && b.enemy.fortress && fortressShieldClass(b.stageId) === u.cls ? FORTRESS_SHIELD : 1;
+        if (side === "player") toEnemyBase += u.damage * shield; else toPlayerBase += u.damage;
+        b.fx.push({ at: now, kind: "shot", side, id: u.id, lane: u.lane, from: u.x, to: baseX });
+      } else {
+        damage.set(target, (damage.get(target) ?? 0) + u.damage * classMatchup(u.cls, target.cls, b.stageId));
+        b.fx.push({ at: now, kind: "shot", side, id: u.id, lane: u.lane, from: u.x, to: target.x });
+      }
+    }
+  }
+  // 기지 포탑: 가까이 온 적 부대를 자동으로 쏜다(요새는 더 강하다).
+  for (const [side, turretSide] of [["player", b.player], ["enemy", b.enemy]]) {
+    const t = turretSide.turret;
+    if (now < t.nextShotMs) continue;
+    const foes = sides[side === "player" ? "enemy" : "player"], baseX = side === "player" ? 0 : L;
+    let target = null, best = BATTLE_RULES.turretRange + 1;
+    for (const f of foes) { const d = Math.abs(f.x - baseX); if (d < best) { best = d; target = f; } }
+    if (!target) continue;
+    t.nextShotMs = now + BATTLE_RULES.turretIntervalMs;
+    damage.set(target, (damage.get(target) ?? 0) + t.damage);
+    b.fx.push({ at: now, kind: "shot", side, id: "turret", lane: target.lane, from: baseX, to: target.x });
+  }
+  for (const [u, d] of damage) u.hp -= d;
+  for (const [u, h] of heal) u.hp = Math.min(u.maxHp, u.hp + h);
+  b.enemy.hq.hp = Math.max(0, b.enemy.hq.hp - toEnemyBase);
+  b.player.hq.hp = Math.max(0, b.player.hq.hp - toPlayerBase);
+  for (const s of ["player", "enemy"]) {
+    for (const u of b[s].units) if (u.hp <= 0) b.fx.push({ at: now, kind: "death", side: s, id: u.id, lane: u.lane, from: u.x });
+    b[s].units = b[s].units.filter((u) => u.hp > 0);
+  }
+  b.fx = b.fx.filter((f) => now - f.at < 600).slice(-60);
+  finish(b);
 }
 
 // Call only while visible and unpaused. Long frames never grant offline combat.
 export function advanceBattle(battle, deltaMs) {
   if (battle.status !== "running" || !Number.isFinite(deltaMs) || deltaMs <= 0) return battle;
-  const next = cloneBattle(battle);
+  const next = cloneBattle(battle), stage = STAGES.find((s) => s.id === next.stageId);
   next.remainderMs += Math.min(deltaMs, BATTLE_RULES.maxFrameMs);
   while (next.remainderMs >= BATTLE_RULES.stepMs && next.status === "running") {
     next.remainderMs -= BATTLE_RULES.stepMs;
     next.elapsedMs += BATTLE_RULES.stepMs;
-    const playerFire = equipmentFire(next.player, next.elapsedMs);
-    const enemyFire = equipmentFire(next.enemy, next.elapsedMs);
-    let enemyDamage = enemyFire.damage;
-    if (next.elapsedMs >= next.nextEnemyVolleyMs) {
-      enemyDamage += volley(next.enemy, next.elapsedMs);
-      next.nextEnemyVolleyMs += BATTLE_RULES.enemyVolleyMs;
-    }
-    settle(next, playerFire.damage, enemyDamage, playerFire.healing, enemyFire.healing);
+    step(next, stage);
   }
   return next;
 }

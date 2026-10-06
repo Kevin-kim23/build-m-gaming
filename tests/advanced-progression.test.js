@@ -74,7 +74,7 @@ test('new officers spend their independent price and add only their catalog stre
 test('version sixteen migration preserves assets and ignores injected advanced units',()=>{
   const old={...army('대장'),version:16,gold:99_999_999_999_999,advancedSchoolLevel:5,colonels:999,generals:1,campaignCleared:20};
   const loaded=parseSave(serializeSave(old),T);
-  assert.equal(loaded.version,21);assert.equal(loaded.advancedSchoolLevel,0);
+  assert.equal(loaded.version,22);assert.equal(loaded.advancedSchoolLevel,0);
   for(const grade of ADVANCED_OFFICERS)assert.equal(loaded[grade.field],0);
   for(const key of ['gold','soldiers','sergeants','ncoSchoolLevel','officerSchoolLevel','campaignCleared'])assert.equal(loaded[key],old[key]);
   assert.deepEqual(loaded.equipment,old.equipment);

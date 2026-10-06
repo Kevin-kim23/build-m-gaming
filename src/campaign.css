@@ -23,3 +23,31 @@
 .atlas-next-country,.atlas-previous-country { display:flex; align-items:center; justify-content:center; gap:8px; flex:none; min-height:38px; padding:6px 10px; border:1px solid #c3b371; border-radius:6px; background:#43563a; color:#fff0bd; font-size:12px; font-weight:700; cursor:pointer; }
 .atlas-next-country span,.atlas-previous-country span { font-size:22px; line-height:1; }
 .atlas-next-country:hover,.atlas-next-country:focus-visible,.atlas-previous-country:hover,.atlas-previous-country:focus-visible { background:#596c45; outline:2px solid #f0df9c; outline-offset:1px; }
+
+/* 작전 지도에서 바로 전투 시작: 선택한 지역 아래에 출전 덱(카드)과 시작 버튼 */
+.region-brief { display:flex; flex-direction:column; gap:6px; }
+.region-brief .brief-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.region-brief .brief-head .info-btn { max-width:none; padding:0; width:34px; height:34px; border:1px solid #4d5c48; border-radius:50%; background:#303e31; color:#dce4cb; font-size:17px !important; }
+.region-brief .brief-line { margin:0; font-size:11px; }
+.region-brief .brief-deck-head { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#dec88c; }
+.region-brief .brief-deck-head b { color:#edd49b; }
+.region-brief .prep-tags { margin:0; }
+.region-brief .battle-primary { max-width:none; width:100%; padding:13px 10px; font-size:14px !important; }
+.region-brief .region-reward { grid-column:auto; margin:0; text-align:center; font-size:11px; }
+.quick-deck { display:grid; grid-template-columns:repeat(auto-fill,minmax(60px,1fr)); gap:8px 6px; padding-top:6px; }
+.quick-deck .gear-tile.mini { padding:6px 2px 4px; border-width:2px; }
+.quick-deck .gear-tile.mini .card-art { width:min(100%,40px); height:auto; aspect-ratio:56/68; }
+.quick-deck .gear-tile.mini b { font-size:10px; word-break:keep-all; text-align:center; line-height:1.15; }
+.quick-deck .gear-tile.mini small { font-size:10px; }
+.quick-deck .gear-tile.mini .card-cost { top:-7px; left:-4px; min-width:22px; height:22px; font-size:11px; line-height:18px; }
+.quick-deck .gear-tile.mini .gear-check-mark { top:-6px; right:-4px; width:20px; height:20px; font-size:12px; line-height:20px; }
+/* 한 화면에 들어오도록: 덱은 가로 한 줄(좌우로 밀기), 시작 버튼은 아래에 붙여 항상 보이게 */
+.quick-deck { display:flex; overflow-x:auto; gap:8px; padding:8px 4px 4px; scrollbar-width:none; scroll-snap-type:x proximity; }
+.quick-deck::-webkit-scrollbar { display:none; }
+.quick-deck .deployment-gear { flex:0 0 62px; scroll-snap-align:start; }
+.region-brief .battle-primary { position:sticky; bottom:6px; z-index:5; box-shadow:0 -10px 10px #29372b; }
+.atlas-coordinate { display:none; }
+.region-stars{fill:#ffd36a;font-size:15px;text-anchor:middle;paint-order:stroke;stroke:#10201c;stroke-width:3px;pointer-events:none;letter-spacing:1px}
+.best-stars{color:#ffd36a;letter-spacing:1px}
+.atlas-window{touch-action:none}.atlas-locate{position:absolute;right:10px;bottom:10px;z-index:3;width:40px;height:40px;border-radius:50%;border:1px solid #819586;background:#193a36e8;color:#f1e7bd;font-size:20px!important}
+.atlas-window:focus-visible{outline:3px solid #fff1b8}

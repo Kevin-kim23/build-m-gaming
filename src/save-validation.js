@@ -8,7 +8,7 @@ import { PERSONAL_EQUIPMENT, GENERAL_SWORD, GENERAL_REVOLVER } from './personal-
 import { validAchievementIds } from './achievements.js';
 import { validEquipment } from './equipment.js';
 import { FIELD_THEMES } from './field-theme.js';
-import { MAX_SOLDIERS, SAVE_VERSION } from './state.js';
+import { MAX_SOLDIERS, SAVE_VERSION, CAMPAIGN_STAGE_COUNT } from './state.js';
 
 // Only fixed codes and known field names leave the parser, never stored values or JSON snippets.
 export class SaveValidationError extends Error {
@@ -58,6 +58,9 @@ export function validateSave(s) {
   if (s.version >= 14) for (const unit of NEW_OFFICER_GRADES)
     requireSave(integer(s[unit.field], Math.floor(MAX_SOLDIERS / unit.power)), unit.field);
   if (s.version >= 15) requireSave(integer(s.campaignCleared, STAGES.length), 'campaignCleared');
+  // 별 기록(형식22~): 길이 80, 각 0~3, 아직 점령하지 않은 지역은 0
+  if (s.version >= 22) requireSave(Array.isArray(s.campaignStars) && s.campaignStars.length === CAMPAIGN_STAGE_COUNT &&
+    s.campaignStars.every((stars, index) => integer(stars, 3) && (stars === 0 || index < s.campaignCleared)), 'campaignStars');
   if (s.version >= 16) {
     requireSave(s.autoTouchActivatedAt === null || integer(s.autoTouchActivatedAt, s.lastAccrual), 'autoTouchActivatedAt');
     const swordMax=s.version>=19?GENERAL_SWORD.durationMs+(GENERAL_SWORD.maxLevel-1)*GENERAL_SWORD.durationStepMs:80000;

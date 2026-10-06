@@ -30,7 +30,8 @@ test('new marshal boundaries consolidate four commands and promotion follows act
     assert.equal(armyPower(s),power);assert.equal(s.soldiers,before.soldiers+1);
     assert.deepEqual(groupArmy(s).map(g=>[g.id,g.count]),[[id,1]]);
     assert.ok(s.earnedAchievements.includes(id));assert.deepEqual(parseSave(serializeSave(s),T),s);
-    assert.equal(createBattle(s,1,{units:{soldier:1},equipment:[]}).player.hq.id,id);
+    s.equipment.artillery={level:1,count:1,deployed:true};
+    assert.equal(createBattle(s,1,{equipment:['artillery']}).player.hq.id,id);
     s.sergeants=299;assert.equal(RANKS[rankForArmy(s)],'대령');
   }
   assert.equal(MAX_SOLDIERS,SUPREME_COMMAND_SIZE*4);
