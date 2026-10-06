@@ -119,3 +119,8 @@ achievement-art.js: 집단군/연합군 사령관 훈장 2종은 96×112 자체 
 ## 0.51 음악·효과음
 
 음악18곡·효과음40종을 ElevenLabs로 생성하고 게임에 연결했습니다. 자체 작성한 프롬프트는 tools/audio-plan.mjs, 선택한 생성ID·해시·가공 결과는 public/audio/manifest.json에 있습니다. 사용자가 확인한 Creator 기준이며 공식 조건과 남은 확인 사항은 docs/AUDIO_RIGHTS.md에 기록했습니다. 기존 게임 음원·실존 아티스트·국가 모방 요청이나 참조 음원 업로드를 하지 않았습니다. 원본과 가공 MP3는 공개 Git에서 제외하며 앱에 통합합니다. 게임에서 ElevenLabs API를 호출하지 않습니다. 기존 합성음은 src/audio-synth.js로 옮겨 대체 수단으로 유지했습니다.
+
+
+## 0.51.1 밝은 음악18곡
+
+사용자가10~20대 대상에 맞춰 더 밝은 음악을 요청해 기존 BGM18곡을 ElevenLabs music_v2로 다시 생성했습니다. 제작 구분 bright-1, 원본은 기존 버전과 분리 보관합니다. 칩튠·팝·기타·펑크·벨·신스 중심의 자체 작성 프롬프트이며 타인 음원 업로드/기존 곡 모방 요청은 없습니다. 새 생성ID와 해시는 public/audio/manifest.json, 권리 재확인은 docs/AUDIO_RIGHTS.md에 기록합니다. 효과음40개는 그대로 유지합니다.

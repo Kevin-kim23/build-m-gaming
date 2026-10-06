@@ -3,6 +3,7 @@ import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {AUDIO_PLAN} from './audio-plan.mjs';
+import {sourceCandidates,matchesProcessedSource} from './audio-source.mjs';
 const ffmpeg=process.env.FFMPEG_PATH ?? process.argv[2];
 if(!ffmpeg)throw new Error('Pass the local ffmpeg executable as the first argument or set FFMPEG_PATH.');
 const root=new URL('../',import.meta.url),sourceRoot=new URL('private-audio/',root),assetRoot=new URL('public/audio/',root);
@@ -21,8 +22,8 @@ const manifest={version:1,provider:'ElevenLabs',generationDate:'2026-10-06',plan
 for(const item of AUDIO_PLAN){
  const existing=manifest.assets.find(x=>x.id===item.id);
  const processingVersion=item.type==='music'?2:4;
- if(existing?.processingVersion===processingVersion){const p=new URL(existing.path,root);try{const bytes=await readFile(p);if(createHash('sha256').update(bytes).digest('hex')===existing.sha256)continue;}catch(e){if(e.code!=='ENOENT')throw e;}}
- const candidates=records.filter(r=>r.id===item.id||new RegExp(`^${item.id}-v[1-4]$`).test(r.id));
+ const candidates=sourceCandidates(item,records);
+ if(matchesProcessedSource(item,existing,processingVersion,candidates)){const p=new URL(existing.path,root);try{const bytes=await readFile(p);if(createHash('sha256').update(bytes).digest('hex')===existing.sha256)continue;}catch(e){if(e.code!=='ENOENT')throw e;}}
  if(!candidates.length){console.log(`Pending: ${item.id}`);continue;}
  const scored=candidates.map(record=>({record,analysis:analyse(fileURLToPath(new URL(record.id+'.source',sourceRoot)))}))
    .filter(c=>c.analysis.rms>.001&&c.analysis.audibleDuration>.06)
@@ -45,9 +46,10 @@ for(const item of AUDIO_PLAN){
  // MP3 encoding/resampling can overshoot a limiter. Re-render from the original with measured headroom.
  if(renderSfx&&quality.peak>.95){renderSfx(.85/quality.peak);quality=analyse(output);}
  if(quality.rms<=.001||quality.peak>1.001||(item.type==='music'&&Math.abs(quality.duration-(Math.min(item.seconds,chosen.analysis.duration)-.8))>.08))throw new Error(`Invalid processed sound: ${item.id}`);
- const bytes=await readFile(output),entry={id:item.id,title:item.title,type:item.type,path:relative,processingVersion,model:chosen.record.model,generationId:chosen.record.generationId,sourceHash:chosen.record.sha256,sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length,...quality,selection:'earliest audible onset among non-silent candidates; listening review still required'};
+ const bytes=await readFile(output),entry={id:item.id,title:item.title,type:item.type,path:relative,edition:item.edition??null,processingVersion,model:chosen.record.model,generationId:chosen.record.generationId,sourceHash:chosen.record.sha256,sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length,...quality,selection:'earliest audible onset among non-silent candidates; listening review still required'};
  manifest.assets=manifest.assets.filter(x=>x.id!==item.id);manifest.assets.push(entry);
  await writeFile(manifestUrl,JSON.stringify(manifest,null,2)+'\n');
  console.log(`Processed ${item.id}: ${quality.duration.toFixed(2)}s, ${bytes.length} bytes`);
 }
-console.log(`Ready ${manifest.assets.length}/${AUDIO_PLAN.length}`);
+const current=manifest.assets.filter(asset=>AUDIO_PLAN.some(item=>item.id===asset.id&&(item.edition??null)===(asset.edition??null))).length;
+console.log(`Current edition ${current}/${AUDIO_PLAN.length}`);

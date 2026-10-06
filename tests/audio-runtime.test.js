@@ -79,7 +79,7 @@ test('BGM waits for a gesture, uses one element, switches scenes and stops when 
   f.player.unlock();await f.advance(500);assert.equal(f.made(),1);assert.equal(f.media.paused,false);
   for(let i=0;i<100;i++){f.player.configure({enabled:true,active:true});f.player.scene('home');f.player.unlock();}
   assert.equal(f.plays.length,1);
-  f.player.scene('serdin-capital');await f.advance(500);assert.equal(f.plays.at(-1),'./audio/music/serdin-capital.mp3');assert.equal(f.made(),1);
+  f.player.scene('serdin-capital');await f.advance(500);assert.equal(f.plays.at(-1),audioUrl('serdin-capital'));assert.equal(f.made(),1);
   f.player.pause(true);assert.equal(f.media.paused,true);
   f.player.pause(false);await f.advance(500);assert.equal(f.media.paused,false);
   f.player.configure({enabled:true,active:false});await f.advance(2000);assert.equal(f.media.paused,true);assert.equal(f.timers.size,0);
@@ -110,7 +110,7 @@ test('a missing BGM is reported once and is not retried on every home tap',async
 
 test('returning to a failed track stops the previous scene music',async()=>{
   const media={paused:true,pause(){this.paused=true;},play(){
-    if(this.src.endsWith('/home.mp3'))return Promise.reject(new Error('missing'));
+    if(this.src===audioUrl('home'))return Promise.reject(new Error('missing'));
     this.paused=false;return Promise.resolve();
   }};
   const player=createMusicPlayer({createMedia:()=>media,onError:()=>{}});

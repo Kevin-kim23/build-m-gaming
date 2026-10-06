@@ -1,24 +1,27 @@
-// Original production briefs: no artists, existing scores, real anthems, voices or recordings.
-const music = (id, title, prompt) => ({id, title, type:'music', seconds:60, prompt:`Original instrumental hybrid orchestral strategy game underscore. ${prompt} Subtle pixel-synth texture, clean production, even dynamics, repeating harmony suitable for continuous looping; no vocals, long intro or final cadence, leave space for short gameplay sounds.`});
+// Original music briefs: no artists, existing scores, real anthems, voices or recordings.
+import { MUSIC_ASSET_VERSION } from '../src/audio-catalog.js';
+export const MUSIC_EDITION = MUSIC_ASSET_VERSION;
+const music = (id, title, description) => ({id, title, type:'music', seconds:60, edition:MUSIC_EDITION, sourceId:id+'-'+MUSIC_EDITION,
+  prompt:"Original instrumental chiptune-pop game music, bright and upbeat with a catchy major-key melody. "+description+" Clean airy mix, light bass, gentle high frequencies, steady groove and repeating phrases suitable for looping; no vocals, heavy orchestral brass, booming cinematic drums, ominous drones, long intro or final ending."});
 export const MUSIC_PLAN = [
-  music('home','주둔지의 아침','Calm and resolute at 88 BPM, warm French horns, muted snare march, restrained strings and soft analog pulse.'),
-  music('map','작전 지도','Focused tactical suspense at 92 BPM, low cello ostinato, muted sonar-like synth plucks, brushed snare and sparse warm horns.'),
-  music('serdin-early','세르딘 · 해안 진군','Measured hopeful march at 104 BPM, light snare, open horn intervals, airy woodwinds, plucked strings and soft bass drum.'),
-  music('serdin-middle','세르딘 · 들판 교전','Determined march at 112 BPM, interlocking string ostinato, snare rolls, rounded brass answers and gently rising minor harmony.'),
-  music('serdin-late','세르딘 · 성벽 접근','Urgent grounded orchestral tension at 122 BPM, low string pulses, tight snare patterns, muted brass stabs and restrained timpani.'),
-  music('serdin-capital','세르딘 · 수도 공성','High tension orchestral siege music at 132 BPM, urgent string ostinato, powerful low brass, syncopated timpani and metallic accents; minor harmonies sustain pressure without a triumphant resolution.'),
-  music('veloc-early','벨로크 · 붉은 변경','Industrial orchestral pulse at 108 BPM, dry metallic percussion, low analog bass sequence, muted horns and short gritty cello phrases.'),
-  music('veloc-middle','벨로크 · 철의 전선','Driving industrial rhythm at 120 BPM, mechanical tom patterns, metallic anvil accents, low brass chords and filtered synth ostinato.'),
-  music('veloc-late','벨로크 · 병기창 돌파','Intense industrial orchestral rhythm at 132 BPM, angular strings, hammering metallic percussion, distorted low bass pulse and controlled brass stabs.'),
-  music('veloc-capital','벨로크 · 강철 수도','Relentless high tension industrial siege score at 140 BPM, pounding low toms, metallic strikes, tense chromatic brass and urgent synth bass, sustained danger and no victory resolution.'),
-  music('istra-early','이스트라 · 은호수','Mysterious measured orchestral movement at 100 BPM, delicate celesta, low strings, breathy woodwinds and soft frame drums, cool spacious minor harmonies.'),
-  music('istra-middle','이스트라 · 고원 전투','Focused rising tension at 112 BPM, layered plucked strings, restrained flute accents, deep frame drums and cello ostinato with shimmering sparse bells.'),
-  music('istra-late','이스트라 · 왕실 방어선','Urgent orchestral pursuit at 124 BPM, tremolo strings, angular cello ostinato, deep toms, dark horns and sparse high bell tones.'),
-  music('istra-capital','이스트라 · 왕관 공성','Majestic but threatening orchestral siege at 136 BPM, sweeping minor strings, powerful low horns, rolling timpani and icy celesta accents, sustained unresolved tension.'),
-  music('norgard-early','노르가드 · 눈보라','Cold imposing orchestral pulse at 110 BPM, deep bass drones, thin high strings, distant metallic bells, sparse heavy toms and restrained synth pulse.'),
-  music('norgard-middle','노르가드 · 빙하 전선','Heavy determined orchestral rhythm at 124 BPM, low brass ostinato, icy high string texture, deep drums and crisp metallic strikes.'),
-  music('norgard-late','노르가드 · 황제의 방벽','Severe urgent hybrid orchestral rhythm at 136 BPM, dense low string patterns, thunderous restrained percussion, dark brass and high crystalline accents.'),
-  music('norgard-capital','노르가드 · 최후의 수도','Maximum tension final siege instrumental at 148 BPM, massive low brass ostinato, fast precise string figures, heavy toms and timpani, sharp icy bells, rising harmonic pressure; imposing and dangerous with no vocals or triumphant resolution.'),
+  music("home","주둔지의 아침","Friendly relaxed bounce at 108 BPM with rounded plucky synth, soft electric piano, tiny bell answers and light pop drums."),
+  music("map","작전 지도","Curious optimistic groove at 114 BPM with marimba-like plucks, bubbly arpeggios, muted rhythm guitar and crisp light percussion."),
+  music("serdin-early","세르딘 · 해안 진군","Sunny breezy adventure at 116 BPM with clean ukulele-like guitar, soft square-wave melody, little whistles and brushed pop drums."),
+  music("serdin-middle","세르딘 · 들판 교전","Buoyant adventure-pop at 124 BPM with bright guitar strums, bouncy synth bass, short bell motifs and a crisp snappy beat."),
+  music("serdin-late","세르딘 · 성벽 접근","Lively optimistic arcade action at 134 BPM with quick rounded synth arpeggios, rhythmic guitar and playful drum fills."),
+  music("serdin-capital","세르딘 · 수도 공성","Exciting upbeat arcade boss theme at 144 BPM with a heroic major-key lead, racing arpeggios, bright guitar and nimble pop drums; energetic challenge and forward momentum."),
+  music("veloc-early","벨로크 · 붉은 변경","Playful electro-funk at 120 BPM with rubbery synth bass, clean muted guitar chops, soft metallic plucks and crisp light drums."),
+  music("veloc-middle","벨로크 · 철의 전선","Bouncy electro-funk at 128 BPM with syncopated keyboard stabs, bright rounded chip melody and a buoyant dance beat."),
+  music("veloc-late","벨로크 · 병기창 돌파","Driving cheerful electro-pop at 138 BPM with tight funky bass, sparkling arpeggios, clipped guitar accents and punchy but light drums."),
+  music("veloc-capital","벨로크 · 강철 수도","Exhilarating electro-funk boss groove at 148 BPM with nimble synth riffs, quick chip arpeggios, syncopated bass and tight drum fills; bright confident tension."),
+  music("istra-early","이스트라 · 은호수","Fresh sparkling adventure-pop at 112 BPM with celesta-like bells, light piano, pizzicato strings and soft bouncing drums."),
+  music("istra-middle","이스트라 · 고원 전투","Uplifting magical pop at 122 BPM with clear bell melody, lilting piano chords, bubbly synth bass and dancing light percussion."),
+  music("istra-late","이스트라 · 왕실 방어선","Excited luminous arcade-pop at 132 BPM with sparkling runs, quick piano patterns, cheerful synth lead and crisp pop rhythm."),
+  music("istra-capital","이스트라 · 왕관 공성","Brilliant uplifting arcade boss music at 144 BPM with fast celesta-like patterns, an optimistic synth hook, agile piano and bright drum fills; thrilling and sparkling."),
+  music("norgard-early","노르가드 · 눈보라","Crisp refreshing synth-pop at 122 BPM with cool glassy plucks, rounded chip lead, bouncy clean bass and airy dance drums."),
+  music("norgard-middle","노르가드 · 빙하 전선","Confident luminous synth-pop at 132 BPM with sparkling arpeggios, light rhythmic guitar, playful melodic turns and a brisk dance beat."),
+  music("norgard-late","노르가드 · 황제의 방벽","Invigorating arcade-electro at 142 BPM with bright layered synth hooks, precise arpeggios, nimble bass and lively drum fills."),
+  music("norgard-capital","노르가드 · 최후의 수도","Exhilarating final-boss arcade pop at 154 BPM with a soaring major-key chip melody, sparkling synth arpeggios, bright power-pop guitar and tight fast drums; exciting youthful confidence with rising rhythmic challenge."),
 ];
 const sfx = (id,title,seconds,prompt) => ({id,title,type:'sfx',seconds,prompt:`${prompt}; isolated dry game sound, immediate onset and clean short decay, no voice, music or background ambience.`});
 const gear = [
