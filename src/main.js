@@ -80,10 +80,11 @@ const zone = $("#tap-zone"),
   canvas = $("#field");
 const battleUI = createBattleUI(session, gameAudio);
 const armyPanels = createArmyPanels(session, gameAudio);
-const achievementUI = createAchievementUI(session);
+const achievementUI = createAchievementUI(session, gameAudio);
 const guideUI = createGuideUI();
 const infoUI = createInfoPanel(session);
 function update() {
+  gameAudio.configure({enabled:state.sound,active:session.active && !document.hidden});
   const power = armyPower(state),
     r = rank();
   const goldLabel = fmtGold(state.gold);
@@ -165,8 +166,12 @@ for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
   zone.addEventListener(type, (event) => taps.up(event.pointerId));
 // Keyboard and assistive-technology activation arrives as a click without a pointer (detail 0).
 zone.addEventListener("click", (event) => { if (event.detail === 0) earnTap(event); });
-$(".field-tools [data-use-sword]").onclick = () => session.change(s => activateSword(s));
-$(".field-tools [data-use-revolver]").onclick = () => session.change(s => activateAutoTouch(s));
+$(".field-tools [data-use-sword]").onclick = () => {
+  if (session.change(s => activateSword(s))?.ok) gameAudio.ui('sword',state.sound);
+};
+$(".field-tools [data-use-revolver]").onclick = () => {
+  if (session.change(s => activateAutoTouch(s))?.ok) gameAudio.ui('revolver',state.sound);
+};
 document.querySelector('.field-theme-picker').addEventListener('click', event => {
   const button = event.target.closest('[data-field-theme]');
   if (button && !button.disabled) session.change(s => setFieldTheme(s, button.dataset.fieldTheme));
@@ -176,8 +181,15 @@ $("#sound").onclick = async () => {
     s.sound = !s.sound;
   });
   if (!state.sound) gameAudio.stop();
-  else gameAudio.tap(true);
+  else { gameAudio.unlock(); gameAudio.tap(true); }
 };
+// One gesture hook unlocks browser audio. Disabled controls and field taps have their own feedback.
+document.addEventListener('pointerdown', () => gameAudio.unlock(), {capture:true,passive:true});
+document.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') gameAudio.unlock(); }, {capture:true});
+document.addEventListener('click', event => {
+  const button=event.target.closest?.('button');
+  if (button && !button.disabled && button !== zone && button.id !== 'sound') gameAudio.ui('click',state.sound);
+});
 $("#open-ranks").onclick = () => openRankGuide(state, insignia);
 $("#open-shop").onclick = () => armyPanels.openShop();
 $("#open-equipment").onclick = () => armyPanels.openEquipment();

@@ -23,7 +23,7 @@ function headerMarkup(state) {
     </div>
     </div>
     ${goldMarkup()}
-    <button id="sound" aria-label="효과음" role="switch" aria-checked="${state.sound}">${speaker}</button>
+    <button id="sound" aria-label="배경음악과 효과음" title="배경음악·효과음 켜기/끄기" role="switch" aria-checked="${state.sound}">${speaker}</button>
     </header>`;
 }
 

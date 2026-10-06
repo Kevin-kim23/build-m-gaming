@@ -153,7 +153,7 @@ export function createArmyPanels(session, audio) {
   function purchaseGun(id) {
     const result = session.change(s => buyEquipment(s, Date.now(), id));
     if (!result) return;
-    if (result.ok) audio.recruit(state().sound);
+    audio.ui(result.ok ? 'purchase' : 'error',state().sound);
     if (dialog.open && activePanel === 'shop') text('#shop-message', result.ok
       ? `${EQUIPMENT[id].name} 구매 완료! ${result.deployed ? "연병장에 배치했습니다." : "배치 4칸이 가득 차 보관함으로 보냈습니다."}`
       : result.reason === 'locked' ? `${EQUIPMENT[id].unlockRank} 진급 후 구매할 수 있어요.`
@@ -162,7 +162,7 @@ export function createArmyPanels(session, audio) {
   function purchaseAdditionalGun(id) {
     const result = session.change(s => buyAdditionalEquipment(s, Date.now(), id));
     if (!result) return;
-    if (result.ok) audio.recruit(state().sound);
+    audio.ui(result.ok ? 'purchase' : 'error',state().sound);
     text(activePanel === 'equipment' ? '#equipment-message' : '#shop-message', result.ok
       ? `${EQUIPMENT[id].name} [${fmt(result.count)}문] · +${result.level}강 유지 · ${result.deployed ? '같은 칸에 합류!' : '보관함에 합류!'}`
       : result.reason === 'disabled' ? '장비 추가 구매는 현재 잠겨 있습니다.'
@@ -173,7 +173,7 @@ export function createArmyPanels(session, audio) {
   function buildSchool(id) {
     const result=session.change(s=>upgradeSchool(s,Date.now(),id));
     if(!result)return;
-    if(result.ok)audio.recruit(state().sound);
+    audio.ui(result.ok ? 'build' : 'error',state().sound);
     text('#shop-message',result.ok?`${SCHOOLS[id].name} Lv.${result.level} 완료! ${SCHOOLS[id].effects[result.level-1]} 해금`
       :result.reason==='locked'?schoolOffer(state(),id).requirement+' 조건이 필요해요.':result.reason==='max'?'최대 레벨입니다.':'골드가 부족해요.');
   }
@@ -181,7 +181,7 @@ export function createArmyPanels(session, audio) {
     const id = activeEquipment;
     const result = session.change(s => enhanceEquipment(s, Date.now(), id));
     if (!result) return;
-    if (result.ok) audio.recruit(state().sound);
+    audio.ui(result.ok ? 'upgrade-success' : 'error',state().sound);
     if (dialog.open && activePanel === 'equipment' && activeEquipment === id) text('#equipment-message', result.ok
       ? `${EQUIPMENT[id].name} +${result.level}강 완료!`
       : result.reason === 'max' ? '현재 강화 한도입니다. 개인 장비에서 사단기를 골드로 강화하면 한도가 1강씩 늘어납니다.'
@@ -190,6 +190,7 @@ export function createArmyPanels(session, audio) {
   function toggleEquipment() {
     const id = activeEquipment;
     const result = session.change(s => setEquipmentDeployed(s, !equipmentOf(s, id)?.deployed, Date.now(), id));
+    if (result) audio.ui(result.ok ? 'equip' : 'error',state().sound);
     if (result?.reason === 'capacity') text('#equipment-message', '연병장은 최대 4종류입니다. 다른 장비를 먼저 보관하세요.');
     if (result?.ok && dialog.open && activePanel === 'equipment' && activeEquipment === id)
       text('#equipment-message', EQUIPMENT[id].name + (result.deployed ? ' 배치 완료!' : ' 보관 완료! 강화는 유지됩니다.'));
@@ -209,10 +210,12 @@ export function createArmyPanels(session, audio) {
     else if (button.dataset.equipmentCategory) openEquipment(activeEquipment, button.dataset.equipmentCategory);
     else if (button.hasAttribute('data-use-revolver')) {
       const result = session.change(s => activateAutoTouch(s));
+      if (result?.ok) audio.ui('revolver',state().sound);
       if (result?.ok) text('#equipment-message', `${generalRevolverDuration(state())/1000}초 동안 0.3초마다 자동 터치 골드를 받습니다.`);
     }
     else if (button.hasAttribute('data-use-sword')) {
       const result = session.change(s => activateSword(s));
+      if (result?.ok) audio.ui('sword',state().sound);
       if (result?.ok) text('#equipment-message', `${generalSwordDuration(state())/1000}초 동안 터치 골드가 2배입니다!`);
     }
     else if (button.dataset.detailUnit) showUnitDetail(button.dataset.detailUnit);

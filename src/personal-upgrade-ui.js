@@ -28,7 +28,7 @@ export function createPersonalUpgradeUI(session,audio) {
     try {
       const result=session.change(s=>enhancePersonalEquipment(s,Date.now(),data.id));
       if(!result)return;
-      if(result.success)audio.recruit(session.state.sound);
+      audio.ui(result.ok ? result.success ? 'upgrade-success' : 'upgrade-fail' : 'error',session.state.sound);
       const message=result.ok?`${result.success?'강화 성공!':'강화 실패 · 레벨 유지'} Lv.${result.level} · ${fmtGoldCost(result.cost)} G 사용`
         :result.reason==='max'?'최대 레벨입니다.':result.reason==='locked'?'진급 후 장비를 지급받아야 합니다.':'골드가 부족해요.';
       open(data.id,message);

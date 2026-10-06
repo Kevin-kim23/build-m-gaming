@@ -14,6 +14,7 @@ import './campaign.css';
 import { createCampaignMap } from './campaign-map.js';
 import { COUNTRIES } from './campaign.js';
 import { ACHIEVEMENTS } from './achievements.js';
+import { createBattleAudioEvents } from './battle-audio-events.js';
 
 // Owns one dialog and one animation loop; the economic session stays separate.
 export function createBattleUI(session, audio = null) {
@@ -30,12 +31,15 @@ export function createBattleUI(session, audio = null) {
   let mode = 'stages', stageId = 1, loadout = null, loadoutStage = 0, battle = null;
   let raf = 0, lastFrame = 0, paused = false, finalized = false, selected = null, drag = null, suppressClick = false;
   let stagesKey = '';
-  // 연출 상태(저장하지 않음): 기지 피격 번쩍임·흔들림 시각, 이전 체력, 이미 처리한 효과 시각, 효과음 간격
-  let fx = { flash: { player: -1e9, enemy: -1e9 }, shakeAt: -1e9, prevHp: null, seenFx: 0, accum: { player: 0, enemy: 0 }, lastFloat: { player: 0, enemy: 0 }, lastSound: {} };
-  const sound = (kind, gap = 120) => {
+  const audioEvents = createBattleAudioEvents();
+  const healedAt = new Map();
+  // 연출 상태(저장하지 않음): 기지 피격 번쩍임·흔들림 시각, 이전 체력, 효과음 간격
+  let fx = { flash: { player: -1e9, enemy: -1e9 }, shakeAt: -1e9, prevHp: null, accum: { player: 0, enemy: 0 }, lastFloat: { player: 0, enemy: 0 }, lastSound: {} };
+  const sound = (kind, gap = 120, gearId = null, side = 'player') => {
     const now = performance.now();
-    if (now - (fx.lastSound[kind] ?? -1e9) < gap) return;
-    fx.lastSound[kind] = now; audio?.battle(kind, session.state.sound);
+    const key = `${kind}:${gearId ?? ''}:${side}`;
+    if (now - (fx.lastSound[key] ?? -1e9) < gap) return;
+    fx.lastSound[key] = now; audio?.battle(kind, session.state.sound, gearId, side);
   };
   const haptic = (pattern) => { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) navigator.vibrate?.(pattern); };
   const mapKey = () => `${session.state.campaignCleared}:${armyKey()}:${battleAccess(session.state).unlocked}`;
@@ -56,12 +60,14 @@ export function createBattleUI(session, audio = null) {
   function stop() { cancelAnimationFrame(raf); raf = 0; lastFrame = 0; }
   function close() {
     stop(); campaignMap.stop(); battle = null;
+    audio?.pauseMusic?.(false); audio?.scene?.('home');
     if (dialog.open) dialog.close();
   }
   function showStages(countryId = campaignMap.countryId) {
     stop(); battle = null; mode = 'stages';
     stagesKey = mapKey();
     campaignMap.show(countryId);
+    audio?.pauseMusic?.(false); audio?.scene?.('map'); audio?.prepareBattle?.();
     paintCardArt();
     dialog.classList.remove('in-battle');
     dialog.scrollTop = 0;
@@ -90,11 +96,14 @@ export function createBattleUI(session, audio = null) {
       text('#battle-message', '출전 조건이 바뀌었어요. 작전 지도에서 다시 선택해 주세요.'); return;
     }
     stop(); campaignMap.stop(); mode = 'battle'; paused = false; finalized = false; selected = null;
-    fx = { flash: { player: -1e9, enemy: -1e9 }, shakeAt: -1e9, prevHp: null, seenFx: 0, accum: { player: 0, enemy: 0 }, lastFloat: { player: 0, enemy: 0 }, lastSound: {} };
+    audioEvents.reset(); healedAt.clear();
+    audio?.pauseMusic?.(false); audio?.scene?.('battle',stageId); audio?.prepareBattle?.();
+    fx = { flash: { player: -1e9, enemy: -1e9 }, shakeAt: -1e9, prevHp: null, accum: { player: 0, enemy: 0 }, lastFloat: { player: 0, enemy: 0 }, lastSound: {} };
     dialog.innerHTML = battlefieldMarkup(battle);
     paintCardArt();
     dialog.classList.add('in-battle'); dialog.scrollTop = 0;
     paint(); sync(); schedule();
+    sound('start',0);
   }
   function view() {
     const now = performance.now(), flash = (side) => Math.max(0, 1 - (now - fx.flash[side]) / 380);
@@ -121,11 +130,20 @@ export function createBattleUI(session, audio = null) {
       }
     }
     fx.prevHp = hp;
-    for (const f of battle.fx) {
-      if (f.at <= fx.seenFx) continue;
-      if (f.kind === 'death') sound('boom', 140); else if (f.kind === 'strike') sound('boom', 100); else if (f.kind === 'shot' && f.side === 'player') sound('shot', 200); else if (f.kind === 'spawn' && f.side === 'player') sound('deploy', 60);
+    for (const f of audioEvents.take(battle.fx)) {
+      if (f.kind === 'death') sound('boom', 160, f.id, f.side);
+      else if (f.kind === 'strike') { sound('deploy',100,f.id,f.side); sound('strike',100,f.id,f.side); }
+      else if (f.kind === 'shot') { sound('shot', 160, f.id, f.side); sound('impact',320,null,f.side); }
+      else if (f.kind === 'spawn') sound('deploy', 100, f.id, f.side);
     }
-    fx.seenFx = battle.elapsedMs;
+    // Observe support pulses without changing combat rules or saves.
+    const live = new Set();
+    for (const unit of battle.player.units) if (unit.kind === 'heal') {
+      live.add(unit.uid);
+      if (unit.lastShotMs >= 0 && healedAt.get(unit.uid) !== unit.lastShotMs) sound('heal',300,unit.id);
+      healedAt.set(unit.uid,unit.lastShotMs);
+    }
+    for (const id of healedAt.keys()) if (!live.has(id)) healedAt.delete(id);
   }
   // 기지 위로 떠오르는 피해 숫자(가끔만 만들고 애니메이션이 끝나면 지운다)
   function floatNumber(side, amount) {
@@ -208,12 +226,14 @@ export function createBattleUI(session, audio = null) {
   function suspend() {
     if (battle?.status !== 'running' || !dialog.open) return;
     paused = true; stop();
+    audio?.pauseMusic?.(true);
     overlay('일시정지', session.active ? '' : '현재 게임 창의 조작 권한을 기다리고 있어요.', false);
     text('#battle-result-stars', ''); text('#battle-result-loot', '');
   }
   function resume() {
     if (!session.active || document.hidden || battle?.status !== 'running') return;
     paused = false; lastFrame = 0;
+    audio?.pauseMusic?.(false);
     $('#battle-overlay').hidden = true;
     schedule();
   }
@@ -232,6 +252,7 @@ export function createBattleUI(session, audio = null) {
         const bits = [];
         if (result.firstClear) bits.push(stageId === STAGES.length ? '대륙 정복 완료!' : stageId % 20 === 0 ? `${COUNTRIES[Math.floor(stageId / 20)-1].name} 점령!` : '지역 점령!', `초당 수입 +${REGION_INCOME_PERCENT}%`);
         if (result.achievements?.length) bits.push(`훈장 ${result.achievements.map(id => ACHIEVEMENTS.find(a => a.id === id).title).join(', ')}`);
+        if (result.firstClear && stageId % 20 === 0 && stageId < STAGES.length) audio?.ui?.('unlock',session.state.sound);
         copy = bits.join(' · ');
         canNext = stageId < STAGES.length && (session.state.campaignCleared ?? 0) >= stageId;
       } else copy = '클리어 기록을 반영하지 못했어요. 작전 지도에서 확인해 주세요.';
@@ -240,7 +261,7 @@ export function createBattleUI(session, audio = null) {
     text('#battle-result-stars', stars); text('#battle-result-loot', loot);
     const next = $('[data-battle-next]'); if (next) next.hidden = !canNext;
     if (stars) $('#battle-result-stars').classList.add('pop');
-    sound(won ? 'win' : 'lose', 0); haptic(won ? [30, 60, 30, 60, 90] : [120]);
+    sound(won ? 'win' : battle.status === 'draw' ? 'draw' : 'lose', 0); haptic(won ? [30, 60, 30, 60, 90] : [120]);
     sync();
     $('#battle-result-title').setAttribute('role','status');
   }
@@ -341,6 +362,6 @@ export function createBattleUI(session, audio = null) {
     if(target && ['Enter',' '].includes(event.key)){event.preventDefault();campaignMap.handle(target);}
   });
   dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
-  dialog.addEventListener('close', () => { stop(); campaignMap.stop(); battle = null; document.querySelector('#open-battle')?.focus(); });
+  dialog.addEventListener('close', () => { stop(); campaignMap.stop(); battle = null; audio?.pauseMusic?.(false); audio?.scene?.('home'); document.querySelector('#open-battle')?.focus(); });
   return {open, sync, suspend};
 }

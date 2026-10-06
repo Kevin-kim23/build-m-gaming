@@ -23,7 +23,7 @@ function writeHidden(hidden) {
 }
 
 // Update medals only when earned IDs change; income ticks never rebuild this UI.
-export function createAchievementUI(session) {
+export function createAchievementUI(session, audio = null) {
   const list = document.querySelector('#medal-list');
   const count = document.querySelector('#medal-count');
   const opener = document.querySelector('#open-achievements');
@@ -31,6 +31,7 @@ export function createAchievementUI(session) {
   const toggle = document.querySelector('#toggle-medals');
   const dialog = document.querySelector('#achievement-modal');
   let shown = [], initialized = false, selectedId = null, returnFocus = opener;
+  let earnedCount = session.state.earnedAchievements.length;
   let hiddenMedals = readHiddenMedals();
   let renderedPower = -1, renderedCampaign = -1;
   const sameIds = ids => ids.length === shown.length && ids.every((id, index) => id === shown[index]);
@@ -74,6 +75,9 @@ export function createAchievementUI(session) {
     return true;
   }
   function sync() {
+    const count = session.state.earnedAchievements.length;
+    if (count > earnedCount) audio?.ui('medal',session.state.sound);
+    earnedCount = count;
     const changed = renderShelf();
     if (dialog.open && (changed || renderedPower !== armyPower(session.state) || renderedCampaign !== (session.state.campaignCleared ?? 0))) renderList();
   }
