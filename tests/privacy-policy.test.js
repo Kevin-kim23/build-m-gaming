@@ -22,7 +22,8 @@ test('the in-app policy lists every section and the date, with text escaped', ()
 });
 
 test('docs/store/PRIVACY_POLICY.md is generated from the same source (run npm run privacy:doc if this fails)', () => {
-  assert.equal(read('docs/store/PRIVACY_POLICY.md'), privacyPolicyMarkdown());
+  // Git may check out CRLF on Windows; compare content without hiding other changes.
+  assert.equal(read('docs/store/PRIVACY_POLICY.md').replace(/\r\n/g, '\n'), privacyPolicyMarkdown());
 });
 
 // The policy says "no data collected, no ads, no payments". If the app starts doing any of these,
