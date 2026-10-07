@@ -1,5 +1,6 @@
 export { parseSave } from './save.js';
 import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMoney } from './money.js';
+import { pacedRecruitCost } from './growth-balance.js';
 export { MAX_GOLD, serializeSave } from './money.js';
 import { rankForArmy } from "./ranks.js";
 import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
@@ -31,9 +32,9 @@ export const perSecond = (s) =>
 // Preserve early prices, but avoid exponential prices blocking battalion progression.
 export const recruitCost = count => {
   if (!Number.isSafeInteger(count) || count < 0) throw new RangeError('Invalid recruit count');
-  if (count < 64) return Math.ceil((Math.min(50*1.2**count,50+50*count+0.05*count*count)-1e-8)/10)*10;
+  if (count < 64) return pacedRecruitCost(Math.ceil((Math.min(50*1.2**count,50+50*count+0.05*count*count)-1e-8)/10)*10,count,'soldier');
   const n=BigInt(count);
-  return minMoney(MAX_GOLD, compactMoney(((1000n+1000n*n+n*n+199n)/200n)*10n));
+  return pacedRecruitCost(compactMoney(((1000n+1000n*n+n*n+199n)/200n)*10n),count,'soldier');
 };
 // Exact polynomial prices depend only on this unit's owned count.
 function calculateUnitCost(owned, type) {
@@ -41,7 +42,7 @@ function calculateUnitCost(owned, type) {
   if (!Number.isSafeInteger(owned) || owned<0) throw new RangeError('Invalid recruit count');
   const price=UNITS[type]?.price;
   if(!price) throw new RangeError('Unknown recruit type');
-  return minMoney(MAX_GOLD,addMoney(price[0],addMoney(multiplyMoney(price[1],owned),multiplyMoney(multiplyMoney(price[2],owned),owned))));
+  return pacedRecruitCost(addMoney(price[0],addMoney(multiplyMoney(price[1],owned),multiplyMoney(multiplyMoney(price[2],owned),owned))),owned,type);
 }
 const unitCosts = new Map();
 export function unitCost(owned, type = 'soldier') {

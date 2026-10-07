@@ -1,6 +1,5 @@
 import { campaignBonusPercent } from "./campaign-rewards.js";
 import { autoTouchStatus } from "./personal-equipment.js";
-import { canChooseFieldTheme, fieldTheme, setFieldTheme } from './field-theme.js';
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
 import { createTapTracker } from "./multi-tap.js";
@@ -35,7 +34,7 @@ import { drawScene } from "./art.js";
 import { fieldSummary } from "./field-layout.js";
 import { ownedSchools } from "./field-schools.js";
 import {
-  LAST_RANK,
+  LAST_RANK, GENERAL_RANK,
   rankForArmy,
   promotionProgress,
 } from "./ranks.js";
@@ -120,11 +119,7 @@ function update() {
     $("#promotion-fill").style.width = progress.ratio * 100 + "%";
     drawScene(canvas, state, $("#field-labels"));
   }
-  $('.field-tools').hidden = !canChooseFieldTheme(state);
-  for (const button of document.querySelectorAll('[data-field-theme]')) {
-    button.disabled = !session.active;
-    button.setAttribute('aria-pressed', String(fieldTheme(state) === button.dataset.fieldTheme));
-  }
+  $('.field-tools').hidden = r < GENERAL_RANK;
   const tap = perTap(state);
   setText("#tap-rate", "+" + fmtGold(tap) + " G");
   setText("#tap-hint-rate", "한 번에 +" + fmtGold(tap) + " G");
@@ -176,10 +171,7 @@ $(".field-tools [data-use-sword]").onclick = () => {
 $(".field-tools [data-use-revolver]").onclick = () => {
   if (session.change(s => activateAutoTouch(s))?.ok) gameAudio.ui('revolver',state.sound);
 };
-document.querySelector('.field-theme-picker').addEventListener('click', event => {
-  const button = event.target.closest('[data-field-theme]');
-  if (button && !button.disabled) session.change(s => setFieldTheme(s, button.dataset.fieldTheme));
-});
+
 $("#sound").onclick = async () => {
   await session.change((s) => {
     s.sound = !s.sound;

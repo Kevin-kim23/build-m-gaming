@@ -44,3 +44,7 @@ npm run qa:marshal → http://127.0.0.1:4197/__marshal-check. 실제4173과 다�
 ## 0.52.0 현재 오디오·안드로이드 도구
 
 현재 audio:verify는 음원 복원을 요구하지 않고 과거 녹음 파일/ZIP 혼입을 차단합니다. android:doctor/key/apk/release 명령은 docs/ANDROID_RELEASE.md를 참고하세요. 과거 음원 가공 도구는 출시 경로에서 사용하지 않습니다.
+
+## 성장 밸런스 (0.54)
+
+`npm run balance:simulate -- --minutes=7.5 --battles`는 실제 저장에 접근하지 않는 메모리 시뮬레이션입니다. `--minutes=5`/`--minutes=10`으로 활동 시간을 비교하고, `--battles`를 빼면 전투 없는 시나리오입니다. 무한 반복전·개인 장비 유료 강화·광고는 포함하지 않으므로 실제 도달 기간을 보장하지 않습니다. 규칙과 비교 표는 [GROWTH_BALANCE.md](../docs/GROWTH_BALANCE.md)에 있습니다. 준장부터 배경은 자동으로 시멘트가 되며 예전 수동 배경 버튼 검사는 더 이상 적용하지 않습니다.

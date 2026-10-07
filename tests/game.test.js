@@ -115,8 +115,8 @@ test("recruitment prices rise with collection size", () => {
     assert.ok(recruitCost(i) > recruitCost(i - 1));
     assert.equal(recruitCost(i) % 10, 0);
   }
-  // At lieutenant colonel, an individual recruit stays reachable with ordinary taps.
-  assert.ok(recruitCost(1279) / perTap({ soldiers: 1279 }) < 12);
+  // Early ranks now favor saving for school unlocks over endless ordinary recruitment.
+  assert.ok(recruitCost(1279) / perTap({ soldiers: 1279 }) > 12);
 });
 test("existing v3 soldiers and income survive the new formation and rank rules", () => {
   for (const n of [8, 20, 40, 80, 320, 1280]) {

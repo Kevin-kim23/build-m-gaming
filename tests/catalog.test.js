@@ -71,9 +71,9 @@ test("staff sergeants have independent prices, exact rewards and twenty strength
     tap: perTap(s),
     power: armyPower(s),
   };
-  assert.equal(recruitOffer(s, "staffSergeant").cost, 50_000);
+  assert.equal(recruitOffer(s, "staffSergeant").cost, 600_000);
   assert.equal(recruit(s, T, "staffSergeant").ok, true);
-  assert.equal(s.gold, before.gold - 50_000);
+  assert.equal(s.gold, before.gold - 600_000);
   assert.equal(s.staffSergeants, 1);
   assert.equal(perSecond(s) - before.passive, 150);
   assert.equal(perTap(s) - before.tap, 1000);
@@ -162,9 +162,9 @@ test("new troops and equipment do not earn income retroactively", () => {
   s.gold = 20_000_000;
   const before = perSecond(s);
   recruit(s, T + 500, "staffSergeant");
-  assert.equal(s.gold, 19_950_000 + before / 2);
+  assert.equal(s.gold, 19_400_000 + before / 2);
   buyEquipment(s, T + 1000, "tank");
-  assert.equal(s.gold, 14_950_000 + before + 75);
+  assert.equal(s.gold, 14_400_000 + before + 75);
   const balance = s.gold;
   accrue(s, T + 2000);
   assert.equal(s.gold, balance + before + 150 + 2500);

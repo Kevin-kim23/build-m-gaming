@@ -17,8 +17,10 @@ test('rank guide lists every rank, marks the current one and explains formations
   assert.match(html, new RegExp(`class="rank-step reached current" data-rank="${rank}"`));
   assert.equal((html.match(/rank-step reached/g) ?? []).length, rank + 1);
   assert.equal((html.match(/data-formation=/g) ?? []).length, FORMATIONS.length - 1);
-  assert.match(html, /편제 안내/);
-  assert.match(html, /id="rank-next"/);
+  assert.match(html, /부대 편제 안내/);
+  assert.doesNotMatch(html, /<p|rank-next|일반병 5,000명|분대부터 총군사령부까지/);
+  assert.match(html, /<b>중장<\/b><small>전력 81,920<\/small><em>1개 군단<\/em>/);
+  assert.match(html, /<b>대원수<\/b><small>전력 83,886,080<\/small><em>1개 총군사령부<\/em>/);
 });
 
 test('detail popup markup has one title, a labelled close button and the body', () => {

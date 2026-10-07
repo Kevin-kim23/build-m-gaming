@@ -108,7 +108,7 @@ function footerMarkup() {
 }
 
 function fieldToolsMarkup() {
-  return '<section class="field-tools" aria-label="장군 장비와 연병장 배경" hidden>' +
+  return '<section class="field-tools" aria-label="장군 장비" hidden>' +
     '<div class="home-skills" role="group" aria-label="장군 스킬"><button class="home-skill home-sword" data-use-sword hidden><span class="sword-clock">' +
     '<svg class="sword-clock-ring" viewBox="0 0 48 48" aria-hidden="true" focusable="false" hidden><circle class="sword-clock-track" cx="24" cy="24" r="21"/><circle data-sword-ring cx="24" cy="24" r="21" pathLength="100" stroke-dasharray="100 100" transform="rotate(-90 24 24)"/></svg>' +
     '<span data-sword-art>' + personalIcon('sword') + '</span><span data-sword-time hidden></span></span>' +
@@ -116,7 +116,7 @@ function fieldToolsMarkup() {
     '<button class="home-skill home-revolver" data-use-revolver hidden><span class="sword-clock revolver-clock">' +
     '<svg class="sword-clock-ring" viewBox="0 0 48 48" aria-hidden="true" focusable="false" hidden><circle class="sword-clock-track" cx="24" cy="24" r="21"/><circle data-revolver-ring cx="24" cy="24" r="21" pathLength="100" stroke-dasharray="100 100" transform="rotate(-90 24 24)"/></svg>' +
     '<span class="revolver-mini-art">' + personalIcon('revolver') + '</span><span data-revolver-time hidden></span></span><span data-revolver-label>리볼버 사용</span></button></div>' +
-    '<div class="field-theme-picker"><span class="sr-only">연병장 배경</span><div role="group" aria-label="연병장 배경"><button data-field-theme="earth" aria-pressed="true">흙</button><button data-field-theme="concrete" aria-pressed="false" aria-label="회색 시멘트">시멘트</button></div></div></section>';
+    '</section>';
 }
 export function homeMarkup(state) {
   return `<main class="game">${headerMarkup(state)}<aside id="save-notice" class="save-notice" role="status" hidden><strong data-save-notice-title></strong><button type="button" id="review-save">저장 확인</button></aside>${medalShelfMarkup()}${fieldMarkup()}${dockMarkup()}${footerMarkup()}</main>`;

@@ -1,14 +1,8 @@
 import { rankForArmy, GENERAL_RANK } from './ranks.js';
 
 export const FIELD_THEMES = Object.freeze({ earth: '흙 연병장', concrete: '회색 시멘트' });
-export const canChooseFieldTheme = state => rankForArmy(state) >= GENERAL_RANK;
-export const fieldTheme = state => canChooseFieldTheme(state) && state.fieldTheme === 'concrete' ? 'concrete' : 'earth';
-export function setFieldTheme(state, theme) {
-  if (!Object.hasOwn(FIELD_THEMES, theme)) return { ok: false, reason: 'invalid' };
-  if (theme !== 'earth' && !canChooseFieldTheme(state)) return { ok: false, reason: 'locked' };
-  state.fieldTheme = theme;
-  return { ok: true, theme };
-}
+// Legacy fieldTheme stays readable in saves; appearance follows the current rank.
+export const fieldTheme = state => rankForArmy(state) >= GENERAL_RANK ? 'concrete' : 'earth';
 
 // Static concrete slabs, drainage and painted parking lines; generated only on theme/size changes.
 export function concreteTerrain(width, height) {

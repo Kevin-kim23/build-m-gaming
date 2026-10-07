@@ -1,0 +1,1115 @@
+{
+  "baselineRevision": "4ff234b",
+  "baseline": {
+    "assumptions": {
+      "visitsPerDay": 3,
+      "minutes": 7.5,
+      "tapsPerSecond": 3,
+      "days": 90,
+      "investmentHours": 8,
+      "ads": false,
+      "personalUpgrades": false,
+      "battles": false
+    },
+    "milestones": [
+      {
+        "rank": "이등병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "일병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "상병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "병장",
+        "day": 0.001,
+        "activeMinutes": 2
+      },
+      {
+        "rank": "하사",
+        "day": 0.001,
+        "activeMinutes": 2
+      },
+      {
+        "rank": "중사",
+        "day": 0.002,
+        "activeMinutes": 2
+      },
+      {
+        "rank": "상사",
+        "day": 0.002,
+        "activeMinutes": 3
+      },
+      {
+        "rank": "원사",
+        "day": 0.002,
+        "activeMinutes": 3
+      },
+      {
+        "rank": "소위",
+        "day": 0.003,
+        "activeMinutes": 4
+      },
+      {
+        "rank": "중위",
+        "day": 0.003,
+        "activeMinutes": 4
+      },
+      {
+        "rank": "대위",
+        "day": 0.004,
+        "activeMinutes": 6
+      },
+      {
+        "rank": "소령",
+        "day": 0.335,
+        "activeMinutes": 9
+      },
+      {
+        "rank": "중령",
+        "day": 0.335,
+        "activeMinutes": 9
+      },
+      {
+        "rank": "대령",
+        "day": 0.335,
+        "activeMinutes": 9
+      },
+      {
+        "rank": "준장",
+        "day": 0.667,
+        "activeMinutes": 15
+      },
+      {
+        "rank": "소장",
+        "day": 0.667,
+        "activeMinutes": 15
+      },
+      {
+        "rank": "중장",
+        "day": 1,
+        "activeMinutes": 23
+      },
+      {
+        "rank": "대장",
+        "day": 1.333,
+        "activeMinutes": 30
+      },
+      {
+        "rank": "준원수",
+        "day": 2,
+        "activeMinutes": 45
+      },
+      {
+        "rank": "소원수",
+        "day": 2.667,
+        "activeMinutes": 60
+      },
+      {
+        "rank": "중원수",
+        "day": 3.667,
+        "activeMinutes": 83
+      },
+      {
+        "rank": "대원수",
+        "day": 4.333,
+        "activeMinutes": 98
+      }
+    ],
+    "unlocks": [
+      {
+        "school": "nco",
+        "level": 1,
+        "day": 0.001,
+        "income": 14
+      },
+      {
+        "school": "nco",
+        "level": 2,
+        "day": 0.002,
+        "income": 469
+      },
+      {
+        "school": "nco",
+        "level": 3,
+        "day": 0.004,
+        "income": 1519
+      },
+      {
+        "school": "nco",
+        "level": 4,
+        "day": 0.333,
+        "income": 12721
+      },
+      {
+        "school": "nco",
+        "level": 5,
+        "day": 0.667,
+        "income": 871650
+      },
+      {
+        "school": "officer",
+        "level": 1,
+        "day": 0.667,
+        "income": 871650
+      },
+      {
+        "school": "officer",
+        "level": 2,
+        "day": 0.667,
+        "income": 2854650
+      },
+      {
+        "school": "officer",
+        "level": 3,
+        "day": 1,
+        "income": 6926040
+      },
+      {
+        "school": "officer",
+        "level": 4,
+        "day": 1.333,
+        "income": 33123400
+      },
+      {
+        "school": "officer",
+        "level": 5,
+        "day": 1.669,
+        "income": 254539250
+      },
+      {
+        "school": "advanced",
+        "level": 1,
+        "day": 2.005,
+        "income": 1798650040
+      },
+      {
+        "school": "advanced",
+        "level": 2,
+        "day": 2.667,
+        "income": 6011034700
+      },
+      {
+        "school": "advanced",
+        "level": 3,
+        "day": 3,
+        "income": 14921034700
+      },
+      {
+        "school": "advanced",
+        "level": 4,
+        "day": 3.667,
+        "income": 49414525490
+      },
+      {
+        "school": "advanced",
+        "level": 5,
+        "day": 4.001,
+        "income": 138378092490
+      }
+    ],
+    "final": {
+      "rank": "대원수",
+      "power": 83926960,
+      "gold": "5225692824967527",
+      "actions": 11085
+    }
+  },
+  "scenarios": [
+    {
+      "assumptions": {
+        "visitsPerDay": 3,
+        "minutes": 5,
+        "tapsPerSecond": 3,
+        "days": 90,
+        "investmentHours": 8,
+        "ads": false,
+        "personalUpgrades": false,
+        "battles": true
+      },
+      "milestones": [
+        {
+          "rank": "이등병",
+          "day": 0,
+          "activeMinutes": 0
+        },
+        {
+          "rank": "일병",
+          "day": 0,
+          "activeMinutes": 0
+        },
+        {
+          "rank": "상병",
+          "day": 0,
+          "activeMinutes": 1
+        },
+        {
+          "rank": "병장",
+          "day": 0.001,
+          "activeMinutes": 1
+        },
+        {
+          "rank": "하사",
+          "day": 0.001,
+          "activeMinutes": 2
+        },
+        {
+          "rank": "중사",
+          "day": 0.333,
+          "activeMinutes": 5
+        },
+        {
+          "rank": "상사",
+          "day": 0.334,
+          "activeMinutes": 5
+        },
+        {
+          "rank": "원사",
+          "day": 0.335,
+          "activeMinutes": 7
+        },
+        {
+          "rank": "소위",
+          "day": 0.667,
+          "activeMinutes": 10
+        },
+        {
+          "rank": "중위",
+          "day": 1,
+          "activeMinutes": 15
+        },
+        {
+          "rank": "대위",
+          "day": 1,
+          "activeMinutes": 15
+        },
+        {
+          "rank": "소령",
+          "day": 3,
+          "activeMinutes": 45
+        },
+        {
+          "rank": "중령",
+          "day": 3,
+          "activeMinutes": 45
+        },
+        {
+          "rank": "대령",
+          "day": 3,
+          "activeMinutes": 45
+        },
+        {
+          "rank": "준장",
+          "day": 4.001,
+          "activeMinutes": 61
+        },
+        {
+          "rank": "소장",
+          "day": 4.334,
+          "activeMinutes": 66
+        },
+        {
+          "rank": "중장",
+          "day": 5.667,
+          "activeMinutes": 86
+        },
+        {
+          "rank": "대장",
+          "day": 8.667,
+          "activeMinutes": 131
+        },
+        {
+          "rank": "준원수",
+          "day": 12.334,
+          "activeMinutes": 186
+        },
+        {
+          "rank": "소원수",
+          "day": 16.336,
+          "activeMinutes": 248
+        },
+        {
+          "rank": "중원수",
+          "day": 22.334,
+          "activeMinutes": 336
+        },
+        {
+          "rank": "대원수",
+          "day": 26.334,
+          "activeMinutes": 396
+        }
+      ],
+      "unlocks": [
+        {
+          "school": "nco",
+          "level": 1,
+          "day": 0.333,
+          "income": 22
+        },
+        {
+          "school": "nco",
+          "level": 2,
+          "day": 1,
+          "income": 747
+        },
+        {
+          "school": "nco",
+          "level": 3,
+          "day": 1.335,
+          "income": 6517
+        },
+        {
+          "school": "nco",
+          "level": 4,
+          "day": 2.333,
+          "income": 43786
+        },
+        {
+          "school": "nco",
+          "level": 5,
+          "day": 4.667,
+          "income": 2885573
+        },
+        {
+          "school": "officer",
+          "level": 1,
+          "day": 4.667,
+          "income": 2885573
+        },
+        {
+          "school": "officer",
+          "level": 2,
+          "day": 4.667,
+          "income": 3759173
+        },
+        {
+          "school": "officer",
+          "level": 3,
+          "day": 5.334,
+          "income": 7440765
+        },
+        {
+          "school": "officer",
+          "level": 4,
+          "day": 8.334,
+          "income": 38022162
+        },
+        {
+          "school": "officer",
+          "level": 5,
+          "day": 11.667,
+          "income": 318069125
+        },
+        {
+          "school": "advanced",
+          "level": 1,
+          "day": 13.667,
+          "income": 2586575402
+        },
+        {
+          "school": "advanced",
+          "level": 2,
+          "day": 16.336,
+          "income": 8667190015
+        },
+        {
+          "school": "advanced",
+          "level": 3,
+          "day": 18.334,
+          "income": 21960813325
+        },
+        {
+          "school": "advanced",
+          "level": 4,
+          "day": 22.334,
+          "income": 78010655318
+        },
+        {
+          "school": "advanced",
+          "level": 5,
+          "day": 26.001,
+          "income": 232975097863
+        }
+      ],
+      "final": {
+        "rank": "대원수",
+        "power": 83949480,
+        "gold": "8587910711230003",
+        "actions": 11351
+      }
+    },
+    {
+      "assumptions": {
+        "visitsPerDay": 3,
+        "minutes": 7.5,
+        "tapsPerSecond": 3,
+        "days": 90,
+        "investmentHours": 8,
+        "ads": false,
+        "personalUpgrades": false,
+        "battles": true
+      },
+      "milestones": [
+        {
+          "rank": "이등병",
+          "day": 0,
+          "activeMinutes": 0
+        },
+        {
+          "rank": "일병",
+          "day": 0,
+          "activeMinutes": 0
+        },
+        {
+          "rank": "상병",
+          "day": 0,
+          "activeMinutes": 1
+        },
+        {
+          "rank": "병장",
+          "day": 0.001,
+          "activeMinutes": 1
+        },
+        {
+          "rank": "하사",
+          "day": 0.001,
+          "activeMinutes": 2
+        },
+        {
+          "rank": "중사",
+          "day": 0.333,
+          "activeMinutes": 8
+        },
+        {
+          "rank": "상사",
+          "day": 0.333,
+          "activeMinutes": 8
+        },
+        {
+          "rank": "원사",
+          "day": 0.334,
+          "activeMinutes": 9
+        },
+        {
+          "rank": "소위",
+          "day": 0.667,
+          "activeMinutes": 15
+        },
+        {
+          "rank": "중위",
+          "day": 0.667,
+          "activeMinutes": 16
+        },
+        {
+          "rank": "대위",
+          "day": 0.669,
+          "activeMinutes": 18
+        },
+        {
+          "rank": "소령",
+          "day": 2.667,
+          "activeMinutes": 60
+        },
+        {
+          "rank": "중령",
+          "day": 2.667,
+          "activeMinutes": 60
+        },
+        {
+          "rank": "대령",
+          "day": 2.667,
+          "activeMinutes": 60
+        },
+        {
+          "rank": "준장",
+          "day": 3.667,
+          "activeMinutes": 84
+        },
+        {
+          "rank": "소장",
+          "day": 4.001,
+          "activeMinutes": 91
+        },
+        {
+          "rank": "중장",
+          "day": 5.334,
+          "activeMinutes": 121
+        },
+        {
+          "rank": "대장",
+          "day": 8.001,
+          "activeMinutes": 181
+        },
+        {
+          "rank": "준원수",
+          "day": 11.334,
+          "activeMinutes": 256
+        },
+        {
+          "rank": "소원수",
+          "day": 15.334,
+          "activeMinutes": 346
+        },
+        {
+          "rank": "중원수",
+          "day": 21.001,
+          "activeMinutes": 474
+        },
+        {
+          "rank": "대원수",
+          "day": 25.001,
+          "activeMinutes": 564
+        }
+      ],
+      "unlocks": [
+        {
+          "school": "nco",
+          "level": 1,
+          "day": 0.004,
+          "income": 23
+        },
+        {
+          "school": "nco",
+          "level": 2,
+          "day": 0.667,
+          "income": 748
+        },
+        {
+          "school": "nco",
+          "level": 3,
+          "day": 1.333,
+          "income": 6520
+        },
+        {
+          "school": "nco",
+          "level": 4,
+          "day": 2,
+          "income": 43790
+        },
+        {
+          "school": "nco",
+          "level": 5,
+          "day": 4.003,
+          "income": 2885729
+        },
+        {
+          "school": "officer",
+          "level": 1,
+          "day": 4.003,
+          "income": 2885729
+        },
+        {
+          "school": "officer",
+          "level": 2,
+          "day": 4.334,
+          "income": 3795477
+        },
+        {
+          "school": "officer",
+          "level": 3,
+          "day": 5.001,
+          "income": 7511121
+        },
+        {
+          "school": "officer",
+          "level": 4,
+          "day": 7.667,
+          "income": 38000312
+        },
+        {
+          "school": "officer",
+          "level": 5,
+          "day": 10.668,
+          "income": 315518372
+        },
+        {
+          "school": "advanced",
+          "level": 1,
+          "day": 12.667,
+          "income": 2567960252
+        },
+        {
+          "school": "advanced",
+          "level": 2,
+          "day": 15.334,
+          "income": 8604823986
+        },
+        {
+          "school": "advanced",
+          "level": 3,
+          "day": 17.334,
+          "income": 21809346768
+        },
+        {
+          "school": "advanced",
+          "level": 4,
+          "day": 21.001,
+          "income": 77018235958
+        },
+        {
+          "school": "advanced",
+          "level": 5,
+          "day": 24.667,
+          "income": 230201566533
+        }
+      ],
+      "final": {
+        "rank": "대원수",
+        "power": 83949360,
+        "gold": "7178317192795738",
+        "actions": 11349
+      }
+    },
+    {
+      "assumptions": {
+        "visitsPerDay": 3,
+        "minutes": 10,
+        "tapsPerSecond": 3,
+        "days": 90,
+        "investmentHours": 8,
+        "ads": false,
+        "personalUpgrades": false,
+        "battles": true
+      },
+      "milestones": [
+        {
+          "rank": "이등병",
+          "day": 0,
+          "activeMinutes": 0
+        },
+        {
+          "rank": "일병",
+          "day": 0,
+          "activeMinutes": 0
+        },
+        {
+          "rank": "상병",
+          "day": 0,
+          "activeMinutes": 1
+        },
+        {
+          "rank": "병장",
+          "day": 0.001,
+          "activeMinutes": 1
+        },
+        {
+          "rank": "하사",
+          "day": 0.001,
+          "activeMinutes": 2
+        },
+        {
+          "rank": "중사",
+          "day": 0.007,
+          "activeMinutes": 10
+        },
+        {
+          "rank": "상사",
+          "day": 0.333,
+          "activeMinutes": 10
+        },
+        {
+          "rank": "원사",
+          "day": 0.333,
+          "activeMinutes": 10
+        },
+        {
+          "rank": "소위",
+          "day": 0.334,
+          "activeMinutes": 11
+        },
+        {
+          "rank": "중위",
+          "day": 0.667,
+          "activeMinutes": 20
+        },
+        {
+          "rank": "대위",
+          "day": 0.667,
+          "activeMinutes": 20
+        },
+        {
+          "rank": "소령",
+          "day": 2.333,
+          "activeMinutes": 70
+        },
+        {
+          "rank": "중령",
+          "day": 2.333,
+          "activeMinutes": 70
+        },
+        {
+          "rank": "대령",
+          "day": 2.333,
+          "activeMinutes": 70
+        },
+        {
+          "rank": "준장",
+          "day": 3.003,
+          "activeMinutes": 94
+        },
+        {
+          "rank": "소장",
+          "day": 3.335,
+          "activeMinutes": 103
+        },
+        {
+          "rank": "중장",
+          "day": 4.667,
+          "activeMinutes": 141
+        },
+        {
+          "rank": "대장",
+          "day": 7.334,
+          "activeMinutes": 221
+        },
+        {
+          "rank": "준원수",
+          "day": 10.334,
+          "activeMinutes": 311
+        },
+        {
+          "rank": "소원수",
+          "day": 14.334,
+          "activeMinutes": 431
+        },
+        {
+          "rank": "중원수",
+          "day": 20.001,
+          "activeMinutes": 601
+        },
+        {
+          "rank": "대원수",
+          "day": 23.667,
+          "activeMinutes": 711
+        }
+      ],
+      "unlocks": [
+        {
+          "school": "nco",
+          "level": 1,
+          "day": 0.004,
+          "income": 23
+        },
+        {
+          "school": "nco",
+          "level": 2,
+          "day": 0.667,
+          "income": 749
+        },
+        {
+          "school": "nco",
+          "level": 3,
+          "day": 1,
+          "income": 6521
+        },
+        {
+          "school": "nco",
+          "level": 4,
+          "day": 1.67,
+          "income": 43794
+        },
+        {
+          "school": "nco",
+          "level": 5,
+          "day": 3.667,
+          "income": 2885729
+        },
+        {
+          "school": "officer",
+          "level": 1,
+          "day": 3.667,
+          "income": 2885729
+        },
+        {
+          "school": "officer",
+          "level": 2,
+          "day": 3.667,
+          "income": 3759329
+        },
+        {
+          "school": "officer",
+          "level": 3,
+          "day": 4.334,
+          "income": 7440924
+        },
+        {
+          "school": "officer",
+          "level": 4,
+          "day": 6.673,
+          "income": 37338307
+        },
+        {
+          "school": "officer",
+          "level": 5,
+          "day": 10.001,
+          "income": 312973869
+        },
+        {
+          "school": "advanced",
+          "level": 1,
+          "day": 11.667,
+          "income": 2528450355
+        },
+        {
+          "school": "advanced",
+          "level": 2,
+          "day": 14.334,
+          "income": 8480113400
+        },
+        {
+          "school": "advanced",
+          "level": 3,
+          "day": 16.004,
+          "income": 21354982275
+        },
+        {
+          "school": "advanced",
+          "level": 4,
+          "day": 20.001,
+          "income": 76024435438
+        },
+        {
+          "school": "advanced",
+          "level": 5,
+          "day": 23.334,
+          "income": 226042713727
+        }
+      ],
+      "final": {
+        "rank": "대원수",
+        "power": 83950520,
+        "gold": "1961038846515747",
+        "actions": 11348
+      }
+    },
+    {
+      "assumptions": {
+        "visitsPerDay": 3,
+        "minutes": 7.5,
+        "tapsPerSecond": 3,
+        "days": 90,
+        "investmentHours": 8,
+        "ads": false,
+        "personalUpgrades": false,
+        "battles": false
+      },
+      "milestones": [
+        {
+          "rank": "이등병",
+          "day": 0,
+          "activeMinutes": 0
+        },
+        {
+          "rank": "일병",
+          "day": 0,
+          "activeMinutes": 0
+        },
+        {
+          "rank": "상병",
+          "day": 0,
+          "activeMinutes": 1
+        },
+        {
+          "rank": "병장",
+          "day": 0.001,
+          "activeMinutes": 1
+        },
+        {
+          "rank": "하사",
+          "day": 0.001,
+          "activeMinutes": 2
+        },
+        {
+          "rank": "중사",
+          "day": 0.333,
+          "activeMinutes": 8
+        },
+        {
+          "rank": "상사",
+          "day": 0.333,
+          "activeMinutes": 8
+        },
+        {
+          "rank": "원사",
+          "day": 0.334,
+          "activeMinutes": 9
+        },
+        {
+          "rank": "소위",
+          "day": 0.667,
+          "activeMinutes": 15
+        },
+        {
+          "rank": "중위",
+          "day": 0.667,
+          "activeMinutes": 16
+        },
+        {
+          "rank": "대위",
+          "day": 0.669,
+          "activeMinutes": 18
+        },
+        {
+          "rank": "소령",
+          "day": 2.667,
+          "activeMinutes": 60
+        },
+        {
+          "rank": "중령",
+          "day": 2.667,
+          "activeMinutes": 60
+        },
+        {
+          "rank": "대령",
+          "day": 2.667,
+          "activeMinutes": 60
+        },
+        {
+          "rank": "준장",
+          "day": 3.667,
+          "activeMinutes": 83
+        },
+        {
+          "rank": "소장",
+          "day": 4,
+          "activeMinutes": 90
+        },
+        {
+          "rank": "중장",
+          "day": 5.333,
+          "activeMinutes": 120
+        },
+        {
+          "rank": "대장",
+          "day": 8.333,
+          "activeMinutes": 188
+        },
+        {
+          "rank": "준원수",
+          "day": 12.333,
+          "activeMinutes": 278
+        },
+        {
+          "rank": "소원수",
+          "day": 17.667,
+          "activeMinutes": 398
+        },
+        {
+          "rank": "중원수",
+          "day": 26,
+          "activeMinutes": 585
+        },
+        {
+          "rank": "대원수",
+          "day": 32.333,
+          "activeMinutes": 728
+        }
+      ],
+      "unlocks": [
+        {
+          "school": "nco",
+          "level": 1,
+          "day": 0.004,
+          "income": 23
+        },
+        {
+          "school": "nco",
+          "level": 2,
+          "day": 0.667,
+          "income": 748
+        },
+        {
+          "school": "nco",
+          "level": 3,
+          "day": 1.333,
+          "income": 6520
+        },
+        {
+          "school": "nco",
+          "level": 4,
+          "day": 2,
+          "income": 43790
+        },
+        {
+          "school": "nco",
+          "level": 5,
+          "day": 4.004,
+          "income": 2774740
+        },
+        {
+          "school": "officer",
+          "level": 1,
+          "day": 4.004,
+          "income": 2774740
+        },
+        {
+          "school": "officer",
+          "level": 2,
+          "day": 4.333,
+          "income": 3614740
+        },
+        {
+          "school": "officer",
+          "level": 3,
+          "day": 5,
+          "income": 7019740
+        },
+        {
+          "school": "officer",
+          "level": 4,
+          "day": 8,
+          "income": 33043750
+        },
+        {
+          "school": "officer",
+          "level": 5,
+          "day": 11.667,
+          "income": 254450300
+        },
+        {
+          "school": "advanced",
+          "level": 1,
+          "day": 14.003,
+          "income": 1975354040
+        },
+        {
+          "school": "advanced",
+          "level": 2,
+          "day": 17.667,
+          "income": 6235379700
+        },
+        {
+          "school": "advanced",
+          "level": 3,
+          "day": 20.333,
+          "income": 15145379700
+        },
+        {
+          "school": "advanced",
+          "level": 4,
+          "day": 26,
+          "income": 49689184490
+        },
+        {
+          "school": "advanced",
+          "level": 5,
+          "day": 31.667,
+          "income": 138675642490
+        }
+      ],
+      "final": {
+        "rank": "대원수",
+        "power": 83949360,
+        "gold": "2640220030224626",
+        "actions": 11349
+      }
+    }
+  ]
+}

@@ -8,7 +8,7 @@ const T=1800000000000;
 const army=()=>({...freshState(T),soldiers:78920,sergeants:300});
 test('home skills stay adjacent in one group and use stable short action names',()=>{
   const html=homeMarkup(army());
-  assert.match(html,/<div class="home-skills"[^>]*>.*data-use-sword.*data-use-revolver.*<\/div><div class="field-theme-picker"/s);
+  assert.match(html,/<div class="home-skills"[^>]*>.*data-use-sword.*data-use-revolver.*<\/div><\/section>/s);
   assert.match(html,/data-revolver-label>리볼버 사용<\/span>/);
   assert.match(personalIcon('revolver'),/viewBox="0 0 256 192"/);
 });

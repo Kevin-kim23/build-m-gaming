@@ -77,7 +77,7 @@ test("each unit price is independent, even after actual purchases", () => {
 test("sergeants have a steeper own-count price curve without numeric overflow", () => {
   assert.deepEqual(
     [0, 1, 2, 3].map((n) => unitCost(n, "sergeant")),
-    [10000, 12200, 14800, 17800],
+    [120000, 146400, 177600, 213600],
   );
   for (let n = 0; n < 1000; n++) {
     const cost = unitCost(n, "sergeant"),

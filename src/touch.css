@@ -9,7 +9,6 @@
 #sound { min-width: var(--tap); min-height: var(--tap); width: var(--tap); height: var(--tap); }
 .home-tabs button, .home-tabs #open-shop { min-height: var(--tap); }
 .home-skill { height: var(--tap); }
-.field-theme-picker button { min-height: var(--tap); min-width: 40px; }
 
 /* Panels, sheets and dialogs */
 .panel-tabs button, .shop-categories button { min-height: var(--tap); }

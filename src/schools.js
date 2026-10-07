@@ -1,10 +1,11 @@
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { rankForArmy, RANKS } from './ranks.js';
 import { OFFICER_GRADES } from './officer-progression.js';
+import { NCO_SCHOOL_COSTS } from './growth-balance.js';
 
 export const SCHOOLS = Object.freeze({
   nco: Object.freeze({id:'nco',name:'부사관학교',field:'ncoSchoolLevel',maxLevel:5,
-    costs:Object.freeze([30_000,300_000,3_000_000,15_000_000,60_000_000]),
+    costs:NCO_SCHOOL_COSTS,
     effects:Object.freeze(['하사 모집','중사 모집','상사 모집','원사 모집','사관학교 건설 공개'])}),
   officer: Object.freeze({id:'officer',name:'사관학교',field:'officerSchoolLevel',maxLevel:OFFICER_GRADES.length,
     costs:Object.freeze(OFFICER_GRADES.map(grade=>grade.academyCost)),

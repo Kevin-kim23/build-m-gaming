@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, parseSave, buyEquipment, setEquipmentDeployed, enhanceEquipment, perSecond, recruit, recruitOffer, unitCost, MAX_GOLD, MAX_SOLDIERS } from '../src/game.js';
 import { EQUIPMENT, deployedEquipment, equipmentPurchaseOffer, equipmentStats, enhancementCost } from '../src/equipment.js';
-import { fieldTheme, setFieldTheme } from '../src/field-theme.js';
+import { fieldTheme } from '../src/field-theme.js';
 import { equipmentCombatStats, UNIT_TRAITS } from '../src/battle.js';
 import { quietBattle, deployNow } from './lane-helpers.js';
 import { homeMarkup } from '../src/home-view.js';
@@ -61,14 +61,20 @@ test('v11 migration preserves assets and cooldown, grants neither rocket nor con
   for(const gear of [undefined,{level:11,deployed:false},{level:0,deployed:1}])assert.equal(parseSave(serializeSave({...next,equipment:{...next.equipment,rocketLauncher:gear}}),T),null);
   assert.equal(parseSave(serializeSave({...next,equipment:{...next.equipment,rocketLauncher:{level:0,deployed:true}}}),T),null);
 });
-test('general can switch both backgrounds and reload preference without affecting economy',()=>{
+test('field automatically switches at brigadier general regardless of legacy saved preference',()=>{
   const s=general(),income=perSecond(s),gold=s.gold;
-  assert.equal(setFieldTheme(s,'concrete').ok,true);assert.equal(fieldTheme(s),'concrete');
-  assert.equal(fieldTheme(parseSave(serializeSave(s),T)),'concrete');assert.equal(perSecond(s),income);assert.equal(s.gold,gold);
-  assert.equal(setFieldTheme(s,'earth').ok,true);assert.equal(fieldTheme(s),'earth');
-  s.soldiers=4999;assert.equal(setFieldTheme(s,'concrete').reason,'locked');
-  s.fieldTheme='concrete';assert.equal(fieldTheme(s),'earth');assert.equal(setFieldTheme(s,'invalid').reason,'invalid');
+  for(const preference of ['earth','concrete']) {
+    s.fieldTheme=preference;assert.equal(fieldTheme(s),'concrete');
+    assert.equal(fieldTheme(parseSave(serializeSave(s),T)),'concrete');
+  }
+  assert.equal(perSecond(s),income);assert.equal(s.gold,gold);
+  s.staffSergeants=112; // Keep the 10,240 power threshold while testing the separate headcount gate.
+  s.soldiers=4999;assert.equal(fieldTheme(s),'earth');
+  s.soldiers=5000;assert.equal(fieldTheme(s),'concrete');
+  s.sergeants=299;assert.equal(fieldTheme(s),'earth');
+  assert.doesNotMatch(homeMarkup(s),/field-theme-picker|data-field-theme/);
 });
+
 test('staff sergeant batches require Lv3 baton and school Lv2, charge exact sum and remain atomic',()=>{
   const s=general();s.staffSergeants=20;s.personalLevels.commandBaton=3;
   const sum=Array.from({length:100},(_,i)=>unitCost(20+i,'staffSergeant')).reduce((a,b)=>a+b,0);

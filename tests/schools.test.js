@@ -47,10 +47,10 @@ test('officer academy needs both NCO level five and actual major general rank',(
   assert.equal(upgradeSchool(s,T,'officer').reason,'locked');
   s.soldiers=17480;s.sergeants=300;
   const before=s.gold; assert.equal(upgradeSchool(s,T,'officer').level,1);
-  assert.equal(before-s.gold,150000000);
+  assert.equal(before-s.gold,1_500_000_000);
   assert.equal(recruitOffer(s,'lieutenant').locked,false);
   assert.equal(schoolOffer(s,'officer').nextLevel,2);
-  assert.equal(schoolOffer(s,'officer').cost,3_000_000_000);
+  assert.equal(schoolOffer(s,'officer').cost,30_000_000_000);
 });
 test('every new recruit changes only its count and price and adds its catalog power and income',()=>{
   const s={...wealthy(),ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5};
@@ -64,12 +64,8 @@ test('every new recruit changes only its count and price and adds its catalog po
     for(const id of Object.keys(UNITS)) if(id!==u.id) assert.equal(recruitOffer(s,id).cost,prices[id]);
   }
 });
-test('NCO buffs reduce early and repeated costs, and all curves stay finite and independent',()=>{
-  assert.equal(unitCost(0,'sergeant'),10000); assert.equal(unitCost(0,'staffSergeant'),50000);
-  for(let n=0;n<=100;n++) {
-    assert.ok(unitCost(n,'sergeant')<100000+30000*n+3000*n*n);
-    assert.ok(unitCost(n,'staffSergeant')<1000000+350000*n+50000*n*n);
-  }
+test('paced NCO prices remain finite, increasing and independent',()=>{
+  assert.equal(unitCost(0,'sergeant'),120000); assert.equal(unitCost(0,'staffSergeant'),600000);
   for(const id of Object.keys(UNITS)) for(const n of [0,10,100,10000,MAX_SOLDIERS]) {
     const cost=unitCost(n,id);assert.ok((typeof cost==='bigint'||Number.isSafeInteger(cost))&&cost<=MAX_GOLD);
     assert.ok(unitCost(n+1,id)>=cost);
@@ -102,7 +98,7 @@ test('v9 schools and troops survive reload and reject malformed school/count dat
     assert.equal(parseSave(serializeSave({...s,...patch}),T),null);
 });
 test('school upgrade is saved once with backup and cannot purchase twice after restart',()=>{
-  const values=new Map([[SAVE_KEY,serializeSave({...freshState(T),gold:30000})]]),writes=[];
+  const values=new Map([[SAVE_KEY,serializeSave({...freshState(T),gold:150000})]]),writes=[];
   const session=createGameSession({storage:{getItem:k=>values.get(k)??null,setItem:(k,v)=>{writes.push(k);values.set(k,v);}},now:()=>T,setTimer:()=>1,clearTimer:()=>{}});
   assert.equal(session.change(s=>upgradeSchool(s,T,'nco')),undefined);
   session.start();assert.equal(session.change(s=>upgradeSchool(s,T,'nco')).ok,true);
