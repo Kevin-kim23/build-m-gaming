@@ -73,12 +73,18 @@
   object-position: center;
   pointer-events: none;
 }
-.opening-heading {
+.opening-lockup {
   position: absolute;
   top: 18%;
   left: 0;
   width: 100%;
   padding-inline: 8px;
+  display: grid;
+  gap: clamp(12px, 2vh, 22px);
+  text-align: center;
+}
+.opening-heading {
+  display: block;
   font: 900 clamp(20px, min(13vw, 7vh), 72px)/1.15 "Malgun Gothic", system-ui, sans-serif;
   letter-spacing: -.06em;
   color: #ffe4a2;
@@ -112,4 +118,17 @@
 @supports (font-size: 1cqw) {
   .opening-heading { font-size: clamp(24px, min(13cqw, 12vh), 72px); }
   .opening-prompt { font-size: clamp(14px, 4.2cqw, 21px); }
+}
+
+.opening-welcome {
+  display: block;
+  padding-inline: 4px;
+  font: 700 clamp(12px, min(3.7vw, 3.5vh), 19px)/1.55 "Malgun Gothic", system-ui, sans-serif;
+  color: #fff6df;
+  letter-spacing: -.025em;
+  word-break: keep-all;
+  text-shadow: 0 1px 3px #091c24, 0 2px 8px #091c24, 0 0 18px #091c24;
+}
+@supports (font-size: 1cqw) {
+  .opening-welcome { font-size: clamp(12px, min(3.7cqw, 3.5vh), 19px); }
 }
