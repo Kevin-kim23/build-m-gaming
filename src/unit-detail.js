@@ -13,6 +13,7 @@ export function unitDetailMarkup(state, unit) {
     : bulkRule ? `🔒 ${bulk.requirement}` : '지원하지 않음';
   const about = unit.school
     ? `${access.requirement}에서 해금되는 간부입니다. 일반병보다 전력과 수입이 훨씬 큽니다.`
+    : unit.role ? `${access.requirement}에서 모집하는 ${unit.role} 특화 병력입니다. 별도 스킬 없이 아래 수입과 전력이 합산됩니다.`
     : '모든 부대의 기본이 되는 병력입니다. 수가 늘수록 전력과 수입이 쌓입니다.';
   return {
     kicker: unit.school ? '간부' : '기본 병력',

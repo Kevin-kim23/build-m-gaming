@@ -1,11 +1,12 @@
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
+import { NEW_RECRUITS } from './specialist-units.js';
 import { NEW_OFFICER_GRADES } from './officer-progression.js';
 import { SUPREME_COMMAND_SIZE } from './formations.js';
 import { GENERAL_SWORD, AUTO_TOUCH, emptyPersonalLevels } from './personal-catalog.js';
 import { emptyEquipment } from './equipment.js';
 
 // Shared defaults and limits have no dependency on game actions or save parsing.
-export const SAVE_VERSION = 23;
+export const SAVE_VERSION = 24;
 // 지역마다 지금까지 받은 최고 별(0~3). 지역 수는 campaign.js의 80개와 같고 tests/campaign.test.js가 일치를 확인한다.
 export const CAMPAIGN_STAGE_COUNT = 80;
 export const SAVE_KEY = "budae-kiugi-recruits-v3";
@@ -39,7 +40,7 @@ export function freshState(now = Date.now()) {
     masterSergeants: 0,
     sergeantMajors: 0,
     lieutenants: 0,
-    ...Object.fromEntries([...NEW_OFFICER_GRADES,...ADVANCED_OFFICERS].map(unit=>[unit.field,0])),
+    ...Object.fromEntries([...NEW_RECRUITS,...NEW_OFFICER_GRADES,...ADVANCED_OFFICERS].map(unit=>[unit.field,0])),
     equipment: emptyEquipment(),
     sound: false,
     lastAccrual: now,

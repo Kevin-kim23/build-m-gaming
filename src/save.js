@@ -1,4 +1,5 @@
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
+import { NEW_RECRUITS } from './specialist-units.js';
 import { MAX_GOLD, minMoney, parseGold } from './money.js';
 import { armyPower } from './units.js';
 import { NEW_OFFICER_GRADES } from './officer-progression.js';
@@ -29,7 +30,7 @@ export function inspectSave(raw, now = Date.now()) {
     } };
   }
 }
-// Compatibility API for existing callers and version 2–23 migrations.
+// Compatibility API for existing callers and version 2–24 migrations.
 export function parseSave(raw, now = Date.now()) { return inspectSave(raw, now).state; }
 
 function migrateSave(s, now) {
@@ -64,6 +65,7 @@ function migrateSave(s, now) {
     masterSergeants: s.version >= 9 ? s.masterSergeants : 0,
     sergeantMajors: s.version >= 9 ? s.sergeantMajors : 0,
     lieutenants: s.version >= 9 ? s.lieutenants : 0,
+    ...Object.fromEntries(NEW_RECRUITS.map(unit=>[unit.field,s.version >= 24 ? s[unit.field] : 0])),
     ...Object.fromEntries(NEW_OFFICER_GRADES.map(unit=>[unit.field,s.version >= 14 ? s[unit.field] : 0])),
     ...Object.fromEntries(ADVANCED_OFFICERS.map(unit=>[unit.field,s.version >= 17 ? s[unit.field] : 0])),
     equipment: emptyEquipment(),

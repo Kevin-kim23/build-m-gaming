@@ -3,6 +3,7 @@ import { ownedSchools, layoutFieldSchools, fieldArmyArea } from "./field-schools
 import { renderFieldLabels } from "./field-labels.js";
 import { artSurface, uniformDetails, ART_SCALE } from "./pixel-detail.js";
 import { officerDetails } from './officer-art.js';
+import { specialistDetails } from './specialist-art.js';
 import { drawHighCommand } from './command-art.js';
 import {
   fieldSummary,
@@ -257,6 +258,7 @@ function sprite(id) {
   } else building(c, id);
   if (UNITS[id]) uniformDetails(c,id);
   if (['officer','advanced'].includes(UNITS[id]?.school)) officerDetails(c,UNITS[id]);
+  if (UNITS[id]?.role || id==='warrantOfficer') specialistDetails(c,UNITS[id]);
   sprites.set(id, canvas);
   return canvas;
 }

@@ -20,6 +20,7 @@ export const currentGuide = (state) => (off ? null : guideStep(state));
 export function createGuideUI() {
   const box = document.querySelector('#coach'), text = document.querySelector('#coach-text');
   const shop = document.querySelector('#open-shop');
+  const equipment = document.querySelector('#open-equipment');
   let shown = null, lastState = null;
   function sync(state) {
     lastState = state;
@@ -29,7 +30,8 @@ export function createGuideUI() {
     shown = key;
     box.hidden = !step;
     if (step) text.textContent = step.text;
-    shop.classList.toggle('guide-pulse', !!step?.pulse);
+    shop.classList.toggle('guide-pulse', !!step?.pulse && step.target !== 'equipment');
+    equipment.classList.toggle('guide-pulse', !!step?.pulse && step.target === 'equipment');
   }
   document.querySelector('#coach-off').addEventListener('click', () => {
     off = true;

@@ -1,3 +1,4 @@
+import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -53,19 +54,19 @@ test('officer academy needs both NCO level five and actual major general rank',(
   assert.equal(schoolOffer(s,'officer').cost,30_000_000_000);
 });
 test('every new recruit changes only its count and price and adds its catalog power and income',()=>{
-  const s={...wealthy(),ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5};
+  const s={...wealthy(),ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,soldiers:15};
   for(const u of Object.values(UNITS)) {
     const prices=Object.fromEntries(Object.keys(UNITS).map(id=>[id,recruitOffer(s,id).cost]));
     const old={gold:s.gold,power:armyPower(s),passive:perSecond(s),tap:perTap(s)};
     assert.equal(recruit(s,T,u.id).ok,true);
-    assert.equal(s[u.field],1); assert.equal(old.gold-s.gold,prices[u.id]);
+    assert.equal(s[u.field],u.id==='soldier'?16:1); assert.equal(old.gold-s.gold,prices[u.id]);
     assert.equal(armyPower(s)-old.power,u.power);
     assert.equal(perSecond(s)-old.passive,u.passive); assert.equal(perTap(s)-old.tap,u.tap);
     for(const id of Object.keys(UNITS)) if(id!==u.id) assert.equal(recruitOffer(s,id).cost,prices[id]);
   }
 });
 test('paced NCO prices remain finite, increasing and independent',()=>{
-  assert.equal(unitCost(0,'sergeant'),120000); assert.equal(unitCost(0,'staffSergeant'),600000);
+  assert.equal(unitCost(0,'sergeant'),180000); assert.equal(unitCost(0,'staffSergeant'),900000);
   for(const id of Object.keys(UNITS)) for(const n of [0,10,100,10000,MAX_SOLDIERS]) {
     const cost=unitCost(n,id);assert.ok((typeof cost==='bigint'||Number.isSafeInteger(cost))&&cost<=MAX_GOLD);
     assert.ok(unitCost(n+1,id)>=cost);
@@ -85,7 +86,7 @@ test('v8 migration preserves assets and previously unlocked NCO access without g
     const old={...freshState(T),version:8,gold:4321,soldiers,sergeants,staffSergeants,battleCleared:3};
     old.ncoSchoolLevel=5;old.officerSchoolLevel=1;old.lieutenants=999;
     const s=parseSave(serializeSave(old),T);
-    assert.equal(s.version, 23);assert.equal(s.ncoSchoolLevel,level);assert.equal(s.officerSchoolLevel,0);
+    assert.equal(s.version, SAVE_VERSION);assert.equal(s.ncoSchoolLevel,level);assert.equal(s.officerSchoolLevel,0);
     assert.equal(s.gold,4321);assert.equal(s.battleCleared,3);assert.equal(s.lieutenants,0);
     assert.equal(s.masterSergeants,0);assert.equal(s.sergeantMajors,0);
   }
@@ -98,7 +99,7 @@ test('v9 schools and troops survive reload and reject malformed school/count dat
     assert.equal(parseSave(serializeSave({...s,...patch}),T),null);
 });
 test('school upgrade is saved once with backup and cannot purchase twice after restart',()=>{
-  const values=new Map([[SAVE_KEY,serializeSave({...freshState(T),gold:150000})]]),writes=[];
+  const values=new Map([[SAVE_KEY,serializeSave({...freshState(T),gold:600000})]]),writes=[];
   const session=createGameSession({storage:{getItem:k=>values.get(k)??null,setItem:(k,v)=>{writes.push(k);values.set(k,v);}},now:()=>T,setTimer:()=>1,clearTimer:()=>{}});
   assert.equal(session.change(s=>upgradeSchool(s,T,'nco')),undefined);
   session.start();assert.equal(session.change(s=>upgradeSchool(s,T,'nco')).ok,true);

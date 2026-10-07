@@ -1,3 +1,4 @@
+import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
 import { personalMarkup, personalDetailMarkup } from "../src/personal-panels.js";
 import test from "node:test";
@@ -51,7 +52,7 @@ test('sergeant batch is atomic for insufficient gold, capacity and wallet-limit 
 test('bulk sergeants accrue only old income and emit normal new income after purchase',()=>{
   const s=army(),income=perSecond(s),tap=perTap(s);s.gold=sum(40,'sergeant');
   assert.equal(recruit(s,T+1000,'sergeant',100).ok,true);
-  assert.equal(s.gold,income);assert.equal(perSecond(s),income+5000);assert.equal(perTap(s),tap+30000);
+  assert.equal(s.gold,income);assert.equal(perSecond(s),income+7500);assert.equal(perTap(s),tap+60000);
 });
 test('general ranks require 5000 soldiers, 300 sergeants and the unchanged power threshold',()=>{
   for(const [soldiers,sergeants,staffSergeants] of [[4999,300,20000],[5000,299,20000],[5000,300,0],[7239,300,0]]) {
@@ -85,7 +86,7 @@ test('current saves retain assets and paid personal levels',()=>{
   assert.equal(RANKS[rankForArmy(loaded)],'대령');assert.equal(commandBatonStatus(loaded).level,2);
   assert.equal(generalSwordStatus(loaded).owned,false);
   loaded.soldiers=5000;loaded.sergeants=300;assert.equal(generalSwordStatus(parseSave(serializeSave(loaded),T)).owned,true);
-  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version, 23);
+  assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version, SAVE_VERSION);
 });
 test('100 sergeants save once with backup and survive session reload without double purchase',()=>{
   const initial=army();initial.gold=sum(40,'sergeant');

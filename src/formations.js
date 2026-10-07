@@ -39,6 +39,7 @@ export const FORMATIONS = Object.freeze([
   { id: "squad", name: "분대", size: SQUAD_SIZE, width: 29, height: 29 },
   { id: "soldier", name: "일반병", size: 1, width: 16, height: 25 },
 ]);
+const INDIVIDUAL_TYPES = Object.freeze(Object.values(UNITS).filter(u=>u.id!=='soldier').sort((a,b)=>b.power-a.power));
 export function groupSoldiers(total) {
   if (!Number.isSafeInteger(total) || total < 0)
     throw new RangeError("Soldier count must be a non-negative safe integer.");
@@ -58,18 +59,16 @@ export function groupArmy(s) {
     throw new RangeError("Unit headcounts must be non-negative safe integers.");
   }
   const groups = groupSoldiers(armyPower(s));
-  const remainder = groups.find((g) => g.id === "soldier")?.count ?? 0;
-  const sergeants = Math.min(
-    s.sergeants ?? 0,
-    Math.floor(remainder / UNITS.sergeant.power),
-  );
-  const soldiers = remainder - sergeants * UNITS.sergeant.power;
+  let remainder = groups.find((g) => g.id === "soldier")?.count ?? 0;
+  const individuals=[];
+  for(const unit of INDIVIDUAL_TYPES) {
+    const count=Math.min(s[unit.field]??0,Math.floor(remainder/unit.power));
+    if(count) { individuals.push({...unit,size:unit.power,count});remainder-=count*unit.power; }
+  }
   return [
     ...groups.filter((g) => g.id !== "soldier"),
-    ...(sergeants
-      ? [{ ...UNITS.sergeant, size: UNITS.sergeant.power, count: sergeants }]
-      : []),
-    ...(soldiers ? [{ ...UNITS.soldier, size: 1, count: soldiers }] : []),
+    ...individuals,
+    ...(remainder ? [{ ...UNITS.soldier, size: 1, count: remainder }] : []),
   ];
 }
 export function describeFormation(total) {

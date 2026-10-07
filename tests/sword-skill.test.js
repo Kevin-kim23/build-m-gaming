@@ -1,3 +1,4 @@
+import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
 import { personalMarkup } from "../src/personal-panels.js";
 import test from "node:test";
@@ -35,7 +36,7 @@ test('reload, offline income and clock rollback cannot extend or resurrect a sav
 });
 test('schema ten gains unused skill; schema eleven validates and preserves timestamps',()=>{
   const old={...general(),version:10};delete old.swordActivatedAt;
-  const migrated=parseSave(serializeSave(old),T);assert.equal(migrated.version, 23);assert.equal(migrated.swordActivatedAt,null);
+  const migrated=parseSave(serializeSave(old),T);assert.equal(migrated.version, SAVE_VERSION);assert.equal(migrated.swordActivatedAt,null);
   assert.equal(migrated.gold,old.gold);assert.equal(migrated.sergeants,300);
   old.swordActivatedAt=T;assert.equal(parseSave(serializeSave(old),T).swordActivatedAt,null);
   for(const bad of [undefined,-1,1.5,'12',{},100000000000001]) {

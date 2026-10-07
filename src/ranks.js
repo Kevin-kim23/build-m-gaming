@@ -73,6 +73,13 @@ export const RANK_DEFINITIONS = Object.freeze([
     marks: 4,
   },
   {
+    name: "준위",
+    required: 120,
+    condition: "1개 소대 · 2개 분대",
+    kind: "warrant",
+    marks: 1,
+  },
+  {
     name: "소위",
     required: PLATOON_SIZE * 2,
     condition: "2개 소대",

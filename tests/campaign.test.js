@@ -1,3 +1,4 @@
+import { SAVE_VERSION } from '../src/state.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { COUNTRIES,countryProgress,campaignStages } from '../src/campaign.js';
@@ -21,7 +22,7 @@ test('wide landscape maps start centered on the next country after width clampin
 });
 function army(power,level=8,copies=1){
   const state={...freshState(T),soldiers:0,sergeants:300,campaignCleared:80,ncoSchoolLevel:5,officerSchoolLevel:power>=655360?5:power>=327680?4:power>=20480?3:0};
-  const roster=Object.values(UNITS).slice(2,power>=655360?10:power>=327680?9:power>=20480?8:5);
+  const roster=['staffSergeant','masterSergeant','sergeantMajor','lieutenant','firstLieutenant','captain','major','lieutenantColonel'].slice(0,power>=655360?8:power>=327680?7:power>=20480?6:3).map(id=>UNITS[id]);
   for(const u of roster)state[u.field]=10;
   const shortage=GENERAL_MIN_SOLDIERS-(power-armyPower(state));
   if(shortage>0){const strongest=roster.at(-1);state[strongest.field]-=Math.ceil(shortage/strongest.power);}
@@ -78,7 +79,7 @@ test('legacy combat records are preserved without skipping any new conquest regi
   for(const version of [7,8,9,10,11,12,13,14]){
     const old={...freshState(T),version,battleCleared:10,campaignCleared:80,gold:1234567,soldiers:5000,sergeants:300};
     const migrated=parseSave(JSON.stringify(old),T);assert.ok(migrated);
-    assert.equal(migrated.version,23);assert.equal(migrated.battleCleared,10);assert.equal(migrated.campaignCleared,0);
+    assert.equal(migrated.version,SAVE_VERSION);assert.equal(migrated.battleCleared,10);assert.equal(migrated.campaignCleared,0);
     assert.equal(migrated.gold,old.gold);assert.equal(migrated.soldiers,old.soldiers);
   }
   for(const cleared of [0,19,20,39,40,59,60,79,80]){

@@ -1,4 +1,5 @@
 import { fmtGold } from "./format.js";
+const flashes = new WeakMap();
 export function tapFeedback(zone, gold, event, amount) {
   const bounds = zone.getBoundingClientRect(),
     label = document.createElement("span");
@@ -12,7 +13,7 @@ export function tapFeedback(zone, gold, event, amount) {
     zone.querySelector(".gold-float").remove();
   zone.appendChild(label);
   setTimeout(() => label.remove(), 700);
-  gold.classList.remove("pop");
-  void gold.offsetWidth;
-  gold.classList.add("pop");
+  // Color-only feedback: no scale jump or forced layout on every tap.
+  flashes.get(gold)?.cancel();
+  if (gold.animate) flashes.set(gold, gold.animate([{color:'#fff0bd'},{color:'#f1d991'}], {duration:160}));
 }

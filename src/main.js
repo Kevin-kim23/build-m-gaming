@@ -48,9 +48,7 @@ import "./touch.css";
 import { hidePromotion } from "./promotion.js";
 import { createGameAudio } from "./audio.js";
 import {
-  EQUIPMENT,
   deployedEquipment,
-  equipmentPurchaseOffer,
 } from "./equipment.js";
 installErrorReporting();
 const $ = (s) => document.querySelector(s);
@@ -91,7 +89,8 @@ function update() {
     r = rank();
   const goldLabel = fmtGold(state.gold);
   setText("#gold", goldLabel);
-  $("#gold").classList.toggle("large-balance", goldLabel.length >= 10);
+  // Currency suffixes can shorten at a carry boundary; size by amount, never string length.
+  $("#gold").classList.toggle("large-balance", state.gold >= 1_000_000);
   $("#sound").setAttribute("aria-checked", String(state.sound));
   if (rosterDirty) {
     rosterDirty = false;
@@ -129,10 +128,7 @@ function update() {
   guideUI.sync(state);
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
-    ["nco","officer","advanced"].some(id=>schoolOffer(state,id).canBuy) ||
-    Object.keys(EQUIPMENT).some(
-      (id) => equipmentPurchaseOffer(state, id).canBuy,
-    )
+    ["nco","officer","advanced"].some(id=>schoolOffer(state,id).canBuy)
   );
   setText("#save-status", session.status);
   infoUI.sync();

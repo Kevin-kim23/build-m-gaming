@@ -1,3 +1,4 @@
+import { SAVE_VERSION } from '../src/state.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, SAVE_KEY, parseSave, recruit, unitCost } from '../src/game.js';
@@ -48,7 +49,7 @@ test('one recruit earns a medal in the same checkpoint while the previous backup
   assert.deepEqual(storage.writes, [SAVE_KEY + '-backup', SAVE_KEY]);
   const saved = parseSave(storage.values.get(SAVE_KEY), T);
   const backup = parseSave(storage.values.get(SAVE_KEY + '-backup'), T);
-  assert.equal(saved.version, 23);
+  assert.equal(saved.version, SAVE_VERSION);
   assert.equal(saved.soldiers, 20);
   assert.equal(saved.gold, unitCost(20));
   assert.deepEqual(saved.earnedAchievements, ['squad']);
@@ -101,7 +102,7 @@ test('an existing version seven army receives and persists earned medals without
   session.pause();
   assert.deepEqual(storage.writes, [SAVE_KEY]);
   const saved = JSON.parse(storage.values.get(SAVE_KEY));
-  assert.equal(saved.version, 23);
+  assert.equal(saved.version, SAVE_VERSION);
   assert.equal(saved.soldiers, legacy.soldiers);
   assert.equal(saved.gold, legacy.gold);
   assert.equal(saved.taps, legacy.taps);

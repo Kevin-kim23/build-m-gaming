@@ -1,3 +1,4 @@
+import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -69,7 +70,7 @@ test('version 15 migration preserves assets and active 30 second sword, ignores 
   const s={...army('소장'),version:15,gold:123456,taps:789,campaignCleared:20,swordActivatedAt:T-10000};
   s.equipment.tank={level:10,count:3,deployed:true};delete s.equipment.transport;delete s.equipment.fighter;
   s.autoTouchActivatedAt=T-300;s.autoTouchTicks=1;s.swordDurationMs=60000;
-  const next=parseSave(serializeSave(s));assert.equal(next.version,23);
+  const next=parseSave(serializeSave(s));assert.equal(next.version,SAVE_VERSION);
   for(const key of ['gold','taps','soldiers','sergeants','campaignCleared','swordActivatedAt'])assert.equal(next[key],s[key]);
   assert.deepEqual(next.equipment.tank,{...s.equipment.tank,count:1});assert.equal(next.equipment.transport,null);assert.equal(next.equipment.fighter,null);
   assert.equal(next.autoTouchActivatedAt,null);assert.equal(next.autoTouchTicks,0);assert.equal(next.swordDurationMs,30000);
@@ -108,7 +109,7 @@ test('aircraft rank previews require actual general ranks and 300 sergeants',()=
 });
 test('equipment owns military/personal navigation; shop no longer exposes personal category',()=>{
   const s=army(),personal=equipmentPanelMarkup(s,'tank','personal'),military=equipmentPanelMarkup(s,'tank');
-  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','equipment','schools']);
+  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','schools']);
   assert.doesNotMatch(shopMarkup(s,'',()=>''),/data-personal-equipment|data-shop-category="personal"/);
   for(const id of ['commandBaton','generalSword','divisionFlag','generalRevolver'])assert.match(personal,new RegExp(`data-personal-equipment="${id}"`));
   // Effect text lives in each item's detail popup, not in the compact card.

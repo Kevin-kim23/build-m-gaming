@@ -1,3 +1,4 @@
+import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -71,12 +72,12 @@ test("staff sergeants have independent prices, exact rewards and twenty strength
     tap: perTap(s),
     power: armyPower(s),
   };
-  assert.equal(recruitOffer(s, "staffSergeant").cost, 600_000);
+  assert.equal(recruitOffer(s, "staffSergeant").cost, 900_000);
   assert.equal(recruit(s, T, "staffSergeant").ok, true);
-  assert.equal(s.gold, before.gold - 600_000);
+  assert.equal(s.gold, before.gold - 900_000);
   assert.equal(s.staffSergeants, 1);
-  assert.equal(perSecond(s) - before.passive, 150);
-  assert.equal(perTap(s) - before.tap, 1000);
+  assert.equal(perSecond(s) - before.passive, 225);
+  assert.equal(perTap(s) - before.tap, 2000);
   assert.equal(armyPower(s) - before.power, 20);
   assert.equal(recruitOffer(s).cost, soldierCost);
   assert.equal(recruitOffer(s, "sergeant").cost, sergeantCost);
@@ -108,7 +109,7 @@ test("catalog names and images stay absent until exactly the preceding rank, the
       assert.equal(html.includes(d.name), ids.includes(d.id));
   }
   assert.equal(catalogVisible(state(60), "소위"), false);
-  assert.equal(catalogVisible(state(80), "소위"), true);
+  assert.equal(catalogVisible(state(80), "소위"), false);
   assert.equal(shopMarkup(state(0), "", () => "").includes("하사 모집"), true);
   assert.equal(
     shopMarkup(state(240), "", () => "").includes("중사 모집"),
@@ -162,12 +163,13 @@ test("new troops and equipment do not earn income retroactively", () => {
   s.gold = 20_000_000;
   const before = perSecond(s);
   recruit(s, T + 500, "staffSergeant");
-  assert.equal(s.gold, 19_400_000 + before / 2);
+  assert.equal(s.gold, 19_100_000 + before / 2);
   buyEquipment(s, T + 1000, "tank");
-  assert.equal(s.gold, 14_400_000 + before + 75);
+  assert.equal(s.gold, 14_100_000 + before + 112);
   const balance = s.gold;
   accrue(s, T + 2000);
-  assert.equal(s.gold, balance + before + 150 + 2500);
+  assert.equal(s.gold, balance + before + 225 + 2500);
+  assert.equal(s.incomeRemainder, 500, 'half a gold remains saved, never rounded away');
 });
 test("v5 saves preserve artillery, balances and armies while adding empty new slots", () => {
   const old = {
@@ -178,7 +180,7 @@ test("v5 saves preserve artillery, balances and armies while adding empty new sl
   delete old.staffSergeants;
   assert.deepEqual(parseSave(serializeSave(old)), {
     ...old,
-    version:23,offlineReward:null,campaignStars:Array(80).fill(0),personalLevels:{commandBaton:1,generalSword:1,divisionFlag:1,generalRevolver:1,marshalGlaive:1},autoTouchDurationMs:60000, ncoSchoolLevel: 1,
+    version:SAVE_VERSION,offlineReward:null,campaignStars:Array(80).fill(0),personalLevels:{commandBaton:1,generalSword:1,divisionFlag:1,generalRevolver:1,marshalGlaive:1},autoTouchDurationMs:60000, ncoSchoolLevel: 1,
     earnedAchievements: ["squad", "platoon", "company"],
     staffSergeants: 0,
     equipment: {

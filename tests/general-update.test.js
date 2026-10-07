@@ -1,3 +1,4 @@
+import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -54,7 +55,7 @@ test('v11 migration preserves assets and cooldown, grants neither rocket nor con
   delete old.equipment.rocketLauncher;delete old.fieldTheme;
   const next=parseSave(serializeSave(old),T);
   for(const key of ['gold','soldiers','sergeants','ncoSchoolLevel','battleCleared','swordActivatedAt'])assert.equal(next[key],old[key]);
-  assert.deepEqual(next.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),rocketLauncher:null});assert.equal(next.fieldTheme,'earth');assert.equal(next.version, 23);
+  assert.deepEqual(next.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),rocketLauncher:null});assert.equal(next.fieldTheme,'earth');assert.equal(next.version, SAVE_VERSION);
   old.fieldTheme='concrete';old.equipment.rocketLauncher={level:10,deployed:true};
   assert.equal(parseSave(serializeSave(old),T).equipment.rocketLauncher,null);
   for(const theme of [undefined,null,'invalid',{}])assert.equal(parseSave(serializeSave({...next,fieldTheme:theme}),T),null);

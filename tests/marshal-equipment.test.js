@@ -1,3 +1,4 @@
+import { SAVE_VERSION } from '../src/state.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState,parseSave,perSecond,perTap,accrue,buyEquipment,enhanceEquipment,enhancePersonalEquipment,MAX_OFFLINE_MS} from '../src/game.js';
@@ -42,7 +43,7 @@ test('railgun and ICBM preview one rank early, enforce ranks and use exact gold 
 test('glaive grants passive +120% at marshal, +20 points per paid level, with no tap boost',()=>{
   assert.equal(personalStatus(army('중장'),'marshalGlaive').visible,false);
   assert.deepEqual(personalStatus(army('대장'),'marshalGlaive'),{visible:true,owned:false,level:0});
-  const s=army(),base=s.soldiers+s.sergeants*50,tap=perTap(s,T);
+  const s=army(),base=s.soldiers+s.sergeants*75,tap=perTap(s,T);
   for(let level=1;level<=10;level++){
     s.personalLevels.marshalGlaive=level;
     assert.equal(perSecond(s),Math.floor(base*(220+20*(level-1))/100));
@@ -53,7 +54,7 @@ test('glaive grants passive +120% at marshal, +20 points per paid level, with no
 test('glaive combines with conquest and equipment; 8-hour income, cap and reload stay exact',()=>{
   const s=army();s.gold=0;s.campaignCleared=80;s.personalLevels.marshalGlaive=10;
   for(const id of ['fighter','railgunTank','icbm','transport'])s.equipment[id]={level:20,count:100000,deployed:true};
-  const base=BigInt(s.soldiers+s.sergeants*50)+Object.entries(s.equipment).reduce((v,[id,g])=>v+(g?BigInt(equipmentStats(g.level,id).passive)*BigInt(g.count):0n),0n);
+  const base=BigInt(s.soldiers+s.sergeants*75)+Object.entries(s.equipment).reduce((v,[id,g])=>v+(g?BigInt(equipmentStats(g.level,id).passive)*BigInt(g.count):0n),0n);
   const expected=(base+base*80n/100n)*4n;
   assert.equal(exact(perSecond(s)),expected);
   accrue(s,T+MAX_OFFLINE_MS*2);assert.equal(exact(s.gold),expected*BigInt(MAX_OFFLINE_MS)/1000n);
@@ -75,7 +76,7 @@ test('v19 adds empty military slots and Lv.1 glaive while preserving all paid ge
   delete s.personalLevels.marshalGlaive;delete s.equipment.railgunTank;delete s.equipment.icbm;
   s.equipment.tank={level:20,count:1,deployed:true};s.swordActivatedAt=T-1000;s.swordDurationMs=90000;
   s.autoTouchActivatedAt=T-900;s.autoTouchDurationMs=120000;s.autoTouchTicks=3;
-  const next=parseSave(serializeSave(s),T);assert.equal(next.version,23);assert.equal(next.gold,s.gold);
+  const next=parseSave(serializeSave(s),T);assert.equal(next.version,SAVE_VERSION);assert.equal(next.gold,s.gold);
   for(const id of Object.keys(s.personalLevels))assert.equal(next.personalLevels[id],7);
   assert.equal(next.personalLevels.marshalGlaive,1);assert.equal(next.equipment.icbm,null);assert.equal(next.equipment.railgunTank,null);
   for(const key of ['swordActivatedAt','swordDurationMs','autoTouchActivatedAt','autoTouchDurationMs','autoTouchTicks'])assert.equal(next[key],s[key]);

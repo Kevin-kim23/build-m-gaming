@@ -1,4 +1,5 @@
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
+import { NEW_RECRUITS } from './specialist-units.js';
 import { parseGold } from './money.js';
 import { UNITS } from './units.js';
 import { NEW_OFFICER_GRADES } from './officer-progression.js';
@@ -47,6 +48,8 @@ export function validateSave(s) {
       parseGold(reward.amount, s.version) > 0), 'offlineReward');
   }
   if (s.version >= 4) requireSave(integer(s.sergeants, MAX_SOLDIERS / 10), 'sergeants');
+  if (s.version >= 24) for (const unit of NEW_RECRUITS)
+    requireSave(integer(s[unit.field], Math.floor(MAX_SOLDIERS/unit.power)), unit.field);
   if (s.version >= 6) requireSave(integer(s.staffSergeants, MAX_SOLDIERS / 20), 'staffSergeants');
   if (s.version >= 5) requireSave(validEquipment(s.equipment, s.version === 5, s.version >= 10,
     s.version >= 12, s.version >= 13, s.version >= 16, s.version), 'equipment');

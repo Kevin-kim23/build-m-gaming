@@ -29,7 +29,7 @@ export function battleDetailMarkup(state, stage) {
       <section class="detail-section"><h3>전투 방법</h3>
       <p>마나가 차면 장비 카드를 레인(왼쪽·가운데·오른쪽)으로 끌어다 놓아 출격시킵니다. 장비는 그 레인을 따라 적 기지로 전진하며, 같은 레인의 적과 자동으로 싸웁니다.</p>
       <p>병력은 기지 체력과 공격력(전투력)으로만 반영돼요. 장비는 소모되지 않으며 홈 배치 설정은 유지돼요. ${BATTLE_RULES.maxDurationMs / 60_000}분 안에 적 기지를 부수지 못하면 무승부입니다.</p></section>
-      <section class="detail-section"><h3>내 장비</h3><ul class="detail-list">${owned.map((d) => `<li>${gearLine(state, stage, d.id)}</li>`).join('') || '<li>보유한 장비가 없습니다. 상점에서 장비를 구매하면 출전할 수 있어요.</li>'}</ul></section>`,
+      <section class="detail-section"><h3>내 장비</h3><ul class="detail-list">${owned.map((d) => `<li>${gearLine(state, stage, d.id)}</li>`).join('') || '<li>보유한 장비가 없습니다. 장비 탭에서 구매하면 출전할 수 있어요.</li>'}</ul></section>`,
   };
 }
 

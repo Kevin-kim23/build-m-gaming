@@ -1,12 +1,10 @@
 import { fmtGold } from "./format.js";
-import { equipmentStoreMarkup } from "./equipment-panels.js";
 import { UNITS, unitAccess } from "./units.js";
 import { schoolsMarkup } from "./school-panels.js";
 import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, commandBatonStatus } from "./personal-equipment.js";
 
 export const SHOP_CATEGORIES = Object.freeze([
   Object.freeze({ id: "recruit", name: "군대 모집" }),
-  Object.freeze({ id: "equipment", name: "장비 구매" }),
   Object.freeze({ id: "schools", name: "군사학교" }),
 ]);
 
@@ -28,7 +26,7 @@ function recruitTile(s, unit) {
   const bulk = bulkSlot(s, unit);
   return `<article class="recruit-tile" data-unit="${unit.id}" aria-label="${unit.name} 모집">
     <div class="tile-visual"><button type="button" class="tile-detail" data-detail-unit="${unit.id}" aria-label="${unit.name} 상세보기">ⓘ</button><canvas data-portrait="${unit.id}" width="80" height="100" role="img" aria-label="${unit.name} 픽셀 그림"></canvas></div>
-    <h3>${unit.name}</h3><span class="tile-owned" data-field="owned"></span>
+    <h3>${unit.name}</h3><span class="tile-owned" data-field="owned"></span>${unit.role ? `<small class="tile-role">${unit.role}</small>` : ''}
     <p class="tile-stats"><span><small>초당</small> <b>${fmtGold(unit.passive)}</b></span><span><small>터치</small> <b>${fmtGold(unit.tap)}</b></span></p>
     <p class="tile-price"><b data-field="price"></b></p>${bulk.price}
     <div class="tile-buttons${bulk.button ? "" : " single"}"><button class="buy" data-buy="${unit.id}" aria-label="${unit.name} 1명 모집">1명</button>${bulk.button}</div>
@@ -45,9 +43,7 @@ export function shopMarkup(s, coin, insignia, category = "recruit") {
   const selected = SHOP_CATEGORIES.some((item) => item.id === category) ? category : "recruit";
   const content = selected === "recruit"
     ? recruitmentMarkup(s)
-    : selected === "equipment"
-      ? equipmentStoreMarkup(s) || '<p class="shop-category-empty">진급하면 새로운 장비가 공개됩니다.</p>'
-      : schoolsMarkup(s);
+    : schoolsMarkup(s);
   return `<div class="sheet-grip"></div>
   <div class="shop-header"><div><small>SUPPLY OFFICE</small><h2 id="modal-title">상점</h2></div><button id="close-shop" aria-label="상점 닫기">×</button></div>
   <div class="shop-wallet"><span>보유 골드</span><strong>${coin}<b id="shop-gold"></b><small>G</small></strong></div>

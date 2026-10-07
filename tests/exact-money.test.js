@@ -68,7 +68,7 @@ test('one-gold tap at the new cap and purchases never erase low digits',()=>{
   assert.equal(tapGold(s,T),0);
   assert.equal(recruit(s,T).ok,true);assert.equal(s.gold,MAX_GOLD-50n);
   s.gold=MAX_GOLD-1n;s.soldiers=0;
-  assert.equal(upgradeSchool(s,T,'nco').ok,true);assert.equal(s.gold,MAX_GOLD-150001n);
+  assert.equal(upgradeSchool(s,T,'nco').ok,true);assert.equal(s.gold,MAX_GOLD-600001n);
 });
 
 test('legacy enhancement quote stays exact and cannot bypass the new flag limit',()=>{

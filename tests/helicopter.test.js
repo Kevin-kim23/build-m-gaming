@@ -1,3 +1,4 @@
+import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -50,7 +51,7 @@ test("v9 saves retain schools and assets; old versions cannot inject helicopter 
   delete old.equipment.helicopter;
   old.equipment.tank={level:4,deployed:false};
   const loaded=parseSave(serializeSave(old),T);
-  assert.equal(loaded.version, 23);assert.equal(loaded.ncoSchoolLevel,5);assert.equal(loaded.lieutenants,2);
+  assert.equal(loaded.version, SAVE_VERSION);assert.equal(loaded.ncoSchoolLevel,5);assert.equal(loaded.lieutenants,2);
   assert.deepEqual(loaded.equipment,{...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),helicopter:null});assert.equal(loaded.gold,old.gold);
   old.equipment.helicopter={level:10,deployed:true};
   assert.equal(parseSave(serializeSave(old),T).equipment.helicopter,null);

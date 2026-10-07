@@ -1,3 +1,4 @@
+import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -36,19 +37,19 @@ test("at 160 strength a sergeant adds ten strength without creating ten people",
   assert.equal(s.soldiers, 160);
   assert.equal(s.sergeants, 1);
   assert.equal(armyPower(s), 170);
-  assert.equal(perTap(s), 1901);
-  assert.equal(perSecond(s), 210);
+  assert.equal(perTap(s), 2201);
+  assert.equal(perSecond(s), 235);
   assert.equal(recruit(s, T, "sergeant").reason, "gold");
   assert.equal(s.sergeants, 1);
 });
 test("sergeant purchase crosses promotion thresholds by equivalent strength", () => {
   for (const [soldiers, before, after] of [
-    [230, 8, 9],
-    [310, 9, 10],
-    [630, 10, 11],
-    [1270, 11, 12],
+    [230, 9, 10],
+    [310, 10, 11],
+    [630, 11, 12],
+    [1270, 12, 13],
   ]) {
-    const sergeants = before >= 11 ? 40 : before >= 10 ? 39 : 0;
+    const sergeants = before >= 12 ? 40 : before >= 11 ? 39 : 0;
     const s = {
       ...freshState(T), ncoSchoolLevel: 1,
       soldiers: soldiers - sergeants * 10,
@@ -77,7 +78,7 @@ test("each unit price is independent, even after actual purchases", () => {
 test("sergeants have a steeper own-count price curve without numeric overflow", () => {
   assert.deepEqual(
     [0, 1, 2, 3].map((n) => unitCost(n, "sergeant")),
-    [120000, 146400, 177600, 213600],
+    [180000, 219600, 266400, 320400],
   );
   for (let n = 0; n < 1000; n++) {
     const cost = unitCost(n, "sergeant"),
@@ -93,10 +94,10 @@ test("new sergeants cannot earn retroactively; mixed offline income settles once
   recruit(s, T + 500, "sergeant");
   assert.equal(s.gold, 80);
   accrue(s, T + 1000);
-  assert.equal(s.gold, 185);
+  assert.equal(s.gold, 197);
   s = parseSave(serializeSave(s));
   accrue(s, T + 3601000);
-  assert.equal(s.gold, 185 + 210 * 3600);
+  assert.equal(s.gold, 197 + 235 * 3600);
   const settled = s.gold;
   accrue(s, T + 3601000);
   assert.equal(s.gold, settled);
@@ -114,7 +115,7 @@ test("v3 migration preserves the entire old progress and adds zero sergeants", (
   };
   delete old.sergeants;
   const migrated = parseSave(serializeSave(old));
-  assert.deepEqual(migrated, { ...old, version:23,offlineReward:null,campaignStars:Array(80).fill(0),personalLevels:{commandBaton:1,generalSword:1,divisionFlag:1,generalRevolver:1,marshalGlaive:1},autoTouchDurationMs:60000, sergeants: 0,
+  assert.deepEqual(migrated, { ...old, version:SAVE_VERSION,offlineReward:null,campaignStars:Array(80).fill(0),personalLevels:{commandBaton:1,generalSword:1,divisionFlag:1,generalRevolver:1,marshalGlaive:1},autoTouchDurationMs:60000, sergeants: 0,
     earnedAchievements: ["squad", "platoon"] });
   const mixed = { ...migrated, sergeants: 9 };
   assert.deepEqual(parseSave(serializeSave(mixed)), mixed);

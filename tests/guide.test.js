@@ -33,11 +33,12 @@ test('after the first soldier the guide explains promotion with live progress', 
   assert.equal(guideStep({ ...s, gold: recruitOffer(s, 'soldier').cost }).pulse, true);
 });
 
-test('enlisted ranks are told how much each soldier earns, using the real unit values', () => {
+test('enlisted ranks are told what their newly unlocked specialist earns', () => {
   const step = guideStep(army(5));
   assert.equal(step.id, 'grow');
-  assert.ok(step.text.includes(`초당 +${UNITS.soldier.passive}G`));
-  assert.ok(step.text.includes(`터치 +${UNITS.soldier.tap}G`));
+  assert.ok(step.text.includes(`초당 +${UNITS.administrator.passive}G`));
+  assert.ok(step.text.includes(`터치 +${UNITS.administrator.tap}G`));
+  assert.match(step.text,/행정병/);
 });
 
 test('from sergeant rank the guide points to the NCO school until one is built', () => {

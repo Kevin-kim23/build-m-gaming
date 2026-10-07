@@ -11,10 +11,10 @@ test('early school unlock increases income materially and has a transparent next
   const s={...freshState(T),soldiers:28,ncoSchoolLevel:1,gold:unitCost(0,'sergeant')};
   const income=perSecond(s),tap=perTap(s);
   assert.equal(recruit(s,T,'sergeant').ok,true);
-  assert.equal(s.gold,0);assert.equal(perSecond(s),income+50);assert.equal(perTap(s),tap+300);
+  assert.equal(s.gold,0);assert.equal(perSecond(s),income+75);assert.equal(perTap(s),tap+600);
   assert.ok(perSecond(s)>income*2);assert.ok(perTap(s)>tap*2);
-  assert.equal(schoolOffer(freshState(T),'nco').cost,150000);
-  assert.match(schoolUnlockPreview(schoolOffer(freshState(T),'nco')),/하사 해금 · 1명당 초당 \+50 G \/ 터치 \+300 G/);
+  assert.equal(schoolOffer(freshState(T),'nco').cost,600000);
+  assert.match(schoolUnlockPreview(schoolOffer(freshState(T),'nco')),/하사 해금 · 1명당 초당 \+75 G \/ 터치 \+600 G/);
   assert.match(schoolUnlockPreview(schoolOffer(s,'nco')),/중사 해금/);
 });
 

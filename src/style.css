@@ -1491,7 +1491,7 @@ footer {
 #equipment-empty:empty {
   display: none;
 }
-#equipment-to-shop[hidden],
+#purchase-equipment[hidden],
 #owned-equipment[hidden] {
   display: none;
 }

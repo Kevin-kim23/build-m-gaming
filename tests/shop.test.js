@@ -59,7 +59,7 @@ test("baton adds exactly one 100-soldier action without replacing one-unit recru
 
 test("unrevealed equipment remains absent and invalid category IDs safely fall back to recruitment", () => {
   const s = state(0, 0), empty = markup(s, "equipment");
-  assert.match(empty, /진급하면 새로운 장비가 공개됩니다/);
+  assert.match(empty, /data-shop-content="recruit"/);
   assert.doesNotMatch(empty, /견인포|전차|자주포|data-buy-equipment/);
   for (const value of ["unknown", "<script>alert(1)</script>", null, 42]) {
     const html = markup(s, value);
