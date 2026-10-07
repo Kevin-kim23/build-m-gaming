@@ -1,5 +1,5 @@
 import { supremeRankSymbol } from './rank-emblem.js';
-// Original ceremonial metalwork. SVG strings are cached by the eight general tiers.
+// Original ceremonial metalwork. SVG strings are cached by general tier.
 const cache = new Map();
 const star = (x,y,r,fill) => {
   const points=Array.from({length:10},(_,i)=>{
@@ -9,7 +9,7 @@ const star = (x,y,r,fill) => {
   return `<polygon points="${points}" fill="${fill}" stroke="#fff1b4" stroke-width="1"/>`;
 };
 export function generalEmblem(tier) {
-  if(!Number.isInteger(tier)||tier<1||tier>8)throw new RangeError('Unknown general ceremony tier');
+  if(!Number.isInteger(tier)||tier<1||tier>9)throw new RangeError('Unknown general ceremony tier');
   if(cache.has(tier))return cache.get(tier);
   const id=`general-ceremony-${tier}`, gold=`url(#${id}-gold)`, enamel=`url(#${id}-enamel)`;
   const feathers=Array.from({length:7+Math.min(tier,6)},(_,i)=>{

@@ -7,6 +7,7 @@ import {
   freshState, recruitOffer, recruit, unitCost, parseSave, accrue,
   perSecond, perTap, MAX_GOLD, MAX_SOLDIERS,
 } from "../src/game.js";
+import { UNITS } from '../src/units.js';
 import { RANKS } from "../src/ranks.js";
 
 const T = 1800000000000;
@@ -63,9 +64,11 @@ test("a hundred recruits are atomic when money or only ninety-nine power slots r
   const atLimit = army(MAX_SOLDIERS - 99), beforeLimitFailure = structuredClone(atLimit);
   assert.equal(recruit(atLimit, T, "soldier", 100).reason, "limit");
   assert.deepEqual(atLimit, beforeLimitFailure);
-  const exactCapacity = {...army(MAX_SOLDIERS - 100),gold:MAX_GOLD};
+  // Keep this a capacity test: an all-general-soldier army at the expanded cap costs more than the wallet for 100 recruits.
+  const generals=Math.floor((MAX_SOLDIERS-100-8000)/UNITS.general.power);
+  const exactCapacity={...army(MAX_SOLDIERS-100-generals*UNITS.general.power),generals,gold:MAX_GOLD};
   assert.equal(recruit(exactCapacity, T, "soldier", 100).ok, true);
-  assert.equal(exactCapacity.soldiers + exactCapacity.sergeants * 10, MAX_SOLDIERS);
+  assert.equal(exactCapacity.soldiers + exactCapacity.sergeants * 10 + generals*UNITS.general.power, MAX_SOLDIERS);
 });
 
 test("batch totals above the old wallet cap remain unaffordable at that saved balance", () => {

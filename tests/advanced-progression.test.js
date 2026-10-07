@@ -1,3 +1,5 @@
+import {exact} from '../src/money.js';
+import {accrue,tapGold} from '../src/game.js';
 import { SAVE_VERSION } from '../src/state.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -119,10 +121,14 @@ test('extended personal reward art is distinct and 70/80 second skills survive r
   }
 });
 
-test('maximum legal troop incomes remain safe integers before exact time multiplication',()=>{
+test('maximum legal troop incomes settle long intervals and repeated taps exactly',()=>{
   for(const unit of Object.values(UNITS)) {
     const s={...freshState(T),[unit.field]:Math.floor(MAX_SOLDIERS/unit.power),campaignCleared:80};
     for(const id of ['helicopter','rocketLauncher','transport','fighter'])s.equipment[id]={level:20,count:100000,deployed:true};
-    assert.ok(Number.isSafeInteger(perSecond(s)*100));assert.ok(Number.isSafeInteger(perTap(s,T)*400));
+    const passive=perSecond(s),tap=perTap(s,T);
+    assert.ok(Number.isSafeInteger(passive));assert.ok(Number.isSafeInteger(tap));
+    accrue(s,T+100000);assert.equal(exact(s.gold),exact(passive)*100n);
+    for(let n=0;n<400;n++)tapGold(s,T+100000);
+    assert.equal(exact(s.gold),exact(passive)*100n+exact(tap)*400n);
   }
 });

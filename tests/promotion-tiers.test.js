@@ -42,7 +42,7 @@ test('gold beveled red badges preserve all general marks and stop after junior m
     for (const [, id] of art.matchAll(/url\(#([^)]*)\)/g)) assert.ok(ids.includes(id));
   }
   for (const rank of ['준장','소장','중장','대장','준원수']) assert.match(insignia(RANKS.indexOf(rank)), /framed-rank/);
-  for (const rank of ['대령','소원수','중원수','대원수']) assert.doesNotMatch(insignia(RANKS.indexOf(rank)), /framed-rank/);
+  assert.doesNotMatch(insignia(RANKS.indexOf('대령')), /framed-rank/);
   for (const tier of [0,6,NaN,1.5]) assert.throws(() => generalRankBadge(tier), RangeError);
 });
 

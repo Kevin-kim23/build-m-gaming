@@ -84,7 +84,7 @@ test("every approved promotion happens at its exact threshold without consuming 
     RANK_DEFINITIONS.map((r) => r.required),
     [
       0, 4, 10, 15, 20, 40, 60, 80, 120, 160, 240, 320, 640, 1280, 5120, 10240,
-      20480, 81920, 327680, 1310720, 5242880, 20971520, 83886080,
+      20480, 81920, 327680, 1310720, 5242880, 20971520, 83886080, 335544320,
     ],
   );
   for (let i = 1; i < RANK_DEFINITIONS.length; i++) {

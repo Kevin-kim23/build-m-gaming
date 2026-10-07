@@ -33,3 +33,43 @@ export function generalRankBadge(tier) {
   cache.set(tier, svg);
   return svg;
 }
+
+const marshalThemes = Object.freeze({
+  6: { name:'sapphire', metal:['#f5fcff','#b9d4e8','#486784','#d7ebfa','#36465e'], enamel:['#3374b2','#123e70','#071626'], light:'#8ae4ff' },
+  7: { name:'amethyst', metal:['#ffffff','#d9d6ef','#6b618f','#ece8ff','#48415f'], enamel:['#8258bb','#402568','#170d2d'], light:'#e3b9ff' },
+  8: { name:'midnight-gold', metal:['#fff8cb','#e3c783','#846323','#ffe9a0','#4c3818'], enamel:['#334c79','#142344','#060d20'], light:'#eed8a0' },
+  9: { name:'galactic-teal', metal:['#f0fffa','#c2ece7','#507d83','#e1f7ee','#354d62'], enamel:['#237e80','#144553','#071828'], light:'#8cf4df' },
+});
+
+// One cached, original 96px artwork per marshal tier, shared by HUD and rank guide.
+export function marshalRankBadge(tier) {
+  if (!Number.isInteger(tier) || !Object.hasOwn(marshalThemes,tier)) throw new RangeError('Unknown framed marshal rank');
+  const key = `marshal-${tier}`;
+  if (cache.has(key)) return cache.get(key);
+  const p = marshalThemes[tier], id = `rank-frame-${key}`, metal = `url(#${id}-metal)`;
+  const studs = [[13,13],[83,13],[13,83],[83,83]].map(([x,y])=>`<path d="M${x} ${y-3}l3 3-3 3-3-3Z" fill="${p.metal[0]}" stroke="${p.metal[2]}" stroke-width=".8"/>`).join('');
+  const engraving = Array.from({length:tier-5}, (_, i)=>`<path d="m${45+i*6-(tier-6)*3} 77 3-2 3 2-3 2Z" fill="${p.light}" opacity=".7"/>`).join('');
+  const svg = `<svg class="framed-rank-badge marshal-rank-badge" data-marshal-frame="${tier}" data-frame-theme="${p.name}" viewBox="0 0 96 96" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="${id}-metal" x2=".35" y2="1">${p.metal.map((color,i)=>`<stop offset="${i/4}" stop-color="${color}"/>`).join('')}</linearGradient>
+      <linearGradient id="${id}-enamel" x2=".65" y2="1">${p.enamel.map((color,i)=>`<stop offset="${i/2}" stop-color="${color}"/>`).join('')}</linearGradient>
+      <radialGradient id="${id}-light"><stop stop-color="${p.light}" stop-opacity=".23"/><stop offset="1" stop-color="${p.light}" stop-opacity="0"/></radialGradient>
+      <filter id="${id}-relief" x="-15%" y="-20%" width="130%" height="150%"><feDropShadow dx="0" dy="2" stdDeviation=".5" flood-color="#02080e" flood-opacity=".95"/></filter>
+    </defs>
+    <rect x="2" y="5" width="92" height="90" rx="12" fill="#050a11"/>
+    <rect x="2" y="1" width="91" height="91" rx="12" fill="${metal}" stroke="${p.metal[4]}" stroke-width="2"/>
+    <path d="M13 4h68q9 0 9 10v61M5 68V14q0-9 8-9" fill="none" stroke="${p.metal[0]}" stroke-width="1.8" opacity=".9"/>
+    <rect x="8" y="7" width="79" height="80" rx="7" fill="${p.metal[4]}" stroke="${p.metal[1]}" stroke-width="1.3"/>
+    <rect x="11" y="10" width="73" height="73" rx="5" fill="url(#${id}-enamel)" stroke="${p.metal[2]}" stroke-width="1.5"/>
+    <path d="M14 34V19q0-5 5-5h57q4 0 4 4v18Q48 21 14 34Z" fill="${p.light}" opacity=".12"/>
+    <path d="M14 72q31 13 66 0v6H14Z" fill="#030a15" opacity=".34"/>
+    <ellipse cx="48" cy="46" rx="34" ry="30" fill="url(#${id}-light)"/>
+    <path d="m17 39 12-12h38l12 12v20L67 70H29L17 59Z" fill="none" stroke="${p.light}" stroke-width=".7" opacity=".19"/>
+    <path d="M21 18h15M60 18h15M20 74h9M67 74h9" stroke="${p.light}" stroke-width="1" opacity=".5"/>
+    <g class="framed-rank-stars" transform="translate(16 15)" filter="url(#${id}-relief)">${supremeRankSymbol(tier)}</g>
+    ${engraving}${studs}
+    <path d="M40 7h16l-3 3H43Z" fill="${p.metal[0]}"/><path d="M38 85h20l-4 3H42Z" fill="${p.metal[2]}"/>
+  </svg>`;
+  cache.set(key,svg);
+  return svg;
+}

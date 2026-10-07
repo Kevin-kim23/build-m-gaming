@@ -72,7 +72,7 @@ export function layoutFieldArmy(army, area) {
     0,
     hierarchy.findIndex((f) => f.id === largest.id),
   );
-  const displayWidth = ['alliedArmy', 'grandAlliedArmy', 'supremeCommand'].includes(largest.id) ? 84 : 56;
+  const displayWidth = ['alliedArmy', 'grandAlliedArmy', 'supremeCommand', 'galacticCommand'].includes(largest.id) ? 84 : 56;
   const scale = UNITS[largest.id] ? 1 : Math.min(1.35, displayWidth / largest.width);
   const makeItems = (compact, visibleGroups) =>
     visibleGroups.flatMap((g) => {

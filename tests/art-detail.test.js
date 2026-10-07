@@ -7,10 +7,15 @@ import { drawFormationPortrait } from '../src/art.js';
 import { FORMATIONS } from '../src/formations.js';
 import { UNITS } from '../src/units.js';
 
-test('rank insignia preserves marks and adds the framed badge only through junior marshal', () => {
+test('rank insignia preserves enlisted marks and frames all general and marshal star counts', () => {
   RANK_DEFINITIONS.forEach((rank,i) => {
-    if(rank.kind==='general' && rank.marks<=5){assert.match(insignia(i),/framed-rank-badge/);assert.equal((insignia(i).match(/data-rank-star/g)||[]).length,rank.marks);return;}
-    if(rank.marks>4){assert.match(insignia(i),/supreme-rank-badge/);return;}
+    if(rank.kind==='general'){
+      const art=insignia(i),stars=rank.marks<=5?rank.marks:rank.marks-5;
+      assert.match(art,/framed-rank-badge/);
+      assert.match(art,new RegExp(`data-${rank.marks<=5?'general':'marshal'}-frame="${rank.marks}"`));
+      assert.equal((art.match(/data-rank-star/g)||[]).length,stars);
+      return;
+    }
     assert.equal(insignia(i), '<span class="insignia '+rank.kind+(rank.marks>4?' extended-stars':'')+'">'+'<i></i>'.repeat(rank.marks)+'</span>');
   });
 });

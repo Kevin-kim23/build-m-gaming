@@ -7,7 +7,7 @@ export const achievementDescription = definition => definition.category === 'bat
 export function medalShelfMarkup() {
   return `<section class="medal-shelf" aria-label="획득한 훈장">
     <div class="medal-shelf-heading"><span id="medal-count">훈장 0 / ${ACHIEVEMENTS.length}</span><span class="medal-shelf-actions"><button id="toggle-medals" type="button" aria-expanded="true" aria-controls="medal-list">숨기기</button><button id="open-achievements" type="button">도전과제 <span aria-hidden="true">›</span></button></span></div>
-    <ol id="medal-list" aria-label="획득 순서대로 놓인 훈장"></ol>
+    <ol id="medal-list" style="--medal-columns:${ACHIEVEMENTS.length}" aria-label="획득 순서대로 놓인 훈장"></ol>
   </section>`;
 }
 

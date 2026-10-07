@@ -6,10 +6,10 @@ import { medalShelfMarkup, achievementListMarkup } from "../src/achievement-mark
 
 const state = (power = 0) => ({ soldiers: power, sergeants: 0, staffSergeants: 0, earnedAchievements: [] });
 
-test("all nineteen medals are distinct, fit their shared pixel bounds and use no duplicate SVG IDs", () => {
+test("all catalog medals are distinct, fit their shared pixel bounds and use no duplicate SVG IDs", () => {
   const svgs = ACHIEVEMENTS.map(({ id }) => medalSvg(id));
-  assert.equal(svgs.length, 19);
-  assert.equal(new Set(svgs).size, 19);
+  assert.equal(svgs.length, ACHIEVEMENTS.length);
+  assert.equal(new Set(svgs).size, ACHIEVEMENTS.length);
   for (const [i, svg] of svgs.entries()) {
     assert.equal(svg, medalSvg(ACHIEVEMENTS[i].id));
     assert.match(svg, /viewBox="0 0 96 112"/);
@@ -26,16 +26,16 @@ test("all nineteen medals are distinct, fit their shared pixel bounds and use no
 test("an empty medal shelf still exposes achievements without twenty fake medal slots", () => {
   const html = medalShelfMarkup();
   assert.match(html, /id="open-achievements"/);
-  assert.match(html, /id="medal-count">훈장 0 \/ 19/);
+  assert.match(html, /id="medal-count">훈장 0 \/ 20/);
   assert.match(html, /<ol id="medal-list"[^>]*><\/ol>/);
-  assert.doesNotMatch(html, /<li|achievement-medal-svg|\/ 20/);
+  assert.doesNotMatch(html, /<li|achievement-medal-svg/);
 });
 
-test("achievement list shows nineteen locked goals and progress without a reward claim action", () => {
+test("achievement list shows all locked goals and progress without a reward claim action", () => {
   const html = achievementListMarkup(state(12));
   const ids = [...html.matchAll(/data-achievement="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(ids, ACHIEVEMENTS.map((item) => item.id));
-  assert.equal((html.match(/achievement-card locked/g) ?? []).length, 19);
+  assert.equal((html.match(/achievement-card locked/g) ?? []).length, ACHIEVEMENTS.length);
   assert.equal((html.match(/획득 완료/g) ?? []).length, 0);
   assert.match(html, /12 \/ 20/);
   assert.match(html, /훈장이 자동으로 지급됩니다/);
@@ -52,7 +52,7 @@ test("earned medals remain complete, selection is unique and markup never change
   assert.equal((html.match(/achievement-card earned/g) ?? []).length, 4);
   assert.equal((html.match(/achievement-card[^\"]* selected/g) ?? []).length, 1);
   assert.match(html, /class="achievement-card earned selected" data-achievement="battalion"/);
-  assert.match(html, /훈장 <strong>4<\/strong> \/ 19/);
+  assert.match(html, /훈장 <strong>4<\/strong> \/ 20/);
   assert.deepEqual(s, snapshot);
   s.soldiers = 0;
   const retained = achievementListMarkup(s);
@@ -64,7 +64,8 @@ test("earned medals remain complete, selection is unique and markup never change
 test('medal shelf is one row of every medal, with a hide button', async () => {
   const { readFileSync } = await import('node:fs');
   const css = readFileSync(new URL('../src/achievements.css', import.meta.url), 'utf8');
-  assert.ok(css.includes(`grid-template-columns: repeat(${ACHIEVEMENTS.length}, minmax(0, 1fr))`));
+  assert.ok(css.includes('grid-template-columns: repeat(var(--medal-columns), minmax(0, 1fr))'));
+  assert.ok(medalShelfMarkup().includes('--medal-columns:'+ACHIEVEMENTS.length));
   assert.ok(!/grid-template-rows: repeat\(2/.test(css));
   assert.match(medalShelfMarkup(), /id="toggle-medals"[^>]*aria-expanded="true"[^>]*aria-controls="medal-list"/);
 });

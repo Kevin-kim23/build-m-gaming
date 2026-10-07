@@ -16,6 +16,7 @@ const palettes = [
   ["#512454", "#d2afd9", "#d6c58a", "#fffbe3"],
   ["#243b59", "#b4d3e8", "#d6b96c", "#fff1bf"],
   ["#243e44", "#b2dedf", "#a8bdcd", "#f4fbff"],
+  ["#37295b", "#b4abe9", "#b9d7e7", "#f0fcff"],
 ];
 
 export function medalSvg(id) {
@@ -99,7 +100,8 @@ export function medalSvg(id) {
     r(44,105,8,4,metal);r(46,105,4,6,shine);
   }
   if(tier>=8) {
-    for(let i=0;i<tier-3;i++){const x=33+i*5;r(x,23,1,5,shine);r(x-1,25,3,1,shine);}
+    const ribbonStars=tier===12?4:tier-3;
+    for(let i=0;i<ribbonStars;i++){const x=tier===12?36+i*8:33+i*5;r(x,23,1,5,shine);r(x-1,25,3,1,shine);}
     for(const x of [14,77]){r(x,61,5,22,metal);r(x+1,61,1,22,shine);r(x-2,61,9,2,shine);}
     r(39,83,18,3,shine);r(42,86,12,2,metal);
     if(tier===9){r(44,67,8,10,'#8ecbd5');r(45,68,3,3,'#e7fcff');r(41,16,15,2,shine);}
@@ -108,6 +110,21 @@ export function medalSvg(id) {
       for(const x of [39,53])for(const y of [73,78])r(x,y,4,2,stripe);
       r(46,76,4,8,ribbon);r(35,85,26,2,shine);
       if(tier===11){r(45,58,6,6,shine);r(33,88,30,2,metal);r(35,90,26,1,shine);}
+      if(tier===12){
+        // Silver orbital halo, violet enamel and four radiant command stars.
+        pixels.push('<g data-galactic-emblem="true">');
+        octagon(32,58,32,36,8,ribbon);
+        for(let n=0;n<28;n++){
+          const a=n*Math.PI*2/28,x=Math.round(48+16*Math.cos(a)),y=Math.round(76+10*Math.sin(a));
+          r(x-1,y-1,3,2,n<14?metal:shine);
+        }
+        octagon(40,67,16,18,5,metal);octagon(42,69,12,14,4,'#759fbb');
+        r(43,70,4,3,'#d8ffff');r(46,77,7,3,'#486882');r(46,71,2,13,shine);
+        for(const [x,y] of [[48,59],[33,76],[63,76],[48,91]]){
+          r(x-1,y-3,2,7,shine);r(x-3,y-1,6,2,shine);
+        }
+        pixels.push('</g>');
+      }
     }
   }
   const svg = `<svg class="achievement-medal-svg" viewBox="0 0 96 112" aria-hidden="true" focusable="false" shape-rendering="crispEdges">${pixels.join("")}</svg>`;
