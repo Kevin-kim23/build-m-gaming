@@ -9,6 +9,7 @@ import { validAchievementIds } from './achievements.js';
 import { validEquipment } from './equipment.js';
 import { FIELD_THEMES } from './field-theme.js';
 import { MAX_SOLDIERS, SAVE_VERSION, CAMPAIGN_STAGE_COUNT } from './state.js';
+import { MAX_OFFLINE_MS, OFFLINE_POPUP_MS } from './offline-rules.js';
 
 // Only fixed codes and known field names leave the parser, never stored values or JSON snippets.
 export class SaveValidationError extends Error {
@@ -38,6 +39,13 @@ export function validateSave(s) {
   for (const [field, max] of Object.entries({ taps: Number.MAX_SAFE_INTEGER, soldiers: MAX_SOLDIERS,
     lastAccrual: 100_000_000_000_000, incomeRemainder: 999, revision: Number.MAX_SAFE_INTEGER }))
     requireSave(integer(s[field], max), field);
+  if (s.version >= 23) {
+    const reward = s.offlineReward;
+    requireSave(reward === null || (reward && typeof reward === 'object' && !Array.isArray(reward) &&
+      integer(reward.id, s.lastAccrual) && integer(reward.durationMs, MAX_OFFLINE_MS) &&
+      reward.durationMs >= OFFLINE_POPUP_MS && parseGold(reward.amount, s.version) !== null &&
+      parseGold(reward.amount, s.version) > 0), 'offlineReward');
+  }
   if (s.version >= 4) requireSave(integer(s.sergeants, MAX_SOLDIERS / 10), 'sergeants');
   if (s.version >= 6) requireSave(integer(s.staffSergeants, MAX_SOLDIERS / 20), 'staffSergeants');
   if (s.version >= 5) requireSave(validEquipment(s.equipment, s.version === 5, s.version >= 10,

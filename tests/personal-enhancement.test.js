@@ -27,7 +27,7 @@ test('v18 migrates once to Lv.1 while preserving exact gold, military gear and r
     autoTouchActivatedAt: T - 900, autoTouchTicks: 3 };
   s.equipment.tank = { level: 20, count: 1, deployed: true };
   const next = game.parseSave(serializeSave(s), T);
-  assert.equal(next.version, 22);
+  assert.equal(next.version, 23);
   for (const level of Object.values(next.personalLevels)) assert.equal(level, 1);
   assert.equal(next.gold, s.gold); assert.deepEqual(next.equipment, s.equipment);
   assert.equal(personal.swordSkillStatus(next,T).activeMs, 75000);

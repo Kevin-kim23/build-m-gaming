@@ -2,6 +2,7 @@ import { serializeSave } from './money.js';
 import { SAVE_KEY, LEGACY_KEY, freshState, SAVE_VERSION } from './state.js';
 import { accrue, tapGold } from './game.js';
 import { inspectSave } from './save.js';
+import { prepareOfflineReward, claimOfflineReward } from './offline-reward.js';
 
 export const SAVE_DELAY = 2000;
 export const RECOVERY_KEY = SAVE_KEY + '-recovery';
@@ -15,8 +16,9 @@ export function createGameSession({ storage, locks, now = Date.now,
   let dirty = false, timer = null, committed = null, release = null;
   let controller = null, generation = 0;
   let saveIssue = null, pendingRecovery = null;
+  let claiming = false;
   const reportedIssues = new Map();
-  const notify = (roster = false) => onChange(state, roster);
+  const notify = (roster = false) => { if (!claiming) onChange(state, roster); };
   function failure(area, error) {
     storageError = true;
     onError(area, error);
@@ -117,8 +119,11 @@ export function createGameSession({ storage, locks, now = Date.now,
     // Retain unsaved in-memory progress after storage failures on this page.
     if (!dirty) load();
     active = true;
+    const prepared = !invalid && prepareOfflineReward(state, now());
+    if (prepared) dirty = true;
     settle();
-    schedule();
+    if (prepared) flush();
+    else schedule();
     notify(true);
   }
   function start() {
@@ -193,10 +198,27 @@ export function createGameSession({ storage, locks, now = Date.now,
   function retryLoad() {
     if (!active || !invalid) return false;
     load();
+    if (!invalid && prepareOfflineReward(state, now())) dirty = true;
     settle();
     schedule();
     notify(true);
     return !invalid;
+  }
+  function claimOffline(id, multiplier = 1) {
+    if (!active || invalid) return {ok:false,reason:'inactive'};
+    settle();
+    const previous = state;
+    state = {...state};
+    const result = claimOfflineReward(state,id,multiplier);
+    if (!result.ok) { state = previous; return result; }
+    dirty = true;
+    claiming = true;
+    let saved;
+    try { saved = flush(); }
+    finally { claiming = false; }
+    if (!saved) state = previous; // Failed persistence cannot consume the reward or expose spendable gold.
+    notify(true);
+    return saved ? result : {ok:false,reason:'save'};
   }
   load();
   return {
@@ -221,6 +243,6 @@ export function createGameSession({ storage, locks, now = Date.now,
       if (recovered) return '보조 저장 복구 완료';
       return locks ? '자동 저장 · 2초 간격' : '자동 저장 · 한 창에서 플레이';
     },
-    start, pause, tap, change, tick, flush, receive, retryLoad,
+    start, pause, tap, change, tick, flush, receive, retryLoad, claimOffline,
   };
 }

@@ -22,7 +22,8 @@ export { UNITS, armyPower } from "./units.js";
 export { RANKS, RANK_REQUIREMENTS, rankFor } from "./ranks.js";
 export { SAVE_KEY, LEGACY_KEY, MAX_SOLDIERS, freshState } from './state.js';
 import { MAX_SOLDIERS } from './state.js';
-export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
+import { MAX_OFFLINE_MS } from './offline-rules.js';
+export { MAX_OFFLINE_MS } from './offline-rules.js';
 export const perTap = (s, now = Date.now()) =>
   (1 + troopIncome(s, "tap") + equipmentIncome(s).tap) * swordSkillStatus(s, now).multiplier;
 export const perSecond = (s) =>

@@ -12,6 +12,8 @@ import { schoolOffer } from "./schools.js";
 import { fmtGold } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
 import { createGameSession } from "./session.js";
+import { createOfflineRewardUI } from './offline-reward-ui.js';
+import './offline-reward.css';
 import { createBattleUI } from "./battle-ui.js";
 import { createAchievementUI } from "./achievement-ui.js";
 import { battleAccess } from "./battle.js";
@@ -83,6 +85,7 @@ const armyPanels = createArmyPanels(session, gameAudio);
 const achievementUI = createAchievementUI(session, gameAudio);
 const guideUI = createGuideUI();
 const infoUI = createInfoPanel(session);
+const offlineUI = createOfflineRewardUI(session);
 function update() {
   gameAudio.configure({enabled:state.sound,active:session.active && !document.hidden});
   const power = armyPower(state),
@@ -145,6 +148,7 @@ function update() {
   setText('#battle-lock-label', access.unlocked ? '' : '🔒 중령 해금');
   battleUI.sync();
   armyPanels.sync();
+  offlineUI.sync();
 }
 
 // Every finger that touches the field earns gold at once (up to four fingers). Pointer events are

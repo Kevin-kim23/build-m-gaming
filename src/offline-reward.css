@@ -1,0 +1,19 @@
+#offline-reward-modal {
+  box-sizing:border-box; width:min(400px,calc(100vw - 24px)); max-height:calc(100dvh - 32px);
+  margin:auto; padding:18px; overflow:auto; border:1px solid #839768; border-radius:16px;
+  background:#233029; color:#eef1df; box-shadow:0 20px 70px #0009; text-align:center;
+}
+#offline-reward-modal::backdrop { background:#07120dcc; }
+.offline-head { display:flex; justify-content:space-between; align-items:center; color:#bdce9b; font-size:12px; }
+.offline-head button { min-width:44px; min-height:44px; border:0; border-radius:8px; background:#324237; color:inherit; font-size:24px; }
+#offline-title { font-size:clamp(18px,5vw,23px); line-height:1.4; margin:12px 0; word-break:keep-all; }
+#offline-description { font-size:13px; line-height:1.6; word-break:keep-all; }
+.offline-time { font-size:12px; color:#c1cdad; margin:18px 0 8px; }
+.offline-gold { display:block; font-size:clamp(22px,6vw,30px); line-height:1.4; color:#f4d280; overflow-wrap:anywhere; }
+.offline-note { font-size:11px; line-height:1.6; color:#b7c5aa; }
+.offline-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0 12px; }
+.offline-actions button { min-width:0; min-height:64px; padding:10px 6px; border:1px solid #859567; border-radius:10px; background:#425b39; color:#f1f4e5; font:inherit; font-weight:700; }
+.offline-actions button span { display:block; margin-top:5px; font-size:11px; font-weight:400; overflow-wrap:anywhere; }
+.offline-actions [data-offline-double] { background:#725d29; border-color:#bba365; }
+.offline-actions button:disabled { opacity:.5; }
+.offline-message { min-height:2.8em; font-size:12px; line-height:1.5; color:#f3d590; word-break:keep-all; }

@@ -1,5 +1,5 @@
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
-import { MAX_GOLD, minMoney } from './money.js';
+import { MAX_GOLD, minMoney, parseGold } from './money.js';
 import { armyPower } from './units.js';
 import { NEW_OFFICER_GRADES } from './officer-progression.js';
 import { legacySchoolLevel } from './schools.js';
@@ -29,7 +29,7 @@ export function inspectSave(raw, now = Date.now()) {
     } };
   }
 }
-// Compatibility API for existing callers and version 2–22 migrations.
+// Compatibility API for existing callers and version 2–23 migrations.
 export function parseSave(raw, now = Date.now()) { return inspectSave(raw, now).state; }
 
 function migrateSave(s, now) {
@@ -37,6 +37,10 @@ function migrateSave(s, now) {
   if (s.version === 2) return { ...freshState(now), gold: minMoney(gold, MAX_GOLD), taps: s.taps, sound: s.sound };
   const migrated = {
     version: SAVE_VERSION,
+    offlineReward: s.version >= 23 && s.offlineReward ? {
+      id:s.offlineReward.id, durationMs:s.offlineReward.durationMs,
+      amount:parseGold(s.offlineReward.amount,s.version),
+    } : null,
     personalLevels: Object.fromEntries(Object.values(PERSONAL_EQUIPMENT).map(item=>
       [item.id,s.version>=item.introducedVersion?s.personalLevels[item.id]:1])),
     fieldTheme: s.version >= 12 ? s.fieldTheme : 'earth',

@@ -5,6 +5,7 @@ export const EXIT_CONFIRM_MS = 2000;
 
 // Top-most first. A layer opened later always sits above the earlier ones.
 export const BACK_LAYERS = Object.freeze([
+  Object.freeze({ selector: '#offline-reward-modal', close: '[data-offline-close]' }),
   Object.freeze({ selector: '.promotion-layer', close: '[data-dismiss-promotion]' }),
   Object.freeze({ selector: '#detail-modal', close: '[data-detail-close]' }),
   Object.freeze({ selector: '#battle-modal', close: '[data-battle-close]' }),

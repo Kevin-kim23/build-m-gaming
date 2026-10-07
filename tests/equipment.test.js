@@ -135,7 +135,7 @@ test("v4 migration preserves troop balances and adds empty equipment", () => {
   delete old.equipment;
   assert.deepEqual(parseSave(JSON.stringify(old)), {
     ...old,
-    version:22,campaignStars:Array(80).fill(0),personalLevels:{commandBaton:1,generalSword:1,divisionFlag:1,generalRevolver:1,marshalGlaive:1},autoTouchDurationMs:60000, ncoSchoolLevel: 1,
+    version:23,offlineReward:null,campaignStars:Array(80).fill(0),personalLevels:{commandBaton:1,generalSword:1,divisionFlag:1,generalRevolver:1,marshalGlaive:1},autoTouchDurationMs:60000, ncoSchoolLevel: 1,
     earnedAchievements: ["squad", "platoon", "company"],
     equipment: { artillery: null, tank: null, selfPropelled: null, helicopter: null, rocketLauncher: null, transport: null, fighter: null, railgunTank: null, icbm: null },
   });

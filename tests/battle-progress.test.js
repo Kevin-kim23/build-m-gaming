@@ -167,10 +167,10 @@ test('the best star per region is saved, never lowered, and shown only for conqu
 test('format 22 saves keep stars, format 21 and older saves migrate with zero stars, impossible star records are rejected', () => {
   const s = army(); s.campaignCleared = 3; s.campaignStars = [3, 2, 1, ...Array(77).fill(0)];
   const loaded = parseSave(serializeSave(s), T);
-  assert.equal(loaded.version, 22); assert.deepEqual(loaded.campaignStars, s.campaignStars);
+  assert.equal(loaded.version, 23); assert.deepEqual(loaded.campaignStars, s.campaignStars);
   const old = { ...s, version: 21 }; delete old.campaignStars;
   const migrated = parseSave(JSON.stringify(old), T);
-  assert.equal(migrated.version, 22); assert.deepEqual(migrated.campaignStars, Array(80).fill(0));
+  assert.equal(migrated.version, 23); assert.deepEqual(migrated.campaignStars, Array(80).fill(0));
   assert.equal(migrated.campaignCleared, 3); assert.equal(migrated.gold, s.gold);
   for (const bad of [[3], Array(80).fill(4), Array(80).fill(-1), Array(80).fill(0.5), [0, 0, 0, 0, 2, ...Array(75).fill(0)], null, 'x'])
     assert.equal(parseSave(serializeSave({ ...s, campaignStars: bad }), T), null);
