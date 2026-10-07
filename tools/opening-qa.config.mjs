@@ -1,44 +1,59 @@
-// Launch fixtures only on a separate origin; never write to the user's ordinary game storage.
+// QA-only origin. Geometry previews never load a game session or write game saves.
 import {fileURLToPath} from 'node:url';
 import {readFileSync} from 'node:fs';
-const root = fileURLToPath(new URL('../', import.meta.url));
-const {version} = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
-const page = `<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>시작 화면 검증</title>
-<style>body{margin:20px;background:#101e25;color:#fff3d2;font:14px system-ui}h1{font-size:22px}button,a{display:inline-block;margin:4px;padding:10px;border:1px solid #798775;border-radius:6px;background:#334a45;color:#fff3d2}main{display:flex;gap:20px;align-items:start;flex-wrap:wrap}iframe{width:320px;height:740px;border:1px solid #97a587}pre{white-space:pre-wrap;max-width:440px;line-height:1.6}label{margin:8px}select{padding:8px}</style>
-<h1>로고 → 타이틀 → 게임 검증</h1><p>127.0.0.1:4205 전용 기록입니다. 실제 게임 기록과 분리됩니다.</p>
-<div><button data-fixture="first">최초 설치</button><button data-fixture="fresh">새 기록 · 소리 끔</button><button data-fixture="return-on">2시간 복귀 · 소리 켬</button><button data-fixture="return-off">2시간 복귀 · 소리 끔</button><button data-fixture="marshal">특전원수 · 두 번째 국가</button><button id="reload">같은 기록 재접속</button></div>
-<label>검증 화면 <select id="size"><option value="320x740">320 × 740</option><option value="390x844">390 × 844</option><option value="740x320">740 × 320 가로</option></select></label>
-<main><iframe id="game" title="검증용 게임" src="about:blank" allow="autoplay"></iframe><div><h2>현재 상태</h2><pre id="evidence">위에서 검증 기록을 선택하세요.</pre><p>타이틀 전에는 저장 변경·게임 조작·복귀 팝업이 없어야 합니다. 타이틀을 누른 뒤 복귀 보상이 열립니다. 시작 터치는 골드를 주지 않습니다.</p><a href="/" target="_blank">별도 창으로 게임 열기</a></div></main>
+const root=fileURLToPath(new URL('../',import.meta.url));
+const {version}=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
+const page=`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>시작 화면 검증</title>
+<style>body{margin:20px;background:#101e25;color:#fff3d2;font:14px system-ui}h1{font-size:22px}button,a{display:inline-block;margin:4px;padding:10px;border:1px solid #798775;border-radius:6px;background:#334a45;color:#fff3d2}main{display:flex;gap:20px;align-items:start;flex-wrap:wrap}iframe{width:320px;height:480px;border:1px solid #97a587;flex:none}pre{white-space:pre-wrap;max-width:600px;line-height:1.4;font-size:12px}label{display:inline-block;margin:8px}select{padding:8px}#result{font-weight:bold;color:#ffdf88}details{max-width:640px}.note{color:#bbc9ca}</style>
+<h1>시작 화면 크기·안전영역 검증</h1><p>127.0.0.1:4205 전용 · 실제 4196 게임 기록과 분리.</p><p class="note">실제 휴대폰 검사가 아닙니다. 아래 안전영역은 네이티브 CSS 변수에 넣은 모의값입니다.</p>
+<div><label>검증 화면 <select id="size"><option>320x480</option><option>320x568</option><option>360x800</option><option>412x915</option><option>540x720</option><option>768x1024</option><option>844x390</option><option>568x320</option><option>320x740</option><option>390x844</option></select></label>
+<label>화면 단계 <select id="stage"><option value="title">타이틀 정지 검증</option><option value="logo">로고 정지 검증</option><option value="live">실제 게임 흐름</option></select></label>
+<label>모의 안전영역 <select id="safe"><option value="24,0,24,0">상단 24 / 하단 24</option><option value="0,0,0,0">없음</option><option value="44,0,34,0">상단 44 / 하단 34</option><option value="0,44,24,44">가로 좌우 44 / 하단 24</option><option value="32,24,24,24">상단 32 / 나머지 24</option></select></label>
+<label><input id="guide" type="checkbox" checked>모의 안전영역 선</label><button id="measure">측정 갱신</button><button id="matrix">8가지 크기 일괄 측정</button><button id="all-matrix">안전영역 5종 · 80개 조합 측정</button></div>
+<details><summary>실제 게임 흐름용 검증 기록</summary><button data-fixture="first">최초 설치</button><button data-fixture="fresh">새 기록 · 소리 끔</button><button data-fixture="return-on">2시간 복귀 · 소리 켬</button><button data-fixture="return-off">2시간 복귀 · 소리 끔</button><button data-fixture="marshal">특전원수 · 두 번째 국가</button><button id="reload">같은 기록 재접속</button></details>
+<p id="result">준비 중</p><main><iframe id="game" title="검증용 게임" src="about:blank" allow="autoplay"></iframe><div><h2>현재 측정</h2><pre id="evidence"></pre><details><summary>저장·수입 상태 (측정 갱신 시 읽음)</summary><pre id="save-evidence"></pre></details><h2>일괄 측정 결과</h2><pre id="matrix-evidence">현재 모의 안전영역으로 요청된 8가지 크기의 타이틀·로고를 측정합니다.</pre></div></main>
 <script type="module">
-import {freshState,SAVE_KEY,LEGACY_KEY} from '/src/state.js';
-import {serializeSave} from '/src/money.js';
-import {GALACTIC_COMMAND_SIZE} from '/src/formations.js';
+import {freshState,SAVE_KEY,LEGACY_KEY} from '/src/state.js';import {serializeSave} from '/src/money.js';import {GALACTIC_COMMAND_SIZE} from '/src/formations.js';
 if(location.hostname!=='127.0.0.1'||location.port!=='4205')throw Error('Opening QA origin required');
-const frame=document.querySelector('#game'),evidence=document.querySelector('#evidence');let original=null,fixture='';
-function seed(kind){fixture=kind;frame.src='about:blank';frame.addEventListener('load',()=>{
- if(kind==='first'){for(const key of [SAVE_KEY,SAVE_KEY+'-backup',LEGACY_KEY,LEGACY_KEY+'-backup'])localStorage.removeItem(key);original=null;frame.src='/';return;}
- const t=Date.now(),s=freshState(t-(kind.startsWith('return')?7200000:0));
- s.gold=777;s.sound=kind!=='fresh'&&kind!=='return-off';s.soldiers=kind.startsWith('return')?3:0;
- if(kind==='marshal'){s.soldiers=GALACTIC_COMMAND_SIZE-3000;s.sergeants=300;s.gold=10000000000;s.ncoSchoolLevel=s.officerSchoolLevel=s.advancedSchoolLevel=5;s.campaignCleared=20;s.campaignStars.fill(3,0,20);s.equipment.artillery={level:20,count:1,deployed:true};}
- original=serializeSave(s);localStorage.setItem(SAVE_KEY,original);localStorage.setItem(SAVE_KEY+'-backup',original);frame.src='/';
-},{once:true});}
-document.querySelectorAll('[data-fixture]').forEach(button=>button.addEventListener('click',()=>seed(button.dataset.fixture)));
-document.querySelector('#reload').onclick=()=>{frame.contentWindow.location.reload();};
-document.querySelector('#size').onchange=event=>{const [w,h]=event.target.value.split('x');frame.style.width=w+'px';frame.style.height=h+'px';};
-setInterval(()=>{const d=frame.contentDocument,opening=d?.querySelector('#opening');if(!opening)return;
- const video=d.querySelector('#opening-video'),saved=localStorage.getItem(SAVE_KEY),parsed=saved?JSON.parse(saved):null;
- const details={fixture,opening:opening.dataset.stage,appInert:d.querySelector('#app').inert,
- videoMuted:video.muted,videoPaused:video.paused,videoTime:Number(video.currentTime.toFixed(2)),videoDuration:Number.isFinite(video.duration)?video.duration:null,
- visibleDialogs:[...d.querySelectorAll('dialog[open]')].map(node=>node.id),
- displayedGold:d.querySelector('#gold')?.textContent,guideVisible:!d.querySelector('#coach')?.hidden,
- saveChanged:saved!==original,savedGold:parsed?.gold,savedTaps:parsed?.taps,savedSound:parsed?.sound,
- pendingReward:parsed?.offlineReward?{amount:parsed.offlineReward.amount,durationMs:parsed.offlineReward.durationMs}:null,
- viewport:[d.documentElement.clientWidth,d.documentElement.clientHeight],pageWidth:d.documentElement.scrollWidth};
- const text=JSON.stringify(details,null,2);if(evidence.textContent!==text)evidence.textContent=text;
-},250);
+const frame=document.querySelector('#game'),evidence=document.querySelector('#evidence'),result=document.querySelector('#result');
+const size=document.querySelector('#size'),stage=document.querySelector('#stage'),safe=document.querySelector('#safe'),guide=document.querySelector('#guide');let original=null,fixture='',matrixRunning=false;
+const round=n=>Math.round(n*100)/100;
+function insets(){const [top,right,bottom,left]=safe.value.split(',').map(Number);return {top,right,bottom,left};}
+function applyInsets(d){for(const [side,value] of Object.entries(insets()))d.documentElement.style.setProperty('--safe-area-inset-'+side,value+'px');}
+function updateSize(){const [w,h]=size.value.split('x');frame.style.width=w+'px';frame.style.height=h+'px';}
+function previewURL(which=stage.value){const params=new URLSearchParams({stage:which,guide:guide.checked?'1':'0',...Object.fromEntries(Object.entries(insets()).map(([k,v])=>[k,String(v)]))});return '/__opening-layout?'+params;}
+function loadFrame(url){return new Promise(resolve=>{frame.addEventListener('load',resolve,{once:true});frame.src=url;});}
+async function showPreview(){updateSize();await loadFrame(stage.value==='live'?'/':previewURL());applyInsets(frame.contentDocument);measure();}
+function rect(node){if(!node||node.hidden||!node.getClientRects().length)return null;const r=node.getBoundingClientRect();return {x:round(r.x),y:round(r.y),width:round(r.width),height:round(r.height),right:round(r.right),bottom:round(r.bottom)};}
+function textRect(node){if(!rect(node))return null;const range=node.ownerDocument.createRange();range.selectNodeContents(node);const r=range.getBoundingClientRect();return {x:round(r.x),y:round(r.y),width:round(r.width),height:round(r.height),right:round(r.right),bottom:round(r.bottom)};}
+function outside(r,bounds){if(!r)return null;return {left:round(Math.max(0,bounds.x-r.x)),top:round(Math.max(0,bounds.y-r.y)),right:round(Math.max(0,r.right-bounds.right)),bottom:round(Math.max(0,r.bottom-bounds.bottom))};}
+function media(node){const box=rect(node);if(!box)return null;const css=node.ownerDocument.defaultView.getComputedStyle(node),w=node.videoWidth||node.naturalWidth||(node.tagName==='VIDEO'?1080:940),h=node.videoHeight||node.naturalHeight||(node.tagName==='VIDEO'?1920:1672);const scale=css.objectFit==='cover'?Math.max(box.width/w,box.height/h):Math.min(box.width/w,box.height/h),rw=w*scale,rh=h*scale;
+ const rendered={x:round(box.x+(box.width-rw)/2),y:round(box.y+(box.height-rh)/2),width:round(rw),height:round(rh),right:round(box.x+(box.width+rw)/2),bottom:round(box.y+(box.height+rh)/2)};
+ const visible={x:Math.max(box.x,rendered.x),y:Math.max(box.y,rendered.y),right:Math.min(box.right,rendered.right),bottom:Math.min(box.bottom,rendered.bottom)};visible.width=round(visible.right-visible.x);visible.height=round(visible.bottom-visible.y);
+ return {fit:css.objectFit,intrinsic:[w,h],box,rendered,visible,croppedPercent:round(100*(1-visible.width*visible.height/(rw*rh)))};}
+function geometry(){const d=frame.contentDocument,opening=d?.querySelector('#opening');if(!opening)return null;const width=d.documentElement.clientWidth,height=d.documentElement.clientHeight,area=insets(),safeRect={x:area.left,y:area.top,right:width-area.right,bottom:height-area.bottom};
+ const heading=textRect(d.querySelector('.opening-heading')),prompt=textRect(d.querySelector('.opening-prompt')),skip=rect(d.querySelector('#opening-skip')),video=media(d.querySelector('#opening-video')),art=media(d.querySelector('#opening-art'));
+ const overflow={heading:outside(heading,safeRect),prompt:outside(prompt,safeRect),skip:outside(skip,safeRect),video:outside(video?.visible,safeRect),art:outside(art?.visible,safeRect)},overlap=heading&&prompt?Math.max(0,Math.min(heading.bottom,prompt.bottom)-Math.max(heading.y,prompt.y)):0;
+ const horizontalOverflow=Math.max(0,d.documentElement.scrollWidth-width),verticalOverflow=Math.max(0,d.documentElement.scrollHeight-height),issues=Object.entries(overflow).filter(([,o])=>o&&Object.values(o).some(v=>v>1)).map(([name])=>name+' outside safe area');
+ if(overlap>0)issues.push('heading and prompt overlap');if(horizontalOverflow||verticalOverflow)issues.push('page overflow');if((art?.croppedPercent??0)>0.5)issues.push('title image crop');if((video?.croppedPercent??0)>0.5)issues.push('logo crop');if(skip&&(skip.width<44||skip.height<44))issues.push('skip target smaller than 44px');
+ const content=opening.dataset.stage==='logo'?d.querySelector('#opening-video')?.parentElement:d.querySelector('.opening-title-content')||d.querySelector('.opening-frame'),contentRect=rect(content),frameOverflow={heading:outside(heading,contentRect),prompt:outside(prompt,contentRect)};
+ for(const [name,o] of Object.entries(frameOverflow))if(o&&Object.values(o).some(v=>v>1))issues.push(name+' clipped by portrait frame');
+ if(opening.dataset.stage==='title'&&(!heading?.width||!prompt?.width))issues.push('title or prompt missing');
+ return {simulationOnly:true,stage:opening.dataset.stage,viewport:[width,height],safeInsets:area,safeRect,frame:contentRect,titleButton:rect(d.querySelector('#opening-title')),heading,prompt,skip,video,art,overflow,frameOverflow,headingPromptOverlap:round(overlap),pageOverflow:[horizontalOverflow,verticalOverflow],issues};}
+function measure(){const details=geometry();if(!details)return null;evidence.textContent=JSON.stringify(details,null,2);result.textContent=details.issues.length?'확인 필요: '+details.issues.join(' / '):'경계·잘림 검사 통과 (모의 안전영역)';return details;}
+function measureSave(){const d=frame.contentDocument,saved=localStorage.getItem(SAVE_KEY),parsed=saved?JSON.parse(saved):null;document.querySelector('#save-evidence').textContent=JSON.stringify({fixture,appInert:d?.querySelector('#app')?.inert,visibleDialogs:[...d.querySelectorAll('dialog[open]')].map(node=>node.id),displayedGold:d.querySelector('#gold')?.textContent,saveChanged:saved!==original,savedGold:parsed?.gold,savedTaps:parsed?.taps,savedSound:parsed?.sound,pendingReward:parsed?.offlineReward??null},null,2);}
+function seed(kind){fixture=kind;stage.value='live';frame.src='about:blank';frame.addEventListener('load',()=>{if(kind==='first'){for(const key of [SAVE_KEY,SAVE_KEY+'-backup',LEGACY_KEY,LEGACY_KEY+'-backup'])localStorage.removeItem(key);original=null;frame.src='/';return;}
+ const t=Date.now(),s=freshState(t-(kind.startsWith('return')?7200000:0));s.gold=777;s.sound=kind!=='fresh'&&kind!=='return-off';s.soldiers=kind.startsWith('return')?3:0;if(kind==='marshal'){s.soldiers=GALACTIC_COMMAND_SIZE-3000;s.sergeants=300;s.gold=10000000000;s.ncoSchoolLevel=s.officerSchoolLevel=s.advancedSchoolLevel=5;s.campaignCleared=20;s.campaignStars.fill(3,0,20);s.equipment.artillery={level:20,count:1,deployed:true};}original=serializeSave(s);localStorage.setItem(SAVE_KEY,original);localStorage.setItem(SAVE_KEY+'-backup',original);frame.src='/';},{once:true});}
+for(const button of document.querySelectorAll('[data-fixture]'))button.addEventListener('click',()=>seed(button.dataset.fixture));document.querySelector('#reload').onclick=()=>frame.contentWindow.location.reload();document.querySelector('#measure').onclick=()=>{measure();measureSave();};
+for(const control of [size,stage,safe,guide])control.addEventListener('change',()=>{if(!matrixRunning)showPreview();});frame.addEventListener('load',()=>{if(frame.contentDocument?.querySelector('#opening')){applyInsets(frame.contentDocument);measure();}});
+async function runMatrix(all=false){if(matrixRunning)return;matrixRunning=true;const previous={size:size.value,stage:stage.value,safe:safe.value},rows=[];for(const id of ['matrix','all-matrix'])document.getElementById(id).disabled=true;
+ try{for(const profile of all?[...safe.options].map(option=>option.value):[safe.value]){safe.value=profile;for(const dimensions of ['320x480','320x568','360x800','412x915','540x720','768x1024','844x390','568x320']){size.value=dimensions;updateSize();for(const screen of ['title','logo']){stage.value=screen;await loadFrame(previewURL(screen));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));const g=measure();rows.push({viewport:dimensions,stage:screen,safeInsets:g.safeInsets,issues:g.issues,heading:g.heading,prompt:g.prompt,skip:g.skip,mediaCrop:screen==='title'?g.art?.croppedPercent:g.video?.croppedPercent,overflow:g.overflow,frameOverflow:g.frameOverflow});document.querySelector('#matrix-evidence').textContent=JSON.stringify(rows,null,2);}}}}
+ finally{size.value=previous.size;stage.value=previous.stage;safe.value=previous.safe;matrixRunning=false;for(const id of ['matrix','all-matrix'])document.getElementById(id).disabled=false;await showPreview();}}
+document.querySelector('#matrix').onclick=()=>runMatrix();document.querySelector('#all-matrix').onclick=()=>runMatrix(true);
+// Geometry refresh observes media metadata and CSS hot updates; storage reads are explicit.
+setInterval(()=>{if(!matrixRunning)measure();},1000);showPreview();
 </script></html>`;
-export default {root,define:{__APP_VERSION__:JSON.stringify(version)},server:{host:'127.0.0.1',port:4205,strictPort:true},
-  plugins:[{name:'opening-qa',configureServer(server){server.middlewares.use((req,res,next)=>{
-    if(req.url!=='/__opening-check')return next();
-    res.setHeader('Content-Type','text/html; charset=utf-8');res.end(page);
-  });}}]};
+function layoutPage(url){const params=new URL(url,'http://127.0.0.1:4205').searchParams,settings={stage:params.get('stage')==='logo'?'logo':'title',guide:params.get('guide')==='1'};for(const side of ['top','right','bottom','left'])settings[side]=Math.max(0,Math.min(100,Number(params.get(side))||0));
+ const script=`<script type="module">const settings=${JSON.stringify(settings)};for(const side of ['top','right','bottom','left'])document.documentElement.style.setProperty('--safe-area-inset-'+side,settings[side]+'px');const opening=document.querySelector('#opening');opening.dataset.stage=settings.stage;document.querySelector('#opening-video').hidden=settings.stage!=='logo';document.querySelector('#opening-video').muted=true;document.querySelector('#opening-title').hidden=settings.stage!=='title';document.querySelector('#opening-skip').hidden=settings.stage!=='logo';document.querySelector('#app').hidden=true;if(settings.guide){const line=document.createElement('div');line.setAttribute('aria-hidden','true');line.style.cssText='position:fixed;pointer-events:none;z-index:100;border:1px dashed #66ffc7;box-sizing:border-box;top:'+settings.top+'px;right:'+settings.right+'px;bottom:'+settings.bottom+'px;left:'+settings.left+'px';document.body.append(line);}</script>`;
+ return readFileSync(new URL('../index.html',import.meta.url),'utf8').replace(/<script type="module" src="\/src\/main\.js"><\/script>/,script);}
+export default {root,define:{__APP_VERSION__:JSON.stringify(version)},server:{host:'127.0.0.1',port:4205,strictPort:true},plugins:[{name:'opening-qa',configureServer(server){server.middlewares.use((req,res,next)=>{if(req.url==='/__opening-check'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(page);}else if(req.url?.startsWith('/__opening-layout?')){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(layoutPage(req.url));}else next();});}}]};
