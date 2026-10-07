@@ -4,7 +4,7 @@ import { fmt } from "./format.js";
 // Called only after the cached scene changes (army, equipment or dimensions).
 import { schoolIcon } from './school-art.js';
 
-export function renderFieldLabels(layer, army, equipment, width, height, schools = [], facilities = [], pages = []) {
+export function renderFieldLabels(layer, army, equipment, width, height, schools = [], facilities = []) {
   if (!layer) return;
   const labels = army.filter(item => item.label).map(item => ({
     ...item,
@@ -12,7 +12,7 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
     labelWidth: item.boxWidth,
   }));
   labels.push(...equipment.map(item => ({
-    ...item, text: item.shortName??item.name, labelWidth: item.width, centered: true, gearCount: item.count ?? 1,
+    ...item, text: item.shortName??item.name, labelWidth: item.boxWidth??item.width, centered: true, gearCount: item.count ?? 1,
   })));
   const elements = labels.map(item => {
     const label = document.createElement("span");
@@ -40,14 +40,10 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
     campus.innerHTML = item.facility ? facilityIcon(item.id) : schoolIcon(item.id,item.level);
     const name = document.createElement('span');
     name.className = 'field-school-name';
+    name.style.width=`${(item.boxWidth??item.width)/item.width*100}%`;
     name.textContent = item.facility ? item.name : `${item.name} Lv.${item.level}`;
     campus.append(name);
     elements.push(campus);
   }
-  pages.forEach((page,i)=>{
-    if(!i)return;
-    const title=document.createElement('span');title.className='field-page-title';title.textContent=page.name;
-    title.style.left=`${i/pages.length*100}%`;title.style.width=`${100/pages.length}%`;elements.push(title);
-  });
   layer.replaceChildren(...elements);
 }

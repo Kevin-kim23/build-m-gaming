@@ -1,21 +1,15 @@
-import { fieldPages } from './field-world.js';
+import { layoutFieldWorld } from './field-world.js';
 import { createFieldGesture } from './field-gesture.js';
 import { reportError } from './diagnostics.js';
-export function createFieldNavigation({viewport,zone,previous,next,label,earnTap}) {
+export function createFieldNavigation({viewport,zone,hint,earnTap}) {
   const gestures=createFieldGesture();
-  let pages=fieldPages({}),mouse=null,lastWidth=0;
-  const pageIndex=()=>Math.max(0,Math.min(pages.length-1,Math.round(viewport.scrollLeft/Math.max(1,viewport.clientWidth))));
-  function controls() {
-    const index=pageIndex();
-    label.textContent=`${pages[index].name} · ${index+1}/${pages.length}`;
-    previous.disabled=index===0;next.disabled=index===pages.length-1;
-    label.parentElement.hidden=pages.length===1;
-  }
-  function turn(delta) {
-    viewport.scrollTo({left:Math.max(0,Math.min(pages.length-1,pageIndex()+delta))*viewport.clientWidth,behavior:'smooth'});
-  }
-  previous.addEventListener('click',()=>turn(-1));next.addEventListener('click',()=>turn(1));
-  zone.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();turn(e.key==='ArrowLeft'?-1:1);}});
+  let mouse=null,worldWidth=0;
+  zone.addEventListener('keydown',e=>{
+    if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
+      e.preventDefault();
+      viewport.scrollTo({left:Math.max(0,Math.min(worldWidth-viewport.clientWidth,viewport.scrollLeft+(e.key==='ArrowLeft'?-80:80))),behavior:'smooth'});
+    }
+  });
   zone.addEventListener('pointerdown',e=>{
     if(zone.disabled||(e.pointerType==='mouse'&&e.button!==0))return;
     if(!gestures.down(e.pointerId,e.clientX,e.clientY,e.timeStamp))return;
@@ -32,23 +26,21 @@ export function createFieldNavigation({viewport,zone,previous,next,label,earnTap
   });
   for(const type of ['pointercancel','lostpointercapture'])zone.addEventListener(type,e=>{gestures.cancel(e.pointerId);if(mouse?.id===e.pointerId)mouse=null;});
   zone.addEventListener('click',e=>{if(e.detail===0&&!zone.disabled)earnTap(e);});
-  viewport.addEventListener('scroll',()=>{gestures.scroll();controls();},{passive:true});
+  viewport.addEventListener('scroll',()=>gestures.scroll(),{passive:true});
   return {
     sync(state) {
-      const oldPosition=lastWidth?viewport.scrollLeft/lastWidth:0;
-      const oldIndex=Math.min(pages.length-1,Math.floor(oldPosition)),anchor=pages[oldIndex].name;
-      const nextPages=fieldPages(state),width=viewport.clientWidth;
-      const changed=width!==lastWidth||nextPages.map(p=>p.name).join(':')!==pages.map(p=>p.name).join(':');
-      pages=nextPages;
-      if(changed){
-        zone.style.width=`${Math.max(1,width)*pages.length}px`;
-        zone.style.setProperty('--field-page-width',`${width}px`);
-        const index=pages.findIndex(p=>p.name===anchor);
-        viewport.scrollLeft=Math.max(0,Math.min(pages.length-1,(index<0?oldIndex:index)+(oldPosition-oldIndex)))*width;
-        lastWidth=width;
+      const viewportWidth=viewport.clientWidth;
+      const world=layoutFieldWorld(state,viewportWidth/2,viewport.clientHeight/2);
+      const width=world.width*2;
+      if(width!==worldWidth){
+        const scroll=viewport.scrollLeft;
+        zone.style.width=`${width}px`;
+        viewport.scrollLeft=Math.max(0,Math.min(scroll,width-viewportWidth));
+        worldWidth=width;
       }
-      controls();
-      return width;
+      zone.style.setProperty('--field-view-width',`${viewportWidth}px`);
+      hint.hidden=width<=viewportWidth+1;
+      return world;
     },
     clear() {gestures.clear();mouse=null;},
   };

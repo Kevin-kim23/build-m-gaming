@@ -80,10 +80,10 @@ $("#app").innerHTML = homeMarkup(state);
 const zone = $("#tap-zone"),
   canvas = $("#field");
 const fieldNavigation=createFieldNavigation({viewport:$('#field-viewport'),zone,
-  previous:$('#field-previous'),next:$('#field-next'),label:$('#field-page'),earnTap});
+  hint:$('#field-scroll-hint'),earnTap});
 function drawHomeField() {
-  const width=fieldNavigation.sync(state);
-  drawScene(canvas,state,$('#field-labels'),width);
+  const world=fieldNavigation.sync(state);
+  drawScene(canvas,state,$('#field-labels'),world);
 }
 const battleUI = createBattleUI(session, gameAudio);
 const armyPanels = createArmyPanels(session, gameAudio);

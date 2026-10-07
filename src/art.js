@@ -1,4 +1,4 @@
-import { layoutFieldWorld, fieldPages } from './field-world.js';
+import { layoutFieldWorld } from './field-world.js';
 import { fieldTheme, concreteTerrain } from './field-theme.js';
 import { ownedSchools } from "./field-schools.js";
 import { renderFieldLabels } from "./field-labels.js";
@@ -286,17 +286,17 @@ export function drawFormationPortrait(canvas, id) {
 }
 export const drawRecruitPortrait = (canvas) =>
   drawFormationPortrait(canvas, "soldier");
-export function drawScene(canvas, count = 0, labelLayer = null, viewportWidth = canvas.clientWidth) {
+export function drawScene(canvas, count = 0, labelLayer = null, layout = null) {
   const army =
     typeof count === "number" ? { soldiers: count, sergeants: 0 } : count;
   const theme = fieldTheme(army);
   const deployed = deployedEquipment(army);
   const schools = ownedSchools(army);
-  const key =
-    theme + ":" + fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level + "/" + (d.count ?? 1)).join(":") + ":" + schools.map(s => s.id + s.level).join(":") + ":" + (army.facilities??[]).join(":") + ":" + viewportWidth;
-  const pageWidth = Math.max(100, Math.round(viewportWidth / 2));
-  const width = pageWidth * fieldPages(army).length,
-    height = Math.max(60, Math.round(canvas.clientHeight / 2));
+  let key =
+    theme + ":" + fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level + "/" + (d.count ?? 1)).join(":") + ":" + schools.map(s => s.id + s.level).join(":") + ":" + (army.facilities??[]).join(":");
+  const world=layout??layoutFieldWorld(army,canvas.clientWidth/2,canvas.clientHeight/2);
+  const {width,height}=world;
+  key+=":"+world.viewportWidth;
   let cached = scenes.get(canvas);
   if (
     cached &&
@@ -315,8 +315,7 @@ export function drawScene(canvas, count = 0, labelLayer = null, viewportWidth = 
   c.setTransform(ART_SCALE,0,0,ART_SCALE,0,0);
   c.clearRect(0, 0, width, height);
   c.drawImage(cached.ground, 0, 0);
-  const world=layoutFieldWorld(army,pageWidth,height);
-  const {army:armyItems,schools:schoolItems,equipment:equipmentItems,facilities,pages}=world;
+  const {army:armyItems,schools:schoolItems,equipment:equipmentItems,facilities}=world;
   for (const item of armyItems) {
     c.drawImage(sprite(item.id), item.x, item.y, item.width, item.height);
   }
@@ -332,7 +331,7 @@ export function drawScene(canvas, count = 0, labelLayer = null, viewportWidth = 
       item.id,
     );
   }
-  renderFieldLabels(labelLayer, armyItems, equipmentItems, width, height, schoolItems, facilities, pages);
+  renderFieldLabels(labelLayer, armyItems, equipmentItems, width, height, schoolItems, facilities);
   scenes.set(canvas, { ...cached, key });
   return true;
 }

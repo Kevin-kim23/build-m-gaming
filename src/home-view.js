@@ -67,7 +67,7 @@ function fieldMarkup() {
     </span>
     <span class="pixel-corner bottom-right">
     </span>
-    </button></div><nav class="field-navigation" aria-label="연병장 이동" hidden><button type="button" id="field-previous" aria-label="이전 구역">‹</button><span id="field-page"></span><button type="button" id="field-next" aria-label="다음 구역">›</button></nav></section>`;
+    </button></div><span id="field-scroll-hint" class="field-scroll-hint" hidden>↔ 좌우로 밀어서 둘러보기</span></section>`;
 }
 
 function dockMarkup() {
