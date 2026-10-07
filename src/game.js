@@ -1,3 +1,4 @@
+import { facilityOffer, withFacilityIncome } from './facilities.js';
 export { parseSave } from './save.js';
 import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMoney } from './money.js';
 import { pacedRecruitCost } from './growth-balance.js';
@@ -25,10 +26,10 @@ export { SAVE_KEY, LEGACY_KEY, MAX_SOLDIERS, freshState } from './state.js';
 import { MAX_SOLDIERS } from './state.js';
 import { MAX_OFFLINE_MS } from './offline-rules.js';
 export { MAX_OFFLINE_MS } from './offline-rules.js';
-export const perTap = (s, now = Date.now()) =>
-  (1 + troopIncome(s, "tap") + equipmentIncome(s).tap) * swordSkillStatus(s, now).multiplier;
+export const baseTapIncome = s => withFacilityIncome(s,1 + troopIncome(s,'tap') + equipmentIncome(s).tap,'tap');
+export const perTap = (s, now = Date.now()) => multiplyMoney(baseTapIncome(s),swordSkillStatus(s,now).multiplier);
 export const perSecond = (s) =>
-  withPersonalIncome(s,withCampaignIncome(s, troopIncome(s, "passive") + equipmentIncome(s).passive));
+  withPersonalIncome(s,withCampaignIncome(s, withFacilityIncome(s,troopIncome(s, 'passive') + equipmentIncome(s).passive,'passive')));
 // Preserve early prices, but avoid exponential prices blocking battalion progression.
 export const recruitCost = count => {
   if (!Number.isSafeInteger(count) || count < 0) throw new RangeError('Invalid recruit count');
@@ -108,7 +109,7 @@ export function accrue(s, now = Date.now()) {
   s.gold = addMoney(s.gold,actual);
   s.incomeRemainder = s.gold === MAX_GOLD ? 0 : Number(typeof scaled === 'bigint' ? scaled%1000n : scaled%1000);
   s.lastAccrual = now;
-  const automatic = settleAutoTouch(s, now, 1 + troopIncome(s, 'tap') + equipmentIncome(s).tap, MAX_GOLD);
+  const automatic = settleAutoTouch(s, now, baseTapIncome(s), MAX_GOLD);
   if (s.gold === MAX_GOLD) s.incomeRemainder = 0;
   return addMoney(actual,automatic);
 }
@@ -211,4 +212,14 @@ export function setEquipmentDeployed(
   if (deployed && !deploymentOffer(s, id).canDeploy) return { ok: false, reason: 'capacity' };
   gun.deployed = deployed;
   return { ok: true, deployed };
+}
+
+export function buildFacility(s, now = Date.now(), id) {
+  facilityOffer(s,id); // Validate before any accrual/mutation.
+  accrue(s,now);
+  const offer=facilityOffer(s,id);
+  if(!offer.canBuy)return {ok:false,reason:offer.reason};
+  s.gold=subtractMoney(s.gold,offer.cost);
+  s.facilities=[...(s.facilities??[]),id];
+  return {ok:true,id};
 }

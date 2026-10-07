@@ -1,5 +1,6 @@
+import { layoutFieldWorld, fieldPages } from './field-world.js';
 import { fieldTheme, concreteTerrain } from './field-theme.js';
-import { ownedSchools, layoutFieldSchools, fieldArmyArea } from "./field-schools.js";
+import { ownedSchools } from "./field-schools.js";
 import { renderFieldLabels } from "./field-labels.js";
 import { artSurface, uniformDetails, ART_SCALE } from "./pixel-detail.js";
 import { officerDetails } from './officer-art.js';
@@ -7,8 +8,6 @@ import { specialistDetails } from './specialist-art.js';
 import { drawHighCommand } from './command-art.js';
 import {
   fieldSummary,
-  layoutFieldArmy,
-  layoutFieldEquipment,
 } from "./field-layout.js";
 import { FORMATIONS } from "./formations.js";
 import { UNITS } from "./units.js";
@@ -287,15 +286,16 @@ export function drawFormationPortrait(canvas, id) {
 }
 export const drawRecruitPortrait = (canvas) =>
   drawFormationPortrait(canvas, "soldier");
-export function drawScene(canvas, count = 0, labelLayer = null) {
+export function drawScene(canvas, count = 0, labelLayer = null, viewportWidth = canvas.clientWidth) {
   const army =
     typeof count === "number" ? { soldiers: count, sergeants: 0 } : count;
   const theme = fieldTheme(army);
   const deployed = deployedEquipment(army);
   const schools = ownedSchools(army);
   const key =
-    theme + ":" + fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level + "/" + (d.count ?? 1)).join(":") + ":" + schools.map(s => s.id + s.level).join(":");
-  const width = Math.max(100, Math.round(canvas.clientWidth / 2)),
+    theme + ":" + fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level + "/" + (d.count ?? 1)).join(":") + ":" + schools.map(s => s.id + s.level).join(":") + ":" + (army.facilities??[]).join(":") + ":" + viewportWidth;
+  const pageWidth = Math.max(100, Math.round(viewportWidth / 2));
+  const width = pageWidth * fieldPages(army).length,
     height = Math.max(60, Math.round(canvas.clientHeight / 2));
   let cached = scenes.get(canvas);
   if (
@@ -315,10 +315,8 @@ export function drawScene(canvas, count = 0, labelLayer = null) {
   c.setTransform(ART_SCALE,0,0,ART_SCALE,0,0);
   c.clearRect(0, 0, width, height);
   c.drawImage(cached.ground, 0, 0);
-  const equipmentItems = layoutFieldEquipment(deployed, width, height);
-  const schoolItems = layoutFieldSchools(schools, equipmentItems, width, height);
-  const area = fieldArmyArea(schoolItems, equipmentItems, width, height);
-  const armyItems = layoutFieldArmy(army, area);
+  const world=layoutFieldWorld(army,pageWidth,height);
+  const {army:armyItems,schools:schoolItems,equipment:equipmentItems,facilities,pages}=world;
   for (const item of armyItems) {
     c.drawImage(sprite(item.id), item.x, item.y, item.width, item.height);
   }
@@ -334,7 +332,7 @@ export function drawScene(canvas, count = 0, labelLayer = null) {
       item.id,
     );
   }
-  renderFieldLabels(labelLayer, armyItems, equipmentItems, width, height, schoolItems);
+  renderFieldLabels(labelLayer, armyItems, equipmentItems, width, height, schoolItems, facilities, pages);
   scenes.set(canvas, { ...cached, key });
   return true;
 }

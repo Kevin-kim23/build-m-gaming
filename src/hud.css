@@ -85,5 +85,4 @@
 
 #campaign-income-bonus { margin-left:4px; color:#e0ce91; font-size:10px; white-space:nowrap; }
 
-/* The field takes several simultaneous touches; the browser must not claim them for panning or zooming. */
-#tap-zone { touch-action: none; }
+/* Home touch/scroll handling is defined in field-world.css. */

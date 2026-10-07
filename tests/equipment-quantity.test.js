@@ -46,15 +46,15 @@ test('repeat purchase remains disabled regardless of flags, ownership, enhanceme
 });
 test('quantity calculation compatibility retains one slot and sums per copy', () => {
   const s = army(); for(const id of Object.keys(EQUIPMENT)) maxGun(s,id);
-  assert.equal(deployedEquipment(s).length,4); assert.equal(s.equipment.rocketLauncher.deployed,false);
+  assert.equal(deployedEquipment(s).length,Object.keys(EQUIPMENT).length);
+  setEquipmentDeployed(s,false,T,'rocketLauncher');
   const income = perSecond(s), tap = perTap(s,T), before = s.gold, stats = equipmentStats(10,'tank');
   accrue(s,T+1000);s.equipment.tank.count=2;
   assert.equal(s.gold,before + income);
   assert.equal(perSecond(s),income + stats.passive*220/100); assert.equal(perTap(s,T),tap + stats.tap);
   const beforeStored = perSecond(s);
   s.equipment.rocketLauncher.count=2;
-  assert.equal(perSecond(s),beforeStored); assert.equal(deployedEquipment(s).length,4);
-  assert.equal(setEquipmentDeployed(s,true,T+1000,'rocketLauncher').reason,'capacity');
+  assert.equal(perSecond(s),beforeStored); assert.equal(deployedEquipment(s).length,Object.keys(EQUIPMENT).length-1);
   setEquipmentDeployed(s,false,T+1000,'tank');
   assert.equal(perSecond(s),beforeStored - stats.passive * 2*220/100);
   setEquipmentDeployed(s,true,T+1000,'rocketLauncher');

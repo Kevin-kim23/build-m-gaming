@@ -25,19 +25,17 @@ test('rocket launcher previews only at colonel and requires actual brigadier ran
   s.gold++;assert.equal(buyEquipment(s,T,'rocketLauncher').ok,true);assert.equal(s.gold,0);
   assert.equal(buyEquipment(s,T,'rocketLauncher').reason,'owned');
 });
-test('fifth purchase goes to storage, swaps require freeing a slot, no income from stored gear',()=>{
+test('fifth purchase deploys on the expanded yard; voluntary storage removes only its income',()=>{
   const s=general();for(const id of ['artillery','tank','selfPropelled','helicopter','rocketLauncher'])assert.equal(buyEquipment(s,T,id).ok,true);
-  assert.equal(deployedEquipment(s).length,4);assert.equal(s.equipment.rocketLauncher.deployed,false);
+  assert.equal(deployedEquipment(s).length,5);assert.equal(s.equipment.rocketLauncher.deployed,true);
   const before=perSecond(s);
-  assert.equal(setEquipmentDeployed(s,true,T,'rocketLauncher').reason,'capacity');assert.equal(perSecond(s),before);
-  assert.equal(setEquipmentDeployed(s,true,T,'tank').ok,true);
   assert.equal(setEquipmentDeployed(s,false,T,'artillery').ok,true);
-  assert.equal(setEquipmentDeployed(s,true,T,'rocketLauncher').ok,true);
-  assert.equal(deployedEquipment(s).length,4);
-  assert.equal(perSecond(s),before-EQUIPMENT.artillery.passive+EQUIPMENT.rocketLauncher.passive);
-  assert.equal(setEquipmentDeployed(s,true,T,'artillery').reason,'capacity');
+  assert.equal(perSecond(s),before-EQUIPMENT.artillery.passive);
+  assert.equal(setEquipmentDeployed(s,true,T,'artillery').ok,true);
+  assert.equal(perSecond(s),before);
   assert.deepEqual(parseSave(serializeSave(s),T).equipment,s.equipment);
 });
+
 test('rocket upgrades settle old income and all ten levels persist while stored',()=>{
   const s=general();buyEquipment(s,T,'rocketLauncher');const before=s.gold,income=perSecond(s);
   const cost=enhancementCost(0,'rocketLauncher');enhanceEquipment(s,T+1000,'rocketLauncher');

@@ -46,7 +46,7 @@ function goldMarkup() {
 }
 
 function fieldMarkup() {
-  return `<button id="tap-zone" aria-label="화면 터치해서 골드 획득">
+  return `<section class="field-region" aria-label="좌우로 넘기는 연병장"><div id="field-viewport"><button id="tap-zone" aria-label="화면 터치해서 골드 획득">
     <canvas id="field" aria-hidden="true">
     </canvas>
     <span id="field-labels" aria-hidden="true"></span>
@@ -67,7 +67,7 @@ function fieldMarkup() {
     </span>
     <span class="pixel-corner bottom-right">
     </span>
-    </button>`;
+    </button></div><nav class="field-navigation" aria-label="연병장 이동" hidden><button type="button" id="field-previous" aria-label="이전 구역">‹</button><span id="field-page"></span><button type="button" id="field-next" aria-label="다음 구역">›</button></nav></section>`;
 }
 
 function dockMarkup() {

@@ -32,7 +32,7 @@ export function equipmentStoreMarkup(s) {
   const items = visibleEquipment(s);
   if (!items.length) return '';
   return `<section class="equipment-store"><div class="equip-grid">${items.map(equipmentTile).join('')}</div>
-    <p class="strength-note">빈자리에 자동 배치 · 4칸이 차면 보관됩니다.<br>자세한 내용은 ⓘ 상세보기에서 확인하세요.</p></section>`;
+    <p class="strength-note">구매 시 자동 배치 · 연병장을 좌우로 넘겨 확인하세요.<br>자세한 내용은 ⓘ 상세보기에서 확인하세요.</p></section>`;
 }
 
 const set = (node, value) => { if (node.textContent !== value) node.textContent = value; };

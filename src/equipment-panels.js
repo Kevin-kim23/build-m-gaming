@@ -4,7 +4,7 @@ import { repeatPurchaseMarkup, renderRepeatPurchase } from "./equipment-repeat-u
 import { fmt, fmtGold, fmtGoldCost } from "./format.js";
 import {
   EQUIPMENT,
-  MAX_DEPLOYED_EQUIPMENT, deployedEquipment, deploymentOffer,
+  deployedEquipment, deploymentOffer,
   equipmentOf, equipmentCount,
   equipmentPurchaseOffer,
   enhancementOffer,
@@ -37,7 +37,7 @@ export function equipmentPanelMarkup(s, id, category = "military") {
 export function renderEquipmentPanel(s, root, id) {
   text(root, "equipment-gold", fmtGold(s.gold));
   if (!root.querySelector("#equipment-level")) return;
-  text(root, "deployment-count", `연병장 ${deployedEquipment(s).length} / ${MAX_DEPLOYED_EQUIPMENT}칸 사용 · 같은 종류는 한 칸에 묶입니다.`);
+  text(root, "deployment-count", `연병장 ${deployedEquipment(s).length}종 배치 · 좌우로 넘겨 확인하세요.`);
   const d = EQUIPMENT[id],
     gun = equipmentOf(s, id),
     offer = enhancementOffer(s, id),
@@ -74,7 +74,7 @@ export function renderEquipmentPanel(s, root, id) {
   text(
     root,
     "toggle-equipment",
-    gun.deployed ? "보관하기" : deploymentOffer(s, id).reason === "capacity" ? "4칸 사용 중 · 다른 장비를 먼저 보관하세요" : "연병장에 배치하기",
+    gun.deployed ? "보관하기" : "연병장에 배치하기",
   );
   root
     .querySelector("#toggle-equipment")

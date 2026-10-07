@@ -15,13 +15,13 @@ function panel() {
 }
 test('military equipment is purchased and managed in its own tab, never in shop categories',()=>{
   const s={...freshState(T),soldiers:240};
-  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','schools']);
+  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','schools','facilities']);
   for(const c of SHOP_CATEGORIES)assert.doesNotMatch(shopMarkup(s,'',()=>'',c.id),/data-buy-equipment/);
   assert.match(equipmentPanelMarkup(s,'artillery'),/data-buy-equipment="artillery"/);
   assert.doesNotMatch(equipmentPanelMarkup(s,'artillery'),/equipment-to-shop|상점에서/);
   assert.doesNotMatch(equipmentPanelMarkup(freshState(T),null),/견인포|data-buy-equipment/);
 });
-test('purchase UI tracks rank lock, exact price deficit, owned management and a full yard',()=>{
+test('purchase UI tracks rank lock, exact price deficit, owned management and the expanded yard',()=>{
   const previous=globalThis.document;globalThis.document={createElement:element};
   try {
     const s={...freshState(T),soldiers:240,gold:EQUIPMENT.artillery.cost},root=panel();
@@ -39,8 +39,8 @@ test('purchase UI tracks rank lock, exact price deficit, owned management and a 
     assert.equal(root.querySelector('#equipment-deployed').textContent,'보관 중');
     s.soldiers=7240;s.sergeants=300;
     for(const id of ['artillery','tank','selfPropelled','helicopter'])s.equipment[id]={level:0,count:1,deployed:true};
-    assert.equal(buyEquipment(s,T,'rocketLauncher').deployed,false);
+    assert.equal(buyEquipment(s,T,'rocketLauncher').deployed,true);
     renderEquipmentPanel(s,root,'rocketLauncher');assert.equal(buy.hidden,true);
-    assert.equal(root.querySelector('#toggle-equipment').disabled,true);
+    assert.equal(root.querySelector('#toggle-equipment').disabled,false);
   } finally { if(previous===undefined)delete globalThis.document;else globalThis.document=previous; }
 });

@@ -109,7 +109,7 @@ test('aircraft rank previews require actual general ranks and 300 sergeants',()=
 });
 test('equipment owns military/personal navigation; shop no longer exposes personal category',()=>{
   const s=army(),personal=equipmentPanelMarkup(s,'tank','personal'),military=equipmentPanelMarkup(s,'tank');
-  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','schools']);
+  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','schools','facilities']);
   assert.doesNotMatch(shopMarkup(s,'',()=>''),/data-personal-equipment|data-shop-category="personal"/);
   for(const id of ['commandBaton','generalSword','divisionFlag','generalRevolver'])assert.match(personal,new RegExp(`data-personal-equipment="${id}"`));
   // Effect text lives in each item's detail popup, not in the compact card.

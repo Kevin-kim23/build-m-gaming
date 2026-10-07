@@ -30,7 +30,7 @@ export function inspectSave(raw, now = Date.now()) {
     } };
   }
 }
-// Compatibility API for existing callers and version 2–24 migrations.
+// Compatibility API for existing callers and version 2–25 migrations.
 export function parseSave(raw, now = Date.now()) { return inspectSave(raw, now).state; }
 
 function migrateSave(s, now) {
@@ -38,6 +38,7 @@ function migrateSave(s, now) {
   if (s.version === 2) return { ...freshState(now), gold: minMoney(gold, MAX_GOLD), taps: s.taps, sound: s.sound };
   const migrated = {
     version: SAVE_VERSION,
+    facilities: s.version >= 25 ? [...s.facilities] : [],
     offlineReward: s.version >= 23 && s.offlineReward ? {
       id:s.offlineReward.id, durationMs:s.offlineReward.durationMs,
       amount:parseGold(s.offlineReward.amount,s.version),

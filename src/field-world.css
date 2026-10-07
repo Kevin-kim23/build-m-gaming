@@ -1,0 +1,12 @@
+/* The map scrolls independently; HUD and bottom actions remain fixed. */
+.field-region{position:relative;flex:1;min-height:180px;overflow:hidden;background:#9b9272}
+#field-viewport{position:absolute;inset:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x;scrollbar-width:thin;scrollbar-color:#667653 #9b9272}
+#field-viewport #tap-zone{height:100%;min-height:0;flex:none;touch-action:pan-x}
+#tap-zone .formation-summary{left:calc(var(--field-page-width,100%) / 2);max-width:calc(var(--field-page-width,100%) - 30px)}
+#tap-zone .tap-hint{right:auto;width:var(--field-page-width,100%);bottom:28px}
+#tap-zone .intro-copy{width:var(--field-page-width,100%);left:0;right:auto;transform:none}
+.field-navigation{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:3;display:flex;align-items:center;gap:8px;padding:0 4px;background:#273e35ed;color:#f3ead2;border-radius:6px;white-space:nowrap;font-size:11px}
+.field-navigation[hidden]{display:none}.field-navigation button{width:44px;height:36px;border:0;background:transparent;color:#f3ead2;font-size:20px}.field-navigation button:disabled{opacity:.35}
+.field-page-title{position:absolute;top:8px;text-align:center;color:#233323;font:600 11px/14px system-ui;letter-spacing:0;text-shadow:0 1px #e3d9b7}
+
+#tap-zone.has-recruits .tap-hint{display:none}

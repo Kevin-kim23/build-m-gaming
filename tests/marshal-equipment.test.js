@@ -23,7 +23,7 @@ test('enhancement control comes before growing descriptions, artwork and result 
     assert.ok(index<body.indexOf('다음 능력'));
   }
 });
-test('railgun and ICBM preview one rank early, enforce ranks and use exact gold and deployment limits',()=>{
+test('railgun and ICBM preview one rank early, enforce ranks and use exact gold and automatic home deployment',()=>{
   for(const [id,hidden,preview,unlocked] of [['railgunTank','소장','중장','대장'],['icbm','중장','대장','준원수']]){
     assert.equal(equipmentPurchaseOffer(army(hidden),id).visible,false);
     const locked=army(preview),before=locked.gold;
@@ -32,7 +32,7 @@ test('railgun and ICBM preview one rank early, enforce ranks and use exact gold 
     const s=army(unlocked);s.gold=EQUIPMENT[id].cost-1;
     assert.equal(buyEquipment(s,T,id).reason,'gold');s.gold=MAX_GOLD-1n;
     for(const old of ['artillery','tank','selfPropelled','helicopter'])s.equipment[old]={level:20,count:1,deployed:true};
-    assert.deepEqual(buyEquipment(s,T,id),{ok:true,cost:EQUIPMENT[id].cost,deployed:false});
+    assert.deepEqual(buyEquipment(s,T,id),{ok:true,cost:EQUIPMENT[id].cost,deployed:true});
     assert.equal(s.gold,MAX_GOLD-1n-BigInt(EQUIPMENT[id].cost));
     s.personalLevels.divisionFlag=10;
     for(let level=0;level<20;level++)assert.equal(enhanceEquipment(s,T,id).level,level+1);

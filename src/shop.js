@@ -1,3 +1,4 @@
+import { facilitiesMarkup } from './facility-panels.js';
 import { fmtGold } from "./format.js";
 import { UNITS, unitAccess } from "./units.js";
 import { schoolsMarkup } from "./school-panels.js";
@@ -6,6 +7,7 @@ import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, commandBatonStatus } fr
 export const SHOP_CATEGORIES = Object.freeze([
   Object.freeze({ id: "recruit", name: "군대 모집" }),
   Object.freeze({ id: "schools", name: "군사학교" }),
+  Object.freeze({ id: "facilities", name: "시설" }),
 ]);
 
 // The 100-unit button exists only for units the command baton can bulk-recruit.
@@ -43,7 +45,7 @@ export function shopMarkup(s, coin, insignia, category = "recruit") {
   const selected = SHOP_CATEGORIES.some((item) => item.id === category) ? category : "recruit";
   const content = selected === "recruit"
     ? recruitmentMarkup(s)
-    : schoolsMarkup(s);
+    : selected === "schools" ? schoolsMarkup(s) : facilitiesMarkup(s);
   return `<div class="sheet-grip"></div>
   <div class="shop-header"><div><small>SUPPLY OFFICE</small><h2 id="modal-title">상점</h2></div><button id="close-shop" aria-label="상점 닫기">×</button></div>
   <div class="shop-wallet"><span>보유 골드</span><strong>${coin}<b id="shop-gold"></b><small>G</small></strong></div>

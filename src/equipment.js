@@ -73,7 +73,8 @@ export const EQUIPMENT = Object.freeze({
     stages:Object.freeze(['기본 ICBM','동체 외장','운반대 보강','차체 장갑','지지대 확장','기수 도장','관측 센서','지원 설비','위장 패널','통신 안테나','최종 개량형']),
   }),
 });
-export const MAX_DEPLOYED_EQUIPMENT = 4;
+// The horizontal home map expands with the catalog. Battle deployment has its own limits.
+export const MAX_DEPLOYED_EQUIPMENT = Object.keys(EQUIPMENT).length;
 export const REPEAT_EQUIPMENT_LEVEL = 10;
 export const equipmentLevelLimit = state => enhancementLimitForFlag(divisionFlagStatus(state).level);
 export const equipmentStage = (id,level) => level <= 10 ? (EQUIPMENT[id].stages ?? EQUIPMENT_STAGES)[level] : ['금장 보강','빛나는 장갑','지휘 문양','은빛 광채','황금 코어','청광 패널','정예 문장','별빛 장갑','영광의 광채','최종 지휘관 사양'][level-11];

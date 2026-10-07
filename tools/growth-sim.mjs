@@ -1,6 +1,7 @@
 // Planning model, not a prediction of human play. Runs only on an in-memory fresh save.
+import { FACILITIES, facilityOffer, facilityBonus } from '../src/facilities.js';
 import { pathToFileURL } from 'node:url';
-import { freshState, unitCost, perSecond, perTap, accrue, recruit, upgradeSchool, buyEquipment, enhanceEquipment } from '../src/game.js';
+import { freshState, unitCost, perSecond, perTap, accrue, recruit, upgradeSchool, buyEquipment, enhanceEquipment, buildFacility } from '../src/game.js';
 import { UNIT_LIST, unitAccess, armyPower } from '../src/units.js';
 import { SCHOOLS, schoolOffer } from '../src/schools.js';
 import { EQUIPMENT, equipmentStats, enhancementOffer, equipmentPurchaseOffer } from '../src/equipment.js';
@@ -12,12 +13,12 @@ import { recordBattleVictory } from '../src/battle-progress.js';
 
 const START=1800000000000, DAY=86400;
 // Simulation scoring alone uses Number approximations; wallet and purchases use game money functions.
-export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHours=8,battles=false}={}) {
+export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHours=8,battles=false,facilities=true}={}) {
   const state=freshState(START), milestones=[{rank:RANKS[0],day:0,activeMinutes:0}], unlocks=[];
   const duration=Math.round(minutes*60), interval=DAY/3;
   const tapWeight=tapsPerSecond*duration/interval;
   let elapsed=0,activeSeconds=0,actions=0;
-  const effective=(passive,tap)=>passive+tap*tapWeight;
+  const effective=(passive,tap)=>{const bonus=facilityBonus(state);return passive*(100+bonus.passive)/100+tap*tapWeight*(100+bonus.tap)/100;};
   function candidates() {
     const result=[], rank=rankForArmy(state);
     for(const u of UNIT_LIST) if(unitAccess(state,u).unlocked) {
@@ -34,21 +35,24 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
       else if(rank>=RANKS.indexOf('소장')){const u=UNIT_LIST.find(u=>u.id==='lieutenant');cost+=Number(SCHOOLS.officer.costs[0])+Number(unitCost(0,u.id))*10;gain=effective(u.passive,u.tap)*10;}
       if(gain)result.push({kind:'school',id:school.id,cost:offer.cost,score:cost/gain,apply:()=>upgradeSchool(state,START+elapsed*1000,school.id)});
     }
-    const deployed=Object.values(EQUIPMENT).filter(d=>state.equipment[d.id]?.deployed);
-    const worst=deployed.slice().sort((a,b)=>effective(...Object.values(equipmentStats(state.equipment[a.id].level,a.id)))-effective(...Object.values(equipmentStats(state.equipment[b.id].level,b.id))))[0];
     for(const gear of Object.values(EQUIPMENT)) {
       const owned=state.equipment[gear.id];
       if(owned&&!owned.deployed)continue;
       const offer=owned?enhancementOffer(state,gear.id):equipmentPurchaseOffer(state,gear.id);
       if(offer.reason==='locked'||offer.reason==='max'||offer.cost===null)continue;
       const after=equipmentStats(owned?owned.level+1:0,gear.id);
-      const before=owned?equipmentStats(owned.level,gear.id):deployed.length>=4?equipmentStats(state.equipment[worst.id].level,worst.id):{passive:0,tap:0};
+      const before=owned?equipmentStats(owned.level,gear.id):{passive:0,tap:0};
       const gain=effective(after.passive-before.passive,after.tap-before.tap);
       if(gain<=0)continue;
       result.push({kind:'gear',id:gear.id,cost:offer.cost,score:Number(offer.cost)/gain,apply:()=>{
-        if(!owned&&deployed.length>=4)state.equipment[worst.id].deployed=false;
         return owned?enhanceEquipment(state,START+elapsed*1000,gear.id):buyEquipment(state,START+elapsed*1000,gear.id);
       }});
+    }
+    if(facilities)for(const f of FACILITIES) {
+      const offer=facilityOffer(state,f.id);if(offer.locked||offer.owned)continue;
+      const next={...state,facilities:[...state.facilities,f.id]};
+      const gain=Number(perSecond(next))-Number(perSecond(state))+(Number(perTap(next,START+elapsed*1000))-Number(perTap(state,START+elapsed*1000)))*tapWeight;
+      if(gain>0)result.push({kind:'facility',id:f.id,cost:f.cost,score:f.cost/gain,apply:()=>buildFacility(state,START+elapsed*1000,f.id)});
     }
     result.sort((a,b)=>a.score-b.score);
     // After investing in income that repays within one offline interval, work on mandatory headcounts.
@@ -89,8 +93,8 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
       state.gold=minMoney(MAX_GOLD,addMoney(state.gold,touch));state.taps+=tapsPerSecond*step;
     }
   }
-  return {assumptions:{visitsPerDay:3,minutes,tapsPerSecond,days,investmentHours,ads:false,personalUpgrades:false,battles},milestones,unlocks,
-    final:{rank:RANKS[rankForArmy(state)],power:armyPower(state),gold:String(state.gold),actions}};
+  return {assumptions:{visitsPerDay:3,minutes,tapsPerSecond,days,investmentHours,ads:false,personalUpgrades:false,battles,facilities},milestones,unlocks,
+    final:{rank:RANKS[rankForArmy(state)],power:armyPower(state),gold:String(state.gold),facilities:[...state.facilities],actions}};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href) {
   const minutes=Number(process.argv.find(arg=>arg.startsWith('--minutes='))?.split('=')[1]??7.5);

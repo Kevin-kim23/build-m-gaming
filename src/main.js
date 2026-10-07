@@ -2,11 +2,13 @@ import { campaignBonusPercent } from "./campaign-rewards.js";
 import { autoTouchStatus } from "./personal-equipment.js";
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
-import { createTapTracker } from "./multi-tap.js";
+import { createFieldNavigation } from './field-navigation.js';
+import './field-world.css';
 import { Capacitor } from "@capacitor/core";
 import { App } from "@capacitor/app";
 import { createBackHandler } from "./back-button.js";
 import { showToast } from "./toast.js";
+import { FACILITIES, facilityOffer } from './facilities.js';
 import { schoolOffer } from "./schools.js";
 import { fmtGold } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
@@ -77,6 +79,12 @@ function setText(selector, value) {
 $("#app").innerHTML = homeMarkup(state);
 const zone = $("#tap-zone"),
   canvas = $("#field");
+const fieldNavigation=createFieldNavigation({viewport:$('#field-viewport'),zone,
+  previous:$('#field-previous'),next:$('#field-next'),label:$('#field-page'),earnTap});
+function drawHomeField() {
+  const width=fieldNavigation.sync(state);
+  drawScene(canvas,state,$('#field-labels'),width);
+}
 const battleUI = createBattleUI(session, gameAudio);
 const armyPanels = createArmyPanels(session, gameAudio);
 const achievementUI = createAchievementUI(session, gameAudio);
@@ -116,7 +124,7 @@ function update() {
     const progress = promotionProgress(state);
     setText("#rank-progress", progress.text);
     $("#promotion-fill").style.width = progress.ratio * 100 + "%";
-    drawScene(canvas, state, $("#field-labels"));
+    drawHomeField();
   }
   $('.field-tools').hidden = r < GENERAL_RANK;
   const tap = perTap(state);
@@ -128,7 +136,8 @@ function update() {
   guideUI.sync(state);
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
-    ["nco","officer","advanced"].some(id=>schoolOffer(state,id).canBuy)
+    ["nco","officer","advanced"].some(id=>schoolOffer(state,id).canBuy) ||
+    FACILITIES.some(f=>facilityOffer(state,f.id).canBuy)
   );
   setText("#save-status", session.status);
   infoUI.sync();
@@ -142,25 +151,13 @@ function update() {
   offlineUI.sync();
 }
 
-// Every finger that touches the field earns gold at once (up to four fingers). Pointer events are
-// used instead of click because phones drop clicks while another finger is still down.
-const taps = createTapTracker();
+// A completed tap earns gold; horizontal gestures only move the map.
 function earnTap(point) {
   const amount = session.tap();
   if (!amount) return;
-  tapFeedback(zone, $("#gold"), point, amount);
+  tapFeedback($(".field-region"), $("#gold"), point, amount);
   gameAudio.tap(state.sound);
 }
-zone.addEventListener("pointerdown", (event) => {
-  if (event.pointerType === "mouse" && event.button !== 0) return;
-  if (!taps.down(event.pointerId, event.timeStamp)) return;
-  try { zone.setPointerCapture?.(event.pointerId); } catch (error) { reportError("tap.capture", error); }
-  earnTap({ clientX: event.clientX, clientY: event.clientY, detail: 1 });
-});
-for (const type of ["pointerup", "pointercancel", "lostpointercapture"])
-  zone.addEventListener(type, (event) => taps.up(event.pointerId));
-// Keyboard and assistive-technology activation arrives as a click without a pointer (detail 0).
-zone.addEventListener("click", (event) => { if (event.detail === 0) earnTap(event); });
 $(".field-tools [data-use-sword]").onclick = () => {
   if (session.change(s => activateSword(s))?.ok) gameAudio.ui('sword',state.sound);
 };
@@ -187,7 +184,7 @@ $("#open-shop").onclick = () => armyPanels.openShop();
 $("#open-equipment").onclick = () => armyPanels.openEquipment();
 $("#open-battle").onclick = () => battleUI.open();
 function pauseGame() {
-  taps.clear();
+  fieldNavigation.clear();
   battleUI.suspend();
   session.pause();
   hidePromotion();
@@ -219,9 +216,9 @@ window.addEventListener("storage", (event) => {
 let pendingResize = 0;
 const resizeObserver = new ResizeObserver(() => {
   cancelAnimationFrame(pendingResize);
-  pendingResize = requestAnimationFrame(() => drawScene(canvas, state, $("#field-labels")));
+  pendingResize = requestAnimationFrame(() => drawHomeField());
 });
-resizeObserver.observe(canvas);
+resizeObserver.observe($("#field-viewport"));
 // One clock; automatic payouts use elapsed 300 ms boundaries, not timer counts.
 let lastTick = 0;
 setInterval(() => {

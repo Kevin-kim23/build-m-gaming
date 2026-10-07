@@ -1,9 +1,10 @@
+import { facilityIcon } from './facility-art.js';
 import { fmt } from "./format.js";
 // Browser text stays sharp independently of the pixel-art canvas scaling.
 // Called only after the cached scene changes (army, equipment or dimensions).
 import { schoolIcon } from './school-art.js';
 
-export function renderFieldLabels(layer, army, equipment, width, height, schools = []) {
+export function renderFieldLabels(layer, army, equipment, width, height, schools = [], facilities = [], pages = []) {
   if (!layer) return;
   const labels = army.filter(item => item.label).map(item => ({
     ...item,
@@ -28,7 +29,7 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
     label.style.textAlign = item.centered ? "center" : "left";
     return label;
   });
-  for (const item of schools) {
+  for (const item of [...schools,...facilities.map(f=>({...f,facility:true}))]) {
     const campus = document.createElement('span');
     campus.className = 'field-school';
     campus.style.left = `${item.x / width * 100}%`;
@@ -36,12 +37,17 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
     campus.style.width = `${item.width / width * 100}%`;
     campus.style.height = `${item.height / height * 100}%`;
     // Only trusted, cached SVG geometry from our own school catalog.
-    campus.innerHTML = schoolIcon(item.id,item.level);
+    campus.innerHTML = item.facility ? facilityIcon(item.id) : schoolIcon(item.id,item.level);
     const name = document.createElement('span');
     name.className = 'field-school-name';
-    name.textContent = `${item.name} Lv.${item.level}`;
+    name.textContent = item.facility ? item.name : `${item.name} Lv.${item.level}`;
     campus.append(name);
     elements.push(campus);
   }
+  pages.forEach((page,i)=>{
+    if(!i)return;
+    const title=document.createElement('span');title.className='field-page-title';title.textContent=page.name;
+    title.style.left=`${i/pages.length*100}%`;title.style.width=`${100/pages.length}%`;elements.push(title);
+  });
   layer.replaceChildren(...elements);
 }

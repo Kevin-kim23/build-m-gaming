@@ -1,3 +1,7 @@
+import { buildFacility } from './game.js';
+import { facilityOffer } from './facilities.js';
+import { renderFacilities } from './facility-panels.js';
+import './facilities.css';
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { fmt, fmtGold, fmtGoldCost } from './format.js';
 import { coin, insignia } from './home-view.js';
@@ -40,7 +44,7 @@ export function createArmyPanels(session, audio) {
     const toggle = $('#toggle-equipment');
     if (toggle) toggle.disabled = !session.active || !deploymentOffer(state(), activeEquipment).canDeploy;
     if (session.active) return;
-    dialog.querySelectorAll('[data-buy], [data-buy-bulk], [data-buy-equipment], [data-buy-additional], [data-upgrade-school], #enhance-equipment')
+    dialog.querySelectorAll('[data-buy], [data-buy-bulk], [data-buy-equipment], [data-buy-additional], [data-upgrade-school], [data-build-facility], #enhance-equipment')
       .forEach(button => { button.disabled = true; });
   }
   function updateShop() {
@@ -54,6 +58,7 @@ export function createArmyPanels(session, audio) {
     pulse('[data-shop-category="schools"]', !!guide?.pulse && guide.target === 'school');
     pulse('[data-unit="soldier"] [data-buy]', category === 'recruit' && !!guide?.pulse && guide.target === 'shop');
     if (category === 'schools') renderSchools(s, dialog);
+    if (category === 'facilities') renderFacilities(s, dialog);
     if (category !== 'recruit') return;
     for (const unit of Object.values(UNITS)) {
       const card = $(`[data-unit="${unit.id}"]`);
@@ -153,7 +158,7 @@ export function createArmyPanels(session, audio) {
     if (!result) return;
     audio.ui(result.ok ? 'purchase' : 'error',state().sound);
     if (dialog.open) text(activePanel === 'equipment' ? '#equipment-message' : '#shop-message', result.ok
-      ? `${EQUIPMENT[id].name} 구매 완료! ${result.deployed ? "연병장에 배치했습니다." : "배치 4칸이 가득 차 보관함으로 보냈습니다."}`
+      ? `${EQUIPMENT[id].name} 구매 완료! ${result.deployed ? "연병장에 배치했습니다." : "보관함으로 보냈습니다."}`
       : result.reason === 'locked' ? `${EQUIPMENT[id].unlockRank} 진급 후 구매할 수 있어요.`
       : result.reason === 'owned' ? '이미 보유한 장비입니다.' : '골드가 부족해요.');
   }
@@ -189,7 +194,6 @@ export function createArmyPanels(session, audio) {
     const id = activeEquipment;
     const result = session.change(s => setEquipmentDeployed(s, !equipmentOf(s, id)?.deployed, Date.now(), id));
     if (result) audio.ui(result.ok ? 'equip' : 'error',state().sound);
-    if (result?.reason === 'capacity') text('#equipment-message', '연병장은 최대 4종류입니다. 다른 장비를 먼저 보관하세요.');
     if (result?.ok && dialog.open && activePanel === 'equipment' && activeEquipment === id)
       text('#equipment-message', EQUIPMENT[id].name + (result.deployed ? ' 배치 완료!' : ' 보관 완료! 강화는 유지됩니다.'));
   }
@@ -224,6 +228,13 @@ export function createArmyPanels(session, audio) {
     else if (button.dataset.buyBulk) buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount);
     else if (button.dataset.buyAdditional) purchaseAdditionalGun(button.dataset.buyAdditional);
     else if (button.dataset.buyEquipment) purchaseGun(button.dataset.buyEquipment);
+    else if (button.dataset.buildFacility) {
+      const id=button.dataset.buildFacility,result=session.change(s=>buildFacility(s,Date.now(),id));
+      if(result) {
+        audio.ui(result.ok?'build':'error',state().sound);
+        text('#shop-message',result.ok?`${facilityOffer(state(),id).facility.name} 건설 완료! 연병장 오른쪽에서 확인하세요.`:'건설 조건과 보유 골드를 확인하세요.');
+      }
+    }
     else if (button.dataset.upgradeSchool) buildSchool(button.dataset.upgradeSchool);
     else if (button.dataset.manageEquipment) openEquipment(button.dataset.manageEquipment, 'military');
     else if (button.dataset.selectEquipment) openEquipment(button.dataset.selectEquipment);
