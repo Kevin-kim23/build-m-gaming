@@ -58,7 +58,7 @@ test('bonuses add per income type, cache by ownership and use exact integer arit
 });
 
 test('sword and automatic touch use facility bonuses exactly once; cap remains exact',()=>{
-  const s=army('대원수');s.facilities=FACILITIES.map(f=>f.id);s.gold=0;
+  const s=army('대원수');s.facilities=FACILITIES.map(f=>f.id);s.facilityLevels=Object.fromEntries(s.facilities.map(id=>[id,1]));s.gold=0;
   assert.equal(activateSword(s,T).ok,true);assert.equal(activateAutoTouch(s,T).ok,true);
   const tap=perTap(s,T);assert.equal(tap,baseTapIncome(s)*2);
   accrue(s,T+300);
@@ -69,7 +69,7 @@ test('sword and automatic touch use facility bonuses exactly once; cap remains e
 });
 
 test('offline facility income caps at eight hours, survives reload and claims once',()=>{
-  const s=army('상사');s.gold=0;s.facilities=['kitchen'];
+  const s=army('상사');s.gold=0;s.facilities=['kitchen'];s.facilityLevels={kitchen:1};
   prepareOfflineReward(s,T+12*3600000);
   assert.equal(s.offlineReward.amount,perSecond(s)*8*3600);
   const restored=parseSave(serializeSave(s),T+12*3600000),id=restored.offlineReward.id;
@@ -98,11 +98,13 @@ test('all home equipment can coexist while previously stored equipment stays sto
 test('shop shows only unlocked facilities and one-rank previews; buttons track affordability and ownership',()=>{
   const s=army('상사');s.gold=FACILITIES[0].cost-1;
   const html=facilitiesMarkup(s);assert.match(html,/취사장/);assert.match(html,/체력단련장/);assert.doesNotMatch(html,/풋살장|작전지원센터/);
-  const nodes=new Map(),card={classList:{toggle(){}},querySelector(selector){if(!nodes.has(selector))nodes.set(selector,{textContent:'',disabled:false});return nodes.get(selector);}};
+  const nodes=new Map(),card={classList:{toggle(){}},querySelector(selector){if(!nodes.has(selector))nodes.set(selector,{textContent:'',disabled:false,dataset:{},innerHTML:''});return nodes.get(selector);}};
   const root={querySelector(selector){return selector==='[data-facility="kitchen"]'?card:null;}};
-  renderFacilities(s,root);assert.equal(nodes.get('[data-build-facility]').disabled,true);assert.match(nodes.get('[data-facility-status]').textContent,/1 G 부족/);
-  s.gold++;renderFacilities(s,root);assert.equal(nodes.get('[data-build-facility]').disabled,false);
-  buildFacility(s,T,'kitchen');renderFacilities(s,root);assert.equal(nodes.get('[data-build-facility]').textContent,'건설 완료');assert.equal(nodes.get('[data-build-facility]').disabled,true);
+  renderFacilities(s,root);assert.equal(nodes.get('[data-facility-action]').disabled,true);assert.match(nodes.get('[data-facility-status]').textContent,/1 G 부족/);
+  s.gold++;renderFacilities(s,root);assert.equal(nodes.get('[data-facility-action]').disabled,false);
+  buildFacility(s,T,'kitchen');renderFacilities(s,root);assert.equal(nodes.get('[data-facility-action]').textContent,'Lv.2 강화');assert.equal(nodes.get('[data-facility-action]').disabled,true);
+  s.gold=MAX_GOLD;renderFacilities(s,root);assert.equal(nodes.get('[data-facility-action]').disabled,false);
+  s.facilityLevels={kitchen:20};renderFacilities(s,root);assert.equal(nodes.get('[data-facility-action]').textContent,'최대 Lv.20');assert.equal(nodes.get('[data-facility-action]').disabled,true);
 });
 
 test('facility sprites are original cached distinct geometry without embedded external resources',()=>{

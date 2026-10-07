@@ -1,0 +1,31 @@
+/* Shared material on the home badge and rank guide, without enlarging the HUD. */
+.insignia.framed-rank { display:block; width:32px; height:32px; }
+.framed-rank-badge { display:block; width:100%; height:100%; filter:drop-shadow(0 2px 1px #090a0980); }
+.rank-mark:has(.framed-rank) { height:38px; padding:0; border:0; clip-path:none; background:transparent; flex-shrink:0; }
+.rank-mark .insignia.framed-rank { width:100%; height:100%; }
+.rank-step .insignia.framed-rank { flex-shrink:0; }
+
+/* Enlisted promotions intentionally show one calm line of text. */
+.promotion-layer.is-simple::backdrop { background:#10180cb3; }
+.promotion-simple { padding:24px 12px; }
+.promotion-simple .promotion-announcement { margin:0; font-size:30px; letter-spacing:1px; text-shadow:0 2px 6px #0008; }
+
+/* Field officers get layered metal feathers, a moving highlight and an orbit. */
+.promotion-field .promotion-wing { top:20px; width:49%; }
+.promotion-field .promotion-wing.left { left:-1%; }
+.promotion-field .promotion-wing.right { right:-1%; }
+.promotion-field .promotion-wing svg { animation:field-wing-unfold var(--promotion-duration) ease-out both; filter:drop-shadow(0 3px 1px #49341a) drop-shadow(0 0 8px #e2c37140); }
+.field-wing-feather { transform-origin:150px 95px; animation:field-feather-reveal 950ms var(--feather-delay) cubic-bezier(.16,.75,.25,1) both; }
+.field-wing-shine { stroke-dasharray:15 190; animation:field-wing-shine 1.8s .3s ease-out both; }
+.promotion-field .promotion-medal { background:linear-gradient(140deg,#fff0bd,#b79b5b 30%,#42584a 45%,#192d27); border-color:#fff0b8; }
+.promotion-field .promotion-eyebrow { color:#f3d895; letter-spacing:4px; }
+.promotion-field .promotion-halo { background:radial-gradient(circle,#f2d18255 0,#caa65f18 45%,transparent 70%); }
+.field-promotion-orbit { position:absolute; z-index:0; width:56%; aspect-ratio:1; top:4px; left:22%; border:1px solid #ecd49655; border-radius:50%; box-shadow:0 0 0 7px #e0c77f0b,0 0 0 14px #e0c77f09; animation:field-promotion-orbit 2.5s .05s ease-out both; }
+@keyframes field-wing-unfold { 0%{opacity:0;transform:rotate(38deg) scaleX(.08)} 24%{opacity:1;transform:rotate(-9deg) scaleX(1.04)} 40%,76%{opacity:1;transform:rotate(0) scaleX(1)} 100%{opacity:0;transform:rotate(-3deg) scaleX(1.03)} }
+@keyframes field-feather-reveal { from{opacity:0;transform:rotate(16deg) scaleX(.5)} to{opacity:1;transform:rotate(0) scaleX(1)} }
+@keyframes field-wing-shine { 0%{opacity:0;stroke-dashoffset:200} 25%{opacity:.9} 100%{opacity:0;stroke-dashoffset:-180} }
+@keyframes field-promotion-orbit { from{opacity:0;transform:scale(.55) rotate(-35deg)} 38%{opacity:1} to{opacity:.2;transform:scale(1.2) rotate(12deg)} }
+@media(prefers-reduced-motion:reduce) {
+  .promotion-field .promotion-wing svg,.field-wing-feather { animation:none; }
+  .field-wing-shine,.field-promotion-orbit { display:none; }
+}

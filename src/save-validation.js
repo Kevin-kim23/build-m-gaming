@@ -1,4 +1,4 @@
-import { validFacilities } from './facility-catalog.js';
+import { validFacilities, validFacilityLevels } from './facility-catalog.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { NEW_RECRUITS } from './specialist-units.js';
 import { parseGold } from './money.js';
@@ -37,6 +37,7 @@ export function validateSave(s) {
     return s.gold;
   }
   if (s.version >= 25) requireSave(validFacilities(s.facilities), 'facilities');
+  if (s.version >= 26) requireSave(validFacilityLevels(s.facilityLevels,s.facilities), 'facilityLevels');
   const gold = parseGold(s.gold, s.version);
   requireSave(gold !== null, 'gold');
   for (const [field, max] of Object.entries({ taps: Number.MAX_SAFE_INTEGER, soldiers: MAX_SOLDIERS,

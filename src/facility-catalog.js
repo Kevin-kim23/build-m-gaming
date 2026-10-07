@@ -1,4 +1,6 @@
 // Original support facilities: one building per type, permanent additive percentage bonuses.
+export const MAX_FACILITY_LEVEL = 20;
+export const FACILITY_BONUS_STEP = 15; // Percent of the original bonus per upgrade.
 export const FACILITIES = Object.freeze([
   { id:'kitchen', name:'취사장', rank:'상사', cost:120_000, passive:3, tap:0, purpose:'따뜻한 식사로 부대의 일상 수입을 지원합니다.', color:'#b78c58' },
   { id:'gym', name:'체력단련장', rank:'원사', cost:300_000, passive:0, tap:3, purpose:'체력 훈련으로 터치 수입을 높입니다.', color:'#739aa3' },
@@ -14,3 +16,8 @@ export const FACILITIES = Object.freeze([
 export const FACILITY_BY_ID = Object.freeze(Object.fromEntries(FACILITIES.map(f=>[f.id,f])));
 export const validFacilities = value => Array.isArray(value) && value.length <= FACILITIES.length &&
   new Set(value).size === value.length && value.every(id=>typeof id === 'string' && Object.hasOwn(FACILITY_BY_ID,id));
+
+// Exactly the owned IDs must have an integer level; reject malformed or hidden extra records.
+export const validFacilityLevels = (levels,owned) => !!levels && typeof levels === 'object' &&
+  !Array.isArray(levels) && validFacilities(owned) && Object.keys(levels).length === owned.length &&
+  owned.every(id=>Object.hasOwn(levels,id) && Number.isInteger(levels[id]) && levels[id]>=1 && levels[id]<=MAX_FACILITY_LEVEL);

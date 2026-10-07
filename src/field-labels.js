@@ -37,11 +37,11 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
     campus.style.width = `${item.width / width * 100}%`;
     campus.style.height = `${item.height / height * 100}%`;
     // Only trusted, cached SVG geometry from our own school catalog.
-    campus.innerHTML = item.facility ? facilityIcon(item.id) : schoolIcon(item.id,item.level);
+    campus.innerHTML = item.facility ? facilityIcon(item.id,item.level) : schoolIcon(item.id,item.level);
     const name = document.createElement('span');
     name.className = 'field-school-name';
     name.style.width=`${(item.boxWidth??item.width)/item.width*100}%`;
-    name.textContent = item.facility ? item.name : `${item.name} Lv.${item.level}`;
+    name.textContent = `${item.name} Lv.${item.level}`;
     campus.append(name);
     elements.push(campus);
   }

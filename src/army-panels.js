@@ -1,5 +1,7 @@
-import { buildFacility } from './game.js';
-import { facilityOffer } from './facilities.js';
+import { createPersonalAwardUI } from './personal-awards.js';
+import './personal-awards.css';
+import { buildFacility, upgradeFacility } from './game.js';
+import { facilityOffer, facilityLevel } from './facilities.js';
 import { renderFacilities } from './facility-panels.js';
 import './facilities.css';
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
@@ -35,6 +37,7 @@ export function createArmyPanels(session, audio) {
   let schoolLevels = [];
   const state = () => session.state;
   const personalUI=createPersonalUpgradeUI(session,audio);
+  const personalAwards=createPersonalAwardUI({canShow:()=>session.active});
   let equipmentLevels=null,catalogBaton=-1;
   const text = (selector, value) => {
     const node = $(selector), next = String(value);
@@ -44,7 +47,7 @@ export function createArmyPanels(session, audio) {
     const toggle = $('#toggle-equipment');
     if (toggle) toggle.disabled = !session.active || !deploymentOffer(state(), activeEquipment).canDeploy;
     if (session.active) return;
-    dialog.querySelectorAll('[data-buy], [data-buy-bulk], [data-buy-equipment], [data-buy-additional], [data-upgrade-school], [data-build-facility], #enhance-equipment')
+    dialog.querySelectorAll('[data-buy], [data-buy-bulk], [data-buy-equipment], [data-buy-additional], [data-upgrade-school], [data-facility-action], #enhance-equipment')
       .forEach(button => { button.disabled = true; });
   }
   function updateShop() {
@@ -127,6 +130,7 @@ export function createArmyPanels(session, audio) {
     popup.querySelectorAll('[data-gun-preview]').forEach(c => drawEquipment(c, equipmentOf(state(), id)?.level ?? 0, id));
   }
   function buyUnit(id, quantity = 1) {
+    const previousRank = rankForArmy(state());
     const previousBatonLevel = commandBatonStatus(state()).level;
     const previousSwordLevel = generalSwordStatus(state()).level;
     const previousFlagLevel = divisionFlagStatus(state()).level, previousRevolver = generalRevolverStatus(state()).owned;
@@ -136,6 +140,7 @@ export function createArmyPanels(session, audio) {
       if (result.promoted) {
         showPromotion(result.rank, insignia);
         audio.promotion(result.rank, state().sound);
+        personalAwards.award(previousRank, result.rank);
       } else audio.recruit(state().sound);
     }
     if (!dialog.open || activePanel !== 'shop') return;
@@ -228,11 +233,12 @@ export function createArmyPanels(session, audio) {
     else if (button.dataset.buyBulk) buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount);
     else if (button.dataset.buyAdditional) purchaseAdditionalGun(button.dataset.buyAdditional);
     else if (button.dataset.buyEquipment) purchaseGun(button.dataset.buyEquipment);
-    else if (button.dataset.buildFacility) {
-      const id=button.dataset.buildFacility,result=session.change(s=>buildFacility(s,Date.now(),id));
+    else if (button.dataset.facilityAction) {
+      const id=button.dataset.facilityAction,owned=facilityLevel(state(),id)>0;
+      const result=session.change(s=>(owned?upgradeFacility:buildFacility)(s,Date.now(),id));
       if(result) {
-        audio.ui(result.ok?'build':'error',state().sound);
-        text('#shop-message',result.ok?`${facilityOffer(state(),id).facility.name} 건설 완료! 연병장 오른쪽에서 확인하세요.`:'건설 조건과 보유 골드를 확인하세요.');
+        audio.ui(result.ok?(owned?'upgrade-success':'build'):'error',state().sound);
+        text('#shop-message',result.ok?`${facilityOffer(state(),id).facility.name} Lv.${facilityLevel(state(),id)} ${owned?'강화':'건설'} 완료! 연병장에서 확인하세요.`:result.reason==='max'?'최대 레벨입니다.':'시설 조건과 보유 골드를 확인하세요.');
       }
     }
     else if (button.dataset.upgradeSchool) buildSchool(button.dataset.upgradeSchool);
@@ -246,5 +252,5 @@ export function createArmyPanels(session, audio) {
     else if (action === 'manage-equipment') { closeDetail(); openEquipment(data.id, 'military'); }
   });
   dialog.addEventListener('close', () => document.querySelector(activePanel === 'equipment' ? '#open-equipment' : '#open-shop').focus());
-  return { openShop, openEquipment, sync };
+  return { openShop, openEquipment, sync, syncAwards:personalAwards.sync };
 }

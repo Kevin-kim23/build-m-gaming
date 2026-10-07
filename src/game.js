@@ -1,4 +1,4 @@
-import { facilityOffer, withFacilityIncome } from './facilities.js';
+import { facilityOffer, facilityUpgradeOffer, withFacilityIncome } from './facilities.js';
 export { parseSave } from './save.js';
 import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMoney } from './money.js';
 import { pacedRecruitCost } from './growth-balance.js';
@@ -221,5 +221,16 @@ export function buildFacility(s, now = Date.now(), id) {
   if(!offer.canBuy)return {ok:false,reason:offer.reason};
   s.gold=subtractMoney(s.gold,offer.cost);
   s.facilities=[...(s.facilities??[]),id];
+  s.facilityLevels={...s.facilityLevels,[id]:1};
   return {ok:true,id};
+}
+
+export function upgradeFacility(s, now = Date.now(), id) {
+  facilityUpgradeOffer(s,id); // Validate before any accrual/mutation.
+  accrue(s,now);
+  const offer=facilityUpgradeOffer(s,id);
+  if(!offer.canUpgrade)return {ok:false,reason:offer.reason};
+  s.gold=subtractMoney(s.gold,offer.cost);
+  s.facilityLevels={...s.facilityLevels,[id]:offer.nextLevel};
+  return {ok:true,id,cost:offer.cost,level:offer.nextLevel};
 }

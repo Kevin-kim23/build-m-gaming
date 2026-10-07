@@ -293,7 +293,7 @@ export function drawScene(canvas, count = 0, labelLayer = null, layout = null) {
   const deployed = deployedEquipment(army);
   const schools = ownedSchools(army);
   let key =
-    theme + ":" + fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level + "/" + (d.count ?? 1)).join(":") + ":" + schools.map(s => s.id + s.level).join(":") + ":" + (army.facilities??[]).join(":");
+    theme + ":" + fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level + "/" + (d.count ?? 1)).join(":") + ":" + schools.map(s => s.id + s.level).join(":") + ":" + (army.facilities??[]).map(id=>id+(army.facilityLevels?.[id]??1)).join(":");
   const world=layout??layoutFieldWorld(army,canvas.clientWidth/2,canvas.clientHeight/2);
   const {width,height}=world;
   key+=":"+world.viewportWidth;

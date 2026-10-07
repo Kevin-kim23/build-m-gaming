@@ -8,7 +8,7 @@ import { Capacitor } from "@capacitor/core";
 import { App } from "@capacitor/app";
 import { createBackHandler } from "./back-button.js";
 import { showToast } from "./toast.js";
-import { FACILITIES, facilityOffer } from './facilities.js';
+import { FACILITIES, facilityOffer, facilityUpgradeOffer } from './facilities.js';
 import { schoolOffer } from "./schools.js";
 import { fmtGold } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
@@ -137,7 +137,7 @@ function update() {
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
     ["nco","officer","advanced"].some(id=>schoolOffer(state,id).canBuy) ||
-    FACILITIES.some(f=>facilityOffer(state,f.id).canBuy)
+    FACILITIES.some(f=>facilityOffer(state,f.id).canBuy || facilityUpgradeOffer(state,f.id).canUpgrade)
   );
   setText("#save-status", session.status);
   infoUI.sync();
@@ -149,6 +149,7 @@ function update() {
   battleUI.sync();
   armyPanels.sync();
   offlineUI.sync();
+  armyPanels.syncAwards();
 }
 
 // A completed tap earns gold; horizontal gestures only move the map.

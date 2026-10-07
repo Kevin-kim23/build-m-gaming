@@ -1,5 +1,6 @@
 import { personalIcon } from './personal-art.js';
 import { supremeRankBadge } from './rank-emblem.js';
+import { generalRankBadge } from './rank-frame.js';
 import { RANK_DEFINITIONS } from "./ranks.js";
 import { APP_VERSION } from "./version.js";
 import { medalShelfMarkup } from "./achievement-markup.js";
@@ -124,6 +125,8 @@ export function homeMarkup(state) {
 
 export function insignia(index) {
   const r = RANK_DEFINITIONS[index];
+  if (r.kind === 'general' && r.marks <= 5)
+    return `<span class="insignia general framed-rank">${generalRankBadge(r.marks)}</span>`;
   if (r.kind === 'general' && r.marks >= 5)
     return `<span class="insignia general supreme-rank">${supremeRankBadge(r.marks)}</span>`;
   return (

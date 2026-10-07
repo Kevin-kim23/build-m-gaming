@@ -5,6 +5,9 @@ import { MAX_GOLD,exact,serializeSave } from '../src/money.js';
 import { schoolOffer } from '../src/schools.js';
 import { schoolUnlockPreview } from '../src/school-panels.js';
 import { simulateGrowth } from '../tools/growth-sim.mjs';
+import { MAX_FACILITY_LEVEL } from '../src/facility-catalog.js';
+let constructionReport;
+const constructionOnly = () => constructionReport ??= simulateGrowth({battles:true,facilityUpgrades:false});
 const T=1800000000000;
 
 test('early school unlock increases income materially and has a transparent next-unit preview',()=>{
@@ -50,10 +53,26 @@ test('existing paid armies, school levels, pending rewards and gold survive the 
   assert.equal(perSecond(restored),perSecond(s));assert.equal(perTap(restored),perTap(s));
 });
 
-test('documented session model no longer reaches colonel on day one or ends the campaign in a few days',()=>{
-  const report=simulateGrowth({battles:true});
+test('construction-only baseline retains the three-to-five-week growth guard',()=>{
+  const report=constructionOnly();
+  assert.equal(report.assumptions.facilityUpgrades,false);
+  assert.ok(Object.values(report.final.facilityLevels).every(level=>level===1));
   const reached=Object.fromEntries(report.milestones.map(m=>[m.rank,m.day]));
   assert.ok(reached['대령']>=2&&reached['대령']<=5);
   assert.ok(reached['대원수']>=21&&reached['대원수']<=35);
   assert.ok(reached['준장']-reached['대령']<4);
+});
+
+test('facility-upgrade model evaluates real upgrades, preserves early pacing and records the faster late game',()=>{
+  const report=simulateGrowth({battles:true});
+  const reached=Object.fromEntries(report.milestones.map(m=>[m.rank,m.day]));
+  const baseline=constructionOnly().milestones.find(m=>m.rank==='대원수').day;
+  assert.equal(report.assumptions.facilityUpgrades,true);
+  assert.ok(reached['대령']>=2&&reached['대령']<=5);
+  assert.ok(reached['준장']-reached['대령']<4);
+  assert.ok(reached['대원수']>=14&&reached['대원수']<=baseline);
+  const levels=Object.values(report.final.facilityLevels);
+  assert.equal(levels.length,report.final.facilities.length);
+  assert.ok(levels.some(level=>level>1),'the model must actually buy upgrades');
+  assert.ok(levels.every(level=>Number.isInteger(level)&&level>=1&&level<=MAX_FACILITY_LEVEL));
 });

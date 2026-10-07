@@ -7,7 +7,7 @@ const MARGIN=10, TOP=34, BOTTOM=14, GAP=4, BAND_GAP=7;
 export const FIELD_GROWTH_STEP=8; // 16 CSS px, never a separate page.
 const SUPPORT = {
   schools:{width:46,ratio:72/96,label:16},
-  facilities:{width:44,ratio:72/96,label:14},
+  facilities:{width:44,ratio:72/96,label:16},
   equipment:{width:48,ratio:35/66,label:16},
 };
 function band(items,kind,width,scale) {

@@ -1,9 +1,12 @@
 import { RANKS, LAST_RANK, RANK_DEFINITIONS } from "./ranks.js";
 import { generalPromotionMarkup } from './general-promotion.js';
+import { fieldOfficerWing } from './promotion-wing-art.js';
 export function promotionProfile(rank) {
   const level = Number.isInteger(rank) ? Math.max(1, Math.min(LAST_RANK, rank)) : 1;
   const generalTier = RANK_DEFINITIONS[level].kind === 'general' ? RANK_DEFINITIONS[level].marks : 0;
+  const kind = RANK_DEFINITIONS[level].kind;
   return {
+    style: generalTier ? 'general' : kind === 'enlisted' ? 'simple' : kind === 'field' ? 'field' : 'standard',
     duration: generalTier ? 5000 + generalTier * 300 + Math.max(0,generalTier-4)*500 : 3000,
     generalTier,
     salvos: generalTier ? generalTier + 2 : 0,
@@ -19,6 +22,20 @@ export function promotionProfile(rank) {
 }
 // Original angular wing geometry, reused and mirrored. No external assets.
 const wing = `<svg viewBox="0 0 120 100" aria-hidden="true"><path d="M119 69 100 44 69 33 12 8 24 32 66 57 6 32 22 58 75 76 19 64 37 84 87 91 118 84Z" fill="#d5bb76" stroke="#f6e4aa" stroke-width="2"/><path d="m24 25 72 32 34 20M23 48l55 25 29 7M37 76l44 11" fill="none" stroke="#9d7b40" stroke-width="3"/></svg>`;
+export function promotionMarkup(rank, insignia, p = promotionProfile(rank)) {
+  if (p.style === 'general') return generalPromotionMarkup(rank, p);
+  if (p.style === 'simple') return `<div class="promotion-stage promotion-simple" data-rank="${rank}"><p class="promotion-announcement">${RANKS[rank]} 진급!</p></div>`;
+  const enhanced = p.style === 'field', marks = RANK_DEFINITIONS[rank].marks;
+  return `<div class="promotion-stage${enhanced ? ' promotion-field' : ''}" data-rank="${rank}">
+    <div class="promotion-halo" aria-hidden="true"></div>
+    ${enhanced ? '<div class="field-promotion-orbit" aria-hidden="true"></div>' : ''}
+    <div class="promotion-wing left">${enhanced ? fieldOfficerWing(marks, 'left') : wing}</div><div class="promotion-wing right">${enhanced ? fieldOfficerWing(marks, 'right') : wing}</div>
+    <div class="promotion-sparks" aria-hidden="true">${Array.from({ length: p.sparks }, (_, i) => `<i style="--angle:${(i / p.sparks) * 360}deg;--distance:${72 + (i % 3) * 15}px;--delay:${(i % 4) * 0.08}s"></i>`).join('')}</div>
+    <p class="promotion-eyebrow">${enhanced ? 'FIELD OFFICER' : 'PROMOTION'}</p>
+    <div class="promotion-medal" aria-hidden="true">${insignia(rank)}</div>
+    <p class="promotion-announcement">${RANKS[rank]} 진급!</p><p class="promotion-caption">더 큰 부대를 향하여</p>
+  </div>`;
+}
 let layer, timer;
 export function hidePromotion() {
   clearTimeout(timer);
@@ -44,18 +61,13 @@ export function showPromotion(rank, insignia) {
   clearTimeout(timer);
   const p = promotionProfile(rank);
   layer.classList.toggle('is-general', p.generalTier > 0);
+  layer.classList.toggle('is-simple', p.style === 'simple');
+  layer.classList.toggle('is-field', p.style === 'field');
   layer.setAttribute('aria-label', `${RANKS[rank]} ${p.generalTier ? '장성 진급식' : '진급 축하'}`);
   layer.style.setProperty("--promotion-width", p.width + "px");
   layer.style.setProperty("--medal-size", p.medal + "px");
   layer.style.setProperty("--promotion-duration", p.duration + "ms");
-  layer.innerHTML = p.generalTier ? generalPromotionMarkup(rank, p) : `<div class="promotion-stage" data-rank="${rank}">
-  <div class="promotion-halo" aria-hidden="true"></div>
-  <div class="promotion-wing left">${wing}</div><div class="promotion-wing right">${wing}</div>
-  <div class="promotion-sparks" aria-hidden="true">${Array.from({ length: p.sparks }, (_, i) => `<i style="--angle:${(i / p.sparks) * 360}deg;--distance:${72 + (i % 3) * 15}px;--delay:${(i % 4) * 0.08}s"></i>`).join("")}</div>
-  <p class="promotion-eyebrow">PROMOTION</p>
-  <div class="promotion-medal" aria-hidden="true">${insignia(rank)}</div>
-  <p class="promotion-announcement">${RANKS[rank]} 진급!</p><p class="promotion-caption">더 큰 부대를 향하여</p>
- </div>`;
+  layer.innerHTML = promotionMarkup(rank, insignia, p);
   if (!layer.open) layer.showModal();
   timer = setTimeout(hidePromotion, p.duration);
 }

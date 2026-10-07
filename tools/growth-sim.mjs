@@ -1,7 +1,7 @@
 // Planning model, not a prediction of human play. Runs only on an in-memory fresh save.
-import { FACILITIES, facilityOffer, facilityBonus } from '../src/facilities.js';
+import { FACILITIES, facilityOffer, facilityBonus, facilityLevel, facilityUpgradeOffer } from '../src/facilities.js';
 import { pathToFileURL } from 'node:url';
-import { freshState, unitCost, perSecond, perTap, accrue, recruit, upgradeSchool, buyEquipment, enhanceEquipment, buildFacility } from '../src/game.js';
+import { freshState, unitCost, perSecond, perTap, accrue, recruit, upgradeSchool, buyEquipment, enhanceEquipment, buildFacility, upgradeFacility } from '../src/game.js';
 import { UNIT_LIST, unitAccess, armyPower } from '../src/units.js';
 import { SCHOOLS, schoolOffer } from '../src/schools.js';
 import { EQUIPMENT, equipmentStats, enhancementOffer, equipmentPurchaseOffer } from '../src/equipment.js';
@@ -13,7 +13,7 @@ import { recordBattleVictory } from '../src/battle-progress.js';
 
 const START=1800000000000, DAY=86400;
 // Simulation scoring alone uses Number approximations; wallet and purchases use game money functions.
-export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHours=8,battles=false,facilities=true}={}) {
+export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHours=8,battles=false,facilities=true,facilityUpgrades=true}={}) {
   const state=freshState(START), milestones=[{rank:RANKS[0],day:0,activeMinutes:0}], unlocks=[];
   const duration=Math.round(minutes*60), interval=DAY/3;
   const tapWeight=tapsPerSecond*duration/interval;
@@ -49,10 +49,16 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
       }});
     }
     if(facilities)for(const f of FACILITIES) {
-      const offer=facilityOffer(state,f.id);if(offer.locked||offer.owned)continue;
-      const next={...state,facilities:[...state.facilities,f.id]};
+      const level=facilityLevel(state,f.id),owned=level>0;
+      if(owned&&!facilityUpgrades)continue;
+      const offer=owned?facilityUpgradeOffer(state,f.id):facilityOffer(state,f.id);
+      if(offer.reason==='locked'||offer.reason==='max'||offer.cost===null)continue;
+      // The preview must not mutate either the live ownership or the cached level record.
+      const next={...state,facilities:owned?[...state.facilities]:[...state.facilities,f.id],
+        facilityLevels:{...state.facilityLevels,[f.id]:level+1}};
       const gain=Number(perSecond(next))-Number(perSecond(state))+(Number(perTap(next,START+elapsed*1000))-Number(perTap(state,START+elapsed*1000)))*tapWeight;
-      if(gain>0)result.push({kind:'facility',id:f.id,cost:f.cost,score:f.cost/gain,apply:()=>buildFacility(state,START+elapsed*1000,f.id)});
+      if(gain>0)result.push({kind:'facility',id:f.id,cost:offer.cost,score:Number(offer.cost)/gain,
+        apply:()=>(owned?upgradeFacility:buildFacility)(state,START+elapsed*1000,f.id)});
     }
     result.sort((a,b)=>a.score-b.score);
     // After investing in income that repays within one offline interval, work on mandatory headcounts.
@@ -86,15 +92,15 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
         if(choice.kind==='school')unlocks.push({school:choice.id,level:result.level,day:Math.round(elapsed/DAY*1000)/1000,income:perSecond(state)});
         record();if(++actions>300000)throw Error('Simulation action limit');continue;
       }
-      const rate=Number(perSecond(state))+perTap(state,START+elapsed*1000)*tapsPerSecond;
+      const rate=Number(perSecond(state))+Number(perTap(state,START+elapsed*1000))*tapsPerSecond;
       const step=Math.min(end-elapsed,Math.max(1,Math.ceil(Number(subtractMoney(choice.cost,state.gold))/Math.max(1,rate))));
       const touch=multiplyMoney(perTap(state,START+elapsed*1000),tapsPerSecond*step);
       elapsed+=step;activeSeconds+=step;accrue(state,START+elapsed*1000);
       state.gold=minMoney(MAX_GOLD,addMoney(state.gold,touch));state.taps+=tapsPerSecond*step;
     }
   }
-  return {assumptions:{visitsPerDay:3,minutes,tapsPerSecond,days,investmentHours,ads:false,personalUpgrades:false,battles,facilities},milestones,unlocks,
-    final:{rank:RANKS[rankForArmy(state)],power:armyPower(state),gold:String(state.gold),facilities:[...state.facilities],actions}};
+  return {assumptions:{visitsPerDay:3,minutes,tapsPerSecond,days,investmentHours,ads:false,personalUpgrades:false,battles,facilities,facilityUpgrades:facilities&&facilityUpgrades},milestones,unlocks,
+    final:{rank:RANKS[rankForArmy(state)],power:armyPower(state),gold:String(state.gold),facilities:[...state.facilities],facilityLevels:{...state.facilityLevels},actions}};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href) {
   const minutes=Number(process.argv.find(arg=>arg.startsWith('--minutes='))?.split('=')[1]??7.5);
