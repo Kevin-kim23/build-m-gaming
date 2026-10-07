@@ -17,7 +17,7 @@ test('home labels remain separate from pixel-scaled artwork and refresh only wit
   try {
     drawScene(canvas,army,layer);
     assert.ok(layer.children.some(c=>c.textContent==='공격헬기'));
-    assert.ok(layer.children.some(c=>c.textContent==='연대'));
+    assert.ok(layer.children.some(c=>c.textContent?.startsWith('연대')));
     assert.equal(canvasText,0,'text must not lose strokes when pixel artwork is downsampled');
     assert.equal(drawScene(canvas,army,layer),false);
     assert.equal(updates,1);

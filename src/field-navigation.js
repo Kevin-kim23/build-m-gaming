@@ -32,12 +32,14 @@ export function createFieldNavigation({viewport,zone,hint,earnTap}) {
       const viewportWidth=viewport.clientWidth;
       const world=layoutFieldWorld(state,viewportWidth/2,viewport.clientHeight/2);
       const width=world.width*2;
+      zone.style.height=`${world.height*2}px`;
       if(width!==worldWidth){
         const scroll=viewport.scrollLeft;
         zone.style.width=`${width}px`;
         viewport.scrollLeft=Math.max(0,Math.min(scroll,width-viewportWidth));
         worldWidth=width;
       }
+      viewport.scrollLeft=Math.max(0,Math.min(viewport.scrollLeft,width-viewportWidth));
       zone.style.setProperty('--field-view-width',`${viewportWidth}px`);
       hint.hidden=width<=viewportWidth+1;
       return world;
