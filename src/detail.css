@@ -92,3 +92,4 @@
 .personal-rates th,.personal-rates td { padding:9px 5px; border-bottom:1px solid #647051; text-align:left; }
 .personal-rates td:last-child { text-align:right; font-variant-numeric:tabular-nums; }
 .personal-levels summary { cursor:pointer; padding:10px 0; }
+.fiction-notice { margin: 0 0 8px; padding: 8px 10px; background: #1f2b22; border-radius: 6px; font-size: 12px; line-height: 1.5; color: #e0cf93; }

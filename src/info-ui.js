@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { APP_VERSION } from './version.js';
 import { errorLog, formatReport } from './error-log.js';
 import { infoPanelMarkup } from './info-panel.js';
+import { privacyPolicyMarkup } from './privacy-policy.js';
 import { openDetail, onDetailAction } from './detail-popup.js';
 import { reportError } from './diagnostics.js';
 
@@ -41,6 +42,7 @@ export function createInfoPanel(session) {
   onDetailAction((action, data, dialog) => {
     if (action === 'copy-error-log') copy(dialog);
     else if (action === 'clear-error-log') { errorLog.clear(); show(); }
+    else if (action === 'open-privacy') openDetail(privacyPolicyMarkup());
     else if (action === 'retry-save') { session.retryLoad(); show(); }
   });
   document.querySelector('#open-info').addEventListener('click', show);

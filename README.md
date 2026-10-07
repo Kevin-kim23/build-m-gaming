@@ -753,3 +753,10 @@ JDK21 자동 검색, 외부 업로드 키 생성/보호, 서명 없는 release �
 
 ### 스토어 출시 문서 (코드 변경 없음)
 `docs/store/`에 개인정보처리방침 초안(PRIVACY_POLICY.md), Play 스토어 문구·설문 메모(PLAY_STORE_LISTING.md), 법적·정책 위험 점검(LEGAL_RISKS.md)을 추가했습니다. 앱 코드와 버전은 그대로이며, 빈칸([대괄호])은 사용자가 채워야 합니다.
+
+## 0.55.0 허구 안내와 개인정보처리방침
+
+- 게임 정보 화면에 "대륙·나라·부대·장비는 모두 허구, 실제 국가·군대·단체·인물과 무관" 안내와 [개인정보처리방침 보기] 버튼을 추가했습니다. 글은 `src/privacy-policy.js` 한 곳에서 관리하고, 앱 화면과 `docs/store/PRIVACY_POLICY.md`(웹 공개용)가 이 원본에서 만들어집니다(`npm run privacy:doc`).
+- `tests/privacy-policy.test.js`가 문서와 원본의 일치, 그리고 "수집 없음" 약속(패키지·권한·네트워크 코드 없음)을 감시합니다. 광고·결제를 붙이면 이 테스트가 일부러 실패해 방침 수정을 알려 줍니다.
+- 관리 순서와 광고·결제 도입 시 할 일은 [docs/PRIVACY_MANAGEMENT.md](docs/PRIVACY_MANAGEMENT.md)에 정리했습니다. 저장 형식23 그대로, 게임 규칙 변경 없음.
+- 미확인: 실기기 화면, 방침의 법률 검토, 공개 웹 주소 게시, 문의 이메일 확정(`PRIVACY_CONTACT`가 비어 있으면 스토어 연락처로 안내).
