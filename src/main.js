@@ -4,7 +4,8 @@ import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
 import { createFieldNavigation } from './field-navigation.js';
 import './field-world.css';
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, SystemBars } from "@capacitor/core";
+import { createOpeningSystemBars } from './opening-system-bars.js';
 import { App } from "@capacitor/app";
 import { createBackHandler } from "./back-button.js";
 import { createOpeningScreen } from './opening.js';
@@ -93,7 +94,10 @@ const achievementUI = createAchievementUI(session, gameAudio);
 const guideUI = createGuideUI();
 const infoUI = createInfoPanel(session);
 const offlineUI = createOfflineRewardUI(session);
+const openingBars = createOpeningSystemBars({native: Capacitor.isNativePlatform(), bars: SystemBars, onError: reportError});
+openingBars.sync();
 const opening = createOpeningScreen({onStart: () => {
+  openingBars.finish();
   lifecycle.start();
   if (!document.querySelector('dialog[open]')) zone.focus({preventScroll:true});
 }, soundEnabled: !session.hasSavedProgress || state.sound, onError: reportError});
@@ -210,7 +214,10 @@ if (Capacitor.isNativePlatform()) {
     },
   });
   App.addListener("backButton", onBack).catch((error) => reportError("app.backButton", error));
-  App.addListener('appStateChange', ({isActive}) => lifecycle.setNativeActive(isActive))
+  App.addListener('appStateChange', ({isActive}) => {
+    if (isActive) openingBars.sync();
+    lifecycle.setNativeActive(isActive);
+  })
     .catch(error => reportError('app.appStateChange', error));
 }
 document.addEventListener('visibilitychange', lifecycle.syncVisibility);

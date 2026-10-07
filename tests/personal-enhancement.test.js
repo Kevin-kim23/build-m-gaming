@@ -45,7 +45,7 @@ test('personal detail descriptions name the original award rank, not the current
     assert.doesNotMatch(detail, /대원수 진급 보상|진급할 때마다|자동 성장/);
     assert.match(detail, /강화 확률표/);
   }
-  assert.equal((personalMarkup(s).match(/data-detail-personal=/g)||[]).length, 7);
+  assert.equal((personalMarkup(s).match(/data-detail-personal=/g)||[]).length, 8);
 });
 test('all ten levels of every personal icon are distinct and cached', () => {
   for (const kind of ['baton','sword','flag','revolver','glaive','compass','tablet','seal']) {

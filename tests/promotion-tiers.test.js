@@ -7,13 +7,13 @@ import { generalRankBadge } from '../src/rank-frame.js';
 import { fieldOfficerWing } from '../src/promotion-wing-art.js';
 import { insignia } from '../src/home-view.js';
 
-test('target rank chooses plain text, original wings, enhanced field wings, or general ceremony', () => {
+test('target rank chooses a plain badge, original wings, enhanced field wings, or general ceremony', () => {
   for (const [rank, definition] of RANK_DEFINITIONS.entries()) {
     const p = promotionProfile(rank), html = promotionMarkup(rank, insignia);
     if (definition.kind === 'enlisted') {
       assert.equal(p.style, 'simple');
       assert.match(html, new RegExp(`${definition.name} 진급!`));
-      assert.doesNotMatch(html, /wing|halo|sparks|promotion-medal|promotion-caption/);
+      assert.doesNotMatch(html, /wing|halo|sparks|promotion-caption/);
     } else if (definition.kind === 'field') {
       assert.equal(p.style, 'field');
       assert.equal((html.match(/class="field-officer-wing"/g) || []).length, 2);

@@ -21,7 +21,7 @@ test('late military preview one rank early and only the correct rank can purchas
     ['orbitalAssault','소원수','중원수','대원수',450_000_000_000],
   ]){
     assert.equal(EQUIPMENT[id].introducedVersion,27);
-    assert.equal(equipmentPurchaseOffer(army(hidden),id).visible,false);
+    assert.equal(equipmentPurchaseOffer(army(hidden),id).visible,true);
     const locked=army(preview),before=locked.gold;
     assert.equal(equipmentPurchaseOffer(locked,id).visible,true);
     assert.equal(buyEquipment(locked,T,id).reason,'locked');assert.equal(locked.gold,before);

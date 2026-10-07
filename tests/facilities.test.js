@@ -26,7 +26,7 @@ test('ten facilities unlock in order from master sergeant; actual promotion gate
   }
   const gated=army('준장');gated.sergeants=299;gated.soldiers+=10;
   assert.equal(facilityOffer(gated,'operations').locked,true);
-  assert.equal(facilityOffer(freshState(T),'kitchen').visible,false);
+  assert.equal(facilityOffer(freshState(T),'kitchen').visible,true);
 });
 
 test('construction is exact at wallet boundaries, rejects unknown IDs, settles old income first',()=>{
@@ -99,9 +99,9 @@ test('all home equipment can coexist while previously stored equipment stays sto
   assert.equal(deployedEquipment(s).length,Object.keys(EQUIPMENT).length);assert.deepEqual(parseSave(serializeSave(s),T).equipment,s.equipment);
 });
 
-test('shop shows only unlocked facilities and one-rank previews; buttons track affordability and ownership',()=>{
+test('shop shows all facilities; buttons track affordability and ownership',()=>{
   const s=army('상사');s.gold=FACILITIES[0].cost-1;
-  const html=facilitiesMarkup(s);assert.match(html,/취사장/);assert.match(html,/체력단련장/);assert.doesNotMatch(html,/풋살장|작전지원센터/);
+  const html=facilitiesMarkup(s);assert.match(html,/취사장/);assert.match(html,/체력단련장/);assert.match(html,/풋살장/);assert.match(html,/작전지원센터/);
   const nodes=new Map(),card={classList:{toggle(){}},querySelector(selector){if(!nodes.has(selector))nodes.set(selector,{textContent:'',disabled:false,dataset:{},innerHTML:''});return nodes.get(selector);}};
   const root={querySelector(selector){return selector==='[data-facility="kitchen"]'?card:null;}};
   renderFacilities(s,root);assert.equal(nodes.get('[data-facility-action]').disabled,true);assert.match(nodes.get('[data-facility-status]').textContent,/1 G 부족/);

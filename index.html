@@ -22,13 +22,12 @@
         <video id="opening-video" src="/opening/studio-logo.mp4" poster="/opening/studio-poster.webp" muted playsinline preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video>
       </div>
       <button id="opening-title" type="button" aria-label="부대 키우기 시작" hidden>
-        <span class="opening-frame opening-title-content">
-          <img id="opening-art" src="/opening/title-screen.webp" alt="" fetchpriority="high" decoding="async" />
+        <img id="opening-art" src="/opening/title-screen.webp" alt="" fetchpriority="high" decoding="async" />
+        <span class="opening-title-content">
           <span class="opening-heading">부대 키우기</span>
           <span class="opening-prompt">화면을 터치하면 시작합니다</span>
         </span>
       </button>
-      <button id="opening-skip" type="button" aria-label="회사 로고 건너뛰기">건너뛰기</button>
     </div>
     <div id="app" inert aria-hidden="true"></div>
     <dialog id="modal" aria-labelledby="modal-title"></dialog>

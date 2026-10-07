@@ -30,7 +30,7 @@ function effectMarkup(id,level) {
 export function personalMarkup(state) {
   const cards=Object.values(PERSONAL_EQUIPMENT).map(item=>{
     const status=personalStatus(state,item.id);
-    if(!status.visible)return '';
+
     return `<article class="personal-item${status.owned?'':' locked'}" data-personal-equipment="${item.id}">
       <div class="personal-item-heading"><div class="personal-item-art">${personalIcon(item.icon,status.level||1)}</div>
       <div><span class="item-class">개인 장비</span><h3>${item.name} <small>Lv.${status.level||1}</small></h3>

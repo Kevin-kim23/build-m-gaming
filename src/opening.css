@@ -5,7 +5,6 @@
   --opening-safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
   --opening-safe-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
   --opening-viewport-height: 100vh;
-  --opening-available-height: max(0px, calc(var(--opening-viewport-height) - var(--opening-safe-top) - var(--opening-safe-bottom)));
   position: fixed;
   inset: 0;
   bottom: auto;
@@ -13,9 +12,9 @@
   z-index: 50;
   display: grid;
   place-items: center;
-  padding: var(--opening-safe-top) var(--opening-safe-right) var(--opening-safe-bottom) var(--opening-safe-left);
+  padding: 0;
   overflow: hidden;
-  background: #000;
+  background: #f5f6f2;
   color: #fff4d5;
   isolation: isolate;
   touch-action: manipulation;
@@ -25,22 +24,21 @@
 #opening[hidden], #opening [hidden] { display: none; }
 .opening-frame {
   position: relative;
-  /* Fit the whole portrait composition instead of cropping for tall/folding phones. */
-  width: min(100%, 600px, calc(var(--opening-available-height) * .5625));
-  aspect-ratio: 9 / 16;
+  width: 100%;
+  height: 100%;
   min-width: 0;
   min-height: 0;
   container-type: inline-size;
   overflow: hidden;
-  background: #070d15;
-  box-shadow: 0 0 100px #0009;
+  background: #f5f6f2;
+
 }
 #opening-video {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: #000;
+  background: #f5f6f2;
   pointer-events: none;
 }
 #opening-title {
@@ -52,20 +50,26 @@
   border-radius: 0;
   display: grid;
   place-items: center;
-  padding: var(--opening-safe-top) var(--opening-safe-right) var(--opening-safe-bottom) var(--opening-safe-left);
+  padding: 0;
   overflow: hidden;
-  background: linear-gradient(#071519d9, #071519e8), url('/opening/title-screen.webp') center / cover;
+  background: #13292c;
   color: #fff4d5;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-.opening-title-content { display: block; pointer-events: none; }
+.opening-title-content {
+  position: absolute;
+  inset: var(--opening-safe-top) var(--opening-safe-right) var(--opening-safe-bottom) var(--opening-safe-left);
+  display: block;
+  container-type: inline-size;
+  pointer-events: none;
+}
 #opening-art {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   pointer-events: none;
 }
@@ -98,26 +102,14 @@
   animation: opening-breathe 2.4s ease-in-out infinite;
   pointer-events: none;
 }
-#opening-skip {
-  position: absolute;
-  top: calc(12px + var(--opening-safe-top));
-  right: calc(12px + var(--opening-safe-right));
-  min-width: 80px;
-  min-height: 44px;
-  padding: 10px 14px;
-  border: 1px solid #ffffff45;
-  border-radius: 22px;
-  background: #0b1429b8;
-  color: #f8efd8;
-  font: 600 13px/1.4 "Malgun Gothic", system-ui, sans-serif;
-  cursor: pointer;
-}
-#opening button:focus-visible { outline: 3px solid #ffe19e; outline-offset: -5px; }
+
+#opening-title:focus-visible { outline: none; }
+#opening-title:focus-visible .opening-prompt { text-decoration: underline; text-underline-offset: 5px; }
 #opening.is-paused .opening-prompt { animation-play-state: paused; }
 @keyframes opening-breathe { 0%, 100% { opacity: 1; } 50% { opacity: .48; } }
 @media (prefers-reduced-motion: reduce) { .opening-prompt { animation: none; } }
 /* Frame-relative type also follows live window resizing; old WebViews use the fallback above. */
 @supports (font-size: 1cqw) {
-  .opening-heading { font-size: clamp(20px, 13cqw, 72px); }
+  .opening-heading { font-size: clamp(24px, min(13cqw, 12vh), 72px); }
   .opening-prompt { font-size: clamp(14px, 4.2cqw, 21px); }
 }

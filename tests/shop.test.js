@@ -28,10 +28,10 @@ test("shop shows just the selected category and shares one wallet, title and liv
   assert.doesNotMatch(markup(s, "recruit"), /<details[^>]*\sopen(?:\s|>)/);
 });
 
-test("personal equipment stays unnamed before major, previews locked at major and is owned at lieutenant colonel", () => {
+test("personal equipment is visible early and owned only at its award rank", () => {
   const early = markup(state(320, 0), "personal");
-  assert.doesNotMatch(early, new RegExp(COMMAND_BATON.name));
-  assert.doesNotMatch(early, /command-baton-art|data-personal-equipment/);
+  assert.match(early, new RegExp(COMMAND_BATON.name));
+  assert.match(early, /personal-item locked/);
   const locked = markup(state(640), "personal");
   assert.match(locked, /personal-item locked/);
   assert.match(locked, /중령 진급 시 자동 지급/);

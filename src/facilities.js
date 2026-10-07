@@ -21,7 +21,7 @@ export function facilityOffer(state,id) {
   const owned=state.facilities?.includes(id) ?? false;
   const required=RANKS.indexOf(facility.rank), rank=rankForArmy(state), locked=rank<required;
   const reason=owned?'owned':locked?'locked':state.gold<facility.cost?'gold':null;
-  return {facility,cost:facility.cost,owned,locked,visible:owned||rank>=required-1,reason,canBuy:reason===null};
+  return {facility,cost:facility.cost,owned,locked,visible:true,reason,canBuy:reason===null};
 }
 const bonusScale = level => 100+FACILITY_BONUS_STEP*(validLevel(level)-1);
 export function facilityStats(id,level=1) {

@@ -9,7 +9,6 @@ export function createOpeningScreen({ root = document, onStart, onError, soundEn
   const video = root.querySelector('#opening-video');
   const title = root.querySelector('#opening-title');
   const art = root.querySelector('#opening-art');
-  const skip = root.querySelector('#opening-skip');
   const app = root.querySelector('#app');
   let stage = 'logo', active = false, attempt = 0;
   let watchdog = null, deadline = null, remaining = OPENING_MAX_PLAY_MS;
@@ -44,7 +43,7 @@ export function createOpeningScreen({ root = document, onStart, onError, soundEn
     stopClock();
     video.pause();
     video.hidden = true;
-    skip.hidden = true;
+
     title.hidden = false;
     layer.dataset.stage = stage;
     if (active) title.focus({ preventScroll: true });
@@ -119,10 +118,6 @@ export function createOpeningScreen({ root = document, onStart, onError, soundEn
     if (video.currentTime <= lastPosition) return;
     lastPosition = video.currentTime;
     armWatchdog(OPENING_STALL_TIMEOUT_MS);
-  });
-  listen(skip, 'click', event => {
-    event.preventDefault(); event.stopPropagation();
-    if (active) showTitle();
   });
   listen(title, 'click', start);
   listen(art, 'error', () => {

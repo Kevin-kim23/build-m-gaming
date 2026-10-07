@@ -68,7 +68,7 @@ test('a launch plays the inline logo with its sound, then waits for exactly one 
   title.emit('click'); assert.equal(f.starts, 0);
   video.emit('ended');
   assert.equal(f.opening.stage, 'title'); assert.equal(title.hidden, false);
-  assert.equal(f.node('#opening-skip').hidden, true); assert.equal(video.hidden, true);
+  assert.equal(video.hidden, true);
   assert.equal(f.starts, 0); assert.equal(f.timers.size, 0);
   const click = title.emit('click');
   assert.equal(click.prevented, true); assert.equal(click.stopped, true);
@@ -80,10 +80,10 @@ test('a launch plays the inline logo with its sound, then waits for exactly one 
   assert.equal([...f.nodes.values()].reduce((sum, n) => sum + n.listenerCount(), 0), 0);
 });
 
-test('skip only opens the title and consumes its gesture without launching the game', () => {
+test('a title cannot launch while inactive, and no skip control is required', () => {
   const f = fixture(); f.opening.setActive(true);
-  const event = f.node('#opening-skip').emit('click');
-  assert.equal(event.stopped, true); assert.equal(f.starts, 0);
+  assert.equal(f.nodes.has('#opening-skip'), false);
+  f.node('#opening-video').emit('ended'); assert.equal(f.starts, 0);
   assert.equal(f.opening.stage, 'title');
   f.opening.setActive(false); f.node('#opening-title').emit('click');
   assert.equal(f.starts, 0);
@@ -173,7 +173,7 @@ test('backgrounding pauses the logo and its timeout, and ignores a stale interru
 });
 
 test('separate page loads always show the logo without persisting a skip preference', () => {
-  const first = fixture(); first.opening.setActive(true); first.node('#opening-skip').emit('click');
+  const first = fixture(); first.opening.setActive(true); first.node('#opening-video').emit('ended');
   first.node('#opening-title').emit('click');
   const next = fixture(); assert.equal(next.opening.stage, 'logo'); assert.equal(next.starts, 0);
 });

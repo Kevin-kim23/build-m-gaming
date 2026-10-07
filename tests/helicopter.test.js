@@ -12,9 +12,9 @@ import { drawEquipment } from "../src/equipment-art.js";
 const T = 1800000000000;
 const army = (power=5120) => ({...freshState(T), soldiers:power-400, sergeants:40, ncoSchoolLevel:2, gold:100_000_000_000_000, campaignCleared:80});
 
-test("helicopter is hidden before lieutenant colonel, previews locked, buys once at colonel",()=>{
-  assert.equal(equipmentPurchaseOffer(army(640),'helicopter').visible,false);
-  assert.doesNotMatch(equipmentStoreMarkup(army(640)),/공격헬기/);
+test("helicopter is always visible, stays locked early, buys once at colonel",()=>{
+  assert.equal(equipmentPurchaseOffer(army(640),'helicopter').visible,true);
+  assert.match(equipmentStoreMarkup(army(640)),/공격헬기/);
   for (const power of [1280,5119]) {
     const s=army(power), before=s.gold;
     assert.equal(equipmentPurchaseOffer(s,'helicopter').visible,true);

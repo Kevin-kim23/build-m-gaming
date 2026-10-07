@@ -67,8 +67,8 @@ test('general ranks require 5000 soldiers, 300 sergeants and the unchanged power
   assert.equal(RANKS[rankForArmy({...army(5000),sergeants:300,staffSergeants:624})],'소장');
   s.sergeants=39;assert.equal(RANKS[rankForArmy(s)],'대위');
 });
-test('sword is hidden until colonel, locked there, granted at brigadier and explains its active skill',()=>{
-  assert.doesNotMatch(markup(army(880),'personal'),/장군검|general-sword-art/);
+test('sword is visible early, remains locked, and is granted at brigadier and explains its active skill',()=>{
+  assert.match(markup(army(880),'personal'),/장군검/);
   const locked=markup(army(),'personal');assert.match(locked,/장군검/);assert.match(locked,/준장 진급 시 자동 지급/);
   assert.match(locked,/Lv.2/);assert.match(personalDetailMarkup(army(),'commandBaton').body,/하사 100명 한 번에 모집/);
   const s={...army(10000),sergeants:300};s.personalLevels.commandBaton=3;const stats=[perSecond(s),perTap(s)],owned=markup(s,'personal');

@@ -25,8 +25,8 @@ test('equipment store uses compact two-column tiles with name, picture, price, b
   }
 });
 
-test('equipment store stays empty until the first item is revealed', () => {
-  assert.equal(equipmentStoreMarkup(army(0, 0)), '');
+test('equipment store exposes the full catalog from the beginning', () => {
+  assert.equal((equipmentStoreMarkup(army(0, 0)).match(/data-equipment=/g)||[]).length,Object.keys(EQUIPMENT).length);
 });
 
 test('equipment detail popup carries role, limits, prices and the management link only when owned', () => {

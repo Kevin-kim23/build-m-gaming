@@ -88,7 +88,7 @@ test("staff sergeants have independent prices, exact rewards and twenty strength
   assert.equal(recruitOffer(s, "staffSergeant").cost, cost);
   assert.ok(cost > 50_000);
 });
-test("catalog names and images stay absent until exactly the preceding rank, then remain available", () => {
+test("equipment names stay discoverable while purchase and recruit progression gates remain", () => {
   const cases = [
     [0, 0, []],
     [60, 0, []],
@@ -102,12 +102,12 @@ test("catalog names and images stay absent until exactly the preceding rank, the
     const s = state(power, n);
     assert.deepEqual(
       visibleEquipment(s).map((d) => d.id),
-      ids,
+      Object.keys(EQUIPMENT),
     );
     const html =
-      equipmentStoreMarkup(s) + equipmentPanelMarkup(s, ids[0] ?? null);
+      equipmentStoreMarkup(s) + equipmentPanelMarkup(s, ids[0] ?? "artillery");
     for (const d of Object.values(EQUIPMENT))
-      assert.equal(html.includes(d.name), ids.includes(d.id));
+      assert.equal(html.includes(d.name), true);
   }
   assert.equal(catalogVisible(state(60), "소위"), false);
   assert.equal(catalogVisible(state(80), "소위"), false);

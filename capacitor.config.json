@@ -2,5 +2,11 @@
   "appId": "com.dongramco.budaekiugi",
   "appName": "부대 키우기",
   "webDir": "dist",
-  "backgroundColor": "#151b19"
+  "backgroundColor": "#151b19",
+  "plugins": {
+    "SystemBars": {
+      "hidden": true,
+      "initialViewportFitValueHint": "cover"
+    }
+  }
 }

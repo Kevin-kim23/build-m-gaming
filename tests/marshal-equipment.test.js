@@ -26,7 +26,7 @@ test('enhancement control comes before growing descriptions, artwork and result 
 });
 test('railgun and ICBM preview one rank early, enforce ranks and use exact gold and automatic home deployment',()=>{
   for(const [id,hidden,preview,unlocked] of [['railgunTank','소장','중장','대장'],['icbm','중장','대장','준원수']]){
-    assert.equal(equipmentPurchaseOffer(army(hidden),id).visible,false);
+    assert.equal(equipmentPurchaseOffer(army(hidden),id).visible,true);
     const locked=army(preview),before=locked.gold;
     assert.equal(equipmentPurchaseOffer(locked,id).visible,true);
     assert.equal(buyEquipment(locked,T,id).reason,'locked');assert.equal(locked.gold,before);

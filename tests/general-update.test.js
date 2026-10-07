@@ -15,7 +15,7 @@ const general=()=>({...freshState(T),soldiers:7240,sergeants:300,ncoSchoolLevel:
 
 test('rocket launcher previews only at colonel and requires actual brigadier rank to purchase',()=>{
   const s=general();s.soldiers=880;s.sergeants=40;
-  assert.equal(equipmentPurchaseOffer(s,'rocketLauncher').visible,false);
+  assert.equal(equipmentPurchaseOffer(s,'rocketLauncher').visible,true);
   s.soldiers=6000;
   assert.equal(equipmentPurchaseOffer(s,'rocketLauncher').visible,true);
   assert.equal(buyEquipment(s,T,'rocketLauncher').reason,'locked');

@@ -51,7 +51,7 @@ test('repeated ceremonies reuse one dialog, replace one timeout and clear genera
     events.get('click')({target:{closest:()=>true}});assert.equal(dialog.open,false);assert.equal(pending.size,0);
     showPromotion(RANKS.indexOf('대령'),insignia);assert.ok(!classes.has('is-general'));assert.ok(classes.has('is-field'));assert.equal(normalIcons,1);assert.match(dialog.innerHTML,/대령 진급!/);
     const timeout=[...pending.values()][0];assert.equal(timeout.ms,3000);timeout.fn();assert.equal(dialog.open,false);assert.equal(pending.size,0);
-    showPromotion(RANKS.indexOf('병장'),insignia);assert.ok(classes.has('is-simple'));assert.ok(!classes.has('is-field'));assert.equal(normalIcons,1);assert.doesNotMatch(dialog.innerHTML,/wing/);assert.equal(pending.size,1);
+    showPromotion(RANKS.indexOf('병장'),insignia);assert.ok(classes.has('is-simple'));assert.ok(!classes.has('is-field'));assert.equal(normalIcons,2);assert.doesNotMatch(dialog.innerHTML,/wing/);assert.equal(pending.size,1);
     showPromotion(RANKS.indexOf('소장'),insignia);dialog.close();assert.equal(pending.size,0);
     assert.ok(!classes.has('is-simple'));assert.ok(!classes.has('is-field'));
     hidePromotion();assert.equal(dialog.open,false);

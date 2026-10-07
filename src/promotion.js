@@ -24,7 +24,7 @@ export function promotionProfile(rank) {
 const wing = `<svg viewBox="0 0 120 100" aria-hidden="true"><path d="M119 69 100 44 69 33 12 8 24 32 66 57 6 32 22 58 75 76 19 64 37 84 87 91 118 84Z" fill="#d5bb76" stroke="#f6e4aa" stroke-width="2"/><path d="m24 25 72 32 34 20M23 48l55 25 29 7M37 76l44 11" fill="none" stroke="#9d7b40" stroke-width="3"/></svg>`;
 export function promotionMarkup(rank, insignia, p = promotionProfile(rank)) {
   if (p.style === 'general') return generalPromotionMarkup(rank, p);
-  if (p.style === 'simple') return `<div class="promotion-stage promotion-simple" data-rank="${rank}"><p class="promotion-announcement">${RANKS[rank]} 진급!</p></div>`;
+  if (p.style === 'simple') return `<div class="promotion-stage promotion-simple" data-rank="${rank}"><div class="promotion-medal" aria-hidden="true">${insignia(rank)}</div><p class="promotion-announcement">${RANKS[rank]} 진급!</p></div>`;
   const enhanced = p.style === 'field', marks = RANK_DEFINITIONS[rank].marks;
   return `<div class="promotion-stage${enhanced ? ' promotion-field' : ''}" data-rank="${rank}">
     <div class="promotion-halo" aria-hidden="true"></div>

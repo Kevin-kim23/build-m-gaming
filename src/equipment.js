@@ -1,6 +1,6 @@
 import { multiplyMoney } from './money.js';
 import { LATE_EQUIPMENT } from './late-equipment-catalog.js';
-import { rankForArmy, RANKS, catalogVisible } from "./ranks.js";
+import { rankForArmy, RANKS } from "./ranks.js";
 import { divisionFlagStatus, enhancementLimitForFlag } from './personal-equipment.js';
 export const HELICOPTER_STAGES = Object.freeze([
   "기본형", "기수 장갑", "로켓 포드", "꼬리날개 확장", "동체 장갑",
@@ -114,10 +114,7 @@ export const emptyEquipment = () =>
 export const equipmentOf = (s, id = "artillery") => s.equipment?.[id] ?? null;
 export const equipmentCount = (s, id) => equipmentOf(s, id)?.count ?? (equipmentOf(s, id) ? 1 : 0);
 export const artilleryOf = (s) => equipmentOf(s);
-export const visibleEquipment = (s) =>
-  Object.values(EQUIPMENT).filter(
-    (d) => catalogVisible(s, d.unlockRank) || equipmentOf(s, d.id),
-  );
+export const visibleEquipment = () => Object.values(EQUIPMENT);
 export const deployedEquipment = (s) =>
   Object.values(EQUIPMENT)
     .filter((d) => equipmentOf(s, d.id)?.deployed)
@@ -159,7 +156,7 @@ export function equipmentPurchaseOffer(s, id = "artillery") {
     locked,
     reason,
     canBuy: reason === null,
-    visible: catalogVisible(s, d.unlockRank) || !!equipmentOf(s, id),
+    visible: true,
   };
 }
 export function enhancementOffer(s, id = "artillery") {
