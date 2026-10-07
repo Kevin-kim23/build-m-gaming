@@ -1,7 +1,7 @@
 import { UNIT_TRAITS, battleSlots, stageEnemyType, matchupMultiplier, GEAR_CLASS, CLASS_NAMES, fortressShieldClass } from './battle.js';
 import { EQUIPMENT } from './equipment.js';
 
-// 스테이지 목록 아래쪽의 "출전 덱": 장비 카드(그림+이름+마나 배지)를 눌러 고르고 바로 전투를 시작한다(클래시 로얄식).
+// 작전 지도 아래쪽의 "출전 덱": 장비 카드(그림+이름+마나 배지)를 눌러 고르고 바로 전투를 시작한다(클래시 로얄식).
 // 카드 그림은 화면에 붙인 뒤 battle-ui의 paintCardArt가 canvas[data-card-art]에 그린다.
 export function stageTagsMarkup(stage) {
   const type = stageEnemyType(stage.id), shield = fortressShieldClass(stage.id);

@@ -11,7 +11,7 @@ import { UNITS } from './units.js';
 import { EQUIPMENT } from './equipment.js';
 import './battle.css';
 import './campaign.css';
-import { createCampaignList } from './campaign-map.js';
+import { createCampaignMap } from './campaign-map.js';
 import { COUNTRIES } from './campaign.js';
 import { ACHIEVEMENTS } from './achievements.js';
 import { createBattleAudioEvents } from './battle-audio-events.js';
@@ -20,14 +20,14 @@ import { createBattleAudioEvents } from './battle-audio-events.js';
 export function createBattleUI(session, audio = null) {
   const dialog = document.querySelector('#battle-modal');
   const $ = (selector) => dialog.querySelector(selector);
-  // 스테이지 목록 아래 출전 덱: 지역을 바꾸면 그 지역 상성에 맞춘 기본 덱을 다시 고르고, 같은 지역 안에서는 고른 덱을 유지한다.
+  // 지도 아래 출전 덱: 지역을 바꾸면 그 지역 상성에 맞춘 기본 덱을 다시 고르고, 같은 지역 안에서는 고른 덱을 유지한다.
   function deckFor(id) {
     const state = session.state;
     loadout = normalizeLoadout(state, loadout && loadoutStage === id ? loadout : defaultLoadout(state, id));
     loadoutStage = id;
     return loadout.equipment;
   }
-  const campaignList = createCampaignList(dialog,()=>session.state,deckFor);
+  const campaignMap = createCampaignMap(dialog,()=>session.state,deckFor);
   let mode = 'stages', stageId = 1, loadout = null, loadoutStage = 0, battle = null;
   let raf = 0, lastFrame = 0, paused = false, finalized = false, selected = null, drag = null, suppressClick = false;
   let stagesKey = '';
@@ -59,14 +59,14 @@ export function createBattleUI(session, audio = null) {
   }
   function stop() { cancelAnimationFrame(raf); raf = 0; lastFrame = 0; }
   function close() {
-    stop(); battle = null;
+    stop(); campaignMap.stop(); battle = null;
     audio?.stop?.();
     if (dialog.open) dialog.close();
   }
-  function showStages(countryId = campaignList.countryId) {
+  function showStages(countryId = campaignMap.countryId) {
     stop(); battle = null; mode = 'stages';
     stagesKey = mapKey();
-    campaignList.show(countryId);
+    campaignMap.show(countryId);
     audio?.stop?.(); audio?.prepareBattle?.();
     paintCardArt();
     dialog.classList.remove('in-battle');
@@ -83,7 +83,7 @@ export function createBattleUI(session, audio = null) {
     dialog.querySelectorAll('[data-battle-gear]:checked').forEach(input => raw.equipment.push(input.dataset.battleGear));
     return normalizeLoadout(session.state, raw);
   }
-  // 목록에서 시작(체크한 덱) 또는 결과 화면에서 다시/다음(주어진 덱)으로 바로 전투를 시작한다.
+  // 지도에서 시작(체크한 덱) 또는 결과 화면에서 다시/다음(주어진 덱)으로 바로 전투를 시작한다.
   function start(deck = null) {
     if (!session.active || document.hidden) return;
     loadout = deck ? normalizeLoadout(session.state, { equipment: deck }) : selection();
@@ -93,9 +93,9 @@ export function createBattleUI(session, audio = null) {
     try { battle = createBattle(session.state, stageId, loadout); }
     catch (error) {
       reportError('battle.start', error);
-      text('#battle-message', '출전 조건이 바뀌었어요. 작전 목록에서 다시 선택해 주세요.'); return;
+      text('#battle-message', '출전 조건이 바뀌었어요. 작전 지도에서 다시 선택해 주세요.'); return;
     }
-    stop(); mode = 'battle'; paused = false; finalized = false; selected = null;
+    stop(); campaignMap.stop(); mode = 'battle'; paused = false; finalized = false; selected = null;
     audioEvents.reset(); healedAt.clear();
     audio?.stop?.(); audio?.prepareBattle?.();
     fx = { flash: { player: -1e9, enemy: -1e9 }, shakeAt: -1e9, prevHp: null, accum: { player: 0, enemy: 0 }, lastFloat: { player: 0, enemy: 0 }, lastSound: {} };
@@ -236,7 +236,7 @@ export function createBattleUI(session, audio = null) {
     $('#battle-overlay').hidden = true;
     schedule();
   }
-  // 결과 화면: 제목 · 별 · 전리품 · 짧은 한 줄 · 버튼(다음 지역/다시 도전/스테이지 목록). 자세한 설명은 길게 쓰지 않는다.
+  // 결과 화면: 제목 · 별 · 전리품 · 짧은 한 줄 · 버튼(다음 지역/다시 도전/작전 지도). 자세한 설명은 길게 쓰지 않는다.
   function finish() {
     if (finalized) return;
     finalized = true; stop();
@@ -254,7 +254,7 @@ export function createBattleUI(session, audio = null) {
         if (result.firstClear && stageId % 20 === 0 && stageId < STAGES.length) audio?.ui?.('unlock',session.state.sound);
         copy = bits.join(' · ');
         canNext = stageId < STAGES.length && (session.state.campaignCleared ?? 0) >= stageId;
-      } else copy = '클리어 기록을 반영하지 못했어요. 작전 목록에서 확인해 주세요.';
+      } else copy = '클리어 기록을 반영하지 못했어요. 작전 지도에서 확인해 주세요.';
     }
     overlay(won ? '승리' : battle.status === 'defeat' ? '패배' : '무승부', copy, true);
     text('#battle-result-stars', stars); text('#battle-result-loot', loot);
@@ -285,10 +285,10 @@ export function createBattleUI(session, audio = null) {
     const target = event.target.closest('button,[data-country],[data-region]');
     if (suppressClick && target?.dataset?.deploy) { suppressClick = false; return; }
     if (!target || target.disabled || target.getAttribute('aria-disabled')==='true') return;
-    if (mode==='stages' && campaignList.handle(target)) { paintCardArt(); return; }
+    if (mode==='stages' && campaignMap.handle(target)) { paintCardArt(); return; }
     if (target.hasAttribute('data-battle-close')) close();
     else if (target.hasAttribute('data-stage')) quickStart(Number(target.dataset.stage));
-    else if (target.hasAttribute('data-battle-back')) showStages(null);
+    else if (target.hasAttribute('data-battle-back')) showStages();
     else if (target.hasAttribute('data-battle-retry')) start(loadout.equipment);
     else if (target.hasAttribute('data-battle-next')) { stageId += 1; loadoutStage = stageId; start(deckFor(stageId)); }
     else if (target.hasAttribute('data-battle-info')) showInfo(Number(target.dataset.infoStage) || stageId);
@@ -308,7 +308,7 @@ export function createBattleUI(session, audio = null) {
     } else text('#battle-message', '');
     text('#battle-slot-count', `${dialog.querySelectorAll('[data-battle-gear]:checked').length} / ${limit}`);
     const shown = Number($('[data-stage]')?.dataset.stage);
-    if (shown) { loadout = selection(); loadoutStage = shown; }   // 목록에서 고른 덱을 기억(같은 지역을 다시 열어도 유지)
+    if (shown) { loadout = selection(); loadoutStage = shown; }   // 지도에서 고른 덱을 기억(같은 지역을 다시 열어도 유지)
   });
   // 카드를 끌어 레인에 놓기(클래시 로얄 방식). 거의 안 움직이면 '카드 선택 → 레인 터치'로 동작한다.
   function laneAt(event) {
@@ -355,7 +355,11 @@ export function createBattleUI(session, audio = null) {
     if (lane === null) { selected = null; paint(); } else sortie(lane);
   });
   dialog.addEventListener('pointercancel', event => { if (drag && event.pointerId === drag.pointerId) { endDrag(); selected = null; if (battle) paint(); } });
+  dialog.addEventListener('keydown', event => {
+    const target=event.target.closest('g[data-country],g[data-region]');
+    if(target && ['Enter',' '].includes(event.key)){event.preventDefault();campaignMap.handle(target);}
+  });
   dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
-  dialog.addEventListener('close', () => { stop(); battle = null; audio?.stop?.(); document.querySelector('#open-battle')?.focus(); });
+  dialog.addEventListener('close', () => { stop(); campaignMap.stop(); battle = null; audio?.stop?.(); document.querySelector('#open-battle')?.focus(); });
   return {open, sync, suspend};
 }

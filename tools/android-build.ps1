@@ -1,9 +1,22 @@
 param(
-    [ValidateSet('Doctor', 'NewKey', 'Debug', 'Release')]
+    [ValidateSet('Doctor', 'NewKey', 'Debug', 'Release', 'Unsigned')]
     [string]$Mode = 'Doctor'
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+
+function Get-AndroidArtifactHash([string]$Path) {
+    # .NET is available even when Windows PowerShell cannot resolve Get-FileHash.
+    $hasher = [Security.Cryptography.SHA256]::Create()
+    $stream = $null
+    try {
+        $stream = [IO.File]::OpenRead($Path)
+        return [BitConverter]::ToString($hasher.ComputeHash($stream)).Replace('-', '')
+    } finally {
+        if ($stream) { $stream.Dispose() }
+        $hasher.Dispose()
+    }
+}
 
 # Scope all environment changes to this command, never to the user's system settings.
 $oldJava = $env:JAVA_HOME
@@ -83,7 +96,7 @@ try {
         exit 0
     }
     if ($Mode -eq 'Release' -and -not (Test-Path -LiteralPath $signingPath)) {
-        throw 'Upload key missing. Run npm run android:key once, or restore your existing private key/configuration.'
+        throw 'Upload key missing. Restore your existing private key/configuration. Only first-ever apps should create a new key; see docs/ANDROID_RELEASE.md.'
     }
     Push-Location $projectRoot
     try {
@@ -91,10 +104,33 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Web build / native sync failed.' }
         Push-Location (Join-Path $projectRoot 'android')
         try {
-            $targets = if ($Mode -eq 'Debug') { @('assembleDebug') } else { @('bundleRelease', 'assembleRelease', 'lintRelease') }
+            # Keep the one-task Debug branch an array; scalar splatting splits its characters.
+            $targets = @(switch ($Mode) {
+                'Debug' { @('assembleDebug') }
+                'Unsigned' { @('bundleUnsigned', 'lintUnsigned') }
+                'Release' { @('bundleRelease', 'assembleRelease', 'lintRelease') }
+                default { throw 'Unsupported Android build mode.' }
+            })
             & .\gradlew.bat @targets --no-daemon --console=plain
             if ($LASTEXITCODE -ne 0) { throw 'Android build failed.' }
         } finally { Pop-Location }
+        if ($Mode -eq 'Debug') {
+            Write-Output ('TEST APK: ' + (Join-Path $projectRoot 'android/app/build/outputs/apk/debug/app-debug.apk'))
+            Write-Output 'Package: com.dongramco.budaekiugi.dev (separate test app; not for Play upload).'
+        }
+        if ($Mode -eq 'Unsigned') {
+            $unsignedBundle = Join-Path $projectRoot 'android/app/build/outputs/bundle/unsigned/app-unsigned.aab'
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            $bundleArchive = [IO.Compression.ZipFile]::OpenRead($unsignedBundle)
+            try {
+                if ($bundleArchive.Entries.FullName -match '^META-INF/[^/]+\.(SF|RSA|DSA|EC)$') {
+                    throw 'Expected an unsigned AAB but found a signature entry.'
+                }
+            } finally { $bundleArchive.Dispose() }
+            Write-Output "UNSIGNED AAB (cannot upload to Play): $unsignedBundle"
+            Write-Output ('SHA-256: ' + (Get-AndroidArtifactHash $unsignedBundle))
+            Write-Output 'Build the final release with your EXISTING upload key. No new upload key was created.'
+        }
         if ($Mode -eq 'Release') {
             $bundle = Join-Path $projectRoot 'android/app/build/outputs/bundle/release/app-release.aab'
             $credentials = Get-Content -LiteralPath $signingPath -Raw | ConvertFrom-Json
@@ -106,10 +142,7 @@ try {
                 Remove-Item Env:BUDAE_UPLOAD_PASSWORD -ErrorAction SilentlyContinue
                 $credentials = $null
             }
-            $hasher = [Security.Cryptography.SHA256]::Create()
-            $bundleStream = [IO.File]::OpenRead($bundle)
-            try { $bundleHash = [BitConverter]::ToString($hasher.ComputeHash($bundleStream)).Replace('-', '') }
-            finally { $bundleStream.Dispose(); $hasher.Dispose() }
+            $bundleHash = Get-AndroidArtifactHash $bundle
             Write-Output "AAB: $bundle"
             Write-Output "SHA-256: $bundleHash"
         }

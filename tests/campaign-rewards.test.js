@@ -6,8 +6,7 @@ import { campaignBonusPercent, withCampaignIncome } from '../src/campaign-reward
 import { freshState, perSecond, perTap, accrue, parseSave, MAX_GOLD, activateAutoTouch } from '../src/game.js';
 import { recordBattleVictory } from '../src/battle-progress.js';
 import { COUNTRIES } from '../src/campaign.js';
-import { stageBriefMarkup } from '../src/campaign-brief.js';
-import { campaignStages } from '../src/campaign.js';
+import { updateCountryBrief } from '../src/campaign-brief.js';
 
 const T=1_800_000_000_000;
 const state=()=>({...freshState(T),soldiers:5000,sergeants:300,staffSergeants:20,masterSergeants:10,sergeantMajors:10,lieutenants:10,firstLieutenants:10,captains:120,ncoSchoolLevel:5,officerSchoolLevel:3});
@@ -78,13 +77,17 @@ test('bonus accrual is consistent across fractional ticks, offline time, reloads
   accrue(restored,T+13000);
   assert.equal(restored.gold,MAX_GOLD);assert.equal(restored.incomeRemainder,0);
 });
-test('stage brief keeps current conquest reward and distinguishes replay without mutating the save',()=>{
-  const original=state(),before=structuredClone(original);
-  const next=stageBriefMarkup(original,campaignStages[0],[]);
-  assert.match(next,/최초 점령 보상 · 초당 수입 \+1%/);
-  assert.match(next,/data-stage="1" >전투 시작/);
-  assert.deepEqual(original,before);
-  original.campaignCleared=1;
-  const replay=stageBriefMarkup(original,campaignStages[0],[]);
-  assert.match(replay,/점령 보너스 획득 완료/);assert.match(replay,/다시 도전/);
+test('country details follow the viewed nation and explain locked entries outside the map',()=>{
+  const nodes=Object.fromEntries(['title','detail','status','entry'].map(k=>['[data-country-'+k+']',{textContent:'',dataset:{},setAttribute(k,v){this[k]=v;}}]));
+  const root={querySelector:()=>({querySelector:s=>nodes[s]})};
+  for(const c of COUNTRIES){
+    updateCountryBrief(root,{campaignCleared:0},c);
+    assert.equal(nodes['[data-country-title]'].textContent,c.name);
+    assert.ok(nodes['[data-country-detail]'].textContent.includes(c.powers.at(-1).toLocaleString('en-US')));
+    assert.equal(nodes['[data-country-entry]'].disabled,c.index>0);
+    assert.equal(nodes['[data-country-entry]'].dataset.country,c.id);
+    updateCountryBrief(root,{campaignCleared:c.firstStage},c);
+    assert.equal(nodes['[data-country-entry]'].disabled,false);
+    assert.match(nodes['[data-country-status]'].textContent,/1\/20 점령/);
+  }
 });

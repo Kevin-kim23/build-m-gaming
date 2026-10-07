@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "date": "2026-10-07",
+  "logoSource": "User-supplied 02_Blueprint_Laser_White_Mobile.mp4, original bytes and embedded sound retained",
+  "titleSource": "Built-in image_gen; original fictional army base; lossless WebP encode",
+  "rightsReview": "docs/OPENING_ASSETS.md",
+  "assets": [
+    {
+      "path": "public/opening/studio-logo.mp4",
+      "bytes": 1794332,
+      "sha256": "9ee59e4a37f243b227a7436c64a94023e91d3bb535b4ec78b299620d7459a258"
+    },
+    {
+      "path": "public/opening/studio-poster.webp",
+      "bytes": 172038,
+      "sha256": "85a7f83ba72de5085b86c62d5dfbf9816f618391a9f8c2f881534fb0bc8ba156"
+    },
+    {
+      "path": "public/opening/title-screen.webp",
+      "bytes": 1793660,
+      "sha256": "7bb7898d43079cf691162ad91b0165e16791895059268b947fbf184235139471"
+    }
+  ]
+}

@@ -12,10 +12,23 @@
       content="빈 땅에서 시작해 병사를 모집하고 대대까지 키우는 픽셀 방치형 게임."
     />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="stylesheet" href="/src/opening.css" />
+    <link rel="preload" href="/opening/title-screen.webp" as="image" />
     <title>부대 키우기 · 작은 시작</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="opening" data-stage="logo" aria-label="부대 키우기 시작 화면">
+      <div class="opening-frame">
+        <video id="opening-video" src="/opening/studio-logo.mp4" poster="/opening/studio-poster.webp" muted playsinline preload="auto" disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1"></video>
+        <button id="opening-title" type="button" aria-label="부대 키우기 시작" hidden>
+          <img id="opening-art" src="/opening/title-screen.webp" alt="" fetchpriority="high" decoding="async" />
+          <span class="opening-heading">부대 키우기</span>
+          <span class="opening-prompt">화면을 터치하면 시작합니다</span>
+        </button>
+        <button id="opening-skip" type="button" aria-label="회사 로고 건너뛰기">건너뛰기</button>
+      </div>
+    </div>
+    <div id="app" inert aria-hidden="true"></div>
     <dialog id="modal" aria-labelledby="modal-title"></dialog>
     <dialog id="battle-modal" aria-labelledby="battle-title"></dialog>
     <dialog id="achievement-modal" aria-labelledby="achievements-title"></dialog>

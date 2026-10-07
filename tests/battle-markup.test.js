@@ -13,26 +13,24 @@ function inputTag(markup, attribute, id) {
   return markup.match(new RegExp(`<input\\b[^>]*${attribute}="${id}"[^>]*>`))?.[0];
 }
 
-test('early preview has four country tabs, three locked, and explicit lieutenant-colonel access instead of map gestures',()=>{
+test('continent preview shows four nations, three locked, and a single locate button instead of arrow/zoom buttons',()=>{
  const html=stagesMarkup({...freshState(0),soldiers:4});
  assert.match(html,/아스테라 대륙/);assert.equal((html.match(/class="nation-tab /g)??[]).length,4);
- const tabs=[...html.matchAll(/<button data-country="[^>]+>/g)].map(match=>match[0]);
- assert.equal(tabs.filter(tag=>tag.includes('disabled')).length,3);
- assert.match(html,/스테이지 선택/);assert.match(html,/중령부터 출전/);assert.doesNotMatch(html,/data-pan=|data-zoom=|atlas-controls|campaign-svg|도전 가능/);
+ assert.equal((html.match(/class="country-hit locked"/g)??[]).length,3);
+ assert.match(html,/data-locate/);assert.doesNotMatch(html,/data-pan=|data-zoom=|atlas-controls/,'only one map button: gestures replace arrows and zoom');assert.match(html,/손가락으로 끌어 이동/);
  assert.doesNotMatch(html,/undefined|NaN/);
 });
-test('country preview exposes twenty numbered regions and only the current or completed stages can be selected',()=>{
+test('country preview exposes twenty regions but only a sequential ready action',()=>{
  const state=army({campaignCleared:2});
  const html=stagesMarkup(state,'serdin',3);
- assert.equal((html.match(/data-region="/g)??[]).length,20);
+ assert.equal((html.match(/class="region-hit /g)??[]).length,20);
  assert.ok(stageCards(html).find(c=>c.id===3&&!c.disabled));
- const locked=html.match(/<button[^>]*data-region="4"[^>]*>/)[0];assert.match(locked,/disabled/);
- assert.equal(stageCards(stagesMarkup(state,'serdin',4))[0].id,3,'stale selection resolves to next playable stage');
+ assert.ok(stageCards(stagesMarkup(state,'serdin',4))[0].disabled);
  assert.ok(stageCards(stagesMarkup({...freshState(0),soldiers:4},'serdin',1))[0].disabled);
  assert.match(stagesMarkup(state,'serdin',1),/다시 도전/);
 });
 
-test('the stage list starts battles directly: chips, picture deck cards, slot counter and one start button; long text lives in the info popup', () => {
+test('the operations map starts battles directly: chips, picture deck cards, slot counter and one start button; long text lives in the info popup', () => {
   const state = army({ soldiers: 2, sergeants: 128, campaignCleared: 0,
     equipment: { artillery: { level: 3, deployed: false }, tank: null, selfPropelled: null } });
   const html = stagesMarkup(state, 'serdin', 1, ['artillery']);
@@ -54,10 +52,9 @@ test('the stage list starts battles directly: chips, picture deck cards, slot co
   assert.match(detail.body, /끌어다 놓아/);
 });
 
-test('rank-locked players see no deck; stale region selection resolves to the playable objective and completed regions replay', () => {
+test('locked or unselectable regions show no deck, and a conquered region offers a replay', () => {
   const state = army({ soldiers: 880, sergeants: 40, campaignCleared: 2, equipment: { artillery: { level: 3, deployed: true } } });
-  assert.doesNotMatch(stagesMarkup({...freshState(0),soldiers:4}, 'serdin', 1), /quick-deck/);
-  assert.equal(stageCards(stagesMarkup(state,'serdin',6,['artillery']))[0].id,3);
+  assert.doesNotMatch(stagesMarkup(state, 'serdin', 6, ['artillery']), /quick-deck/);
   assert.match(stagesMarkup(state, 'serdin', 1, ['artillery']), /다시 도전/);
   assert.match(stagesMarkup(state, 'serdin', 3, ['artillery']), /quick-deck/);
 });
@@ -102,15 +99,13 @@ test('deck cards are pictures with name and mana badge, marked advantageous or d
   assert.match(quickDeckMarkup(army({ equipment: {} }), STAGES[0], []), /보유한 장비가 없어요/);
 });
 
-test('completed stage rows preserve their best star records and stage numbers; unconquered rows have no stars', () => {
+test('the map shows each conquered region\'s best stars and the selected region\'s record; unconquered regions show none', () => {
   const state = army({ soldiers: 880, sergeants: 40, campaignCleared: 3, campaignStars: [3, 1, 0, ...Array(77).fill(0)], equipment: { artillery: { level: 3, deployed: true } } });
   const html = stagesMarkup(state, 'serdin', 2, ['artillery']);
-  assert.equal((html.match(/class="best-stars"/g) ?? []).length, 3, 'one star row per conquered region');
-  for(const [id,stars] of [[1,3],[2,1],[3,0]]){
-    const row=html.match(new RegExp(`<button[^>]*data-region="${id}"[\\s\\S]*?</button>`))[0];
-    assert.match(row,new RegExp(`별 ${stars}개`));assert.match(row,new RegExp(`1-0${id}`));
-    assert.ok(row.includes('★'.repeat(stars)+'☆'.repeat(3-stars)));
-  }
-  const next=html.match(/<button[^>]*data-region="4"[\s\S]*?<\/button>/)[0];
-  assert.doesNotMatch(next,/best-stars/);assert.match(next,/도전 가능/);
+  assert.equal((html.match(/class="region-stars"/g) ?? []).length, 3, 'one star row per conquered region');
+  assert.match(html, /aria-label="최고 별 3개">★★★</);
+  assert.match(html, /aria-label="최고 별 1개">★☆☆</);
+  assert.match(html, /aria-label="최고 별 0개">☆☆☆</);
+  assert.match(html, /최고 <span class="best-stars">★☆☆</);
+  assert.doesNotMatch(stagesMarkup(state, 'serdin', 4, ['artillery']), /최고 <span/);
 });

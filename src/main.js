@@ -7,6 +7,8 @@ import './field-world.css';
 import { Capacitor } from "@capacitor/core";
 import { App } from "@capacitor/app";
 import { createBackHandler } from "./back-button.js";
+import { createOpeningScreen } from './opening.js';
+import { createGameLifecycle } from './game-lifecycle.js';
 import { showToast } from "./toast.js";
 import { FACILITIES, facilityOffer, facilityUpgradeOffer } from './facilities.js';
 import { schoolOffer } from "./schools.js";
@@ -91,8 +93,18 @@ const achievementUI = createAchievementUI(session, gameAudio);
 const guideUI = createGuideUI();
 const infoUI = createInfoPanel(session);
 const offlineUI = createOfflineRewardUI(session);
+const opening = createOpeningScreen({onStart: () => {
+  lifecycle.start();
+  if (!document.querySelector('dialog[open]')) zone.focus({preventScroll:true});
+}, soundEnabled: !session.hasSavedProgress || state.sound, onError: reportError});
+const lifecycle = createGameLifecycle({session, opening, onPause: () => {
+  fieldNavigation.clear();
+  battleUI.suspend();
+  hidePromotion();
+  gameAudio.stop();
+}});
 function update() {
-  gameAudio.configure({enabled:state.sound,active:session.active && !document.hidden});
+  gameAudio.configure({enabled:state.sound,active:session.active && lifecycle.canRun});
   const power = armyPower(state),
     r = rank();
   const goldLabel = fmtGold(state.gold);
@@ -133,7 +145,7 @@ function update() {
   zone.setAttribute("aria-label", "화면 터치해서 골드 " + tap + " 획득");
   syncSwordControls(document.querySelector('.field-tools'), state, session.active);
   syncRevolverControls(document.querySelector('.field-tools'), state, session.active);
-  guideUI.sync(state);
+  if (lifecycle.started) guideUI.sync(state);
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
     ["nco","officer","advanced"].some(id=>schoolOffer(state,id).canBuy) ||
@@ -148,8 +160,10 @@ function update() {
   setText('#battle-lock-label', access.unlocked ? '' : '🔒 중령 해금');
   battleUI.sync();
   armyPanels.sync();
-  offlineUI.sync();
-  armyPanels.syncAwards();
+  if (lifecycle.started) {
+    offlineUI.sync();
+    armyPanels.syncAwards();
+  }
 }
 
 // A completed tap earns gold; horizontal gestures only move the map.
@@ -177,6 +191,7 @@ $("#sound").onclick = async () => {
 document.addEventListener('pointerdown', () => gameAudio.unlock(), {capture:true,passive:true});
 document.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') gameAudio.unlock(); }, {capture:true});
 document.addEventListener('click', event => {
+  if (!lifecycle.canRun) return;
   const button=event.target.closest?.('button');
   if (button && !button.disabled && button !== zone && button.id !== 'sound') gameAudio.ui('click',state.sound);
 });
@@ -184,33 +199,23 @@ $("#open-ranks").onclick = () => openRankGuide(state, insignia);
 $("#open-shop").onclick = () => armyPanels.openShop();
 $("#open-equipment").onclick = () => armyPanels.openEquipment();
 $("#open-battle").onclick = () => battleUI.open();
-function pauseGame() {
-  fieldNavigation.clear();
-  battleUI.suspend();
-  session.pause();
-  hidePromotion();
-  gameAudio.stop();
-}
 // Android back button (the plugin only exists inside the app, so the browser version skips this).
 // Registered once at startup: popups close first, then a second press within two seconds leaves.
 if (Capacitor.isNativePlatform()) {
   const onBack = createBackHandler({
     hint: showToast,
     exit: () => {
-      pauseGame();
+      lifecycle.pageHide();
       App.exitApp().catch((error) => reportError("app.exit", error));
     },
   });
   App.addListener("backButton", onBack).catch((error) => reportError("app.backButton", error));
+  App.addListener('appStateChange', ({isActive}) => lifecycle.setNativeActive(isActive))
+    .catch(error => reportError('app.appStateChange', error));
 }
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) pauseGame();
-  else session.start();
-});
-window.addEventListener("pagehide", pauseGame);
-window.addEventListener("pageshow", () => {
-  if (!document.hidden) session.start();
-});
+document.addEventListener('visibilitychange', lifecycle.syncVisibility);
+window.addEventListener('pagehide', lifecycle.pageHide);
+window.addEventListener('pageshow', lifecycle.pageShow);
 window.addEventListener("storage", (event) => {
   if (event.key === SAVE_KEY) session.receive(event.newValue);
 });
@@ -223,8 +228,9 @@ resizeObserver.observe($("#field-viewport"));
 // One clock; automatic payouts use elapsed 300 ms boundaries, not timer counts.
 let lastTick = 0;
 setInterval(() => {
+  if (!lifecycle.canRun) return;
   const now = Date.now(), delay = autoTouchStatus(state, now).active ? 300 : 1000;
-  if (!document.hidden && now - lastTick >= delay) { lastTick = now; session.tick(); }
+  if (now - lastTick >= delay) { lastTick = now; session.tick(); }
 }, 100);
 update();
-if (!document.hidden) session.start();
+lifecycle.syncVisibility();

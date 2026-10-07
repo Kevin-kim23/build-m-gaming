@@ -26,9 +26,19 @@ android {
         }
     }
     buildTypes {
+        debug {
+            // Install beside the production app without replacing its saved game.
+            applicationIdSuffix ".dev"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        unsigned {
+            // Explicit handoff artifact only: never substitutes for signed release.
+            initWith release
+            matchingFallbacks = ['release']
+            signingConfig = null
         }
     }
 }

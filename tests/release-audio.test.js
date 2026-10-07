@@ -34,3 +34,15 @@ test('synthesis release needs no private audio but rejects accidentally bundled 
   await writeFile(new URL('public/old/forgotten.MP3',root),'unused private sample');
   assert.match((await verifyAudioAssets(root)).failures.join('\n'),/forgotten.MP3/);
 });
+
+test('a video container cannot bypass the recorded audio policy', async t => {
+  const directory = await mkdtemp(join(tmpdir(), 'budae-video-release-'));
+  t.after(() => rm(directory, {recursive:true, force:true}));
+  const root = pathToFileURL(directory + '/');
+  await mkdir(new URL('public/opening/', root), {recursive:true});
+  await writeFile(new URL('public/forgotten.mp4', root), 'unreviewed recording');
+  await writeFile(new URL('public/opening/studio-logo.mp4', root), 'wrong logo bytes');
+  const errors = (await verifyAudioAssets(root)).failures.join('\n');
+  assert.match(errors, /forgotten.mp4/);
+  assert.match(errors, /studio-logo.mp4.*checksum/);
+});

@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { COUNTRIES,countryProgress,campaignStages } from '../src/campaign.js';
 import { countryRegions,inside,clampCamera,countryCamera,campaignHomeCamera } from '../src/campaign-geometry.js';
-import { campaignMarkup, campaignSelection } from '../src/campaign-map.js';
+import { campaignMarkup } from '../src/campaign-map.js';
 import { freshState,parseSave,MAX_SOLDIERS } from '../src/game.js';
 import { UNITS,armyPower } from '../src/units.js';
 import { EQUIPMENT } from '../src/equipment.js';
@@ -104,14 +104,15 @@ test('camera bounds prevent empty-ocean traps at desktop and phone aspect ratios
     }
   }
 });
-test('stage list exposes all twenty ordered regions and the capital without map gestures',()=>{
+test('region UI exposes all twenty regions, lock reasons, replay, next-country and correct capital information',()=>{
   for(const c of COUNTRIES){
     const state={...army(c.powers[19]),campaignCleared:c.lastStage-1};
     const html=campaignMarkup(state,c.id,c.lastStage);
-    assert.equal((html.match(/data-region="/g)??[]).length,20);
+    assert.equal((html.match(/class="region-hit /g)??[]).length,20);
     assert.match(html,new RegExp(c.names[19]));assert.match(html,/최종 수도전/);assert.match(html,/전투 시작/);
-    assert.doesNotMatch(html,/undefined|NaN|data-world|data-locate|campaign-svg|atlas-window/);
-    assert.deepEqual([...html.matchAll(/data-region="(\d+)"/g)].map(match=>Number(match[1])),Array.from({length:20},(_,i)=>c.firstStage+i));
+    assert.doesNotMatch(html,/undefined|NaN/);
+    for(const control of ['data-world','data-locate'])assert.ok(html.includes(control));
+    assert.ok(!html.includes('data-zoom')&&!html.includes('data-pan'));
   }
 });
 
@@ -123,34 +124,36 @@ test('extra support and air gear in the collection does not lower the first-capi
   }
 });
 
-test('opening the list moves to the first unfinished country, including capital transitions and total completion',()=>{
-  for(let cleared=0;cleared<=80;cleared++){
-    const state={...army(81920),campaignCleared:cleared},view=campaignSelection(state);
-    const id=Math.min(80,cleared+1),stage=campaignStages[id-1];
-    assert.equal(view.country.id,stage.countryId);assert.equal(view.selected.id,id);
-    assert.equal(view.complete,cleared===80);
-    assert.deepEqual(state.campaignCleared,cleared,'view selection never advances saved progress');
-    const html=campaignMarkup(state);
-    if(cleared===80){assert.match(html,/모든 지역 점령 완료/);assert.doesNotMatch(html,/data-current-stage/);}
-    else assert.match(html,new RegExp(`다음 목표.*${stage.name}`));
+test('completed country maps offer a direct northern route only to the next unlocked country',()=>{
+  for(const c of COUNTRIES){
+    assert.doesNotMatch(campaignMarkup({campaignCleared:c.lastStage-1},c.id,c.lastStage),/class="atlas-next-country"/);
+    const completed=campaignMarkup({...army(81920),campaignCleared:c.lastStage},c.id,c.firstStage);
+    if(c.index<3){
+      const next=COUNTRIES[c.index+1];
+      assert.match(completed,new RegExp('class="atlas-next-country" data-country="'+next.id+'"'));
+      assert.match(completed,new RegExp('다음 나라 · '+next.name));
+      assert.ok(completed.indexOf('class="atlas-next-country"')<completed.indexOf('class="atlas-window"'));
+      assert.match(completed,/다시 도전/);
+    }else assert.doesNotMatch(completed,/class="atlas-next-country"/);
   }
+  assert.doesNotMatch(campaignMarkup({campaignCleared:80}),/class="atlas-next-country"/);
 });
 
-test('country tabs retain conquered-country replay and reject future-country or locked-region selection',()=>{
-  for(const country of COUNTRIES){
-    const state={...army(81920),campaignCleared:country.firstStage-1};
-    for(const target of COUNTRIES){
-      const html=campaignMarkup(state,country.id),tag=html.match(new RegExp(`<button data-country="${target.id}"[^>]*>`))[0];
-      assert.equal(tag.includes('disabled'),target.index>country.index);
-      const view=campaignSelection(state,target.id,target.firstStage);
-      assert.equal(view.country.id,target.index<=country.index?target.id:country.id);
+test('upper countries provide a southern route to the conquered previous country, including while unfinished',()=>{
+  for(const c of COUNTRIES){
+    for(const cleared of [c.firstStage-1,c.lastStage]){
+      const html=campaignMarkup({...army(81920),campaignCleared:cleared},c.id,c.firstStage);
+      const route=html.match(/<button class="atlas-previous-country"[^>]*>[\s\S]*?<\/button>/)?.[0];
+      if(c.index===0){assert.equal(route,undefined);continue;}
+      const previous=COUNTRIES[c.index-1];
+      assert.ok(route,`${c.id} after ${cleared} clears needs a return route`);
+      assert.ok(route.includes(`data-country="${previous.id}"`));
+      assert.ok(route.includes(`이전 나라 · ${previous.name}`));
+      assert.ok(html.indexOf(route)>html.indexOf('</svg>\n  <div class="atlas-compass"'));
     }
-    assert.equal(campaignSelection(state,country.id,country.lastStage).selected.id,country.firstStage);
   }
-  const state={...army(81920),campaignCleared:80};
-  assert.equal(campaignSelection(state,'serdin',1).selected.id,1);
-  assert.match(campaignMarkup(state,'serdin',1),/다시 도전/);
-  assert.equal(campaignSelection(state,'not-a-country',999).selected.id,80);
+  assert.ok(!campaignMarkup({campaignCleared:80}).includes('class="atlas-previous-country"'));
+  assert.ok(!campaignMarkup({campaignCleared:19},'veloc',21).includes('class="atlas-previous-country"'));
 });
 
 test('belok needs roughly a marshal: its capital recommends 1,310,720 and later nations climb to the supreme ranks',()=>{

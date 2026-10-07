@@ -1,6 +1,7 @@
-import { readdir } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
+import { matchesOpeningAsset } from './opening-assets.mjs';
 
-// Synthesis-only releases must not accidentally include old licensed recordings.
+// Gameplay uses synthesis. The one explicitly requested studio video is hash-checked.
 export async function verifyAudioAssets(root) {
   const failures = [];
   async function visit(relative = '') {
@@ -10,6 +11,11 @@ export async function verifyAudioAssets(root) {
       else if (entry.isDirectory()) await visit(name + '/');
       else if (/\.(mp3|wav|ogg|m4a|aac|flac|opus|aiff|wma|zip)$/i.test(entry.name))
         failures.push(name + ': remove recorded audio/archive from this synthesis-only release');
+      else if (/\.(mp4|m4v|webm|mov|avi|mkv)$/i.test(entry.name)) {
+        if (name !== 'opening/studio-logo.mp4') failures.push(name + ': unreviewed video/audio container');
+        else if (!matchesOpeningAsset('public/' + name, await readFile(new URL('public/' + name, root))))
+          failures.push(name + ': approved studio video checksum differs');
+      }
     }
   }
   try { await visit(); }

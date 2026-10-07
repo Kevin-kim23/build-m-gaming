@@ -223,6 +223,8 @@ export function createGameSession({ storage, locks, now = Date.now,
   load();
   return {
     get state() { return state; },
+    // Unknown/unreadable saves must not opt the player into startup sound.
+    get hasSavedProgress() { return committed !== null || invalid; },
     get active() { return active && !invalid; },
     get saveNotice() {
       if (storageError) return { kind: invalid ? 'blocked' : 'warning', canRetry: invalid,
