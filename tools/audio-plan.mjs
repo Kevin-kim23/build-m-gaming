@@ -9,6 +9,9 @@ const gear = [
  ['transport','전술 수송기',1.4,'A gentle electronic medical repair pulse, soft ascending synthetic tones with a warm shimmering tail',1.5,'A short heavy transport aircraft propeller and turbine flyby'],
  ['fighter','전투기',1.2,'A short jet missile ignition and sharp supersonic rushing whoosh',1.5,'A fast fighter jet turbine flyby, concise rising and falling pitch'],
  ['railgunTank','레일건 전차',1.4,'A single electromagnetic cannon discharge, bright electric crack and deep compressed impact with a brief ionized tail',1.2,'A heavy electric power core charging and locking with a metallic click'],
+ ['carrier','항공모함',1.4,'A short carrier aircraft catapult launch followed by a crisp aerial salvo',1.4,'A compact deep ship engine and flight-deck readiness signal'],
+ ['flyingFortress','공중요새',1.4,'A short fictional aerial fortress cannon burst with three compact low impacts',1.4,'A short fictional heavy aircraft engine pulse and metal deployment lock'],
+ ['orbitalAssault','궤도 강습함',1.5,'A short fictional orbital energy strike with a bright electronic pulse and bass impact',1.4,'A short fictional orbital engine powering up with a clean rising synthetic tone'],
  ['icbm','ICBM',2,'A large strategic rocket igniting, deep ignition thump followed by a powerful short rocket roar',1.4,'A heavy missile launch tube hydraulic hatch opening and locking'],
 ];
 export const SFX_PLAN = [...gear.flatMap(([id,name,sec,action,deploySec,deploy])=>[sfx(`${id}-action`,`${name} 공격·지원`,sec,action),sfx(`${id}-deploy`,`${name} 출격`,deploySec,deploy)]),

@@ -3,7 +3,8 @@ import {deployedEquipment} from './equipment.js';
 import {ownedSchools} from './field-schools.js';
 import {layoutFieldArmy} from './field-layout.js';
 
-const MARGIN=10, TOP=34, BOTTOM=14, GAP=4, BAND_GAP=7;
+const MARGIN=10, TOP=34, BOTTOM=14, GAP=4, BAND_GAP=7, MIN_LABEL_WIDTH=40, MAX_BAND_ROWS=3;
+const SUPPORT_SCALES=[1,.9,.8,.7];
 export const FIELD_GROWTH_STEP=8; // 16 CSS px, never a separate page.
 const SUPPORT = {
   schools:{width:46,ratio:72/96,label:16},
@@ -14,10 +15,10 @@ function band(items,kind,width,scale) {
   if(!items.length)return {items:[],height:0};
   const rule=SUPPORT[kind],density=items.length>=8?.8:items.length>=4?.9:1;
   const w=Math.round(rule.width*density*scale),h=Math.round(w*rule.ratio);
-  const boxWidth=Math.max(40,w),boxHeight=h+rule.label;
+  const boxWidth=Math.max(MIN_LABEL_WIDTH,w),boxHeight=h+rule.label;
   const columns=Math.max(1,Math.floor((width-2*MARGIN+GAP)/(boxWidth+GAP)));
   const rows=Math.ceil(items.length/columns);
-  if(rows>3)return null;
+  if(rows>MAX_BAND_ROWS)return null;
   return {height:rows*boxHeight+(rows-1)*GAP,
     items:items.map((item,i)=>({...item,kind,width:w,height:h,boxWidth,boxHeight,
       x:MARGIN+(i%columns)*(boxWidth+GAP),y:Math.floor(i/columns)*(boxHeight+GAP)}))};
@@ -32,12 +33,19 @@ export function layoutFieldWorld(state,viewportWidth,height) {
   const naturalArmy=layoutFieldArmy(state,{x:0,y:0,width:Math.max(90,viewportWidth-20),height:10000});
   const armyReserve=naturalArmy.length?Math.max(45,Math.min(100,Math.max(...naturalArmy.map(i=>i.height+(i.label?10:0))))):0;
   height=Math.max(height,TOP+BOTTOM+armyReserve);
-  const rowBound=Math.max(viewportWidth,20+Math.max(0,...Object.values(catalogs).map(items=>items.length))*54);
-  const minimumSupport=kinds.reduce((sum,kind)=>sum+band(catalogs[kind],kind,rowBound,.7).height+BAND_GAP,0);
+  // More gear should fill a third row before pushing other categories off-screen.
+  // Reserve just enough vertical space at a compact width, keeping readable labels and the large HQ.
+  const maxCount=Math.max(0,...Object.values(catalogs).map(items=>items.length));
+  const rowWidth=2*MARGIN-GAP+Math.ceil(maxCount/MAX_BAND_ROWS)*(MIN_LABEL_WIDTH+GAP);
+  const requiredSteps=Math.max(0,Math.ceil((rowWidth-viewportWidth)/FIELD_GROWTH_STEP));
+  const preferredSteps=Math.floor(viewportWidth*.5/FIELD_GROWTH_STEP);
+  const rowBound=viewportWidth+Math.max(requiredSteps,preferredSteps)*FIELD_GROWTH_STEP;
+  const minimumScale=SUPPORT_SCALES.at(-1);
+  const minimumSupport=kinds.reduce((sum,kind)=>sum+band(catalogs[kind],kind,rowBound,minimumScale).height+BAND_GAP,0);
   height=Math.max(height,TOP+BOTTOM+armyReserve+minimumSupport);
   for(let width=viewportWidth;width<=rowBound+FIELD_GROWTH_STEP;width+=FIELD_GROWTH_STEP) {
     // Prefer the largest support icons that fit this width; only then extend the same ground.
-    for(const scale of [1,.9,.8,.7]) {
+    for(const scale of SUPPORT_SCALES) {
       const bands=kinds.map(kind=>({kind,...band(catalogs[kind],kind,width,scale)}));
       if(bands.some(b=>!b.items))continue;
       const supportHeight=bands.reduce((n,b)=>n+b.height,0)+bands.length*BAND_GAP;

@@ -4,6 +4,7 @@ import { drawOverheadHelicopter } from './helicopter-art.js';
 import { drawOverheadAircraft } from './aircraft-art.js';
 import { overheadEnhancement } from './enhancement-art.js';
 import { drawOverheadStrategic } from './strategic-art.js';
+import { drawOverheadLateEquipment } from './late-topdown-art.js';
 
 // 세로 레인 전장용 "위에서 본" 장비·기지 그림(위쪽을 보는 모습). 아군은 초록, 적은 붉은 갈색 팔레트.
 // 그림 교체 지점은 이 파일 하나입니다: 전투 화면은 unitSprite / baseSprite만 부릅니다.
@@ -57,6 +58,7 @@ function drawTrackedOrTowed(c, id, level, side) {
 function drawGear(id, level, side) {
   const canvas = artSurface(SPRITE_SIZE.width, SPRITE_SIZE.height), c = canvas.getContext('2d'), p = PAL[side];
   rect(c, 12, 30, 36, 31, '#22392c44');
+  if (['carrier','flyingFortress','orbitalAssault'].includes(id)) { drawOverheadLateEquipment(c, level, p, id); overheadEnhancement(c, level); emblem(c, 25, 46, side); return canvas; }
   if (id === 'railgunTank' || id === 'icbm') { drawOverheadStrategic(c, level, p, id); overheadEnhancement(c, level); emblem(c, 25, 46, side); return canvas; }
   if (id === 'transport' || id === 'fighter') { drawOverheadAircraft(c, level, p, id); overheadEnhancement(c, level); return canvas; }
   if (id === 'rocketLauncher') drawOverheadRocket(c, level, p);

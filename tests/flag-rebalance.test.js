@@ -68,8 +68,8 @@ test('player attack and healing upgrade rewards increase for players while enemy
 });
 test('personal cards have only detail buttons, while home skill controls remain',()=>{
   const s=army('준원수'),html=personalMarkup(s);
-  assert.equal((html.match(/<button /g)||[]).length,5);
-  assert.equal((html.match(/data-detail-personal/g)||[]).length,5);
+  assert.equal((html.match(/<button /g)||[]).length,6);
+  assert.equal((html.match(/data-detail-personal/g)||[]).length,6);
   assert.doesNotMatch(html,/data-use-sword|data-use-revolver|data-shop-category|data-equipment-category/);
   assert.match(homeMarkup(s),/data-use-sword/);assert.match(homeMarkup(s),/data-use-revolver/);
   const detail=personalDetailMarkup(s,'divisionFlag').body;

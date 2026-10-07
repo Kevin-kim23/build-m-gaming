@@ -12,15 +12,27 @@ test('a small base stays one screen and contains army, school, equipment and fac
  for(const kind of ['army','schools','equipment','facilities'])assert.ok(w[kind].length>0&&w[kind].every(i=>i.x+i.width<=160));
 });
 test('full marshal base uses available height and grows in small width steps, not category pages',()=>{
- const w=layoutFieldWorld(full(),160,330);assert.ok(w.width<=240,'22 assets must not become seven screens');
+ const w=layoutFieldWorld(full(),160,330);assert.ok(w.width<=240,'full catalogs must not become separate screens');
  assert.ok(w.width>=160);assert.equal((w.width-160)%8,0);
  for(const kind of ['army','schools','equipment','facilities'])assert.ok(w[kind].some(i=>i.x+i.width<=160),kind+' visible initially');
  const taller=layoutFieldWorld(full(),160,400);assert.ok(taller.width<=w.width);
 });
+test('expanded equipment catalog prefers modest vertical overflow to sprawling across many screens',()=>{
+ for(const width of [144,160,180])for(const height of [320,330]) {
+  const w=layoutFieldWorld(full(),width,height);
+  assert.ok(w.width<=width*1.5,'a full base stays within one and a half horizontal screens');
+  assert.ok(w.height<=420,'vertical fallback stays compact');
+  assert.ok(w.army[0].width>=80,'headquarters must not shrink to make room');
+  for(const kind of ['schools','facilities','equipment']) {
+   assert.ok(new Set(w[kind].map(i=>i.y)).size<=3);
+   assert.ok(w[kind].every(i=>i.boxWidth>=40),'name labels keep readable width');
+  }
+ }
+});
 test('all artwork and measured label boxes stay inside the world and do not overlap',()=>{
  for(const width of [144,160,180,240])for(const height of [90,110,160,240,330]){
  const w=layoutFieldWorld(full(),width,height),items=[...w.army,...w.schools,...w.equipment,...w.facilities];
- assert.equal(w.equipment.length,9);assert.equal(w.facilities.length,10);assert.equal(w.schools.length,3);assert.ok(w.army.length>0);
+ assert.equal(w.equipment.length,Object.keys(EQUIPMENT).length);assert.equal(w.facilities.length,10);assert.equal(w.schools.length,3);assert.ok(w.army.length>0);
  for(const a of items)assert.ok(a.x>=0&&a.y>=30&&a.x+a.boxWidth<=w.width&&a.y+a.boxHeight<=w.height-8,a.id);
  for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++){const a=items[i],b=items[j];assert.ok(a.x+a.boxWidth<=b.x||b.x+b.boxWidth<=a.x||a.y+a.boxHeight<=b.y||b.y+b.boxHeight<=a.y,a.id+'/'+b.id);}
  }

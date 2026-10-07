@@ -80,10 +80,14 @@ test('offline facility income caps at eight hours, survives reload and claims on
 test('version24 assets migrate without losing equipment or pending reward; malformed facilities report diagnostics',()=>{
   const old=army('대원수');old.version=24;delete old.facilities;
   old.offlineReward={id:T,durationMs:3600000,amount:9007199254740993n};
-  for(const id of Object.keys(EQUIPMENT))old.equipment[id]={level:10,count:1,deployed:id==='tank'};
+  for(const item of Object.values(EQUIPMENT)){
+    if((item.introducedVersion??0)<=24)old.equipment[item.id]={level:10,count:1,deployed:item.id==='tank'};
+    else delete old.equipment[item.id];
+  }
   const next=parseSave(serializeSave(old),T);
   assert.equal(next.version,SAVE_VERSION);assert.deepEqual(next.facilities,[]);
-  for(const key of ['equipment','gold','soldiers','sergeants','offlineReward'])assert.deepEqual(next[key],old[key]);
+  for(const key of ['gold','soldiers','sergeants','offlineReward'])assert.deepEqual(next[key],old[key]);
+  for(const item of Object.values(EQUIPMENT))assert.deepEqual(next.equipment[item.id],(item.introducedVersion??0)<=24?old.equipment[item.id]:null);
   for(const facilities of [null,undefined,{},['unknown'],['kitchen','kitchen'],[1],['__proto__']]){
     const result=inspectSave(serializeSave({...next,facilities}),T);
     assert.equal(result.state,null);assert.equal(result.issue.field,'facilities');
@@ -92,7 +96,7 @@ test('version24 assets migrate without losing equipment or pending reward; malfo
 
 test('all home equipment can coexist while previously stored equipment stays stored after migration',()=>{
   const s=army('대원수');for(const id of Object.keys(EQUIPMENT))assert.equal(buyEquipment(s,T,id).deployed,true);
-  assert.equal(deployedEquipment(s).length,9);assert.deepEqual(parseSave(serializeSave(s),T).equipment,s.equipment);
+  assert.equal(deployedEquipment(s).length,Object.keys(EQUIPMENT).length);assert.deepEqual(parseSave(serializeSave(s),T).equipment,s.equipment);
 });
 
 test('shop shows only unlocked facilities and one-rank previews; buttons track affordability and ownership',()=>{

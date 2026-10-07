@@ -1,4 +1,5 @@
 import { multiplyMoney } from './money.js';
+import { LATE_EQUIPMENT } from './late-equipment-catalog.js';
 import { rankForArmy, RANKS, catalogVisible } from "./ranks.js";
 import { divisionFlagStatus, enhancementLimitForFlag } from './personal-equipment.js';
 export const HELICOPTER_STAGES = Object.freeze([
@@ -72,6 +73,7 @@ export const EQUIPMENT = Object.freeze({
     cost:15_000_000_000,maxLevel:20,passive:7_500_000,tap:45_000_000,passiveStep:1_500_000,tapStep:9_000_000,
     stages:Object.freeze(['기본 ICBM','동체 외장','운반대 보강','차체 장갑','지지대 확장','기수 도장','관측 센서','지원 설비','위장 패널','통신 안테나','최종 개량형']),
   }),
+  ...LATE_EQUIPMENT,
 });
 // The horizontal home map expands with the catalog. Battle deployment has its own limits.
 export const MAX_DEPLOYED_EQUIPMENT = Object.keys(EQUIPMENT).length;

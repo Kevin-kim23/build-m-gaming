@@ -1,6 +1,6 @@
 // Audio IDs are shared by playback, production tools and asset verification.
-// The game reads bundled files only; no ElevenLabs API, key or network service is needed at runtime.
-export const GEAR_SOUND_IDS = ['artillery', 'tank', 'selfPropelled', 'helicopter', 'rocketLauncher', 'transport', 'fighter', 'railgunTank', 'icbm'];
+// Playback uses local synthesis; no audio files, ElevenLabs API, keys or network services are needed.
+export const GEAR_SOUND_IDS = ['artillery', 'tank', 'selfPropelled', 'helicopter', 'rocketLauncher', 'transport', 'fighter', 'railgunTank', 'icbm', 'carrier', 'flyingFortress', 'orbitalAssault'];
 export const UI_SOUND_IDS = ['tap', 'click', 'recruit', 'purchase', 'build', 'equip', 'upgrade-success', 'upgrade-fail', 'promotion', 'medal', 'sword', 'revolver', 'error', 'unlock'];
 export const BATTLE_SOUND_IDS = ['turret-shot', 'impact', 'explosion', 'base-hit', 'battle-start', 'victory', 'defeat', 'draw'];
 export const SFX_IDS = [...GEAR_SOUND_IDS.flatMap(id => [`${id}-action`, `${id}-deploy`]), ...BATTLE_SOUND_IDS, ...UI_SOUND_IDS];

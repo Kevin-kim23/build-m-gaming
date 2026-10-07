@@ -9,6 +9,7 @@ import { FORMATIONS, groupArmy, ALLIED_ARMY_SIZE, GRAND_ALLIED_ARMY_SIZE, SUPREM
 import { armyPower } from '../src/units.js';
 import { schoolOffer } from '../src/schools.js';
 import { personalStatus } from '../src/personal-equipment.js';
+import { PERSONAL_EQUIPMENT } from '../src/personal-catalog.js';
 import { EQUIPMENT, equipmentPurchaseOffer } from '../src/equipment.js';
 import { supremeRankSymbol } from '../src/rank-emblem.js';
 import { drawHighCommand } from '../src/command-art.js';
@@ -43,11 +44,14 @@ test('version 20 keeps paid gear, exact money, troops, skills and campaign when 
       swordActivatedAt:T-1000,swordDurationMs:120000,autoTouchActivatedAt:T-900,autoTouchDurationMs:150000,autoTouchTicks:3};
     for(const id of Object.keys(s.personalLevels))s.personalLevels[id]=10;
     for(const [i,id] of Object.keys(EQUIPMENT).entries())s.equipment[id]={level:20,count:1,deployed:i<4};
+    const expected=structuredClone(s);
+    for(const item of Object.values(PERSONAL_EQUIPMENT))if(item.introducedVersion>20)expected.personalLevels[item.id]=1;
+    for(const item of Object.values(EQUIPMENT))if((item.introducedVersion??0)>20)expected.equipment[item.id]=null;
     const loaded=parseSave(serializeSave(s),T);
     assert.equal(SAVE_KEY,'budae-kiugi-recruits-v3');assert.equal(loaded.version,SAVE_VERSION);
-    for(const key of Object.keys(s).filter(k=>!['version','earnedAchievements'].includes(k)))assert.deepEqual(loaded[key],s[key],key);
+    for(const key of Object.keys(s).filter(k=>!['version','earnedAchievements'].includes(k)))assert.deepEqual(loaded[key],expected[key],key);
     assert.equal(RANKS[rankForArmy(loaded)],rank);
-    assert.equal(perSecond(loaded),perSecond(s));assert.equal(perTap(loaded,T),perTap(s,T));
+    assert.equal(perSecond(loaded),perSecond(expected));assert.equal(perTap(loaded,T),perTap(expected,T));
     assert.deepEqual(parseSave(serializeSave(loaded),T),loaded);
   }
 });

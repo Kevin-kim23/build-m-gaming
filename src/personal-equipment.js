@@ -1,7 +1,7 @@
 import { catalogVisible, rankForArmy, RANKS } from './ranks.js';
-import { PERSONAL_EQUIPMENT, COMMAND_BATON, GENERAL_SWORD, DIVISION_FLAG, GENERAL_REVOLVER, MARSHAL_GLAIVE, AUTO_TOUCH } from './personal-catalog.js';
+import { PERSONAL_EQUIPMENT, COMMAND_BATON, GENERAL_SWORD, DIVISION_FLAG, GENERAL_REVOLVER, MARSHAL_GLAIVE, ADMIRALS_COMPASS, STRATEGIC_TABLET, SUPREME_SEAL, personalIncomePercent, AUTO_TOUCH } from './personal-catalog.js';
 import { scaleMoney } from './money.js';
-export { PERSONAL_EQUIPMENT, COMMAND_BATON, GENERAL_SWORD, DIVISION_FLAG, GENERAL_REVOLVER, MARSHAL_GLAIVE, AUTO_TOUCH } from './personal-catalog.js';
+export { PERSONAL_EQUIPMENT, COMMAND_BATON, GENERAL_SWORD, DIVISION_FLAG, GENERAL_REVOLVER, MARSHAL_GLAIVE, ADMIRALS_COMPASS, STRATEGIC_TABLET, SUPREME_SEAL, personalIncomePercent, AUTO_TOUCH } from './personal-catalog.js';
 
 // Rank grants the item only; enhancement is persisted independently from promotions.
 export function personalStatus(state,id) {
@@ -15,13 +15,24 @@ export const generalSwordStatus = state=>personalStatus(state,GENERAL_SWORD.id);
 export const divisionFlagStatus = state=>personalStatus(state,DIVISION_FLAG.id);
 export const generalRevolverStatus = state=>personalStatus(state,GENERAL_REVOLVER.id);
 export const marshalGlaiveStatus = state=>personalStatus(state,MARSHAL_GLAIVE.id);
-export function glaiveBonusPercent(state) {
-  const status=marshalGlaiveStatus(state);
-  return status.owned ? MARSHAL_GLAIVE.passiveBonusPercent+(status.level-1)*MARSHAL_GLAIVE.passiveBonusStep : 0;
+export function glaiveBonusPercent(state,rank=rankForArmy(state)) {
+  return rank>=RANKS.indexOf(MARSHAL_GLAIVE.unlockRank)?
+    MARSHAL_GLAIVE.passiveBonusPercent+((state.personalLevels?.marshalGlaive??1)-1)*MARSHAL_GLAIVE.passiveBonusStep:0;
 }
-export function withPersonalIncome(state,income) {
-  const bonus=glaiveBonusPercent(state);
-  return bonus?scaleMoney(income,100+bonus,100):income;
+export function personalIncomeBonus(state,id,rank=rankForArmy(state)) {
+  const item=PERSONAL_EQUIPMENT[id];
+  if(!item||item.incomeBonusPercent===undefined)throw new RangeError('Unknown personal income bonus');
+  return rank>=RANKS.indexOf(item.unlockRank)?personalIncomePercent(id,state.personalLevels?.[id]??1):0;
+}
+const applyBonus = (income,bonus) => bonus?scaleMoney(income,100+bonus,100):income;
+// Equipment-only bonuses run before troop income is combined; no battle statistics change.
+export const withPersonalEquipmentIncome = (state,income) => income?applyBonus(income,personalIncomeBonus(state,STRATEGIC_TABLET.id)):income;
+// One shared layer serves manual taps, revolver settlement and offline accrual.
+export function withPersonalIncome(state,income,kind='passive') {
+  if(!income)return income;
+  const rank=rankForArmy(state);
+  const specific=kind==='tap'?personalIncomeBonus(state,ADMIRALS_COMPASS.id,rank):glaiveBonusPercent(state,rank);
+  return applyBonus(applyBonus(income,specific),personalIncomeBonus(state,SUPREME_SEAL.id,rank));
 }
 export const FLAG_ENHANCEMENT_LIMITS = Object.freeze(Array.from({length:11},(_,level)=>10+level));
 export function enhancementLimitForFlag(level) {

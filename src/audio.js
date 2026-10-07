@@ -24,9 +24,9 @@ export function createGameAudio(createContext = () => new (window.AudioContext |
     ui(id, on) { synth.tap(canPlay(on)); },
     tap(on) { synth.tap(canPlay(on)); },
     recruit(on) { synth.recruit(canPlay(on)); },
-    battle(kind, on) {
+    battle(kind, on, gearId) {
       const sound = ({strike:'boom',impact:'boom',heal:'deploy',start:'deploy'})[kind] ?? kind;
-      synth.battle(sound,canPlay(on));
+      synth.battle(sound,canPlay(on),kind==='shot'||kind==='strike'?gearId:null);
     },
     promotion(rank, on) {
       if (canPlay(on)) synth.promotion(rank,true);

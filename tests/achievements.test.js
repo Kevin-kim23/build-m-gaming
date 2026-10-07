@@ -108,7 +108,7 @@ test("old version seven assets migrate intact and receive currently earned medal
   const { version: oldVersion, ...oldAssets } = old;
   assert.equal(oldVersion, 7);
   assert.equal(version, SAVE_VERSION);
-  assert.deepEqual(assets, {...oldAssets,ncoSchoolLevel:2,equipment:{...Object.fromEntries(Object.entries(oldAssets.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),helicopter:null,rocketLauncher:null,transport:null,fighter:null,railgunTank:null,icbm:null}});
+  assert.deepEqual(assets, {...oldAssets,ncoSchoolLevel:2,equipment:{...Object.fromEntries(Object.entries(oldAssets.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),helicopter:null,rocketLauncher:null,transport:null,fighter:null,railgunTank:null,icbm:null,carrier:null,flyingFortress:null,orbitalAssault:null}});
   assert.deepEqual(earnedAchievements, ids.slice(0, 4));
   assert.equal(SAVE_KEY, "budae-kiugi-recruits-v3");
 });

@@ -30,7 +30,7 @@ export function inspectSave(raw, now = Date.now()) {
     } };
   }
 }
-// Compatibility API for existing callers and version 2–26 migrations.
+// Compatibility API for existing callers and version 2–27 migrations.
 export function parseSave(raw, now = Date.now()) { return inspectSave(raw, now).state; }
 
 function migrateSave(s, now) {

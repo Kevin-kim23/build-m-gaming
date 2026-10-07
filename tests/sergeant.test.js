@@ -1,3 +1,4 @@
+import { emptyPersonalLevels } from '../src/personal-catalog.js';
 import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
 import { test } from "node:test";
@@ -115,7 +116,7 @@ test("v3 migration preserves the entire old progress and adds zero sergeants", (
   };
   delete old.sergeants;
   const migrated = parseSave(serializeSave(old));
-  assert.deepEqual(migrated, { ...old, version:SAVE_VERSION,offlineReward:null,campaignStars:Array(80).fill(0),personalLevels:{commandBaton:1,generalSword:1,divisionFlag:1,generalRevolver:1,marshalGlaive:1},autoTouchDurationMs:60000, sergeants: 0,
+  assert.deepEqual(migrated, { ...old, version:SAVE_VERSION,offlineReward:null,campaignStars:Array(80).fill(0),personalLevels:emptyPersonalLevels(),autoTouchDurationMs:60000, sergeants: 0,
     earnedAchievements: ["squad", "platoon"] });
   const mixed = { ...migrated, sergeants: 9 };
   assert.deepEqual(parseSave(serializeSave(mixed)), mixed);

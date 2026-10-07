@@ -9,7 +9,7 @@ import { quietBattle, deployNow } from './lane-helpers.js';
 import { createGameSession } from '../src/session.js';
 import { RANKS, RANK_REQUIREMENTS } from '../src/ranks.js';
 const T = 1_800_000_000_000;
-const army = () => ({ ...freshState(T), soldiers: RANK_REQUIREMENTS[RANKS.indexOf('준원수')] - 3000, sergeants: 300, gold:100_000_000_000_000, ncoSchoolLevel: 5, officerSchoolLevel: 1 });
+const army = () => ({ ...freshState(T), soldiers: RANK_REQUIREMENTS[RANKS.indexOf('대원수')] - 3000, sergeants: 300, gold:100_000_000_000_000, ncoSchoolLevel: 5, officerSchoolLevel: 1 });
 function maxGun(s, id) { assert.equal(buyEquipment(s,T,id).ok,true); for(let n=0;n<10;n++) assert.equal(enhanceEquipment(s,T,id).ok,true); }
 
 test('legacy quotes remain calculable but additional purchases are locked', () => {
@@ -51,14 +51,16 @@ test('quantity calculation compatibility retains one slot and sums per copy', ()
   const income = perSecond(s), tap = perTap(s,T), before = s.gold, stats = equipmentStats(10,'tank');
   accrue(s,T+1000);s.equipment.tank.count=2;
   assert.equal(s.gold,before + income);
-  assert.equal(perSecond(s),income + stats.passive*220/100); assert.equal(perTap(s,T),tap + stats.tap);
+  // Tablet ×1.3, glaive ×2.2 / compass ×1.4, seal ×1.2 apply to the added copy.
+  const passiveDelta=stats.passive*130/100*220/100*120/100,tapDelta=stats.tap*130/100*140/100*120/100;
+  assert.equal(perSecond(s),income+passiveDelta); assert.equal(perTap(s,T),tap+tapDelta);
   const beforeStored = perSecond(s);
   s.equipment.rocketLauncher.count=2;
   assert.equal(perSecond(s),beforeStored); assert.equal(deployedEquipment(s).length,Object.keys(EQUIPMENT).length-1);
   setEquipmentDeployed(s,false,T+1000,'tank');
-  assert.equal(perSecond(s),beforeStored - stats.passive * 2*220/100);
+  assert.equal(perSecond(s),beforeStored - passiveDelta*2);
   setEquipmentDeployed(s,true,T+1000,'rocketLauncher');
-  assert.equal(perSecond(s),beforeStored - stats.passive * 2*220/100 + equipmentStats(10,'rocketLauncher').passive * 2*220/100);
+  assert.equal(perSecond(s),beforeStored - passiveDelta*2 + equipmentStats(10,'rocketLauncher').passive*2*130/100*220/100*120/100);
   assert.deepEqual(parseSave(serializeSave(s),T).equipment,s.equipment);
 });
 test('v12 quantity migration preserves all assets, deployment, theme and running cooldown', () => {

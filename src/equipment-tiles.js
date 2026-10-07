@@ -9,6 +9,9 @@ import { drawEquipment } from './equipment-art.js';
 export const equipmentRole = (id) => id === 'transport' ? '보급 지원 · 전투 중 아군 본부 회복'
   : id === 'railgunTank' ? '레일건 사격 · 빠른 직선 자동 공격'
   : id === 'icbm' ? '대형 미사일 · 긴 대기 후 강한 자동 공격'
+  : id === 'carrier' ? '함재기 지원 · 느린 전진과 긴 사거리의 자동 공격'
+  : id === 'flyingFortress' ? '공중 중포격 · 튼튼한 기체로 지속 자동 공격'
+  : id === 'orbitalAssault' ? '궤도 에너지 타격 · 출격 시 적 본부 직격'
   : id === 'fighter' ? '항공 타격 · 적 본부 자동 공격' : '화력 지원 · 적 본부 자동 공격';
 
 // One wide row per item. Everything else (role, limits, exact numbers) is in the detail popup.

@@ -1,3 +1,4 @@
+import { latePersonalIcon } from './late-personal-art.js';
 import { generalRewardIcon } from './general-reward-art.js';
 import { glaiveIcon } from './glaive-art.js';
 import { artLevel, personalLustre } from './personal-lustre.js';
@@ -5,6 +6,7 @@ import { artLevel, personalLustre } from './personal-lustre.js';
 const icons = new Map();
 export function personalIcon(kind, level = 1) {
   level=artLevel(level);
+  if(['compass','tablet','seal'].includes(kind))return latePersonalIcon(kind,level);
   if(kind==='glaive')return glaiveIcon(level);
   if (kind === 'flag' || kind === 'revolver') return generalRewardIcon(kind, level);
   const key = `${kind}:${level}`;

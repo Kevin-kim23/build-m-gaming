@@ -45,10 +45,10 @@ test('personal detail descriptions name the original award rank, not the current
     assert.doesNotMatch(detail, /대원수 진급 보상|진급할 때마다|자동 성장/);
     assert.match(detail, /강화 확률표/);
   }
-  assert.equal((personalMarkup(s).match(/data-detail-personal=/g)||[]).length, 5);
+  assert.equal((personalMarkup(s).match(/data-detail-personal=/g)||[]).length, 7);
 });
 test('all ten levels of every personal icon are distinct and cached', () => {
-  for (const kind of ['baton','sword','flag','revolver','glaive']) {
+  for (const kind of ['baton','sword','flag','revolver','glaive','compass','tablet','seal']) {
     const icons = Array.from({length:10},(_,i)=>personalIcon(kind,i+1));
     assert.equal(new Set(icons).size,10,kind);
     icons.forEach((svg,i)=>assert.equal(personalIcon(kind,i+1),svg));
@@ -101,7 +101,7 @@ test('revolver duration and paid pulses use activation level across upgrades, re
 test('every gear step charges its published cost on either outcome and the next quote grows only on success', async () => {
   const { personalUpgradeStep,personalUpgradeOffer }=await import('../src/personal-enhancement.js');
   for(const id of Object.keys(army().personalLevels))for(let level=1;level<10;level++)for(const roll of [0,9999]) {
-    const s=army();s.personalLevels[id]=level;
+    const s=army('대원수');s.personalLevels[id]=level;
     const step=personalUpgradeStep(id,level);s.gold=step.cost;
     const result=game.enhancePersonalEquipment(s,T,id,()=>roll);
     assert.equal(result.ok,true);assert.equal(s.gold,0);

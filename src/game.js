@@ -6,7 +6,7 @@ export { MAX_GOLD, serializeSave } from './money.js';
 import { rankForArmy } from "./ranks.js";
 import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
 import { schoolOffer } from "./schools.js";
-import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration, withPersonalIncome } from "./personal-equipment.js";
+import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration, withPersonalIncome, withPersonalEquipmentIncome } from "./personal-equipment.js";
 import { personalUpgradeOffer, drawPersonalRoll, personalRollSucceeds } from './personal-enhancement.js';
 import { settleAutoTouch } from './auto-touch.js';
 import { withCampaignIncome } from './campaign-rewards.js';
@@ -26,10 +26,10 @@ export { SAVE_KEY, LEGACY_KEY, MAX_SOLDIERS, freshState } from './state.js';
 import { MAX_SOLDIERS } from './state.js';
 import { MAX_OFFLINE_MS } from './offline-rules.js';
 export { MAX_OFFLINE_MS } from './offline-rules.js';
-export const baseTapIncome = s => withFacilityIncome(s,1 + troopIncome(s,'tap') + equipmentIncome(s).tap,'tap');
+export const baseTapIncome = s => withPersonalIncome(s,withFacilityIncome(s,addMoney(1+troopIncome(s,'tap'),withPersonalEquipmentIncome(s,equipmentIncome(s).tap)),'tap'),'tap');
 export const perTap = (s, now = Date.now()) => multiplyMoney(baseTapIncome(s),swordSkillStatus(s,now).multiplier);
 export const perSecond = (s) =>
-  withPersonalIncome(s,withCampaignIncome(s, withFacilityIncome(s,troopIncome(s, 'passive') + equipmentIncome(s).passive,'passive')));
+  withPersonalIncome(s,withCampaignIncome(s, withFacilityIncome(s,addMoney(troopIncome(s, 'passive'),withPersonalEquipmentIncome(s,equipmentIncome(s).passive)),'passive')));
 // Preserve early prices, but avoid exponential prices blocking battalion progression.
 export const recruitCost = count => {
   if (!Number.isSafeInteger(count) || count < 0) throw new RangeError('Invalid recruit count');

@@ -2,6 +2,7 @@ import { artSurface, brush, ART_SCALE } from './pixel-detail.js';
 import { unitSprite, baseSprite, SPRITE_SIZE } from './unit-sprites.js';
 import { fortressSprite } from './fortress-art.js';
 import { BATTLE_RULES } from './battle-balance.js';
+import { drawOrbitalStrike } from './orbital-strike-art.js';
 
 // 세로 레인 전장 그림(위에서 본 모습): 위쪽이 적 기지, 아래쪽이 우리 기지, 레인 3개가 위아래로 뻗는다.
 // 정적인 배경·기지는 한 번 그려 캐시하고, 움직이는 것(장비·효과·체력 막대)만 매 프레임 그린다.
@@ -98,6 +99,8 @@ function drawFx(c, view) {
       c.strokeStyle = f.side === 'player' ? '#ffe9a8' : '#ffc4a8'; c.lineWidth = big ? 2.4 : 1.6;
       c.beginPath(); c.moveTo(lx, y - trail); c.lineTo(lx, y); c.stroke();
       if (age > 170) burst(c, lx, y1, age - 170, 330, ['#fff4cd', '#ffcf6a', '#ff8a3a'], big ? 7 : 5, big ? 14 : 9);   // 명중 불꽃
+    } else if (f.kind === 'strike' && f.id === 'orbitalAssault') {
+      drawOrbitalStrike(c,age,W,H,f.side);
     } else if (f.kind === 'strike') {
       c.globalAlpha = Math.max(0, 1 - age / 600);
       const t = Math.min(1, age / 320), y = H - 80 - (H - 190) * t;

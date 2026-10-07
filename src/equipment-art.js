@@ -1,5 +1,6 @@
 import { rocketSprite } from './rocket-art.js';
 import { strategicSprite } from './strategic-art.js';
+import { lateEquipmentSprite } from './late-equipment-art.js';
 import { aircraftSprite } from './aircraft-art.js';
 import { advancedEquipmentSprite } from './enhancement-art.js';
 import { artSurface, vehicleDetails } from "./pixel-detail.js";
@@ -12,6 +13,7 @@ function sprite(level, id = "artillery") {
   const key = id + ":" + level;
   if (sprites.has(key)) return sprites.get(key);
   if (level > 10) { const upgraded=advancedEquipmentSprite(sprite(10,id),level);sprites.set(key,upgraded);return upgraded; }
+  if(['carrier','flyingFortress','orbitalAssault'].includes(id)){const vehicle=lateEquipmentSprite(level,id);sprites.set(key,vehicle);return vehicle;}
   if(id==='railgunTank'||id==='icbm'){const vehicle=strategicSprite(level,id);sprites.set(key,vehicle);return vehicle;}
   if (id !== "artillery") {
     const vehicle = ['transport','fighter'].includes(id) ? aircraftSprite(level,id) : id === "rocketLauncher" ? rocketSprite(level) : id === "helicopter" ? helicopterSprite(level) : vehicleSprite(level, id);

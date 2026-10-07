@@ -99,8 +99,8 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
       state.gold=minMoney(MAX_GOLD,addMoney(state.gold,touch));state.taps+=tapsPerSecond*step;
     }
   }
-  return {assumptions:{visitsPerDay:3,minutes,tapsPerSecond,days,investmentHours,ads:false,personalUpgrades:false,battles,facilities,facilityUpgrades:facilities&&facilityUpgrades},milestones,unlocks,
-    final:{rank:RANKS[rankForArmy(state)],power:armyPower(state),gold:String(state.gold),facilities:[...state.facilities],facilityLevels:{...state.facilityLevels},actions}};
+  return {assumptions:{visitsPerDay:3,minutes,tapsPerSecond,days,investmentHours,ads:false,personalAwards:true,personalUpgrades:false,battles,facilities,facilityUpgrades:facilities&&facilityUpgrades},milestones,unlocks,
+    final:{rank:RANKS[rankForArmy(state)],power:armyPower(state),gold:String(state.gold),facilities:[...state.facilities],facilityLevels:{...state.facilityLevels},equipment:Object.entries(state.equipment).filter(([,gear])=>gear).map(([id,gear])=>({id,level:gear.level})),actions}};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href) {
   const minutes=Number(process.argv.find(arg=>arg.startsWith('--minutes='))?.split('=')[1]??7.5);

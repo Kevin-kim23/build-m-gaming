@@ -8,7 +8,7 @@ test('personal awards cover all grants and multiple-rank promotions, without rep
   assert.deepEqual(personalAwardsBetween(rank('소령'),rank('중령')).map(i=>i.id),['commandBaton']);
   assert.deepEqual(personalAwardsBetween(rank('대령'),rank('준원수')).map(i=>i.id),['generalSword','divisionFlag','generalRevolver','marshalGlaive']);
   assert.deepEqual(personalAwardsBetween(rank('중령'),rank('중령')),[]);
-  assert.deepEqual(personalAwardsBetween(rank('준원수'),rank('대원수')),[]);
+  assert.deepEqual(personalAwardsBetween(rank('준원수'),rank('대원수')).map(item=>item.id),['admiralsCompass','strategicTablet','supremeSeal']);
   const html=personalAwardMarkup(personalAwardsBetween(rank('대령'),rank('준장')));
   assert.match(html,/장군검/);assert.match(html,/Lv.1/);assert.match(html,/30초 동안 터치 골드 2배/);
 });

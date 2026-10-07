@@ -24,6 +24,9 @@ export const BATTLE_RULES = Object.freeze({
 export const STAGES = campaignStages;
 
 const weaponBase = Object.freeze({
+  carrier: { damage:220, intervalMs:3600 },
+  flyingFortress: { damage:360, intervalMs:3000 },
+  orbitalAssault: { damage:2000, intervalMs:10000 },
   railgunTank: {damage:180,intervalMs:2200},
   icbm: {damage:1200,intervalMs:9000},
   transport: { damage:0, healing:6, intervalMs:5000 },
@@ -46,6 +49,9 @@ export const UNIT_TRAITS = Object.freeze({
   transport:      { cls: "support",   kind: "heal",   hp: 200, speed: 61,  range: 170, cost: 30, cooldownMs: 10000 },
   railgunTank:    { cls: "armor",     kind: "unit",   hp: 340, speed: 58,  range: 240, cost: 55, cooldownMs: 12000 },
   icbm:           { cls: "firepower", kind: "strike", hp: 1,   speed: 0,   range: 0,   cost: 80, cooldownMs: 22000 },
+  carrier:        { cls: "air",       kind: "unit",   hp: 650, speed: 32,  range: 400, cost: 65, cooldownMs: 16000 },
+  flyingFortress: { cls: "air",       kind: "unit",   hp: 600, speed: 62,  range: 260, cost: 75, cooldownMs: 18000 },
+  orbitalAssault: { cls: "firepower", kind: "strike", hp: 1,   speed: 0,   range: 0,   cost: 95, cooldownMs: 30000 },
 });
 export const GEAR_CLASS = Object.freeze(Object.fromEntries(Object.entries(UNIT_TRAITS).map(([id, t]) => [id, t.cls])));
 export const CLASS_NAMES = Object.freeze({ firepower: "화력", armor: "기갑", air: "공중", support: "지원" });

@@ -6,6 +6,7 @@ import {MAX_GOLD,serializeSave,exact,subtractMoney} from '../src/money.js';
 import {RANKS,RANK_REQUIREMENTS} from '../src/ranks.js';
 import {EQUIPMENT,equipmentPurchaseOffer,equipmentStats} from '../src/equipment.js';
 import {personalStatus} from '../src/personal-equipment.js';
+import {PERSONAL_EQUIPMENT} from '../src/personal-catalog.js';
 import {personalDetailMarkup,personalLevelEffect} from '../src/personal-panels.js';
 import {equipmentCombatStats,createBattle,BATTLE_RULES} from '../src/battle.js';
 import {armyPower} from '../src/units.js';
@@ -77,7 +78,7 @@ test('v19 adds empty military slots and Lv.1 glaive while preserving all paid ge
   s.equipment.tank={level:20,count:1,deployed:true};s.swordActivatedAt=T-1000;s.swordDurationMs=90000;
   s.autoTouchActivatedAt=T-900;s.autoTouchDurationMs=120000;s.autoTouchTicks=3;
   const next=parseSave(serializeSave(s),T);assert.equal(next.version,SAVE_VERSION);assert.equal(next.gold,s.gold);
-  for(const id of Object.keys(s.personalLevels))assert.equal(next.personalLevels[id],7);
+  for(const id of Object.keys(s.personalLevels))assert.equal(next.personalLevels[id],PERSONAL_EQUIPMENT[id].introducedVersion<=19?7:1);
   assert.equal(next.personalLevels.marshalGlaive,1);assert.equal(next.equipment.icbm,null);assert.equal(next.equipment.railgunTank,null);
   for(const key of ['swordActivatedAt','swordDurationMs','autoTouchActivatedAt','autoTouchDurationMs','autoTouchTicks'])assert.equal(next[key],s[key]);
   assert.deepEqual(next.equipment.tank,s.equipment.tank);

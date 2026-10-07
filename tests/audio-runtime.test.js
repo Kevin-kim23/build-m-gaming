@@ -8,8 +8,8 @@ import { createSoundPlayer } from '../src/sound-player.js';
 import { createGameAudio } from '../src/audio.js';
 
 test('every equipment has its own action and deployment sounds; production and runtime agree',()=>{
-  assert.equal(SFX_IDS.length,40);
-  assert.equal(AUDIO_IDS.size,40);
+  assert.equal(SFX_IDS.length,Object.keys(EQUIPMENT).length*2+22);
+  assert.equal(AUDIO_IDS.size,SFX_IDS.length);
   assert.deepEqual(new Set(AUDIO_PLAN.map(a=>a.id)),AUDIO_IDS);
   for(const id of Object.keys(EQUIPMENT)) {
     assert.ok(SFX_IDS.includes(battleSound('shot',id)));

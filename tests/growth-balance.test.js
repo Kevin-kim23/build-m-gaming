@@ -53,13 +53,16 @@ test('existing paid armies, school levels, pending rewards and gold survive the 
   assert.equal(perSecond(restored),perSecond(s));assert.equal(perTap(restored),perTap(s));
 });
 
-test('construction-only baseline retains the three-to-five-week growth guard',()=>{
+test('construction-only current catalog stays around three-to-five weeks with new late-rank awards',()=>{
   const report=constructionOnly();
   assert.equal(report.assumptions.facilityUpgrades,false);
   assert.ok(Object.values(report.final.facilityLevels).every(level=>level===1));
   const reached=Object.fromEntries(report.milestones.map(m=>[m.rank,m.day]));
   assert.ok(reached['대령']>=2&&reached['대령']<=5);
-  assert.ok(reached['대원수']>=21&&reached['대원수']<=35);
+  // Keep a ~three-week lower guard while including the real current rank rewards.
+  assert.ok(reached['대원수']>=20&&reached['대원수']<=35);
+  assert.equal(report.assumptions.personalAwards,true);
+  for(const id of ['carrier','flyingFortress'])assert.ok(report.final.equipment.some(gear=>gear.id===id),'new late military must be included in the simulation');
   assert.ok(reached['준장']-reached['대령']<4);
 });
 

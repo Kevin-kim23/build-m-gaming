@@ -66,7 +66,7 @@ test('new officers spend their independent price and add only their catalog stre
     assert.equal(s[grade.field],1);
     assert.equal(before.gold-s.gold,BigInt(prices[grade.id]));
     assert.equal(armyPower(s)-before.power,grade.power);
-    assert.equal(perTap(s,T)-before.tap,grade.tap);assert.equal(perSecond(s)-before.income,grade.passive*220/100);
+    assert.equal(perTap(s,T)-before.tap,grade.tap*140/100);assert.equal(perSecond(s)-before.income,grade.passive*220/100);
     for(const other of ADVANCED_OFFICERS)assert.equal(recruitOffer(s,other.id).cost===prices[other.id],other.id!==grade.id);
   }
   assert.deepEqual(parseSave(serializeSave(s),T).gold,s.gold);

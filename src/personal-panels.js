@@ -1,7 +1,7 @@
 import { personalIcon } from './personal-art.js';
 import { UNITS } from './units.js';
 import { fmtGold, fmtGoldCost } from './format.js';
-import { PERSONAL_EQUIPMENT, GENERAL_SWORD, MARSHAL_GLAIVE, AUTO_TOUCH } from './personal-catalog.js';
+import { PERSONAL_EQUIPMENT, GENERAL_SWORD, MARSHAL_GLAIVE, personalIncomePercent, AUTO_TOUCH } from './personal-catalog.js';
 import { BULK_RECRUIT, personalStatus } from './personal-equipment.js';
 import { personalUpgradeOffer, personalUpgradeStep } from './personal-enhancement.js';
 
@@ -10,6 +10,9 @@ export function personalLevelEffect(id,level) {
   if(id==='generalSword')return `${(GENERAL_SWORD.durationMs+(level-1)*GENERAL_SWORD.durationStepMs)/1000}초 동안 터치 골드 2배`;
   if(id==='divisionFlag')return `장비 최대 ${10+level}강 해금`;
   if(id==='marshalGlaive')return `초당 골드 +${MARSHAL_GLAIVE.passiveBonusPercent+(level-1)*MARSHAL_GLAIVE.passiveBonusStep}% · 상시 적용`;
+  if(id==='admiralsCompass')return `홈 터치 골드 +${personalIncomePercent(id,level)}% · 상시 적용`;
+  if(id==='strategicTablet')return `배치 군사 장비의 초당·터치 골드 +${personalIncomePercent(id,level)}% · 상시 적용`;
+  if(id==='supremeSeal')return `전체 초당·홈 터치 골드 +${personalIncomePercent(id,level)}% · 상시 적용`;
   return `${(AUTO_TOUCH.durationMs+(level-1)*AUTO_TOUCH.durationStepMs)/1000}초 동안 자동 터치`;
 }
 function effectMarkup(id,level) {
@@ -18,6 +21,9 @@ function effectMarkup(id,level) {
   else if(id==='generalSword')explanation='사용 시점부터 10분 뒤 재사용합니다. 홈 터치와 리볼버 자동 터치에 적용되며 방치 수입과 전투에는 적용되지 않습니다.';
   else if(id==='divisionFlag')explanation='사단기를 1레벨 강화할 때마다 군사 장비 강화 한도가 1씩 늘어납니다. 이미 달성한 군사 장비 강화는 유지됩니다. 장비 추가 구매는 현재 잠겨 있습니다.';
   else if(id==='marshalGlaive')explanation=`보유하면 초당 골드가 기존의 ${1+(MARSHAL_GLAIVE.passiveBonusPercent+(level-1)*MARSHAL_GLAIVE.passiveBonusStep)/100}배가 됩니다. 병력·배치 장비의 점령 보너스가 포함된 수입에 적용하며 소수 골드는 버립니다. 오프라인 수입에도 적용됩니다. 터치 골드·리볼버 지급·전투 능력은 바꾸지 않습니다.`;
+  else if(id==='admiralsCompass')explanation='보유하면 병력·배치 장비·시설을 포함한 홈 터치 골드에 적용됩니다. 장군검과 총사령관 인장은 각각 곱해서 적용되며 리볼버 자동 터치에도 반영됩니다. 방치 수입·전투 공격력은 바꾸지 않습니다. 계산 단계마다 소수 골드는 버립니다.';
+  else if(id==='strategicTablet')explanation='연병장에 배치한 군사 장비의 초당·터치 수입 합계에 먼저 적용합니다. 병력의 기본 수입·보관 중인 장비·전투 능력은 바꾸지 않습니다. 시설·점령·다른 개인 장비 효과는 그 뒤에 각각 곱해서 적용됩니다. 장비 화면의 기본 능력에는 이 보너스가 포함되지 않습니다. 계산 단계마다 소수 골드는 버립니다.';
+  else if(id==='supremeSeal')explanation='병력·배치 장비·시설·점령 보너스·언월도·제독의 나침반이 반영된 초당·홈 터치 수입에 마지막으로 적용합니다. 장군검은 추가로 2배가 됩니다. 오프라인 수입과 리볼버 자동 터치에도 적용되며 전투 능력은 바꾸지 않습니다. 계산 단계마다 소수 골드는 버립니다.';
   else explanation=`0.3초마다 현재 터치 보상을 받아 총 ${Math.floor((AUTO_TOUCH.durationMs+(level-1)*AUTO_TOUCH.durationStepMs)/AUTO_TOUCH.intervalMs)}회 지급합니다. 사용 시점부터 30분 뒤 재사용합니다. 장군검 효과가 적용되며, 재접속해도 남은 지급분만 정산합니다.`;
   return `<strong>${personalLevelEffect(id,level)}</strong><p>${explanation}</p><details class="personal-levels"><summary>Lv.1~10 능력 보기</summary>${Array.from({length:10},(_,i)=>`<p>Lv.${i+1} · ${personalLevelEffect(id,i+1)}</p>`).join('')}</details>`;
 }
