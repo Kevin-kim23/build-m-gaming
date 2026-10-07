@@ -30,6 +30,8 @@ export function validateSave(s) {
   if (!Number.isInteger(s.version) || s.version < 2 || s.version > SAVE_VERSION)
     throw new SaveValidationError('unsupported-version', 'version');
   requireSave(typeof s.sound === 'boolean', 'sound');
+  if (s.version >= 29) for (const key of ['sfxVolume', 'musicVolume'])
+    requireSave(typeof s[key] === 'number' && Number.isFinite(s[key]) && s[key] >= 0 && s[key] <= 1, key);
   if (s.version === 2) {
     requireSave(integer(s.gold, Number.MAX_SAFE_INTEGER), 'gold');
     requireSave(s.gold === s.taps, 'taps');

@@ -172,13 +172,13 @@ export function createGameSession({ storage, locks, now = Date.now,
     notify();
     return earned;
   }
-  function change(action) {
+  function change(action, {defer = false} = {}) {
     if (!active || invalid) return undefined;
     settle();
     const result = action(state);
     dirty = true;
-    flush(result?.ok !== false);
-    notify(true);
+    if (defer) schedule(); else flush(result?.ok !== false);
+    notify(!defer);
     return result;
   }
   function tick() {

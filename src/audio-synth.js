@@ -6,7 +6,7 @@ export function createSynthAudio(
   createContext = () =>
     new (window.AudioContext || window.webkitAudioContext)(),
 ) {
-  let context;
+  let context, master, masterVolume = 1;
   const voices = new Set();
   function stop() {
     for (const voice of voices) {
@@ -20,11 +20,13 @@ export function createSynthAudio(
       voice.gain.disconnect();
     }
     voices.clear();
+    if (master) { master.disconnect(); master = null; }
   }
   function play(enabled, schedule) {
     if (!enabled) return;
     try {
       context ??= createContext();
+      if (!master) { master = context.createGain(); master.connect(context.destination); master.gain.value = masterVolume; }
       Promise.resolve(context.resume()).catch((error) =>
         reportError("audio.resume", error),
       );
@@ -47,16 +49,18 @@ export function createSynthAudio(
     gain.gain.exponentialRampToValueAtTime(volume, start + 0.025);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(gain);
-    gain.connect(context.destination);
+    gain.connect(master);
     oscillator.onended = () => {
       oscillator.disconnect();
       gain.disconnect();
       voices.delete(voice);
+      if (!voices.size && master) { master.disconnect(); master = null; }
     };
     oscillator.start(start);
     oscillator.stop(start + duration + 0.02);
   }
   return {
+    setVolume(value) { masterVolume = Math.max(0, Math.min(1, value)); if (master) master.gain.value = masterVolume; if (!masterVolume) stop(); },
     stop,
     tap(enabled) {
       play(enabled, (t) => tone(820, t, 0.13, 0.035));

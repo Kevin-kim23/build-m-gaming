@@ -119,18 +119,18 @@ test('disabled game sound mutes the clip, and browser autoplay policy retries th
   assert.equal(browser.node('#opening-video').muted, true); assert.equal(browser.starts, 0);
 });
 
-test('first-install logo sound is enabled without changing the default game preference or saved mute', () => {
+test('first-install audio is enabled while saved mute is preserved', () => {
   const T = 1800000000000;
   for (const [raw, expectedMute] of [[null, false], [serializeSave({...freshState(T), sound: false}), true],
     [serializeSave({...freshState(T), sound: true}), false], ['broken save', true]]) {
     let writes = 0;
     const session = createGameSession({storage: {getItem: key => key === SAVE_KEY ? raw : null,
       setItem: () => writes++}, now: () => T, setTimer: () => 1, clearTimer: () => {}});
-    const f = fixture({soundEnabled: !session.hasSavedProgress || session.state.sound});
+    const f = fixture({soundEnabled: !session.hasSavedProgress || (session.state.sound && !session.saveNotice)});
     f.opening.setActive(true);
     assert.equal(f.node('#opening-video').muted, expectedMute);
     assert.equal(writes, 0); assert.equal(session.active, false);
-    if (raw === null) assert.equal(session.state.sound, false);
+    if (raw === null) assert.equal(session.state.sound, true);
   }
 });
 

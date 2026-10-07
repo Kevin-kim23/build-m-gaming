@@ -44,11 +44,12 @@ test('the copy button and a selectable copy of the report are always offered', (
   assert.match(body, /게임 저장 내용.*들어 있지 않습니다/);
 });
 
-test('the home footer carries the version and the info button', () => {
+test('the home carries its version and a settings entry instead of a separate info button', () => {
   assert.equal(APP_VERSION, 'dev'); // plain node has no build-time replacement
   const html = homeMarkup(freshState(0));
-  assert.match(html, /<button type="button" id="open-info"[^>]*>정보 · v/);
-  assert.equal((html.match(/id="open-info"/g) ?? []).length, 1);
+  assert.match(html, /footer-info">v/);
+  assert.match(html, /id="sound" aria-label="설정"/);
+  assert.doesNotMatch(html, /id="open-info"/);
 });
 
 test('blocked saves explain preservation, copying diagnostics and retry without offering reset', () => {

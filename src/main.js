@@ -51,6 +51,7 @@ import { openRankGuide } from "./rank-guide.js";
 import "./detail.css";
 import "./touch.css";
 import { hidePromotion } from "./promotion.js";
+import { createSettingsUI } from './settings-ui.js';
 import { createGameAudio } from "./audio.js";
 import {
   deployedEquipment,
@@ -93,29 +94,35 @@ const armyPanels = createArmyPanels(session, gameAudio);
 const achievementUI = createAchievementUI(session, gameAudio);
 const guideUI = createGuideUI();
 const infoUI = createInfoPanel(session);
+const settingsUI = createSettingsUI(session, infoUI, gameAudio);
 const offlineUI = createOfflineRewardUI(session);
 const openingBars = createOpeningSystemBars({native: Capacitor.isNativePlatform(), bars: SystemBars, onError: reportError});
 openingBars.sync();
 const opening = createOpeningScreen({onStart: () => {
   openingBars.finish();
+  gameAudio.setMusicScene('home');
   lifecycle.start();
   if (!document.querySelector('dialog[open]')) zone.focus({preventScroll:true});
-}, soundEnabled: !session.hasSavedProgress || state.sound, onError: reportError});
+}, soundEnabled: !session.hasSavedProgress || (state.sound && !session.saveNotice), soundVolume: state.sfxVolume,
+  onState: (stage, active) => {
+    if (stage !== 'complete') gameAudio.music.configure({scene: stage === 'title' ? 'title' : null, active, volume: session.saveNotice ? 0 : state.musicVolume});
+  }, onError: reportError});
 const lifecycle = createGameLifecycle({session, opening, onPause: () => {
   fieldNavigation.clear();
   battleUI.suspend();
   hidePromotion();
   gameAudio.stop();
+  gameAudio.music.configure({active:false});
 }});
 function update() {
-  gameAudio.configure({enabled:state.sound,active:session.active && lifecycle.canRun});
+  gameAudio.configure({enabled:state.sound,volume:state.sfxVolume,active:session.active && lifecycle.canRun});
+  if (lifecycle.started) gameAudio.music.configure({volume:state.musicVolume,active:session.active && lifecycle.canRun});
   const power = armyPower(state),
     r = rank();
   const goldLabel = fmtGold(state.gold);
   setText("#gold", goldLabel);
   // Currency suffixes can shorten at a carry boundary; size by amount, never string length.
   $("#gold").classList.toggle("large-balance", state.gold >= 1_000_000);
-  $("#sound").setAttribute("aria-checked", String(state.sound));
   if (rosterDirty) {
     rosterDirty = false;
     achievementUI.sync();
@@ -184,16 +191,10 @@ $(".field-tools [data-use-revolver]").onclick = () => {
   if (session.change(s => activateAutoTouch(s))?.ok) gameAudio.ui('revolver',state.sound);
 };
 
-$("#sound").onclick = async () => {
-  await session.change((s) => {
-    s.sound = !s.sound;
-  });
-  if (!state.sound) gameAudio.stop();
-  else { gameAudio.unlock(); gameAudio.tap(true); }
-};
+$("#sound").onclick = () => settingsUI.show();
 // One gesture hook unlocks browser audio. Disabled controls and field taps have their own feedback.
-document.addEventListener('pointerdown', () => gameAudio.unlock(), {capture:true,passive:true});
-document.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') gameAudio.unlock(); }, {capture:true});
+document.addEventListener('pointerdown', () => { gameAudio.unlock(); gameAudio.music.unlock(); }, {capture:true,passive:true});
+document.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { gameAudio.unlock(); gameAudio.music.unlock(); } }, {capture:true});
 document.addEventListener('click', event => {
   if (!lifecycle.canRun) return;
   const button=event.target.closest?.('button');

@@ -35,7 +35,7 @@ export function parseSave(raw, now = Date.now()) { return inspectSave(raw, now).
 
 function migrateSave(s, now) {
   const gold = validateSave(s);
-  if (s.version === 2) return { ...freshState(now), gold: minMoney(gold, MAX_GOLD), taps: s.taps, sound: s.sound };
+  if (s.version === 2) return { ...freshState(now), gold: minMoney(gold, MAX_GOLD), taps: s.taps, sound: s.sound, sfxVolume: s.sound ? 0.7 : 0, musicVolume: s.sound ? 0.45 : 0 };
   const migrated = {
     version: SAVE_VERSION,
     facilities: s.version >= 25 ? [...s.facilities] : [],
@@ -73,6 +73,8 @@ function migrateSave(s, now) {
     ...Object.fromEntries(ADVANCED_OFFICERS.map(unit=>[unit.field,s.version >= 17 ? s[unit.field] : 0])),
     equipment: emptyEquipment(),
     sound: s.sound,
+    sfxVolume: s.version >= 29 ? s.sfxVolume : s.sound ? 0.7 : 0,
+    musicVolume: s.version >= 29 ? s.musicVolume : s.sound ? 0.45 : 0,
     lastAccrual: s.lastAccrual,
     incomeRemainder: s.incomeRemainder,
     revision: s.revision,

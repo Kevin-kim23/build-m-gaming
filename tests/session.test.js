@@ -31,6 +31,15 @@ function setup(storage = memory(), locks) {
   };
 }
 const drain = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
+test('volume dragging batches writes and a pause saves the final independent volumes', () => {
+  const h = setup(); h.session.start();
+  for (let i = 0; i <= 100; i++) h.session.change(s => { s.musicVolume = i / 100; }, {defer:true});
+  assert.equal(h.storage.writes.length, 0);
+  h.session.change(s => { s.sfxVolume = 0; s.sound = false; }, {defer:true});
+  h.session.pause();
+  const saved = parseSave(h.storage.values.get(SAVE_KEY));
+  assert.equal(saved.musicVolume, 1); assert.equal(saved.sfxVolume, 0); assert.equal(saved.sound, false);
+});
 function lockManager() {
   let held = false;
   const queue = [];

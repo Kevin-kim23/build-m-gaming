@@ -3,7 +3,7 @@ export const OPENING_STALL_TIMEOUT_MS = 5000;
 export const OPENING_MAX_PLAY_MS = 30000;
 
 // One instance per document. Launch is deliberately not stored in the game save or preferences.
-export function createOpeningScreen({ root = document, onStart, onError, soundEnabled = true,
+export function createOpeningScreen({ root = document, onStart, onError, onState = () => {}, soundEnabled = true, soundVolume = 1,
   now = Date.now, setTimer = setTimeout, clearTimer = clearTimeout } = {}) {
   const layer = root.querySelector('#opening');
   const video = root.querySelector('#opening-video');
@@ -46,6 +46,7 @@ export function createOpeningScreen({ root = document, onStart, onError, soundEn
 
     title.hidden = false;
     layer.dataset.stage = stage;
+    onState(stage, active);
     if (active) title.focus({ preventScroll: true });
   }
   function mediaFailure(error, ticket) {
@@ -77,6 +78,7 @@ export function createOpeningScreen({ root = document, onStart, onError, soundEn
     if (active === value || stage === 'complete') return;
     active = value;
     layer.classList.toggle('is-paused', !active);
+    onState(stage, active);
     if (stage !== 'logo') return;
     if (active) play();
     else {
@@ -99,10 +101,12 @@ export function createOpeningScreen({ root = document, onStart, onError, soundEn
     video.load(); // Release the decoded clip; it is never replayed on resume.
     layer.hidden = true;
     layer.dataset.stage = stage;
+    onState(stage, active);
     app.inert = false;
     app.removeAttribute('aria-hidden');
     onStart();
   }
+  video.volume = Math.max(0, Math.min(1, soundVolume));
   video.muted = !soundEnabled;
   video.defaultMuted = !soundEnabled;
   video.playsInline = true;

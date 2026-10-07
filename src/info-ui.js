@@ -45,11 +45,11 @@ export function createInfoPanel(session) {
     else if (action === 'open-privacy') openDetail(privacyPolicyMarkup());
     else if (action === 'retry-save') { session.retryLoad(); show(); }
   });
-  document.querySelector('#open-info').addEventListener('click', show);
+
   const notice = document.querySelector('#save-notice');
   document.querySelector('#review-save').addEventListener('click', show);
   let lastTitle;
-  return { sync() {
+  return { show, sync() {
     const current = session.saveNotice, title = current?.title ?? '';
     if (title === lastTitle) return;
     lastTitle = title;

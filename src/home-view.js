@@ -5,8 +5,6 @@ import { APP_VERSION } from "./version.js";
 import { medalShelfMarkup } from "./achievement-markup.js";
 export const coin =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10l5 5v10l-5 5H7l-5-5V7z" fill="#d9b55d"/><path d="M8 5h8l3 3v8l-3 3H8l-3-3V8z" fill="#e8cd84"/><path d="M14 8h-4v8h4v-4h-2" fill="none" stroke="#8a6932" stroke-width="2"/></svg>';
-const speaker =
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 9h4l5-4v14l-5-4H3z"/><path class="sound-waves" d="M16 8q4 4 0 8m3-11q7 7 0 14"/><path class="sound-off" d="m16 9 5 6m0-6-5 6"/></svg>';
 const shopIcon =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m4 4-2 5v3h20V9l-2-5zM4 12v9h16v-9M9 21v-6h6v6M8 4 7 12m9-8 1 8"/></svg>';
 
@@ -23,7 +21,7 @@ function headerMarkup(state) {
     </div>
     </div>
     ${goldMarkup()}
-    <button id="sound" aria-label="효과음" title="효과음 켜기/끄기" role="switch" aria-checked="${state.sound}">${speaker}</button>
+    <button id="sound" aria-label="설정" title="설정"><span aria-hidden="true" style="font-size:24px">⚙</span></button>
     </header>`;
 }
 
@@ -103,7 +101,7 @@ function footerMarkup() {
     <span id="save-status">
     <i>
     </i> 저장 확인 중</span>
-    <button type="button" id="open-info" class="footer-info" aria-label="게임 정보와 오류 기록">정보 · v${APP_VERSION}</button>
+    <span class="footer-info">v${APP_VERSION}</span>
     </footer>`;
 }
 

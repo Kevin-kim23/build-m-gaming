@@ -1,3 +1,4 @@
+import { createMusicPlayer } from './music.js';
 import { createSynthAudio } from './audio-synth.js';
 import { reportError } from './diagnostics.js';
 
@@ -7,7 +8,10 @@ export function createGameAudio(createContext = () => new (window.AudioContext |
   const getContext = () => context ??= createContext();
   const synth = createSynthAudio(getContext);
   const canPlay = on => !!on && enabled && active;
+  const music = createMusicPlayer();
   return {
+    music,
+    setMusicScene: scene => music.configure({scene}),
     stop: () => synth.stop(),
     unlock() {
       if (!enabled || !active) return;
@@ -18,6 +22,7 @@ export function createGameAudio(createContext = () => new (window.AudioContext |
     },
     configure(settings) {
       enabled = !!settings.enabled; active = !!settings.active;
+      synth.setVolume(settings.volume ?? 1);
       if (!enabled || !active) synth.stop();
     },
     prepareBattle() {},

@@ -65,6 +65,7 @@ export function createBattleUI(session, audio = null) {
   }
   function showStages(countryId = campaignMap.countryId) {
     stop(); battle = null; mode = 'stages';
+    audio?.setMusicScene?.('home');
     stagesKey = mapKey();
     campaignMap.show(countryId);
     audio?.stop?.(); audio?.prepareBattle?.();
@@ -95,6 +96,7 @@ export function createBattleUI(session, audio = null) {
       reportError('battle.start', error);
       text('#battle-message', '출전 조건이 바뀌었어요. 작전 지도에서 다시 선택해 주세요.'); return;
     }
+    audio?.setMusicScene?.('battle');
     stop(); campaignMap.stop(); mode = 'battle'; paused = false; finalized = false; selected = null;
     audioEvents.reset(); healedAt.clear();
     audio?.stop?.(); audio?.prepareBattle?.();
@@ -226,6 +228,7 @@ export function createBattleUI(session, audio = null) {
   function suspend() {
     if (battle?.status !== 'running' || !dialog.open) return;
     paused = true; stop();
+    audio?.setMusicScene?.(null);
     audio?.stop?.();
     overlay('일시정지', session.active ? '' : '현재 게임 창의 조작 권한을 기다리고 있어요.', false);
     text('#battle-result-stars', ''); text('#battle-result-loot', '');
@@ -233,6 +236,7 @@ export function createBattleUI(session, audio = null) {
   function resume() {
     if (!session.active || document.hidden || battle?.status !== 'running') return;
     paused = false; lastFrame = 0;
+    audio?.setMusicScene?.('battle');
     $('#battle-overlay').hidden = true;
     schedule();
   }
@@ -360,6 +364,6 @@ export function createBattleUI(session, audio = null) {
     if(target && ['Enter',' '].includes(event.key)){event.preventDefault();campaignMap.handle(target);}
   });
   dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
-  dialog.addEventListener('close', () => { stop(); campaignMap.stop(); battle = null; audio?.stop?.(); document.querySelector('#open-battle')?.focus(); });
+  dialog.addEventListener('close', () => { stop(); campaignMap.stop(); battle = null; audio?.stop?.(); audio?.setMusicScene?.('home'); document.querySelector('#open-battle')?.focus(); });
   return {open, sync, suspend};
 }
