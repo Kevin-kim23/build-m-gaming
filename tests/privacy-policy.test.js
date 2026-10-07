@@ -38,3 +38,10 @@ test('the app still matches what the privacy policy promises', () => {
     assert.doesNotMatch(read(`src/${file}`), network, `${file} sends or reads network/location data`);
   }
 });
+
+test('the policy shows a real contact email and it appears in the generated document', async () => {
+  const { PRIVACY_CONTACT } = await import('../src/privacy-policy.js');
+  assert.match(PRIVACY_CONTACT, /^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+  assert.ok(privacyPolicyMarkup().body.includes(PRIVACY_CONTACT));
+  assert.ok(read('docs/store/PRIVACY_POLICY.md').includes(PRIVACY_CONTACT));
+});

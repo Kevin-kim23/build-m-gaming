@@ -1,9 +1,9 @@
 // 개인정보처리방침의 유일한 원본입니다. 앱 안 화면과 docs/store/PRIVACY_POLICY.md가 모두 여기서 만들어집니다.
 // 고치는 법: 이 파일을 고치고 `npm run privacy:doc`을 실행한 뒤 날짜·버전을 올립니다. (docs/PRIVACY_MANAGEMENT.md 참고)
 export const POLICY_DATE = '2026-10-07';
-export const POLICY_REVISION = 1;
-// 문의 이메일이 정해지면 문자열로 바꾸세요. 비어 있으면 스토어의 개발자 연락처를 안내합니다.
-export const PRIVACY_CONTACT = null;
+export const POLICY_REVISION = 2;
+// 방침에 공개되는 문의 이메일. 실제로 읽는 주소여야 합니다. null이면 스토어의 개발자 연락처를 안내합니다.
+export const PRIVACY_CONTACT = 'dong760630@naver.com';
 export const FICTION_NOTICE = '이 게임의 대륙·나라·지명·부대·장비·인물은 모두 허구이며, 실제 국가·군대·단체·인물·사건과 관련이 없습니다.';
 
 const contact = PRIVACY_CONTACT ?? 'Google Play 스토어 앱 페이지에 표시된 개발자 연락처';

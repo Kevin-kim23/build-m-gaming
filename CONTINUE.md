@@ -1,8 +1,12 @@
 # 집 컴퓨터에서 개발 이어하기
 
-이 저장소는 부대 키우기 0.55.0 시제품의 게임 코드, Android 프로젝트, 테스트와 기획 설명을 포함합니다.
+이 저장소는 부대 키우기 0.55.1 시제품의 게임 코드, Android 프로젝트, 테스트와 기획 설명을 포함합니다.
 
-## 0.55.0 허구 안내·개인정보처리방침
+## 0.55.1 방침 이메일·광고결제 체크리스트 (0.55.0 허구 안내·방침 포함)
+
+광고·결제를 넣기 전에 docs/MONETIZATION_CHECKLIST.md를 먼저 확인합니다. 문의 이메일은 src/privacy-policy.js의 PRIVACY_CONTACT입니다.
+
+### 0.55.0 허구 안내·개인정보처리방침
 
 게임 정보 화면에 허구 안내와 방침 보기 버튼이 있습니다. 방침 원본은 src/privacy-policy.js, 관리법은 docs/PRIVACY_MANAGEMENT.md. 광고·결제 추가 시 tests/privacy-policy.test.js가 실패하면 방침·Play 양식을 먼저 고칩니다.
 
