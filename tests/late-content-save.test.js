@@ -36,7 +36,7 @@ test('new military ownership and personal upgrades survive exact large-gold relo
   for(const id of personalIds)assert.equal(restored.personalLevels[id],10);
   assert.equal(restored.gold,MAX_GOLD-1n);
   for(const id of gearIds){const bad=structuredClone(state);delete bad.equipment[id];assert.equal(inspectSave(serializeSave(bad),T).issue?.field,'equipment');}
-  for(const id of personalIds)for(const value of [undefined,0,11,1.5]){
+  for(const id of personalIds)for(const value of [undefined,0,21,1.5]){
     const bad=structuredClone(state);bad.personalLevels[id]=value;
     assert.equal(inspectSave(serializeSave(bad),T).issue?.field,`personalLevels.${id}`);
   }

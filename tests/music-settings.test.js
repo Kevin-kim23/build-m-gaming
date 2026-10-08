@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createMusicPlayer } from '../src/music.js';
-import { freshState } from '../src/state.js';
+import { freshState, SAVE_VERSION } from '../src/state.js';
 import { parseSave, inspectSave } from '../src/save.js';
 import { serializeSave } from '../src/money.js';
 
@@ -58,7 +58,7 @@ test('schema28 migration preserves old mute, gold, troops and independent schema
     const state={...freshState(100),version:28,sound,gold:1000000000000000000n,soldiers:100};
     delete state.sfxVolume;delete state.musicVolume;
     const migrated=parseSave(serializeSave(state),100);
-    assert.equal(migrated.version,29);assert.equal(migrated.sound,sound);
+    assert.equal(migrated.version,SAVE_VERSION);assert.equal(migrated.sound,sound);
     assert.equal(migrated.sfxVolume,sound?0.7:0);assert.equal(migrated.musicVolume,sound?0.45:0);
     assert.equal(migrated.gold,state.gold);assert.equal(migrated.soldiers,100);
     migrated.sfxVolume=0;migrated.sound=false;migrated.musicVolume=0.83;

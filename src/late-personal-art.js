@@ -94,7 +94,7 @@ export function latePersonalIcon(kind,level=1) {
     if(level>=9){gem(77,45);gem(111,43);ring(53,207,86,4);}
   }
   // A distinct row of engraving advances on every level, including intermediate steps.
-  for(let i=0;i<level;i++){rect(64+i*7,229,5,2,gold[i%2?3:2]);if(level>=6)rect(65+i*7,227,3,1,'#d3ffdf');}
+  for(let i=0;i<level;i++){const x=64+(i%10)*7,y=229+Math.floor(i/10)*5;rect(x,y,5,2,gold[i%2?3:2]);if(level>=6)rect(x+1,y-2,3,1,'#d3ffdf');}
   const svg=`<svg class="command-baton-art late-personal-art" viewBox="0 0 192 256" role="img" aria-label="${names[kind]} Lv.${level} 정밀 픽셀 그림" shape-rendering="crispEdges">${personalLustre(kind,level)}${p.join('')}</svg>`;
   cache.set(key,svg);return svg;
 }

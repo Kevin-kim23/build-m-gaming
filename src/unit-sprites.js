@@ -66,7 +66,7 @@ function drawGear(id, level, side) {
   else if (id === 'helicopter') drawOverheadHelicopter(c, level, p);
   else drawTrackedOrTowed(c, id, level, side);
   // 강화 한 단계마다 보이는 장갑·장식 블록이 하나씩 늘어난다.
-  for (let i = 0; i < level; i++) rect(c, i % 2 ? 36 : 17, 24 + Math.floor(i / 2) * 5, 4, 3, i >= 8 ? '#e0c98c' : p.light);
+  for (let i = 0; i < Math.min(level, 10); i++) rect(c, i % 2 ? 36 : 17, 24 + Math.floor(i / 2) * 5, 4, 3, i >= 8 ? '#e0c98c' : p.light);
   if (level >= 4) rect(c, 24, 5, 8, 3, p.body);
   if (level >= 7) { rect(c, 38, 10, 1, 23, p.light); rect(c, 36, 11, 5, 2, p.flag); }
   overheadDetails(c, id, level, p); overheadEnhancement(c, level); emblem(c, 25, 47, side);

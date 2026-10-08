@@ -1,13 +1,13 @@
 import { facilityOffer, facilityUpgradeOffer, withFacilityIncome } from './facilities.js';
 export { parseSave } from './save.js';
-import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMoney } from './money.js';
+import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMoney, scaleMoney } from './money.js';
 import { pacedRecruitCost } from './growth-balance.js';
 export { MAX_GOLD, serializeSave } from './money.js';
 import { rankForArmy } from "./ranks.js";
 import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
 import { schoolOffer } from "./schools.js";
-import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration, withPersonalIncome, withPersonalEquipmentIncome } from "./personal-equipment.js";
-import { personalUpgradeOffer, drawPersonalRoll, personalRollSucceeds } from './personal-enhancement.js';
+import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, bulkRecruitDiscount, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration, withPersonalIncome, withPersonalEquipmentIncome } from "./personal-equipment.js";
+import { personalUpgradeOffer } from './personal-enhancement.js';
 import { settleAutoTouch } from './auto-touch.js';
 import { withCampaignIncome } from './campaign-rewards.js';
 import { reconcileAchievements } from "./achievements.js";
@@ -77,7 +77,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
   const unit = recruitUnit(type, quantity), bulk = quantity > 1;
   const power = armyPower(s),
     owned = s[unit.field] ?? 0,
-    cost = bulk ? batchRecruitCost(owned, type) : unitCost(owned, type);
+    cost = bulk ? scaleMoney(batchRecruitCost(owned, type),100-bulkRecruitDiscount(s),100) : unitCost(owned, type);
   const baton = bulk ? bulkRecruitAccess(s, type) : null;
   const access = unitAccess(s, unit);
   const locked = !access.unlocked || (bulk && !baton.unlocked);
@@ -140,15 +140,13 @@ export function activateAutoTouch(s, now = Date.now()) {
   s.autoTouchDurationMs=generalRevolverDuration(s);
   return {ok:true};
 }
-export function enhancePersonalEquipment(s,now=Date.now(),id='commandBaton',random=drawPersonalRoll) {
+export function enhancePersonalEquipment(s,now=Date.now(),id='commandBaton') {
   accrue(s,now);
   const offer=personalUpgradeOffer(s,id);
   if(!offer.canUpgrade)return {ok:false,reason:offer.reason};
-  const success=personalRollSucceeds(offer.level,random());
   s.gold=subtractMoney(s.gold,offer.cost);
-  s.personalLevels={...s.personalLevels,[id]:offer.level+(success?1:0)};
-  // Failed rolls are completed paid attempts; checkpoint them just like success.
-  return {ok:true,success,level:s.personalLevels[id],cost:offer.cost,chance:offer.chance};
+  s.personalLevels={...s.personalLevels,[id]:offer.nextLevel};
+  return {ok:true,success:true,level:offer.nextLevel,cost:offer.cost};
 }
 export function recruit(s, now = Date.now(), type = "soldier", quantity = 1) {
   recruitUnit(type, quantity);

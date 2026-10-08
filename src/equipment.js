@@ -1,3 +1,4 @@
+import { MILITARY_MAX_LEVEL } from './equipment-limits.js';
 import { multiplyMoney } from './money.js';
 import { LATE_EQUIPMENT } from './late-equipment-catalog.js';
 import { rankForArmy, RANKS } from "./ranks.js";
@@ -13,7 +14,7 @@ export const EQUIPMENT = Object.freeze({
     name: "견인포",
     unlockRank: "대위",
     cost: 1_000_000,
-    maxLevel: 20,
+    maxLevel: MILITARY_MAX_LEVEL,
     passive: 500,
     tap: 3000,
     passiveStep: 100,
@@ -24,7 +25,7 @@ export const EQUIPMENT = Object.freeze({
     name: "전차",
     unlockRank: "소령",
     cost: 5_000_000,
-    maxLevel: 20,
+    maxLevel: MILITARY_MAX_LEVEL,
     passive: 2500,
     tap: 15000,
     passiveStep: 500,
@@ -35,7 +36,7 @@ export const EQUIPMENT = Object.freeze({
     name: "자주포",
     unlockRank: "중령",
     cost: 15_000_000,
-    maxLevel: 20,
+    maxLevel: MILITARY_MAX_LEVEL,
     passive: 8000,
     tap: 50000,
     passiveStep: 1600,
@@ -43,34 +44,34 @@ export const EQUIPMENT = Object.freeze({
   }),
   helicopter: Object.freeze({
     id: "helicopter", name: "공격헬기", unlockRank: "대령",
-    cost: 45_000_000, maxLevel: 20,
+    cost: 45_000_000, maxLevel: MILITARY_MAX_LEVEL,
     passive: 25000, tap: 150000, passiveStep: 5000, tapStep: 30000,
     stages: HELICOPTER_STAGES,
   }),
   rocketLauncher: Object.freeze({
     id: 'rocketLauncher', name: '다연장 로켓포', unlockRank: '준장',
-    cost: 150_000_000, maxLevel: 20,
+    cost: 150_000_000, maxLevel: MILITARY_MAX_LEVEL,
     passive: 75000, tap: 450000, passiveStep: 15000, tapStep: 90000,
     stages: ROCKET_STAGES,
   }),
   transport: Object.freeze({
     id:'transport', name:'전술 수송기', unlockRank:'소장', introducedVersion:16,
-    cost:450_000_000, maxLevel:20, passive:225000, tap:1350000, passiveStep:45000, tapStep:270000,
+    cost:450_000_000, maxLevel: MILITARY_MAX_LEVEL, passive:225000, tap:1350000, passiveStep:45000, tapStep:270000,
     stages:Object.freeze(['기본 수송기','동체 보강','보급 적재함','엔진 개량','날개 보강','투하 장치','통신 설비','항법 레이더','방어 장치','보급 통제실','최종 개량형']),
   }),
   fighter: Object.freeze({
     id:'fighter', name:'전투기', unlockRank:'중장', introducedVersion:16,
-    cost:1_500_000_000, maxLevel:20, passive:750000, tap:4500000, passiveStep:150000, tapStep:900000,
+    cost:1_500_000_000, maxLevel: MILITARY_MAX_LEVEL, passive:750000, tap:4500000, passiveStep:150000, tapStep:900000,
     stages:Object.freeze(['기본 전투기','기수 장갑','기관포 보강','날개 보강','미사일 장착','엔진 개량','사격 통제기','탐지 레이더','위장 패널','전자전 장비','최종 개량형']),
   }),
   railgunTank: Object.freeze({
     id:'railgunTank',name:'레일건 전차',unlockRank:'대장',introducedVersion:20,
-    cost:4_500_000_000,maxLevel:20,passive:2_250_000,tap:13_500_000,passiveStep:450_000,tapStep:2_700_000,
+    cost:4_500_000_000,maxLevel: MILITARY_MAX_LEVEL,passive:2_250_000,tap:13_500_000,passiveStep:450_000,tapStep:2_700_000,
     stages:Object.freeze(['기본 레일건','레일 외장','청광 코어','궤도 보강','측면 방호판','포탑 장갑','에너지 패널','탐지 센서','은빛 장갑','통신 안테나','최종 개량형']),
   }),
   icbm: Object.freeze({
     id:'icbm',name:'대륙간 탄도미사일',shortName:'ICBM',unlockRank:'준원수',introducedVersion:20,
-    cost:15_000_000_000,maxLevel:20,passive:7_500_000,tap:45_000_000,passiveStep:1_500_000,tapStep:9_000_000,
+    cost:15_000_000_000,maxLevel: MILITARY_MAX_LEVEL,passive:7_500_000,tap:45_000_000,passiveStep:1_500_000,tapStep:9_000_000,
     stages:Object.freeze(['기본 ICBM','동체 외장','운반대 보강','차체 장갑','지지대 확장','기수 도장','관측 센서','지원 설비','위장 패널','통신 안테나','최종 개량형']),
   }),
   ...LATE_EQUIPMENT,
@@ -79,7 +80,7 @@ export const EQUIPMENT = Object.freeze({
 export const MAX_DEPLOYED_EQUIPMENT = Object.keys(EQUIPMENT).length;
 export const REPEAT_EQUIPMENT_LEVEL = 10;
 export const equipmentLevelLimit = state => enhancementLimitForFlag(divisionFlagStatus(state).level);
-export const equipmentStage = (id,level) => level <= 10 ? (EQUIPMENT[id].stages ?? EQUIPMENT_STAGES)[level] : ['금장 보강','빛나는 장갑','지휘 문양','은빛 광채','황금 코어','청광 패널','정예 문장','별빛 장갑','영광의 광채','최종 지휘관 사양'][level-11];
+export const equipmentStage = (id,level) => level <= 10 ? (EQUIPMENT[id].stages ?? EQUIPMENT_STAGES)[level] : ['금장 보강','빛나는 장갑','지휘 문양','은빛 광채','황금 코어','청광 패널','정예 문장','별빛 장갑','영광의 광채','최종 지휘관 사양','홍금 외장','루비 코어','홍금 보강판','태양 문양','진홍 장갑','홍염 동력부','황금 방호판','홍금 지휘 문장','태양의 광채','최종 홍금 사양'][level-11];
 // Income saturates at the wallet limit before large offline multiplications.
 export const MAX_EQUIPMENT_COUNT = 100_000;
 export const ARTILLERY = EQUIPMENT.artillery;
@@ -196,7 +197,7 @@ export function validEquipment(value, legacy = false, includeHelicopter = true, 
         !Array.isArray(g) &&
         Number.isInteger(g.level) &&
         g.level >= 0 &&
-        g.level <= (includeAircraft ? EQUIPMENT[id].maxLevel : 10) &&
+        g.level <= (includeAircraft ? (saveVersion<30?20:EQUIPMENT[id].maxLevel) : 10) &&
         typeof g.deployed === "boolean" &&
         (!requireCount || (Number.isSafeInteger(g.count) && g.count >= 1 &&
           g.count <= MAX_EQUIPMENT_COUNT && (g.count === 1 || g.level >= REPEAT_EQUIPMENT_LEVEL)))

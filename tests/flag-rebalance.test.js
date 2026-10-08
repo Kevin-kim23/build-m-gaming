@@ -16,8 +16,8 @@ const T=1_800_000_000_000;
 const army=rank=>({...freshState(T),gold:MAX_GOLD,soldiers:Math.max(5000,RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000),sergeants:300,ncoSchoolLevel:5});
 
 test('paid flag levels add one enhancement step and promotion alone keeps level one',()=>{
-  for(let level=0;level<=10;level++)assert.equal(enhancementLimitForFlag(level),10+level);
-  for(const bad of [-1,11,1.5,NaN])assert.throws(()=>enhancementLimitForFlag(bad),RangeError);
+  for(let level=0;level<=20;level++)assert.equal(enhancementLimitForFlag(level),10+level);
+  for(const bad of [-1,21,1.5,NaN])assert.throws(()=>enhancementLimitForFlag(bad),RangeError);
   for(const [i,rank] of ['준장','소장','중장','대장','준원수','소원수'].entries()){
     const s=army(rank);assert.equal(divisionFlagStatus(s).level,i===0?0:1);if(i)s.personalLevels.divisionFlag=i;assert.equal(divisionFlagStatus(s).level,i);assert.equal(equipmentLevelLimit(s),10+i);
     s.equipment.tank={level:9+i,count:1,deployed:true};const before=s.gold;
@@ -45,7 +45,7 @@ test('repeat purchase is locked at every rank and cannot spend or mutate even th
 test('equipment income is integer, grows increasingly, and reaches 6x and 17x',()=>{
   for(const d of Object.values(EQUIPMENT)){
     let delta=0;
-    for(let level=1;level<=20;level++){
+    for(let level=1;level<=30;level++){
       const a=equipmentStats(level-1,d.id),b=equipmentStats(level,d.id);
       assert.ok(Number.isSafeInteger(b.passive)&&Number.isSafeInteger(b.tap));
       assert.ok(b.passive-a.passive>delta);delta=b.passive-a.passive;
@@ -53,6 +53,7 @@ test('equipment income is integer, grows increasingly, and reaches 6x and 17x',(
     }
     assert.equal(equipmentStats(10,d.id).passive,d.passive*6);
     assert.equal(equipmentStats(20,d.id).tap,d.tap*17);
+    assert.equal(equipmentStats(30,d.id).tap,d.tap*34);
   }
 });
 test('player attack and healing upgrade rewards increase for players while enemy units keep their stage stats',()=>{

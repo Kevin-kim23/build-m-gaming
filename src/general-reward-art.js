@@ -55,7 +55,7 @@ export function generalRewardIcon(kind, level = 1) {
     for(let y=85;y<105;y+=5){r(209,y,1,2,shade);r(196,y,1,1,light);}
     r(41,83,89,3,shade);r(43,83,85,1,gold);star(31,100);star(224,47);
     r(34,174,194,4,'#10221b');r(42,172,178,2,'#647057');
-    for(let i=1;i<level;i++){const x=49+(i-1)*10;r(x,67,6,3,gold);r(x,67,5,1,light);}
+    for(let i=1;i<Math.min(level,10);i++){const x=49+(i-1)*10;r(x,67,6,3,gold);r(x,67,5,1,light);}
     if(level>=3){r(187,133,4,19,gold);r(188,134,2,17,light);}
     if(level>=5){r(144,75,49,3,gold);r(146,76,44,1,light);star(170,88);}
     if(level>=7){r(32,57,105,2,light);r(34,83,102,2,'#c0efdf');star(202,134);}

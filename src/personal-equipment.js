@@ -34,7 +34,7 @@ export function withPersonalIncome(state,income,kind='passive') {
   const specific=kind==='tap'?personalIncomeBonus(state,ADMIRALS_COMPASS.id,rank):glaiveBonusPercent(state,rank);
   return applyBonus(applyBonus(income,specific),personalIncomeBonus(state,SUPREME_SEAL.id,rank));
 }
-export const FLAG_ENHANCEMENT_LIMITS = Object.freeze(Array.from({length:11},(_,level)=>10+level));
+export const FLAG_ENHANCEMENT_LIMITS = Object.freeze(Array.from({length:DIVISION_FLAG.maxLevel+1},(_,level)=>10+level));
 export function enhancementLimitForFlag(level) {
   if(!Number.isInteger(level)||level<0||level>DIVISION_FLAG.maxLevel)throw new RangeError('Invalid flag level');
   return FLAG_ENHANCEMENT_LIMITS[level];
@@ -50,7 +50,10 @@ export function autoTouchStatus(state,now=Date.now()) {
 }
 export const BULK_RECRUIT = Object.freeze(Object.fromEntries([
   'soldier','sergeant','staffSergeant','masterSergeant','sergeantMajor','lieutenant','firstLieutenant','captain','major','lieutenantColonel',
+  'colonel','brigadierGeneral','majorGeneral','lieutenantGeneral','general',
 ].map((id,i)=>[id,Object.freeze({level:i+1})])));
+export const batonDiscountPercent = level => Math.max(0,level-15)*2;
+export const bulkRecruitDiscount = state => batonDiscountPercent(commandBatonStatus(state).level);
 export function bulkRecruitAccess(state,type) {
   const rule=BULK_RECRUIT[type];
   if(!rule)return {visible:false,unlocked:false,requirement:'일괄 모집 미지원'};

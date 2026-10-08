@@ -9,7 +9,7 @@ import { personalIcon } from '../src/personal-art.js';
 import { personalMarkup } from '../src/personal-panels.js';
 import { shopMarkup } from '../src/shop.js';
 const T=1_800_000_000_000;
-const army=rank=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,ncoSchoolLevel:5,officerSchoolLevel:5,gold:100_000_000_000_000});
+const army=rank=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,gold:100_000_000_000_000});
 
 test('legacy general ranks reset personal levels to one but retain active skill deadlines',()=>{
   const pictures=[];
@@ -25,7 +25,7 @@ test('legacy general ranks reset personal levels to one but retain active skill 
 test('each baton level adds exactly one supported 100-person button and keeps earlier ones',()=>{
   const rules=Object.entries(BULK_RECRUIT);
   for(const [index,[id,rule]] of rules.entries()) {
-    const s=army('소원수');s.gold=MAX_GOLD;s.personalLevels.commandBaton=rule.level;
+    const s=army('대원수');s.gold=MAX_GOLD;s.personalLevels.commandBaton=rule.level;
     const html=shopMarkup(s,'',()=>'', 'recruit');
     assert.equal((html.match(/data-buy-bulk=/g)||[]).length,index+1);
     for(const [earlier] of rules.slice(0,index+1))assert.match(html,new RegExp(`data-buy-bulk="${earlier}"`));

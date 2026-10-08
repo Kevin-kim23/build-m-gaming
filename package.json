@@ -1,6 +1,6 @@
 {
   "name": "budae-kiugi",
-  "version": "0.65.0",
+  "version": "0.66.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,7 +13,7 @@
     "android:sync": "npm run build:release && cap sync android",
     "qa:save": "vite --config tools/save-qa.config.mjs",
     "privacy:doc": "node tools/privacy-doc.mjs",
-    "docs:personal": "node tools/personal-rates.mjs",
+    "docs:personal": "node tools/personal-guide.mjs",
     "qa:personal": "vite --config tools/personal-qa.config.mjs",
     "qa:marshal": "vite --config tools/marshal-qa.config.mjs",
     "android:doctor": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/android-build.ps1 -Mode Doctor",
