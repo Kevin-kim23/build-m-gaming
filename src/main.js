@@ -94,7 +94,7 @@ const armyPanels = createArmyPanels(session, gameAudio);
 const achievementUI = createAchievementUI(session, gameAudio);
 const guideUI = createGuideUI();
 const infoUI = createInfoPanel(session);
-const settingsUI = createSettingsUI(session, infoUI, gameAudio);
+const settingsUI = createSettingsUI(session, infoUI, gameAudio, () => guideUI.resume());
 const offlineUI = createOfflineRewardUI(session);
 const openingBars = createOpeningSystemBars({native: Capacitor.isNativePlatform(), bars: SystemBars, onError: reportError});
 openingBars.sync();
@@ -108,6 +108,7 @@ const opening = createOpeningScreen({onStart: () => {
     if (stage !== 'complete') gameAudio.music.configure({scene: stage === 'title' ? 'title' : null, active, volume: session.saveNotice ? 0 : state.musicVolume});
   }, onError: reportError});
 const lifecycle = createGameLifecycle({session, opening, onPause: () => {
+  guideUI.suspend();
   fieldNavigation.clear();
   battleUI.suspend();
   hidePromotion();
@@ -156,7 +157,6 @@ function update() {
   zone.setAttribute("aria-label", "화면 터치해서 골드 " + tap + " 획득");
   syncSwordControls(document.querySelector('.field-tools'), state, session.active);
   syncRevolverControls(document.querySelector('.field-tools'), state, session.active);
-  if (lifecycle.started) guideUI.sync(state);
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
     ["nco","officer","advanced"].some(id=>schoolOffer(state,id).canBuy) ||
@@ -170,6 +170,7 @@ function update() {
   $("#open-battle").hidden = !access.visible;
   setText('#battle-lock-label', access.unlocked ? '' : '🔒 중령 해금');
   battleUI.sync();
+  if (lifecycle.started) guideUI.sync(state, session.active && lifecycle.canRun);
   armyPanels.sync();
   if (lifecycle.started) {
     offlineUI.sync();

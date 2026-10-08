@@ -54,12 +54,9 @@ export function createArmyPanels(session, audio) {
     const s = state(), rank = rankForArmy(s);
     if (catalogRank !== rank || catalogBaton!==commandBatonStatus(s).level || schools.some((school,i)=>schoolLevels[i] !== (s[school.field]??0))) { openShop(); return; }
     text('#shop-gold', fmtGold(s.gold));
-    // First-five-minutes guide: say what to do and pulse the matching control.
+    // Shared lesson text; the spotlight owns highlighting the exact live control.
     const guide = currentGuide(s);
     text('#shop-guide', guide ? guide.text : '');
-    const pulse = (selector, on) => $(selector)?.classList.toggle('guide-pulse', on);
-    pulse('[data-shop-category="schools"]', !!guide?.pulse && guide.target === 'school');
-    pulse('[data-unit="soldier"] [data-buy]', category === 'recruit' && !!guide?.pulse && guide.target === 'shop');
     if (category === 'schools') renderSchools(s, dialog);
     if (category === 'facilities') renderFacilities(s, dialog);
     if (category !== 'recruit') return;
