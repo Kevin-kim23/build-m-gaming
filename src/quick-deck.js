@@ -5,7 +5,7 @@ import { EQUIPMENT } from './equipment.js';
 // 카드 그림은 화면에 붙인 뒤 battle-ui의 paintCardArt가 canvas[data-card-art]에 그린다.
 export function stageTagsMarkup(stage) {
   const type = stageEnemyType(stage.id), shield = fortressShieldClass(stage.id);
-  return `<span class="chip">${type.name}</span><span class="chip good">${CLASS_NAMES[type.counter]} 유리</span>${shield ? `<span class="chip bad">요새 · ${CLASS_NAMES[shield]} 약화</span>` : ''}`;
+  return `<span class="chip">${type.name}</span><span class="chip good">${type.intro?'견인포로 첫 출격':CLASS_NAMES[type.counter]+' 유리'}</span>${shield ? `<span class="chip bad">요새 · ${CLASS_NAMES[shield]} 약화</span>` : ''}`;
 }
 export function quickDeckMarkup(state, stage, deckIds) {
   const owned = Object.values(EQUIPMENT).filter((d) => !!state.equipment?.[d.id]);

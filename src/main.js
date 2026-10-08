@@ -168,7 +168,7 @@ function update() {
   $("#sound").disabled = !session.active;
   const access = battleAccess(state);
   $("#open-battle").hidden = !access.visible;
-  setText('#battle-lock-label', access.unlocked ? '' : '🔒 중령 해금');
+  setText('#battle-lock-label', access.unlocked ? '' : `🔒 ${access.reason==='rank'?'대위 해금':'장비 필요'}`);
   battleUI.sync();
   if (lifecycle.started) guideUI.sync(state, session.active && lifecycle.canRun);
   armyPanels.sync();

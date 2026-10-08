@@ -1,4 +1,5 @@
-import { campaignBonusPercent, REGION_INCOME_PERCENT } from './campaign-rewards.js';
+import { campaignBonusPercent } from './campaign-rewards.js';
+import {battleRewardMarkup} from './battle-reward-view.js';
 import { countryBriefMarkup, updateCountryBrief } from './campaign-brief.js';
 import { COUNTRIES,CONTINENT,countryProgress,campaignStages } from './campaign.js';
 import { countryRegions,polygonPath,clampCamera,countryCamera,campaignHomeCamera } from './campaign-geometry.js';
@@ -42,10 +43,10 @@ export function campaignMarkup(state,countryId=null,selectedId=null,deckIds=null
   ${previousCountry?`<button class="atlas-previous-country" data-country="${previousCountry.id}" aria-label="${previousCountry.name}으로 바로 내려가기"><span aria-hidden="true">↓</span> 이전 나라 · ${previousCountry.name}</button>`:''}
 
   ${country?`<section class="region-brief" aria-label="선택한 지역"><div class="brief-head"><div><small>${selected?.capital?'최종 수도전':'REGION '+String(selected?.region??1).padStart(2,'0')}</small><h3>${selected?.name??'지역을 선택하세요'}</h3></div>${selected?`<button class="info-btn" data-battle-info data-info-stage="${selected.id}" aria-label="${selected.name} 상세보기">ⓘ</button>`:''}</div>
-    <p class="brief-line">권장 전력 <strong>${fmt(selected?.recommendedPower??0)}</strong> · 내 전력 ${fmt(armyPower(state))}${selected&&selected.id<=cleared?` · 최고 <span class="best-stars">${'★'.repeat(state.campaignStars?.[selected.id-1]??0)}${'☆'.repeat(3-(state.campaignStars?.[selected.id-1]??0))}</span>`:''}</p>
+    <p class="brief-line">권장 ${selected?.recommendedRank??''} · 전력 <strong>${fmt(selected?.recommendedPower??0)}</strong> · 장비 +${selected?.recommendedLevel??0}<br>내 전력 ${fmt(armyPower(state))}${selected&&selected.id<=cleared?` · 최고 <span class="best-stars">${'★'.repeat(state.campaignStars?.[selected.id-1]??0)}${'☆'.repeat(3-(state.campaignStars?.[selected.id-1]??0))}</span>`:''}</p>
     ${selected&&access.unlocked&&selected.id<=cleared+1?`<div class="prep-tags">${stageTagsMarkup(selected)}</div><div class="brief-deck-head"><span>출전 장비</span><b id="battle-slot-count">${(deckIds??[]).length} / ${battleSlots(state)}</b></div>${quickDeckMarkup(state,selected,deckIds??[])}<p role="status" class="battle-message" id="battle-message"></p>`:''}
-    <button class="battle-primary" data-stage="${selected?.id??country.firstStage}" ${!access.unlocked||!selected||selected.id>cleared+1?'disabled':''}>${!access.unlocked?'중령부터 출전':selected?.id<=cleared?'다시 도전':selected?.id===cleared+1?'전투 시작':'이전 지역 점령 필요'}</button>
-    ${selected&&selected.id<=cleared+1?`<p class="region-reward">${selected.id<=cleared?'점령 보너스 획득 완료':'최초 점령 보상'} · 초당 수입 +${REGION_INCOME_PERCENT}%</p>`:''}</section>`:
+    <button class="battle-primary" data-stage="${selected?.id??country.firstStage}" ${!access.unlocked||!selected||selected.id>cleared+1?'disabled':''}>${!access.unlocked?access.requirement:selected?.id<=cleared?'다시 도전':selected?.id===cleared+1?'전투 시작':'이전 지역 점령 필요'}</button>
+    ${selected&&selected.id<=cleared+1?battleRewardMarkup(state,selected):''}</section>`:
   countryBriefMarkup()}
   <p class="battle-session-note" data-battle-session></p>`;
 }

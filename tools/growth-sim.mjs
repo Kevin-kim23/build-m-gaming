@@ -10,6 +10,7 @@ import { addMoney, subtractMoney, multiplyMoney, minMoney, MAX_GOLD } from '../s
 import { prepareOfflineReward, claimOfflineReward } from '../src/offline-reward.js';
 import { campaignStages } from '../src/campaign.js';
 import { recordBattleVictory } from '../src/battle-progress.js';
+import {battleAccess} from '../src/battle.js';
 
 const START=1800000000000, DAY=86400;
 // Simulation scoring alone uses Number approximations; wallet and purchases use game money functions.
@@ -80,7 +81,7 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
     accrue(state,START+elapsed*1000);
     const end=elapsed+duration;
     const stage=campaignStages[state.campaignCleared];
-    if(battles&&stage&&armyPower(state)>=stage.recommendedPower&&rankForArmy(state)>=RANKS.indexOf('중령')) {
+    if(battles&&stage&&armyPower(state)>=stage.recommendedPower&&battleAccess(state).unlocked) {
       // Optimistic sensitivity case: one first-clear/visit, always 3 stars, costing 60s of active time.
       elapsed+=60;activeSeconds+=60;
       recordBattleVictory(state,{stageId:stage.id,status:'victory',elapsedMs:60000,enemy:{hq:{hp:0}},player:{hq:{hp:100,maxHp:100}}},START+elapsed*1000);

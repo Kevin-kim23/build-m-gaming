@@ -9,7 +9,7 @@ import { COUNTRIES } from '../src/campaign.js';
 import { updateCountryBrief } from '../src/campaign-brief.js';
 
 const T=1_800_000_000_000;
-const state=()=>({...freshState(T),soldiers:5000,sergeants:300,staffSergeants:20,masterSergeants:10,sergeantMajors:10,lieutenants:10,firstLieutenants:10,captains:120,ncoSchoolLevel:5,officerSchoolLevel:3});
+const state=()=>({...freshState(T),soldiers:5000,sergeants:300,staffSergeants:20,masterSergeants:10,sergeantMajors:10,lieutenants:10,firstLieutenants:10,captains:120,ncoSchoolLevel:5,officerSchoolLevel:3,equipment:{...freshState(T).equipment,artillery:{level:0,count:1,deployed:true}}});
 const victory=id=>({stageId:id,status:'victory',enemy:{hq:{hp:0}},player:{hq:{hp:1}}});
 
 test('conquest adds one percent per unique region up to eighty, rounding combined income once',()=>{
@@ -34,14 +34,14 @@ test('troops and deployed copies receive passive bonuses, while stored equipment
   assert.equal(s.autoTouchTicks,200);
   assert.equal(s.gold-noBonus.gold,(perSecond(s)-perSecond(noBonus))*60);
 });
-test('first victory settles the old rate, then pays 30 min of loot; replays pay 2 min and never stack income',()=>{
+test('first victory settles the old rate, then pays 15 min of loot; replays pay 30 sec and never stack income',()=>{
   const s=state(),old=perSecond(s);
   assert.equal(recordBattleVictory(s,victory(1),T+1000).firstClear,true);
   const updated=perSecond(s);assert.equal(updated,old+Math.floor(old/100));
-  assert.equal(s.gold,old+updated*1800);assert.equal(s.campaignCleared,1); // 정산 후 30분치 전리품
+  assert.equal(s.gold,old+updated*900);assert.equal(s.campaignCleared,1); // 정산 후 15분치 전리품
   const g1=s.gold;
   assert.equal(recordBattleVictory(s,victory(1),T+2000).firstClear,false);
-  assert.equal(s.gold,g1+updated+updated*120);assert.equal(s.campaignCleared,1); // 1초 수입 + 재도전 2분치
+  assert.equal(s.gold,g1+updated+updated*30);assert.equal(s.campaignCleared,1); // 1초 수입 + 재도전 30초치
   const g2=s.gold;
   assert.equal(recordBattleVictory(s,victory(2),T+2000).firstClear,true);
   assert.ok(s.gold>g2);assert.equal(campaignBonusPercent(s),2);

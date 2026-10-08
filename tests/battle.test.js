@@ -16,14 +16,15 @@ function army(power = 1280, level = 3) {
     equipment: Object.fromEntries(["artillery", "tank", "selfPropelled"].map((id) => [id, { level, deployed: true }])),
   };
 }
-test("battle menu appears at private first class and entry uses the sergeant-gated lieutenant colonel rank", () => {
-  assert.deepEqual(battleAccess(freshState(0)), { visible: false, unlocked: false });
-  assert.deepEqual(battleAccess({ ...freshState(0), soldiers: 4 }), { visible: true, unlocked: false });
-  assert.equal(battleAccess(army(1279)).unlocked, false);
-  assert.equal(battleAccess(army(1280)).unlocked, true);
-  const bypass = { ...army(327680), sergeants: 39 };
-  assert.equal(battleAccess(bypass).unlocked, false);
-  assert.throws(() => createBattle(bypass, 1), RangeError);
+test("battle menu previews at private first class and captain needs military equipment to enter", () => {
+  assert.equal(battleAccess(freshState(0)).visible,false);
+  assert.equal(battleAccess({ ...freshState(0), soldiers: 4 }).visible,true);
+  const s={...freshState(0),soldiers:320};
+  assert.equal(battleAccess(s).unlocked,false);
+  s.equipment.artillery={level:0,count:1,deployed:true};
+  assert.equal(battleAccess(s).unlocked,true);
+  s.soldiers=319;assert.equal(battleAccess(s).unlocked,false);
+  assert.throws(()=>createBattle(s,1),RangeError);
 });
 
 test("eighty conquest regions enforce sequential progress across four countries", () => {
@@ -74,6 +75,15 @@ test("campaign base HP grows continuously with total army power and the enemy ba
   }
 });
 
+test('advancing turret fire leaves the input battle unchanged and reproducible',()=>{
+  const b=deploy(createBattle(army(),1),'artillery',0);
+  b.player.units[0].x=950;b.enemy.turret.nextShotMs=0;
+  const before=structuredClone(b),first=advanceBattle(b,50);
+  assert.deepEqual(b,before);
+  assert.deepEqual(advanceBattle(b,50),first);
+  assert.notEqual(first.enemy.turret.nextShotMs,b.enemy.turret.nextShotMs);
+});
+
 test("mana: starts at 40, fills 8 per second up to 100, and a card needs enough mana and no cooldown", () => {
   let b = createBattle(army(), 1);
   assert.equal(b.mana, BATTLE_RULES.manaStart);
@@ -119,8 +129,8 @@ test("class triangle: air beats armor, armor beats firepower, firepower beats ai
   assert.equal(classMatchup("firepower", "air", 1), 1.3); assert.equal(classMatchup("air", "firepower", 1), 0.8);
   assert.equal(classMatchup("armor", "armor", 1), 1); assert.equal(classMatchup("support", "armor", 1), 1);
   assert.deepEqual([1, 21, 41, 61].map((id) => classMatchup("air", "armor", id)), [1.3, 1.4, 1.5, 1.6]);
-  assert.deepEqual([1, 2, 3, 4].map((id) => stageEnemyType(id).id), ["armored", "artilleryNest", "airWing", "armored"]);
-  assert.equal(matchupMultiplier(1, "helicopter"), 1.3); assert.equal(matchupMultiplier(1, "artillery"), 0.8);
+  assert.deepEqual([22, 23, 24, 25].map((id) => stageEnemyType(id).id), ["armored", "artilleryNest", "airWing", "armored"]);
+  assert.equal(matchupMultiplier(22, "helicopter"), 1.4); assert.equal(matchupMultiplier(22, "artillery"), 0.7);
 });
 
 test("one shot from the counter class deals x1.3 and from the wrong class x0.8 against an armored target", () => {
@@ -141,9 +151,9 @@ test("enemy sends its stage-type pool over time with stage stats", () => {
   for (const id of [1, 2, 3]) {
     const type = stageEnemyType(id), stage = STAGES[id - 1];
     let b = createBattle(army(), id);
-    b = until(b, stage.spawnMs * 2 + BATTLE_RULES.enemyFirstSpawnMs);
+    b = until(b, stage.spawnMs * 2 + stage.enemyFirstSpawnMs);
     assert.ok(b.enemy.units.length >= 2);
-    assert.deepEqual(b.enemy.units.slice(0, 2).map((u) => u.id), type.pool.slice(0, 2));
+    assert.deepEqual(b.enemy.units.slice(0, 2).map((u) => u.id), [type.pool[0],type.pool[1%type.pool.length]]);
     const u = b.enemy.units[0];
     assert.ok(Math.abs(u.damage - equipmentCombatStats(u.id, stage.enemyLevel, stage.enemyPower, 1, false).damage * stage.enemyModifier * enemyStack(id, stage.enemyLevel)) < 1e-6);
   }
@@ -258,6 +268,6 @@ test("enemies appear without warning in a fixed, repeatable lane order that uses
     assert.ok(lanes.every((l) => [0, 1, 2].includes(l)));
     for (const l of [0, 1, 2]) assert.ok(lanes.filter((x) => x === l).length >= 4, `lane ${l} is used for stage ${id}`);
   }
-  let b = createBattle(army(), 1); b = until(b, BATTLE_RULES.enemyFirstSpawnMs + 100);
+  let b = createBattle(army(), 1); b = until(b, STAGES[0].enemyFirstSpawnMs + 100);
   assert.equal(b.enemy.units[0].lane, enemyLane(1, 0));
 });

@@ -1,4 +1,8 @@
-# 현재 작업 0.64.0 · feat/interactive-onboarding
+# 현재 작업 0.65.0 · feat/interactive-onboarding
+
+전투 진입 대위+군사 장비, 80지역 권장 전력·강화를 특전원수까지 확장. 수도 첫 보상1시간치/일반15분치/재도전30초치, 새 점령 수입+1% 유지. 기존 점령·별·저장 형식29 유지. docs/CAMPAIGN_BALANCE.md, docs/campaign-simulation-0.65.json 참고. node tools/campaign-sim.mjs로 다시 계산. npx vite --config tools/campaign-qa.config.mjs → http://127.0.0.1:4208/__campaign-check에서 별도 저장 QA. main 병합은 집에서 사용자 진행.
+
+# 이전 작업 0.64.0 · feat/interactive-onboarding
 
 홈 초당/터치 수입 뒤에 시설·개인장비·점령 증가율 표시, 전략 지휘패는 장비 수입 한정 효과로 구분. 동시 손가락 최대10개 지원(초당 횟수 제한 없음). 수입 계산·가격·저장 형식29 유지. 검증 도구: npx vite --config tools/income-qa.config.mjs → http://127.0.0.1:4207/__income-check. 이 도구만 테스트 저장을 사용하며 실제4196 기록은 변경하지 않습니다. main 병합은 집에서 사용자가 진행합니다.
 

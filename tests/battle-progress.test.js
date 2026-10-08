@@ -62,10 +62,10 @@ test('replayed victories are idempotent and stage progress cannot skip ahead or 
 
 test('recording a victory rechecks the actual rank gate and known stage identity', () => {
   const state = army(), victory = win(state);
-  state.sergeants = 39;
+  state.soldiers = 0;state.sergeants = 1;state.staffSergeants=0;
   assert.equal(recordBattleVictory(state, victory).ok, false);
   assert.equal(state.campaignCleared, 0);
-  state.sergeants = 40;
+  state.soldiers=320;state.sergeants = 40;
   for (const stageId of [0, 81, 1.5, '1', undefined]) {
     assert.equal(recordBattleVictory(state, { ...victory, stageId }).ok, false);
     assert.equal(state.campaignCleared, 0);
@@ -122,11 +122,11 @@ test('failed victory save preserves pending progress and retries without duplica
   h.session.pause();
 });
 
-test('battle loot is income x 30 min on first clear, x 2 min on replay, and respects the gold cap', async () => {
+test('battle loot is income x 15 min on first clear, x 30 sec on replay, and respects the gold cap', async () => {
   const { battleGoldReward } = await import('../src/campaign-rewards.js');
   const { MAX_GOLD } = await import('../src/money.js');
-  assert.equal(battleGoldReward(10, true), 18000);
-  assert.equal(battleGoldReward(10, false), 1200);
+  assert.equal(battleGoldReward(10, true), 9000);
+  assert.equal(battleGoldReward(10, false), 300);
   assert.equal(battleGoldReward(10, true, MAX_GOLD - 5n), 5);
   assert.equal(battleGoldReward(Number.MAX_SAFE_INTEGER, true) > BigInt(Number.MAX_SAFE_INTEGER), true);
   const state = army(), first = win(state, 1);
@@ -144,10 +144,10 @@ test('stars: 1 for any win, 2 for fast OR healthy HQ, 3 for both; they scale onl
   assert.equal(battleStars(b(100000, 50)), 2);
   assert.equal(battleStars(b(75000, 50)), 3);
   assert.equal(battleStars(b(10000, 100, 'defeat')), 0);
-  assert.equal(battleGoldReward(10, true, 0, 1), 18000);
-  assert.equal(battleGoldReward(10, true, 0, 2), 22500);
-  assert.equal(battleGoldReward(10, true, 0, 3), 27000);
-  assert.equal(battleGoldReward(10, false, 0, 3), 1800);
+  assert.equal(battleGoldReward(10, true, 0, 1), 9000);
+  assert.equal(battleGoldReward(10, true, 0, 2), 11250);
+  assert.equal(battleGoldReward(10, true, 0, 3), 13500);
+  assert.equal(battleGoldReward(10, false, 0, 3), 450);
 });
 
 test('the best star per region is saved, never lowered, and shown only for conquered regions', async () => {

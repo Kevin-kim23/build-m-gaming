@@ -1,6 +1,7 @@
 import { BATTALION_SIZE } from "./formations.js";
 import { EQUIPMENT, MAX_EQUIPMENT_COUNT } from "./equipment.js";
 import { campaignStages } from './campaign.js';
+import {RANKS} from './ranks.js';
 
 // 가로 전장 전투(0.45): 마나로 장비를 출격시켜 적 기지를 부순다. 수치는 모두 여기 한 곳에 둔다.
 export const BATTLE_RULES = Object.freeze({
@@ -12,7 +13,6 @@ export const BATTLE_RULES = Object.freeze({
   manaMax: 100,
   manaStart: 40,
   manaPerSecond: 8,
-  enemyFirstSpawnMs: 2500,
   healPercent: 0.12,       // 수송기가 주기마다 주변 아군에게 회복하는 최대 체력 비율
   turretRange: 280,        // 기지 포탑 사거리·간격·세기(전력 기준 배수)·요새 배율
   turretIntervalMs: 2000,
@@ -72,7 +72,21 @@ export const ENEMY_TYPES = Object.freeze([
   { id: "artilleryNest", name: "포병 진지", main: "firepower", counter: "armor", pool: ["artillery", "rocketLauncher", "artillery", "selfPropelled", "tank"] },
   { id: "airWing", name: "항공 부대", main: "air", counter: "firepower", pool: ["helicopter", "helicopter", "fighter", "helicopter", "artillery"] },
 ]);
-export const stageEnemyType = (stageId) => ENEMY_TYPES[(stageId - 1) % ENEMY_TYPES.length];
+// Early captains meet artillery first. Later pools use only gear available at that rank.
+// Cache once: the combat loop never filters the catalog or allocates a new pool each frame.
+const enemyTypes=campaignStages.map(stage=>{
+  const base=ENEMY_TYPES[(stage.id-1)%ENEMY_TYPES.length],rank=RANKS.indexOf(stage.recommendedRank);
+  const pool=base.pool.map((id,i)=>stage.id>=66&&i===2&&base.main==='air'?'flyingFortress':stage.id>=60&&i===2&&base.main==='air'?'carrier':stage.id>=46&&i===1&&base.main==='armor'?'railgunTank':id)
+    .filter(id=>rank>=RANKS.indexOf(EQUIPMENT[id].unlockRank));
+  if(stage.id<=5)return Object.freeze({id:'outpost',name:'전초 포병',main:'firepower',counter:'armor',intro:true,pool:Object.freeze(['artillery'])});
+  const actual=pool.length?pool:['artillery'],main=UNIT_TRAITS[actual[0]].cls;
+  const name=main===base.main?base.name:ENEMY_TYPES.find(type=>type.main===main).name;
+  return Object.freeze({...base,name,main,counter:Object.keys(CLASS_BEATS).find(key=>CLASS_BEATS[key]===main),pool:Object.freeze(actual)});
+});
+// Late player weapons are powerful rewards. Enemy versions retain their silhouette/HP,
+// but cannot destroy a power-sized HQ in one hit just because their base damage is larger.
+export const enemyWeaponModifier=id=>['railgunTank','carrier','flyingFortress'].includes(id)?20/weaponBase[id].damage:1;
+export const stageEnemyType = stageId=>enemyTypes[stageId-1];
 export const isFortress = (stageId) => stageId % 20 === 0;
 // 수도 요새 기지는 이 유형을 잡는 정석 분류(counter)의 피해를 줄인다 → 부대는 정석으로, 기지는 다른 분류로 부수는 전략.
 export const fortressShieldClass = (stageId) => isFortress(stageId) ? stageEnemyType(stageId).counter : null;
@@ -80,9 +94,6 @@ export const fortressShieldClass = (stageId) => isFortress(stageId) ? stageEnemy
 export function matchupMultiplier(stageId, gearId) {
   return classMatchup(GEAR_CLASS[gearId], stageEnemyType(stageId).main, stageId);
 }
-
-// 난이도 기준 장비(레벨, 보유 수량). 나라별 적 본부 체력 배율은 이 장비로 맞춘다.
-export const REFERENCE_GEAR = Object.freeze([[8, 1], [12, 1], [16, 1], [20, 1]].map(Object.freeze));
 
 export function combatScale(totalPower) {
   if (!Number.isFinite(totalPower) || totalPower <= 0)
@@ -111,11 +122,9 @@ export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, cou
   };
 }
 
-// 적 부대 1대가 아군 기준 장비 몇 문에 해당하는지(수량 배율). 아군 기준 장비(레벨·수량)와 같은 힘이 되도록
-// 레벨 성장 차이를 보정하고, ENEMY_STRENGTH로 전체 난이도를 한 번에 조절한다.
-export const ENEMY_STRENGTH = Object.freeze([1.1, 1.1, 1.1, 1.0]); // 나라별(세르딘~노르가드)
+// 권장 강화와 적 강화의 성장 차이를 보정한다. 실제 난이도 곡선은 campaign-progression.js에서 관리한다.
 export function enemyStack(stageId, enemyLevel) {
-  const [refLevel, refCount] = REFERENCE_GEAR[countryIndex(stageId)] ?? REFERENCE_GEAR[0];
+  const refLevel=STAGES[stageId-1].recommendedLevel;
   const growth = (level, upgrades) => 1 + level * .12 + (upgrades ? Math.max(0, level - 10) ** 2 * .02 : 0);
-  return Math.max(1, Math.round(refCount * growth(refLevel, true) / growth(enemyLevel, false) * (ENEMY_STRENGTH[countryIndex(stageId)] ?? 1) * 100) / 100);
+  return Math.round(growth(refLevel,true)/growth(enemyLevel,false)*100)/100;
 }

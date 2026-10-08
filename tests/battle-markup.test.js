@@ -4,7 +4,7 @@ import { freshState } from '../src/game.js';
 import { STAGES, defaultLoadout, createBattle } from '../src/battle.js';
 import { stagesMarkup, quickDeckMarkup, stageTagsMarkup, battlefieldMarkup, battleDetailMarkup } from '../src/battle-markup.js';
 
-const army = (patch = {}) => ({ ...freshState(1000), soldiers: 880, sergeants: 40, ...patch });
+const army = (patch = {}) => ({ ...freshState(1000), soldiers: 880, sergeants: 40, equipment:{artillery:{level:3,count:1,deployed:true}}, ...patch });
 function stageCards(markup) {
   return [...markup.matchAll(/<button\b([^>]*\bdata-stage="(\d+)"[^>]*)>([\s\S]*?)<\/button>/g)]
     .map(([, attrs, id, content]) => ({ id: Number(id), disabled: /\bdisabled\b/.test(attrs), content }));
@@ -35,7 +35,7 @@ test('the operations map starts battles directly: chips, picture deck cards, slo
     equipment: { artillery: { level: 3, deployed: false }, tank: null, selfPropelled: null } });
   const html = stagesMarkup(state, 'serdin', 1, ['artillery']);
   assert.match(html, /data-info-stage="1"/);
-  assert.match(html, /class="chip">기갑 부대</);
+  assert.match(html, /class="chip">전초 포병</);
   assert.match(html, /id="battle-slot-count">1 \/ 3</);
   assert.match(inputTag(html, 'data-battle-gear', 'artillery'), /\bchecked\b/);
   assert.equal(inputTag(html, 'data-battle-gear', 'tank'), undefined);
@@ -44,9 +44,9 @@ test('the operations map starts battles directly: chips, picture deck cards, slo
   assert.doesNotMatch(html, /진격 준비|병종별 10명|region-strategy|battle-intel/);
   assert.doesNotMatch(html, /undefined|NaN/);
   const detail = battleDetailMarkup(state, STAGES[0]);
-  assert.match(detail.body, /정찰 · 기갑 부대/);
-  assert.match(detail.body, /공중 &gt; 기갑 &gt; 화력/);
-  assert.match(detail.body, /이 지역에 불리 ▼/);
+  assert.match(detail.body, /정찰 · 전초 포병/);
+  assert.match(detail.body, /첫 출격은 견인포로 충분/);
+  assert.match(detail.body, /첫 점령/);
   assert.match(detail.body, /마나 18/);
   assert.match(detail.body, /장비는 소모되지 않으며 홈 배치 설정은 유지/);
   assert.match(detail.body, /끌어다 놓아/);
@@ -89,7 +89,7 @@ test('capital detail shows the fortress warning; the deck row only shows a chip;
 
 test('deck cards are pictures with name and mana badge, marked advantageous or disadvantaged for the region', () => {
   const state = army({ soldiers: 2, sergeants: 128, equipment: { artillery: { level: 3, deployed: true }, tank: { level: 5, deployed: true } } });
-  const markup = quickDeckMarkup(state, STAGES[0], ['tank']);
+  const markup = quickDeckMarkup(state, STAGES[6], ['tank']);
   assert.equal((markup.match(/data-card-art=/g) ?? []).length, 2);
   assert.match(markup, /class="card-cost"[^>]*>18</);
   assert.match(markup, /class="card-cost"[^>]*>24</);
