@@ -28,7 +28,7 @@ test('only military30 shows final completion; military20 still explains the flag
 });
 test('military equipment is purchased and managed in its own tab, never in shop categories',()=>{
   const s={...freshState(T),soldiers:240};
-  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','schools','facilities']);
+  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','schools','facilities','items']);
   for(const c of SHOP_CATEGORIES)assert.doesNotMatch(shopMarkup(s,'',()=>'',c.id),/data-buy-equipment/);
   assert.match(equipmentPanelMarkup(s,'artillery'),/data-buy-equipment="artillery"/);
   assert.doesNotMatch(equipmentPanelMarkup(s,'artillery'),/equipment-to-shop|상점에서/);

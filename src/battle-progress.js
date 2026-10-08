@@ -1,6 +1,6 @@
 import { STAGES, battleAccess } from './battle.js';
 import { reconcileAchievements } from './achievements.js';
-import { accrue, perSecond } from './game.js';
+import { accrue, basePassiveIncome } from './game.js';
 import { battleGoldReward, battleStars } from './campaign-rewards.js';
 import { addMoney } from './money.js';
 
@@ -18,7 +18,7 @@ export function recordBattleVictory(state, battle, now = Date.now()) {
   if (!Array.isArray(state.campaignStars)) state.campaignStars = Array(STAGES.length).fill(0);
   state.campaignStars[stage.id - 1] = Math.max(previousBest, stars);   // 최고 별만 저장(전리품 별 배율은 이번 판 별 기준)
   const firstClear = stage.id > cleared;
-  const gold = battleGoldReward(perSecond(state), firstClear, state.gold, stars, stage.id); // 새 점령 보너스가 반영된 수입 기준
+  const gold = battleGoldReward(basePassiveIncome(state), firstClear, state.gold, stars, stage.id); // Permanent income; temporary potions only boost accrual.
   state.gold = addMoney(state.gold, gold);
   return { ok: true, firstClear, gold, stars, newBest: stars > previousBest, achievements: reconcileAchievements(state) };
 }

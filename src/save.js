@@ -1,4 +1,5 @@
 import { COMMAND_OFFICERS } from './command-officers.js';
+import { emptyPotions, POTIONS } from './potions.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { NEW_RECRUITS } from './specialist-units.js';
 import { MAX_GOLD, minMoney, parseGold } from './money.js';
@@ -39,6 +40,7 @@ function migrateSave(s, now) {
   if (s.version === 2) return { ...freshState(now), gold: minMoney(gold, MAX_GOLD), taps: s.taps, sound: s.sound, sfxVolume: s.sound ? 0.7 : 0, musicVolume: s.sound ? 0.45 : 0 };
   const migrated = {
     version: SAVE_VERSION,
+    potions:s.version>=32?Object.fromEntries(Object.keys(POTIONS).map(id=>[id,{...s.potions[id]}])):emptyPotions(),
     facilities: s.version >= 25 ? [...s.facilities] : [],
     facilityLevels: s.version >= 26 ? {...s.facilityLevels} :
       Object.fromEntries((s.version >= 25 ? s.facilities : []).map(id=>[id,1])),

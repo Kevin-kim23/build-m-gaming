@@ -1680,7 +1680,7 @@ footer {
   }
 }
 
-.field-equipment-count { display:block; font-size:10px; line-height:12px; }
+.field-equipment-level { display:block; font-size:10px; line-height:12px; }
 .home-sword [data-sword-art] { display:flex; }
 
 /* Five/six stars fit the original rank panel. */

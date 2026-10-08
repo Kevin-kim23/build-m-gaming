@@ -1,4 +1,9 @@
 import { createPersonalAwardUI } from './personal-awards.js';
+import { renderPotions } from './potion-panels.js';
+import { POTIONS } from './potions.js';
+import { createPotionController } from './potion-controller.js';
+import { createPotionTestAd } from './potion-ad.js';
+import './potions.css';
 import './personal-awards.css';
 import { buildFacility, upgradeFacility } from './game.js';
 import { facilityOffer, facilityLevel } from './facilities.js';
@@ -36,6 +41,9 @@ export function createArmyPanels(session, audio) {
   const schools = Object.values(SCHOOLS);
   let schoolLevels = [];
   const state = () => session.state;
+  const potionController=createPotionController(session,{showAd:createPotionTestAd(),onChange:()=>{
+    if(dialog.open && activePanel==='shop' && category==='items')renderPotions(state(),dialog,{busy:potionController.busy,active:session.active});
+  }});
   const personalUI=createPersonalUpgradeUI(session,audio);
   const personalAwards=createPersonalAwardUI({canShow:()=>session.active});
   let equipmentLevels=null,catalogBaton=-1;
@@ -59,6 +67,7 @@ export function createArmyPanels(session, audio) {
     text('#shop-guide', guide ? guide.text : '');
     if (category === 'schools') renderSchools(s, dialog);
     if (category === 'facilities') renderFacilities(s, dialog);
+    if (category === 'items') renderPotions(s,dialog,{busy:potionController.busy,active:session.active});
     if (category !== 'recruit') return;
     for (const unit of Object.values(UNITS)) {
       const card = $(`[data-unit="${unit.id}"]`);
@@ -199,7 +208,7 @@ export function createArmyPanels(session, audio) {
     if (result?.ok && dialog.open && activePanel === 'equipment' && activeEquipment === id)
       text('#equipment-message', EQUIPMENT[id].name + (result.deployed ? ' 배치 완료!' : ' 보관 완료! 강화는 유지됩니다.'));
   }
-  dialog.addEventListener('click', event => {
+  dialog.addEventListener('click', async event => {
     if (event.target === dialog) {
       const box = dialog.getBoundingClientRect();
       if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom)
@@ -212,6 +221,14 @@ export function createArmyPanels(session, audio) {
     else if (button.dataset.panel) button.dataset.panel === 'shop' ? openShop() : openEquipment();
     else if (button.dataset.shopCategory) { openShop(button.dataset.shopCategory); $(`[data-shop-category="${category}"]`)?.focus({preventScroll:true}); }
     else if (button.dataset.equipmentCategory) openEquipment(activeEquipment, button.dataset.equipmentCategory);
+    else if(button.dataset.potionAd || button.dataset.potionUse){
+      const id=button.dataset.potionAd??button.dataset.potionUse;
+      const result=button.dataset.potionAd?await potionController.watch(id):potionController.use(id);
+      if(result.ok)audio.ui(button.dataset.potionAd?'purchase':'equip',state().sound);
+      if(dialog.open && activePanel==='shop' && category==='items')text('#shop-message',result.ok
+        ? `${POTIONS[id].name} ${button.dataset.potionAd?'1개 획득!':`${POTIONS[id].durationLabel} 사용!`}`
+        : result.reason==='cancelled'?'광고 테스트를 취소했어요.':result.reason==='empty'?'보유한 물약이 없어요.':'지급·사용을 완료하지 못했어요. 다시 확인해 주세요.');
+    }
     else if (button.hasAttribute('data-use-revolver')) {
       const result = session.change(s => activateAutoTouch(s));
       if (result?.ok) audio.ui('revolver',state().sound);

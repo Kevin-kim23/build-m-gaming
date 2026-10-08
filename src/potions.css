@@ -1,0 +1,13 @@
+.potion-list{display:grid;gap:12px;padding-top:12px}
+.potion-card{min-width:0;border:1px solid #647356;border-radius:10px;background:linear-gradient(140deg,#304235,#1c2e27);padding:14px}
+.potion-heading{display:flex;align-items:center;gap:14px}.potion-heading>div:last-child{min-width:0}
+.potion-heading h3{font-size:18px;margin:0 0 7px;color:#f1dfaf}.potion-heading strong{font-size:14px;color:#f2eee0}
+.potion-heading p{margin:5px 0;font-size:12px;color:#becbae}.potion-heading b{font-size:13px;color:#e8c979}
+.potion-art{width:70px;height:86px;flex:none;background:#18281f;border:1px solid #55694e;border-radius:8px;display:grid;place-items:center}.potion-art svg{width:62px;height:76px;image-rendering:pixelated}
+.potion-duration{min-height:20px;font-size:12px;color:#b9d7b0;margin:12px 0}
+.potion-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.potion-actions button{min-width:0;min-height:44px;padding:10px 4px;border-radius:6px;border:1px solid #b3ae72;background:#d9c58b;color:#243422;font-size:13px;font-weight:700;cursor:pointer}
+.potion-actions button:last-child{background:#88a684;border-color:#a8b894}.potion-actions button:disabled{opacity:.4;cursor:default}
+.potion-note{font-size:11px;line-height:1.8;color:#adbfa4;overflow-wrap:anywhere}
+#potion-ad-modal{width:min(340px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;padding:24px;border:1px solid #d4be81;border-radius:14px;background:#253c30;color:#f0ead7;text-align:center}
+#potion-ad-modal::backdrop{background:#09160ddd}#potion-ad-modal h2{margin:0 0 16px;font-size:20px}#potion-ad-modal p{line-height:1.9;font-size:14px}#potion-ad-modal strong{display:block;color:#e6c77d;margin:16px 0}
+#potion-ad-modal button{width:100%;min-height:44px;border:0;border-radius:7px;padding:12px;background:#ddc486;color:#25342c;font-weight:700;cursor:pointer}

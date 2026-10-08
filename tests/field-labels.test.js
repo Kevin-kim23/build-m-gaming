@@ -29,10 +29,14 @@ test('home labels remain separate from pixel-scaled artwork and refresh only wit
     assert.ok(layer.children.some(c=>c.innerHTML?.includes('부사관학교 Lv.5')));
     const afterSchools=updates;assert.equal(drawScene(canvas,army,layer),false);assert.equal(updates,afterSchools);
     army.equipment.tank.count=2;drawScene(canvas,army,layer);
-    assert.equal(layer.children.find(c=>c.textContent==='전차').children[0].textContent,'[2문]');
+    assert.equal(layer.children.find(c=>c.textContent==='전차').children[0].textContent,'Lv.10');
     for(const id of ['artillery','selfPropelled','helicopter'])army.equipment[id].deployed=false;
     drawScene(canvas,army,layer);
-    assert.equal(layer.children.find(c=>c.textContent==='전차').children[0].textContent,'[2문]');
+    assert.equal(layer.children.find(c=>c.textContent==='전차').children[0].textContent,'Lv.10');
+    for(const level of [0,30]){
+      army.equipment.tank.level=level;drawScene(canvas,army,layer);
+      assert.equal(layer.children.find(c=>c.textContent==='전차').children[0].textContent,`Lv.${level}`);
+    }
     drawScene(canvas,freshState(1),layer);assert.equal(layer.children.length,0);
   } finally {if(previous===undefined)delete globalThis.document;else globalThis.document=previous;}
 });

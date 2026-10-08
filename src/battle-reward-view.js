@@ -1,10 +1,10 @@
-import {perSecond} from './game.js';
+import {basePassiveIncome} from './game.js';
 import {battleGoldReward,battleRewardSeconds,REGION_INCOME_PERCENT} from './campaign-rewards.js';
 import {fmtGold} from './format.js';
 
 export function battleRewardPreview(state,stage) {
   const first=stage.id>(state.campaignCleared??0);
-  const income=perSecond(first?{...state,campaignCleared:stage.id}:state);
+  const income=basePassiveIncome(first?{...state,campaignCleared:stage.id}:state);
   // Quote the base (one-star) reward before wallet saturation; settlement applies the cap.
   const gold=battleGoldReward(income,first,0,1,stage.id);
   return {first,gold,seconds:battleRewardSeconds(first,stage.id)};

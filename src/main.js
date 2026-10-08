@@ -1,4 +1,5 @@
 import { createIncomeHud } from './income-hud.js';
+import { potionStatus } from './potions.js';
 import { autoTouchStatus } from "./personal-equipment.js";
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
@@ -58,7 +59,7 @@ import {
 } from "./equipment.js";
 installErrorReporting();
 const $ = (s) => document.querySelector(s);
-let state, rosterDirty = true;
+let state, rosterDirty = true, passiveBoost = -1;
 const session = createGameSession({
   storage: {
     getItem: (key) => localStorage.getItem(key),
@@ -127,13 +128,13 @@ function update() {
   $("#gold").classList.toggle("large-balance", state.gold >= 1_000_000);
   if (rosterDirty) {
     rosterDirty = false;
+    passiveBoost = -1;
     achievementUI.sync();
     const deployed = deployedEquipment(state);
     setText("#rank-name", RANKS[r]);
     $(".rank-mark").innerHTML = insignia(r);
     setText("#formation-summary", fieldSummary(state));
     $("#formation-summary").hidden = power === 0;
-    setText("#passive-rate", "+" + fmtGold(perSecond(state)) + " G");
     incomeHud.refresh(state);
     zone.classList.toggle("has-recruits", power > 0 || ownedSchools(state).length > 0);
     zone.classList.toggle("has-equipment", deployed.length > 0);
@@ -150,9 +151,15 @@ function update() {
     drawHomeField();
   }
   $('.field-tools').hidden = r < GENERAL_RANK;
+  const nextPassiveBoost=potionStatus(state,'blue').multiplier;
+  if(nextPassiveBoost!==passiveBoost){
+    passiveBoost=nextPassiveBoost;
+    setText("#passive-rate", "+" + fmtGold(perSecond(state)) + " G");
+  }
   const tap = perTap(state);
   setText("#tap-rate", "+" + fmtGold(tap) + " G");
   incomeHud.syncSword(state);
+  incomeHud.syncPotions(state);
   setText("#tap-hint-rate", "한 번에 +" + fmtGold(tap) + " G");
   zone.setAttribute("aria-label", "화면 터치해서 골드 " + tap + " 획득");
   syncSwordControls(document.querySelector('.field-tools'), state, session.active);

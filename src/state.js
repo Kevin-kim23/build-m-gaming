@@ -1,4 +1,5 @@
 import { COMMAND_OFFICERS } from './command-officers.js';
+import { emptyPotions } from './potions.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { NEW_RECRUITS } from './specialist-units.js';
 import { NEW_OFFICER_GRADES } from './officer-progression.js';
@@ -7,7 +8,7 @@ import { GENERAL_SWORD, AUTO_TOUCH, emptyPersonalLevels } from './personal-catal
 import { emptyEquipment } from './equipment.js';
 
 // Shared defaults and limits have no dependency on game actions or save parsing.
-export const SAVE_VERSION = 31;
+export const SAVE_VERSION = 32;
 // 지역마다 지금까지 받은 최고 별(0~3). 지역 수는 campaign.js의 80개와 같고 tests/campaign.test.js가 일치를 확인한다.
 export const CAMPAIGN_STAGE_COUNT = 80;
 export const SAVE_KEY = "budae-kiugi-recruits-v3";
@@ -18,6 +19,7 @@ export const MAX_SOLDIERS = GALACTIC_GROUP_COMMAND_SIZE * 4;
 export function freshState(now = Date.now()) {
   return {
     version: SAVE_VERSION,
+    potions: emptyPotions(),
     offlineReward: null,
     facilities: [],
     facilityLevels: {},
