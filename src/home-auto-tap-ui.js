@@ -2,7 +2,16 @@ import {HOME_AUTO_TAP,grantTestHomeAutoTap,toggleHomeAutoTap} from './home-auto-
 import {fmt,fmtGold} from './format.js';
 import {reportError} from './diagnostics.js';
 
-const icon='<svg viewBox="0 0 66 80" role="img" aria-label="자동터치 지원 장치 픽셀 그림" shape-rendering="crispEdges"><path fill="#122625" d="M13 12h40v58H13z"/><path fill="#839586" d="M16 9h34v4H16zM10 16h4v49h-4zM52 16h4v49h-4zM16 69h34v4H16z"/><path fill="#415b51" d="M15 15h36v51H15z"/><path fill="#adbc91" d="M17 17h32v3H17zM17 20h3v43h-3z"/><path fill="#1e3530" d="M22 23h24v24H22z"/><path fill="#7cb4a1" d="M25 26h18v3H25zM25 30h3v12h-3z"/><path fill="#dccc8b" d="M31 29h6v13h-6zM27 32h14v6H27z"/><path fill="#f4e5af" d="M31 29h3v7h-3z"/><path fill="#9ab774" d="M23 50h7v3h-7zM34 50h10v3H34z"/><path fill="#c9b479" d="M28 57h12v6H28z"/><path fill="#f1d998" d="M29 57h10v2H29z"/><path fill="#687f67" d="M45 20h3v43h-3zM20 64h25v2H20z"/><path fill="#daf1bd" d="M5 27h3v7H5zM58 27h3v7h-3zM30 2h6v3h-6z"/></svg>';
+const icon=`<svg viewBox="0 0 66 80" role="img" aria-label="자동터치 커서 · AUTO" shape-rendering="crispEdges">
+  <path fill="#0c1917" d="M14 5h5l36 30v5H40l8 16-14 7-9-18-11 11z"/>
+  <path fill="#9b8958" d="M17 8l34 29H36l9 18-9 4-10-20-9 10z"/>
+  <path fill="#e9dfb4" d="M17 8l31 26H32l10 20-5 2-11-22-9 10z"/>
+  <path fill="#fff5d6" d="M17 8l26 22H24v7l-7 7z"/>
+  <path fill="#b7c9aa" d="M8 6h3v7H8zM2 16h7v3H2zM27 3h3v7h-3z"/>
+  <path fill="#586e57" d="M9 64h48v13H9z"/>
+  <path fill="#172b23" d="M10 65h46v11H10z"/>
+  <text x="33" y="74" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" letter-spacing="2" fill="#f4dfa0" shape-rendering="auto">AUTO</text>
+</svg>`;
 export function homeAutoTapMarkup(){
   return `<article class="potion-card auto-tap-card" aria-label="자동터치" data-home-auto-tap>
     <div class="potion-heading"><div class="potion-art">${icon}</div><div><h3>자동터치</h3><strong>초당 2회 · 영구 보유</strong><p>홈에서 자동으로 골드를 모아요.</p><b data-home-auto-status></b></div></div>
