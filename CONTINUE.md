@@ -1,4 +1,8 @@
-# 현재 작업 0.68.0 · feat/interactive-onboarding
+# 현재 작업 0.69.0 · feat/interactive-onboarding
+
+상점 아이템 자동터치(4,900원 예정 가격/실제 청구 없는 테스트 지급), 영구 보유/스위치 저장33. 홈만500ms당1회, 모든 팝업/안내/비활성에서 정지·미접속 지급 없음. 직접10손가락·장군검/빨간물약·리볼버와 독립적으로 합산. 기존 시계/2초저장/1개 표시 재사용. PC방 표시명 사지방, pcRoom 기록 유지. 모집 초상 왼쪽 위 작은 계급장. docs/HOME_AUTO_TAP.md, npm run qa:auto-tap →4211 /__auto-tap-check. 실제4196 저장은 건드리지 않음. 정식 Play 결제/검증/복원 미연결, 실제폰·Android 미검증, 기존 음악4곡 누락 유지. main 병합은 사용자가 집에서 진행.
+
+# 이전 작업 0.68.0 · feat/interactive-onboarding
 
 상점 아이템 탭에 빨간/파랑물약, 광고 테스트 팝업→1개 지급→물약 사용. 빨강 터치2배1분/파랑 초당2배30분, 시간 연장·장군검 곱연산·오프라인 유효구간 적용. 저장32. 장비 연병장 라벨 Lv.0~30. 실제 기록은 덮어쓰지 않음. npm run qa:potions → 별도4210 /__potion-check. 실폰·Android 미검증, 기존 음악4곡 누락. 실제 광고 도입 전 potion-ad.js 교체.
 

@@ -65,7 +65,7 @@ function fieldMarkup() {
     </span>
     <span class="pixel-corner bottom-right">
     </span>
-    </button></div><span id="field-scroll-hint" class="field-scroll-hint" hidden>↔ 좌우로 밀어서 둘러보기</span></section>`;
+    </button></div><span id="home-auto-feedback" aria-hidden="true"></span><span id="field-scroll-hint" class="field-scroll-hint" hidden>↔ 좌우로 밀어서 둘러보기</span></section>`;
 }
 
 function dockMarkup() {

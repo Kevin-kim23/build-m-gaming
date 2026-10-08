@@ -1,3 +1,4 @@
+import { emptyHomeAutoTap } from './home-auto-tap-rules.js';
 import { COMMAND_OFFICERS } from './command-officers.js';
 import { emptyPotions, POTIONS } from './potions.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
@@ -40,6 +41,7 @@ function migrateSave(s, now) {
   if (s.version === 2) return { ...freshState(now), gold: minMoney(gold, MAX_GOLD), taps: s.taps, sound: s.sound, sfxVolume: s.sound ? 0.7 : 0, musicVolume: s.sound ? 0.45 : 0 };
   const migrated = {
     version: SAVE_VERSION,
+    homeAutoTap:s.version>=33?{...s.homeAutoTap}:emptyHomeAutoTap(),
     potions:s.version>=32?Object.fromEntries(Object.keys(POTIONS).map(id=>[id,{...s.potions[id]}])):emptyPotions(),
     facilities: s.version >= 25 ? [...s.facilities] : [],
     facilityLevels: s.version >= 26 ? {...s.facilityLevels} :

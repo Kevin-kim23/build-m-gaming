@@ -1,3 +1,5 @@
+import { createHomeAutoTapPurchase, renderHomeAutoTap } from './home-auto-tap-ui.js';
+import { createAutoTapTestPurchase } from './test-purchase.js';
 import { createPersonalAwardUI } from './personal-awards.js';
 import { renderPotions } from './potion-panels.js';
 import { POTIONS } from './potions.js';
@@ -44,6 +46,9 @@ export function createArmyPanels(session, audio) {
   const potionController=createPotionController(session,{showAd:createPotionTestAd(),onChange:()=>{
     if(dialog.open && activePanel==='shop' && category==='items')renderPotions(state(),dialog,{busy:potionController.busy,active:session.active});
   }});
+  const homeAutoPurchase=createHomeAutoTapPurchase(session,{showPurchase:createAutoTapTestPurchase(),onChange:()=>{
+    if(dialog.open && activePanel==='shop' && category==='items')renderHomeAutoTap(state(),dialog,{busy:homeAutoPurchase.busy,active:session.active});
+  }});
   const personalUI=createPersonalUpgradeUI(session,audio);
   const personalAwards=createPersonalAwardUI({canShow:()=>session.active});
   let equipmentLevels=null,catalogBaton=-1;
@@ -67,7 +72,10 @@ export function createArmyPanels(session, audio) {
     text('#shop-guide', guide ? guide.text : '');
     if (category === 'schools') renderSchools(s, dialog);
     if (category === 'facilities') renderFacilities(s, dialog);
-    if (category === 'items') renderPotions(s,dialog,{busy:potionController.busy,active:session.active});
+    if (category === 'items') {
+      renderPotions(s,dialog,{busy:potionController.busy,active:session.active});
+      renderHomeAutoTap(s,dialog,{busy:homeAutoPurchase.busy,active:session.active});
+    }
     if (category !== 'recruit') return;
     for (const unit of Object.values(UNITS)) {
       const card = $(`[data-unit="${unit.id}"]`);
@@ -221,6 +229,14 @@ export function createArmyPanels(session, audio) {
     else if (button.dataset.panel) button.dataset.panel === 'shop' ? openShop() : openEquipment();
     else if (button.dataset.shopCategory) { openShop(button.dataset.shopCategory); $(`[data-shop-category="${category}"]`)?.focus({preventScroll:true}); }
     else if (button.dataset.equipmentCategory) openEquipment(activeEquipment, button.dataset.equipmentCategory);
+    else if(button.hasAttribute('data-buy-home-auto')||button.hasAttribute('data-toggle-home-auto')){
+      const buying=button.hasAttribute('data-buy-home-auto');
+      const result=buying?await homeAutoPurchase.buy():homeAutoPurchase.toggle();
+      if(result?.ok)audio.ui(buying?'purchase':'equip',state().sound);
+      if(dialog.open && activePanel==='shop' && category==='items')text('#shop-message',result?.ok
+        ? buying?'자동터치 영구 보유! 홈으로 돌아가면 작동해요.':result.enabled?'자동터치를 켰어요.':'자동터치를 껐어요.'
+        : result?.reason==='cancelled'?'유료결제 테스트를 취소했어요.':'자동터치 설정을 완료하지 못했어요.');
+    }
     else if(button.dataset.potionAd || button.dataset.potionUse){
       const id=button.dataset.potionAd??button.dataset.potionUse;
       const result=button.dataset.potionAd?await potionController.watch(id):potionController.use(id);

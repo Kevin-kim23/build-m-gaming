@@ -1,3 +1,6 @@
+import { createHomeAutoTapRuntime, homeAutoTapHomeVisible } from './home-auto-tap.js';
+import { createHomeAutoTapFeedback } from './home-auto-tap-ui.js';
+import './home-auto-tap.css';
 import { createIncomeHud } from './income-hud.js';
 import { potionStatus } from './potions.js';
 import { autoTouchStatus } from "./personal-equipment.js";
@@ -110,6 +113,8 @@ const opening = createOpeningScreen({onStart: () => {
     if (stage !== 'complete') gameAudio.music.configure({scene: stage === 'title' ? 'title' : null, active, volume: session.saveNotice ? 0 : state.musicVolume});
   }, onError: reportError});
 const lifecycle = createGameLifecycle({session, opening, onPause: () => {
+  homeAutoRuntime.reset();
+  homeAutoFeedback.clear();
   guideUI.suspend();
   fieldNavigation.clear();
   battleUI.suspend();
@@ -117,6 +122,15 @@ const lifecycle = createGameLifecycle({session, opening, onPause: () => {
   gameAudio.stop();
   gameAudio.music.configure({active:false});
 }});
+const homeAutoFeedback=createHomeAutoTapFeedback($('#home-auto-feedback'));
+const homeAutoRuntime=createHomeAutoTapRuntime(session,{
+  canRun:()=>lifecycle.canRun && homeAutoTapHomeVisible(document),
+  onIncome:amount=>homeAutoFeedback.show(amount),
+});
+// Reset at both edges of a modal/guide pause, including very brief opens between clock ticks.
+document.addEventListener('toggle',event=>{
+  if(event.target.matches('dialog, #guide-spotlight')){homeAutoRuntime.reset();homeAutoFeedback.clear();}
+},true);
 function update() {
   gameAudio.configure({enabled:state.sound,volume:state.sfxVolume,active:session.active && lifecycle.canRun});
   if (lifecycle.started) gameAudio.music.configure({volume:state.musicVolume,active:session.active && lifecycle.canRun});
@@ -241,12 +255,14 @@ const resizeObserver = new ResizeObserver(() => {
   pendingResize = requestAnimationFrame(() => drawHomeField());
 });
 resizeObserver.observe($("#field-viewport"));
-// One clock; automatic payouts use elapsed 300 ms boundaries, not timer counts.
+// One clock: revolver uses 300ms, permanent home taps 500ms; both settle elapsed time.
 let lastTick = 0;
 setInterval(() => {
+  const automaticGold=homeAutoRuntime.tick();
   if (!lifecycle.canRun) return;
   const now = Date.now(), delay = autoTouchStatus(state, now).active ? 300 : 1000;
-  if (now - lastTick >= delay) { lastTick = now; session.tick(); }
+  // A paid auto pulse already settled income and updated the HUD on this turn.
+  if (now - lastTick >= delay) { lastTick = now; if(!automaticGold)session.tick(); }
 }, 100);
 update();
 lifecycle.syncVisibility();

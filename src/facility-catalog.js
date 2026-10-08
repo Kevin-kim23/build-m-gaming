@@ -6,7 +6,7 @@ export const FACILITIES = Object.freeze([
   { id:'kitchen', name:'취사장', rank:'상사', cost:120_000, passive:5, tap:0, purpose:'따뜻한 식사로 부대의 일상 수입을 지원합니다.', color:'#b78c58' },
   { id:'gym', name:'체력단련장', rank:'원사', cost:300_000, passive:0, tap:5, purpose:'체력 훈련으로 터치 수입을 높입니다.', color:'#739aa3' },
   { id:'futsal', name:'풋살장', rank:'준위', cost:800_000, passive:3, tap:3, purpose:'함께 운동하며 수입과 터치 효율을 높입니다.', color:'#5c9567' },
-  { id:'pcRoom', name:'PC방', rank:'소위', cost:2_000_000, passive:0, tap:5, purpose:'휴식 공간에서 재충전해 터치 효율을 높입니다.', color:'#728cba' },
+  { id:'pcRoom', name:'사지방', rank:'소위', cost:2_000_000, passive:0, tap:5, purpose:'사이버지식정보방에서 재충전해 터치 효율을 높입니다.', color:'#728cba' },
   { id:'infirmary', name:'의무실', rank:'중위', cost:5_000_000, passive:5, tap:0, purpose:'부대 건강을 관리해 일상 수입을 높입니다.', color:'#a4b8aa' },
   { id:'range', name:'사격장', rank:'대위', cost:12_000_000, passive:0, tap:8, purpose:'집중 사격 훈련으로 터치 수입을 높입니다.', color:'#a58a64' },
   { id:'workshop', name:'정비고', rank:'소령', cost:35_000_000, passive:8, tap:0, purpose:'정비 지원으로 부대의 초당 수입을 높입니다.', color:'#839c99' },
