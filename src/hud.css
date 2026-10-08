@@ -1,4 +1,4 @@
-/* Keep rank, balance/income and sound on one row; the field gets the freed space. */
+/* Rank, balance and sound share a row; income effects use the full width below. */
 :root {
   --app-safe-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
   --app-safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
@@ -10,7 +10,7 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: 4px 12px;
   min-height: 78px;
   padding: 8px 23px;
   flex-shrink: 0;
@@ -36,11 +36,16 @@
 }
 .gold-counter strong.large-balance { font-size: 13px; }
 .gold-unit { color: #b9b28a; font: 10px Consolas, monospace; }
-.income-line { display: grid; gap: 1px; margin: 0; color: #a7b599; font-size: 10px; line-height: 12px; }
-.income-line > span { display: flex; flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
-.income-line b { margin-left: 4px; color: #d6dcaf; font: 600 10px Consolas, monospace; white-space: nowrap; }
+.income-lines { grid-column:1/-1; min-width:0; display:grid; gap:3px; }
+.income-line { display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 6px; margin:0; color:#a7b599; font-size:11px; line-height:14px; }
+.income-rate { white-space:nowrap; }
+.income-line b { margin-left:4px; color:#e3e9bd; font:600 11px Consolas,monospace; }
+.income-effects { display:contents; }
+.income-effects > span, .income-skill { color:#dccb92; font:10px/14px system-ui; white-space:nowrap; }
+.income-effects > span::before, .income-skill::before { content:'· '; color:#92a184; }
+.income-effects[hidden], .income-skill[hidden] { display:none; }
 @media (max-width: 360px) {
-  .hud { min-height: 74px; padding-inline: 14px; gap: 7px; }
+  .hud { min-height: 74px; padding-inline: 14px; gap: 4px 7px; }
   .rank { gap: 5px; }
   .rank small { font-size: 10px; }
   .rank h1 { font-size: 17px; }
@@ -82,7 +87,5 @@
 .save-guidance { padding:12px; margin-bottom:14px; border:1px solid #bdab70; border-radius:8px; background:#393527; }
 .save-guidance h3 { margin:0 0 8px; font-size:16px; }
 .save-guidance p { line-height:1.6; }
-
-#campaign-income-bonus { margin-left:4px; color:#e0ce91; font-size:10px; white-space:nowrap; }
 
 /* Home touch/scroll handling is defined in field-world.css. */

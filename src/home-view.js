@@ -22,6 +22,7 @@ function headerMarkup(state) {
     </div>
     ${goldMarkup()}
     <button id="sound" aria-label="설정" title="설정"><span aria-hidden="true" style="font-size:24px">⚙</span></button>
+    ${incomeMarkup()}
     </header>`;
 }
 
@@ -32,14 +33,13 @@ function goldMarkup() {
     </strong>
     <span class="gold-unit">G</span>
     </div>
-    <p class="income-line">
-    <span>초당 <b id="passive-rate">
-    </b><small id="campaign-income-bonus" hidden></small>
-    </span>
-    <span>터치 <b id="tap-rate">
-    </b>
-    </span>
-    </p>
+    </div>`;
+}
+
+function incomeMarkup() {
+  return `<div class="income-lines" aria-label="골드 수입과 증가 효과" title="표시된 골드에 효과가 이미 포함되어 있습니다. 시설·점령·개인장비는 순차 적용되며, 장비 수입 효과는 배치한 군사 장비에만 적용됩니다.">
+    <div class="income-line"><span class="income-rate">초당 <b id="passive-rate"></b></span><small id="passive-effects" class="income-effects" hidden></small></div>
+    <div class="income-line"><span class="income-rate">터치 <b id="tap-rate"></b></span><small id="tap-effects" class="income-effects" hidden></small><small id="tap-sword-effect" class="income-skill" hidden></small></div>
     </div>`;
 }
 

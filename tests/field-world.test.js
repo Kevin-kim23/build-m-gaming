@@ -4,16 +4,17 @@ import {freshState} from '../src/game.js';
 import {FACILITIES} from '../src/facilities.js';
 import {EQUIPMENT} from '../src/equipment.js';
 import {layoutFieldWorld} from '../src/field-world.js';
-import {createFieldGesture} from '../src/field-gesture.js';
+import {createFieldGesture,MAX_SIMULTANEOUS_TAPS} from '../src/field-gesture.js';
 import {createFieldNavigation} from '../src/field-navigation.js';
 const full=()=>({...freshState(1),soldiers:90000000,sergeants:300,ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,
   facilities:FACILITIES.map(f=>f.id),equipment:Object.fromEntries(Object.keys(EQUIPMENT).map(id=>[id,{level:20,count:1,deployed:true}]))});
 
-test('four independent fingers can tap; swipe, cancel, extra fingers and scroll cannot award gold',()=>{
-  const g=createFieldGesture();for(let i=0;i<4;i++)assert.equal(g.down(i,20,20,0),true);
-  assert.equal(g.down(4,20,20,0),false);
-  for(let i=0;i<4;i++)assert.equal(g.up(i,22,21),true);
-  assert.equal(g.up(4,20,20),false);
+test('ten independent fingers can tap; swipe, cancel, extra fingers and scroll cannot award gold',()=>{
+  assert.equal(MAX_SIMULTANEOUS_TAPS,10);
+  const g=createFieldGesture();for(let i=0;i<10;i++)assert.equal(g.down(i,20,20,0),true);
+  assert.equal(g.down(10,20,20,0),false);
+  for(let i=0;i<10;i++)assert.equal(g.up(i,22,21),true);
+  assert.equal(g.up(10,20,20),false);
   g.down(1,20,20,1);g.down(2,20,20,1);g.move(1,50,20);
   assert.equal(g.up(1,20,20),false);assert.equal(g.up(2,20,20),false);
   g.down(1,20,20,2);g.cancel(1);assert.equal(g.up(1,20,20),false);

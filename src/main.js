@@ -1,4 +1,4 @@
-import { campaignBonusPercent } from "./campaign-rewards.js";
+import { createIncomeHud } from './income-hud.js';
 import { autoTouchStatus } from "./personal-equipment.js";
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
@@ -81,6 +81,7 @@ function setText(selector, value) {
   if (node.textContent !== text) node.textContent = text;
 }
 $("#app").innerHTML = homeMarkup(state);
+const incomeHud=createIncomeHud(document);
 const zone = $("#tap-zone"),
   canvas = $("#field");
 const fieldNavigation=createFieldNavigation({viewport:$('#field-viewport'),zone,
@@ -133,9 +134,7 @@ function update() {
     setText("#formation-summary", fieldSummary(state));
     $("#formation-summary").hidden = power === 0;
     setText("#passive-rate", "+" + fmtGold(perSecond(state)) + " G");
-    const conquestBonus = campaignBonusPercent(state);
-    setText("#campaign-income-bonus", `점령 +${conquestBonus}%`);
-    $("#campaign-income-bonus").hidden = !conquestBonus;
+    incomeHud.refresh(state);
     zone.classList.toggle("has-recruits", power > 0 || ownedSchools(state).length > 0);
     zone.classList.toggle("has-equipment", deployed.length > 0);
     zone.classList.toggle("has-multiple-equipment", deployed.length > 1);
@@ -153,6 +152,7 @@ function update() {
   $('.field-tools').hidden = r < GENERAL_RANK;
   const tap = perTap(state);
   setText("#tap-rate", "+" + fmtGold(tap) + " G");
+  incomeHud.syncSword(state);
   setText("#tap-hint-rate", "한 번에 +" + fmtGold(tap) + " G");
   zone.setAttribute("aria-label", "화면 터치해서 골드 " + tap + " 획득");
   syncSwordControls(document.querySelector('.field-tools'), state, session.active);

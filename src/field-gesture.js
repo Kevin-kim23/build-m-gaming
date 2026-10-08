@@ -1,5 +1,6 @@
 // Reward on release, after deciding tap versus swipe. No storage, timers or DOM reads.
-export function createFieldGesture({max=4,threshold=8,staleMs=5000}={}) {
+export const MAX_SIMULTANEOUS_TAPS = 10;
+export function createFieldGesture({max=MAX_SIMULTANEOUS_TAPS,threshold=8,staleMs=5000}={}) {
   const points=new Map();
   return {
     down(id,x,y,time) {
