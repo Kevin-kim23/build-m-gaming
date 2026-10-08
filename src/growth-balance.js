@@ -1,7 +1,9 @@
+import { COMMAND_OFFICERS } from './command-officers.js';
 import { minMoney, multiplyMoney, MAX_GOLD } from './money.js';
 
 // Price multipliers apply independently to each type's headcount.
 export const RECRUIT_PRICE_FACTORS = Object.freeze({
+  ...Object.fromEntries(COMMAND_OFFICERS.map(unit=>[unit.id,1])),
   soldier:8, administrator:1, driver:1, medic:1,
   sergeant:18, staffSergeant:18, masterSergeant:18, sergeantMajor:18, warrantOfficer:18,
   lieutenant:10, firstLieutenant:10, captain:10, major:10, lieutenantColonel:10,

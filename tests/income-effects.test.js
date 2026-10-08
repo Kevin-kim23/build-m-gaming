@@ -19,10 +19,10 @@ test('fresh saves have no bonuses; locked personal levels do not claim a benefit
 test('facility fractions and conquest appear only in the income they actually affect',()=>{
   const s=freshState(T);s.facilities=FACILITIES.map(f=>f.id);
   s.facilityLevels=Object.fromEntries(s.facilities.map(id=>[id,20]));s.campaignCleared=35;
-  assert.deepEqual(effects(s,'passive'),{'시설':96.25,'점령':35});
-  assert.deepEqual(effects(s,'tap'),{'시설':77});
+  assert.deepEqual(effects(s,'passive'),{'시설':720,'점령':35});
+  assert.deepEqual(effects(s,'tap'),{'시설':619.2});
   s.facilityLevels={...s.facilityLevels,kitchen:1};
-  assert.notEqual(effects(s,'passive')['시설'],96.25);
+  assert.notEqual(effects(s,'passive')['시설'],720);
 });
 
 test('personal equipment combines multiplicatively, with equipment-only boosts kept separate',()=>{

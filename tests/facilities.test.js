@@ -13,9 +13,9 @@ import {EQUIPMENT,deployedEquipment} from '../src/equipment.js';
 const T=1800000000000;
 const army=rank=>{const s=freshState(T),power=RANK_REQUIREMENTS[RANKS.indexOf(rank)];s.sergeants=power>=10240?300:power>=640?40:0;s.soldiers=power-s.sergeants*10;s.gold=MAX_GOLD;return s;};
 
-test('ten facilities unlock in order from master sergeant; actual promotion gates are enforced',()=>{
-  assert.equal(FACILITIES.length,10);
-  assert.deepEqual(FACILITIES.map(f=>f.rank),RANKS.slice(RANKS.indexOf('상사'),RANKS.indexOf('준장')+1));
+test('nineteen facilities unlock in order from master sergeant; actual promotion gates are enforced',()=>{
+  assert.equal(FACILITIES.length,19);
+  assert.deepEqual(FACILITIES.map(f=>f.rank),RANKS.slice(RANKS.indexOf('상사'),RANKS.indexOf('부사령관')+1));
   for(const f of FACILITIES){
     const s=army(RANKS[RANKS.indexOf(f.rank)-1]);
     assert.equal(facilityOffer(s,f.id).visible,true);assert.equal(facilityOffer(s,f.id).locked,true);
@@ -42,19 +42,19 @@ test('construction is exact at wallet boundaries, rejects unknown IDs, settles o
   assert.throws(()=>buildFacility(s,T+1000,'__proto__'),RangeError);
   assert.equal(s.lastAccrual,T);
   assert.equal(buildFacility(s,T+1000,f.id).ok,true);assert.equal(s.gold,60);
-  accrue(s,T+2000);assert.equal(s.gold,121); // old 60/s then floor(60*1.03)=61/s
+  accrue(s,T+2000);assert.equal(s.gold,123); // old 60/s then floor(60*1.05)=63/s
 });
 
 test('bonuses add per income type, cache by ownership and use exact integer arithmetic',()=>{
   const s=army('대원수'),base=perSecond(s),tap=perTap(s,T);
   s.facilities=FACILITIES.map(f=>f.id);
-  assert.deepEqual(facilityBonus(s),{passive:25,tap:20});
+  assert.deepEqual(facilityBonus(s),{passive:150,tap:129});
   assert.equal(facilityBonus(s),facilityBonus(s));
-  assert.equal(perTap(s,T),Math.floor(tap*1.2));
+  assert.equal(perTap(s,T),Math.floor(tap*2.29));
   assert.ok(perSecond(s)>base);
   for(const value of [Number.MAX_SAFE_INTEGER,9007199254740993n,MAX_GOLD-1n])
-    assert.equal(exact(withFacilityIncome(s,value,'tap')),exact(value)*120n/100n);
-  s.facilities=['kitchen'];assert.deepEqual(facilityBonus(s),{passive:3,tap:0});
+    assert.equal(exact(withFacilityIncome(s,value,'tap')),exact(value)*229n/100n);
+  s.facilities=['kitchen'];assert.deepEqual(facilityBonus(s),{passive:5,tap:0});
 });
 
 test('sword and automatic touch use facility bonuses exactly once; cap remains exact',()=>{
@@ -112,6 +112,6 @@ test('shop shows all facilities; buttons track affordability and ownership',()=>
 });
 
 test('facility sprites are original cached distinct geometry without embedded external resources',()=>{
-  const drawings=FACILITIES.map(f=>facilityIcon(f.id));assert.equal(new Set(drawings).size,10);
+  const drawings=FACILITIES.map(f=>facilityIcon(f.id));assert.equal(new Set(drawings).size,19);
   for(const f of FACILITIES){assert.equal(facilityIcon(f.id),facilityIcon(f.id));assert.match(facilityIcon(f.id),/viewBox="0 0 96 72"/);assert.doesNotMatch(facilityIcon(f.id),/href=|<image|script/);}
 });

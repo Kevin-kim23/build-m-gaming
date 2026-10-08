@@ -1,6 +1,6 @@
 // Original insignia geometry, shared by the tiny badge and promotion ceremony.
 const cache = new Map();
-const symbols = {5:'junior-marshal',6:'minor-marshal',7:'middle-marshal',8:'grand-marshal',9:'special-marshal'};
+const symbols = {5:'junior-marshal',6:'minor-marshal',7:'middle-marshal',8:'grand-marshal',9:'special-marshal',10:'deputy-commander'};
 function star(x, y, radius, white = false) {
   const points = Array.from({length:10}, (_, i) => {
     const angle = -Math.PI/2 + i*Math.PI/5, r = i%2 ? radius*.44 : radius;
@@ -21,7 +21,7 @@ export function supremeRankSymbol(tier) {
   if (tier === 5) {
     art = [[15,15],[49,15],[32,32],[15,49],[49,49]].map(([x,y])=>star(x,y,10)).join('');
   } else {
-    const count=tier-5, gap=count===2?30:count===4?16:21, radius=count===1?19:count===2?14:count===4?8:10;
+    const count=tier-5, gap=count===5?12:count===2?30:count===4?16:21, radius=count===5?6:count===1?19:count===2?14:count===4?8:10;
     art = Array.from({length:count},(_,i)=>star(32+(i-(count-1)/2)*gap,32,radius,true)).join('');
   }
   cache.set(tier,art);

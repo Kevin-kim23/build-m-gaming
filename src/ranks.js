@@ -7,7 +7,7 @@ import {
   DIVISION_SIZE,
   CORPS_SIZE,
   FIELD_ARMY_SIZE, ARMY_GROUP_SIZE, ALLIED_ARMY_SIZE,
-  GRAND_ALLIED_ARMY_SIZE, SUPREME_COMMAND_SIZE, GALACTIC_COMMAND_SIZE,
+  GRAND_ALLIED_ARMY_SIZE, SUPREME_COMMAND_SIZE, GALACTIC_COMMAND_SIZE, GALACTIC_GROUP_COMMAND_SIZE,
 } from "./formations.js";
 import { armyPower } from "./units.js";
 export const GENERAL_MIN_SOLDIERS = 5_000;
@@ -154,6 +154,7 @@ export const RANK_DEFINITIONS = Object.freeze([
   { name: '중원수', required: GRAND_ALLIED_ARMY_SIZE, condition: '4개 연합군 · 대연합군 1개', kind: 'general', marks: 7 },
   { name: '대원수', required: SUPREME_COMMAND_SIZE, condition: '4개 대연합군 · 총군사령부 1개', kind: 'general', marks: 8 },
   { name: '특전원수', required: GALACTIC_COMMAND_SIZE, condition: '4개 총군사령부 · 은하사령부 1개', kind: 'general', marks: 9 },
+  { name: '부사령관', required: GALACTIC_GROUP_COMMAND_SIZE, condition: '4개 은하사령부 · 은하단 사령부 1개', kind: 'general', marks: 10 },
 ]);
 export const RANKS = RANK_DEFINITIONS.map((r) => r.name);
 export const RANK_REQUIREMENTS = RANK_DEFINITIONS.map((r) => r.required);

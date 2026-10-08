@@ -35,7 +35,7 @@ test('new marshal boundaries consolidate four commands and promotion follows act
     assert.equal(createBattle(s,1,{equipment:['artillery']}).player.hq.id,id);
     s.sergeants=299;assert.equal(RANKS[rankForArmy(s)],'대령');
   }
-  assert.equal(MAX_SOLDIERS,GALACTIC_COMMAND_SIZE*4);
+  assert.equal(MAX_SOLDIERS,GALACTIC_COMMAND_SIZE*16);
 });
 
 test('version 20 keeps paid gear, exact money, troops, skills and campaign when rank names change',()=>{
@@ -61,13 +61,13 @@ test('renamed ranks retain the old ICBM, glaive and advanced academy unlock thre
   assert.equal(equipmentPurchaseOffer(junior,'icbm').locked,false);
   assert.equal(personalStatus(junior,'marshalGlaive').level,1);
   junior.advancedSchoolLevel=1;assert.equal(schoolOffer(junior,'advanced').reason,null);
-  junior.advancedSchoolLevel=3;assert.equal(schoolOffer(junior,'advanced').reason,'locked');
+  junior.advancedSchoolLevel=3;assert.equal(schoolOffer(junior,'advanced').reason,null);
   minor.advancedSchoolLevel=3;assert.equal(schoolOffer(minor,'advanced').reason,null);
 });
 
 test('marshal insignia keeps five, one, two and three stars without laurels and white stars for all three upper marshal ranks',()=>{
-  for(const invalid of ['5',0,10,NaN,Infinity,5.5])assert.throws(()=>supremeRankSymbol(invalid),RangeError);
-  for(const [tier,count] of [[5,5],[6,1],[7,2],[8,3],[9,4]]){
+  for(const invalid of ['5',0,11,NaN,Infinity,5.5])assert.throws(()=>supremeRankSymbol(invalid),RangeError);
+  for(const [tier,count] of [[5,5],[6,1],[7,2],[8,3],[9,4],[10,5]]){
     const svg=supremeRankSymbol(tier);
     assert.equal((svg.match(/data-rank-star/g)||[]).length,count);
     assert.equal((svg.match(/data-laurel/g)||[]).length,0);

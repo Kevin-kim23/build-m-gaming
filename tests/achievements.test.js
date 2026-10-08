@@ -6,14 +6,14 @@ import { FORMATIONS } from "../src/formations.js";
 import { freshState, recruit, recruitOffer, parseSave, perSecond, perTap, MAX_GOLD, SAVE_KEY } from "../src/game.js";
 
 const T = 1800000000000;
-const ids = ["squad", "platoon", "company", "battalion", "regiment", "division", "corps", "fieldArmy", "armyGroup", "alliedArmy", "grandAlliedArmy", "supremeCommand", "galacticCommand"];
+const ids = ["squad", "platoon", "company", "battalion", "regiment", "division", "corps", "fieldArmy", "armyGroup", "alliedArmy", "grandAlliedArmy", "supremeCommand", "galacticCommand", "galacticGroupCommand"];
 const state = (power) => ({ ...freshState(T), soldiers: power, gold:100_000_000_000_000 });
 const rules = () => import("../src/achievements.js");
 
-test("achievement definitions reuse all thirteen formation thresholds in ascending order", async () => {
+test("achievement definitions reuse all fourteen formation thresholds in ascending order", async () => {
   const { FORMATION_ACHIEVEMENTS: ACHIEVEMENTS } = await rules();
   assert.deepEqual(ACHIEVEMENTS.map(a => a.id), ids);
-  assert.deepEqual(ACHIEVEMENTS.map(a => a.title), ["분대장", "소대장", "중대장", "대대장", "연대장", "사단장", "군단장", "야전군사령관", "집단군 사령관", "연합군 사령관", "대연합군 사령관", "총군사령관", "은하사령관"]);
+  assert.deepEqual(ACHIEVEMENTS.map(a => a.title), ["분대장", "소대장", "중대장", "대대장", "연대장", "사단장", "군단장", "야전군사령관", "집단군 사령관", "연합군 사령관", "대연합군 사령관", "총군사령관", "은하사령관", "은하단 사령관"]);
   ACHIEVEMENTS.forEach((a, tier) => {
     const formation = FORMATIONS.find(f => f.id === a.id);
     assert.equal(a.required, formation.size);

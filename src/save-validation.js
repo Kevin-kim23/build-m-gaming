@@ -1,3 +1,4 @@
+import { COMMAND_OFFICERS } from './command-officers.js';
 import { validFacilities, validFacilityLevels } from './facility-catalog.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { NEW_RECRUITS } from './specialist-units.js';
@@ -93,6 +94,12 @@ export function validateSave(s) {
     requireSave(integer(s.advancedSchoolLevel, 5) &&
       (s.advancedSchoolLevel === 0 || s.officerSchoolLevel === 5), 'advancedSchoolLevel');
     for (const unit of ADVANCED_OFFICERS)
+      requireSave(integer(s[unit.field], Math.floor(MAX_SOLDIERS / unit.power)), unit.field);
+  }
+  if (s.version >= 31) {
+    requireSave(integer(s.commandSchoolLevel, COMMAND_OFFICERS.length) &&
+      (s.commandSchoolLevel === 0 || s.advancedSchoolLevel === 5), 'commandSchoolLevel');
+    for (const unit of COMMAND_OFFICERS)
       requireSave(integer(s[unit.field], Math.floor(MAX_SOLDIERS / unit.power)), unit.field);
   }
   if(s.version>=19){

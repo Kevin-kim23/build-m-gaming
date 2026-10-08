@@ -36,17 +36,14 @@ export function generalRankBadge(tier) {
 
 const marshalThemes = Object.freeze({
   6: { name:'sapphire', metal:['#f5fcff','#b9d4e8','#486784','#d7ebfa','#36465e'], enamel:['#3374b2','#123e70','#071626'], light:'#8ae4ff' },
-  7: { name:'amethyst', metal:['#ffffff','#d9d6ef','#6b618f','#ece8ff','#48415f'], enamel:['#8258bb','#402568','#170d2d'], light:'#e3b9ff' },
-  8: { name:'midnight-gold', metal:['#fff8cb','#e3c783','#846323','#ffe9a0','#4c3818'], enamel:['#334c79','#142344','#060d20'], light:'#eed8a0' },
-  9: { name:'galactic-teal', metal:['#f0fffa','#c2ece7','#507d83','#e1f7ee','#354d62'], enamel:['#237e80','#144553','#071828'], light:'#8cf4df' },
 });
 
 // One cached, original 96px artwork per marshal tier, shared by HUD and rank guide.
 export function marshalRankBadge(tier) {
-  if (!Number.isInteger(tier) || !Object.hasOwn(marshalThemes,tier)) throw new RangeError('Unknown framed marshal rank');
+  if (!Number.isInteger(tier) || tier < 6 || tier > 10) throw new RangeError('Unknown framed marshal rank');
   const key = `marshal-${tier}`;
   if (cache.has(key)) return cache.get(key);
-  const p = marshalThemes[tier], id = `rank-frame-${key}`, metal = `url(#${id}-metal)`;
+  const p = marshalThemes[6], id = `rank-frame-${key}`, metal = `url(#${id}-metal)`;
   const studs = [[13,13],[83,13],[13,83],[83,83]].map(([x,y])=>`<path d="M${x} ${y-3}l3 3-3 3-3-3Z" fill="${p.metal[0]}" stroke="${p.metal[2]}" stroke-width=".8"/>`).join('');
   const engraving = Array.from({length:tier-5}, (_, i)=>`<path d="m${45+i*6-(tier-6)*3} 77 3-2 3 2-3 2Z" fill="${p.light}" opacity=".7"/>`).join('');
   const svg = `<svg class="framed-rank-badge marshal-rank-badge" data-marshal-frame="${tier}" data-frame-theme="${p.name}" viewBox="0 0 96 96" aria-hidden="true" focusable="false">

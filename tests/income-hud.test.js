@@ -15,11 +15,11 @@ function harness(){
 test('HUD formats fractional effects and avoids rebuilding on unchanged state or taps',()=>{
   const h=harness(),s=freshState(T);s.facilities=['kitchen'];s.facilityLevels={kitchen:20};
   h.ui.refresh(s);const renders=h.renders;
-  assert.match(h.nodes['#passive-effects'].children[0].textContent,/시설 \+11\.55%/);
+  assert.match(h.nodes['#passive-effects'].children[0].textContent,/시설 \+24%/);
   for(let i=0;i<300;i++){s.gold++;s.taps++;h.ui.refresh(s);h.ui.syncSword(s,T);}
   assert.equal(h.renders,renders);assert.equal(h.writes,0);
   s.facilityLevels={kitchen:1};h.ui.refresh(s);
-  assert.equal(h.nodes['#passive-effects'].children[0].textContent,'시설 +3%');
+  assert.equal(h.nodes['#passive-effects'].children[0].textContent,'시설 +5%');
   s.facilities=[];h.ui.refresh(s);assert.equal(h.nodes['#passive-effects'].hidden,true);
 });
 test('sword appears only on tap income while active, clears on expiry and does not rebuild static effects',()=>{

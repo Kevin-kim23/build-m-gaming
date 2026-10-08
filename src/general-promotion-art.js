@@ -9,7 +9,7 @@ const star = (x,y,r,fill) => {
   return `<polygon points="${points}" fill="${fill}" stroke="#fff1b4" stroke-width="1"/>`;
 };
 export function generalEmblem(tier) {
-  if(!Number.isInteger(tier)||tier<1||tier>9)throw new RangeError('Unknown general ceremony tier');
+  if(!Number.isInteger(tier)||tier<1||tier>10)throw new RangeError('Unknown general ceremony tier');
   if(cache.has(tier))return cache.get(tier);
   const id=`general-ceremony-${tier}`, gold=`url(#${id}-gold)`, enamel=`url(#${id}-enamel)`;
   const feathers=Array.from({length:7+Math.min(tier,6)},(_,i)=>{

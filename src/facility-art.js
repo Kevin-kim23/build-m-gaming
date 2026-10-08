@@ -1,4 +1,5 @@
 import { FACILITY_BY_ID, MAX_FACILITY_LEVEL } from './facility-catalog.js';
+import { lateFacilityBody } from './late-facility-art.js';
 const cache=new Map();
 const rect=(x,y,w,h,color)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${color}"/>`;
 function windows(x,y,count) {
@@ -132,7 +133,7 @@ export function facilityIcon(id,level=1) {
   const normalized=Number.isFinite(level)?Math.max(1,Math.min(MAX_FACILITY_LEVEL,Math.floor(level))):1;
   const key=`${id}:${normalized}`;
   if(cache.has(key))return cache.get(key);
-  const body=id==='futsal'?futsal(normalized):building(id,normalized);
+  const body=FACILITY_BY_ID[id].introducedVersion>=31?lateFacilityBody(id,normalized):id==='futsal'?futsal(normalized):building(id,normalized);
   const svg=`<svg class="facility-art" viewBox="0 0 96 72" aria-hidden="true" shape-rendering="crispEdges">${body}</svg>`;
   cache.set(key,svg);return svg;
 }

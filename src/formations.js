@@ -13,7 +13,9 @@ export const ALLIED_ARMY_SIZE = ARMY_GROUP_SIZE * 4;
 export const GRAND_ALLIED_ARMY_SIZE = ALLIED_ARMY_SIZE * 4;
 export const SUPREME_COMMAND_SIZE = GRAND_ALLIED_ARMY_SIZE * 4;
 export const GALACTIC_COMMAND_SIZE = SUPREME_COMMAND_SIZE * 4;
+export const GALACTIC_GROUP_COMMAND_SIZE = GALACTIC_COMMAND_SIZE * 4;
 export const FORMATIONS = Object.freeze([
+  { id: 'galacticGroupCommand', name: '은하단 사령부', size: GALACTIC_GROUP_COMMAND_SIZE, width: 272, height: 216 },
   { id: 'galacticCommand', name: '은하사령부', size: GALACTIC_COMMAND_SIZE, width: 240, height: 190 },
   { id: 'supremeCommand', name: '총군사령부', size: SUPREME_COMMAND_SIZE, width: 216, height: 172 },
   { id: 'grandAlliedArmy', name: '대연합군', size: GRAND_ALLIED_ARMY_SIZE, width: 192, height: 156 },

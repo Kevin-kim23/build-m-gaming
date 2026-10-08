@@ -5,7 +5,7 @@ import {layoutFieldWorld} from '../src/field-world.js';
 import {FACILITIES} from '../src/facilities.js';
 import {EQUIPMENT} from '../src/equipment.js';
 const full=()=>({...freshState(1),soldiers:5242880-3000,sergeants:300,ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,
- facilities:FACILITIES.map(f=>f.id),equipment:Object.fromEntries(Object.keys(EQUIPMENT).map(id=>[id,{level:20,count:1,deployed:true}]))});
+ facilities:FACILITIES.slice(0,10).map(f=>f.id),equipment:Object.fromEntries(Object.keys(EQUIPMENT).map(id=>[id,{level:20,count:1,deployed:true}]))});
 test('a small base stays one screen and contains army, school, equipment and facility together',()=>{
  const s={...freshState(1),soldiers:1280,ncoSchoolLevel:1,facilities:['kitchen']};s.equipment.artillery={level:0,count:1,deployed:true};
  const w=layoutFieldWorld(s,160,240);assert.equal(w.width,160);

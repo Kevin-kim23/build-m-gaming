@@ -1,4 +1,8 @@
-# 현재 작업 0.66.0 · feat/interactive-onboarding
+# 현재 작업 0.67.0 · feat/interactive-onboarding
+
+시설19종 Lv.20·버프, 지휘 사관학교5단계(준원수부터)·원수 병종5종, 지휘봉16~20 원수100명 모집으로 교체, 부사령관·은하단 사령부·훈장 추가. 가로1.5화면 이내/추가 시설은 세로 확장. 형식31로 이전 저장 보존. docs/COMMAND_EXPANSION.md와 개인장비-강화안내.md 참고. npm run qa:command → 별도4209 /__command-check 검증용. 실제4196 기록은 테스트로 덮어쓰지 않음. main 병합은 사용자가 집에서 진행. 실제폰·Android 미검증, 비공개 음악4곡 누락 유지.
+
+# 이전 작업 0.66.0 · feat/interactive-onboarding
 
 개인 장비8종 확정 강화 Lv.20, 사단기20→군사30강. 형식30으로 기존 강화/진행 보존. 지휘봉11~15 고급 장교100명·16~20 일괄 모집2~10% 할인. 능력·비용은 개인장비-강화안내.md, npm run docs:personal로 생성. 4199 /__personal-check에서 실제4196 기록과 분리해 QA. npm test와 npm run build로 검증. main 병합은 집에서 사용자 진행. 기존 비공개 음악4곡이 이 PC에 없어 Android 출시 빌드는 미실시.
 

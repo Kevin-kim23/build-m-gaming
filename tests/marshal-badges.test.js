@@ -5,10 +5,10 @@ import { supremeRankSymbol } from '../src/rank-emblem.js';
 import { insignia } from '../src/home-view.js';
 import { RANKS } from '../src/ranks.js';
 
-test('four upper marshal badges preserve white star counts in distinct cached relief frames', () => {
+test('five upper badges share the minor marshal relief theme and preserve their star counts', () => {
   const allIds = [];
   const themes = [];
-  for (let tier=6;tier<=9;tier++) {
+  for (let tier=6;tier<=10;tier++) {
     const art=marshalRankBadge(tier);
     assert.equal(marshalRankBadge(tier),art);
     assert.equal((art.match(/data-rank-star/g)||[]).length,tier-5);
@@ -27,15 +27,15 @@ test('four upper marshal badges preserve white star counts in distinct cached re
       }
     }
   }
-  assert.equal(new Set(themes).size,4);
+  assert.equal(new Set(themes).size,1);
   assert.equal(new Set(allIds).size,allIds.length);
-  for (const tier of [0,5,10,'6',NaN,6.5]) assert.throws(()=>marshalRankBadge(tier),RangeError);
+  for (const tier of [0,5,11,'6',NaN,6.5]) assert.throws(()=>marshalRankBadge(tier),RangeError);
   assert.match(generalRankBadge(1),/data-general-frame="1"/);
   assert.doesNotMatch(generalRankBadge(5),/data-marshal-frame/);
 });
 
 test('home and rank guide use the same framed artwork for all implemented upper marshal ranks', () => {
-  for (const [rank,tier] of [['소원수',6],['중원수',7],['대원수',8],['특전원수',9]]) {
+  for (const [rank,tier] of [['소원수',6],['중원수',7],['대원수',8],['특전원수',9],['부사령관',10]]) {
     assert.ok(RANKS.includes(rank));
     const html=insignia(RANKS.indexOf(rank));
     assert.match(html,/class="insignia general framed-rank"/);

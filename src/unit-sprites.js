@@ -82,7 +82,7 @@ export function unitSprite(id, side, level = 0) {
   return sprite;
 }
 
-const TIERS = ['battalion', 'regiment', 'division', 'corps', 'fieldArmy', 'armyGroup', 'alliedArmy', 'grandAlliedArmy', 'supremeCommand', 'galacticCommand'];
+const TIERS = ['battalion', 'regiment', 'division', 'corps', 'fieldArmy', 'armyGroup', 'alliedArmy', 'grandAlliedArmy', 'supremeCommand', 'galacticCommand', 'galacticGroupCommand'];
 // 일반 기지(위에서 본 모습): 계급이 높을수록 크고 장식이 늘어난다.
 export function baseSprite(id, side) {
   const key = `base:${side}:${id}`;
@@ -98,6 +98,11 @@ export function baseSprite(id, side) {
   for (let y = 15; y < h - 10; y += 7) { r(w - 10, y, 3, 2, p.light); r(w - 9, y + 1, 2, 1, p.dark); }
   if (tier >= 7) { const metal = tier === 8 ? '#d8e8f1' : '#e4ce92'; for (const x of [5, w - 20]) { r(x, h / 2 - 5, 14, 19, p.dark); r(x + 2, h / 2 - 3, 10, 2, metal); } r(w / 2 - 15, h / 2 - 12, 30, 2, metal); }
   if (id === 'galacticCommand') overheadGalacticDetails(r, w, h, p);
+  if (id === 'galacticGroupCommand') {
+    overheadGalacticDetails(r,w,h,p);
+    for(const x of [9,w-23])for(const y of [15,h-24]){r(x,y,12,12,p.dark);r(x+2,y+2,8,8,p.light);r(x+4,y+4,4,4,p.flag);}
+    for(let i=0;i<5;i++){r(w/2-17+i*8,h/2-3,2,7,p.mark);r(w/2-19+i*8,h/2-1,6,2,p.mark);}
+  }
   cache.set(key, canvas);
   return canvas;
 }

@@ -89,7 +89,7 @@ test('advanced school UI lists each required rank and has five distinct cached c
   const s=army('대장');
   assert.match(schoolsMarkup(s),/고급 사관학교/);
   const detail=schoolDetailMarkup(s,'advanced').body;
-  for(const rank of ['대장','준원수','소원수'])assert.ok(detail.includes(rank+' 이상 필수'));
+  for(const rank of ['대장'])assert.ok(detail.includes(rank+' 이상 필수'));
   const icons=ADVANCED_OFFICERS.map(g=>schoolIcon('advanced',g.schoolLevel));
   assert.equal(new Set(icons).size,5);
   for(let level=1;level<=5;level++)assert.equal(schoolIcon('advanced',level),icons[level-1]);

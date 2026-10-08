@@ -26,7 +26,7 @@ test("all catalog medals are distinct, fit their shared pixel bounds and use no 
 test("an empty medal shelf still exposes achievements without twenty fake medal slots", () => {
   const html = medalShelfMarkup();
   assert.match(html, /id="open-achievements"/);
-  assert.match(html, /id="medal-count">훈장 0 \/ 20/);
+  assert.match(html, /id="medal-count">훈장 0 \/ 21/);
   assert.match(html, /<ol id="medal-list"[^>]*><\/ol>/);
   assert.doesNotMatch(html, /<li|achievement-medal-svg/);
 });
@@ -52,7 +52,7 @@ test("earned medals remain complete, selection is unique and markup never change
   assert.equal((html.match(/achievement-card earned/g) ?? []).length, 4);
   assert.equal((html.match(/achievement-card[^\"]* selected/g) ?? []).length, 1);
   assert.match(html, /class="achievement-card earned selected" data-achievement="battalion"/);
-  assert.match(html, /훈장 <strong>4<\/strong> \/ 20/);
+  assert.match(html, /훈장 <strong>4<\/strong> \/ 21/);
   assert.deepEqual(s, snapshot);
   s.soldiers = 0;
   const retained = achievementListMarkup(s);

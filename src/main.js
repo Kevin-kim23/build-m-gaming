@@ -12,7 +12,7 @@ import { createOpeningScreen } from './opening.js';
 import { createGameLifecycle } from './game-lifecycle.js';
 import { showToast } from "./toast.js";
 import { FACILITIES, facilityOffer, facilityUpgradeOffer } from './facilities.js';
-import { schoolOffer } from "./schools.js";
+import { SCHOOLS, schoolOffer } from "./schools.js";
 import { fmtGold } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
 import { createGameSession } from "./session.js";
@@ -159,7 +159,7 @@ function update() {
   syncRevolverControls(document.querySelector('.field-tools'), state, session.active);
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
-    ["nco","officer","advanced"].some(id=>schoolOffer(state,id).canBuy) ||
+    Object.keys(SCHOOLS).some(id=>schoolOffer(state,id).canBuy) ||
     FACILITIES.some(f=>facilityOffer(state,f.id).canBuy || facilityUpgradeOffer(state,f.id).canUpgrade)
   );
   setText("#save-status", session.status);

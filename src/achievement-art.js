@@ -17,6 +17,7 @@ const palettes = [
   ["#243b59", "#b4d3e8", "#d6b96c", "#fff1bf"],
   ["#243e44", "#b2dedf", "#a8bdcd", "#f4fbff"],
   ["#37295b", "#b4abe9", "#b9d7e7", "#f0fcff"],
+  ["#233d63", "#96d9e7", "#d2dfe8", "#fff3c7"],
 ];
 
 export function medalSvg(id) {
@@ -100,8 +101,8 @@ export function medalSvg(id) {
     r(44,105,8,4,metal);r(46,105,4,6,shine);
   }
   if(tier>=8) {
-    const ribbonStars=tier===12?4:tier-3;
-    for(let i=0;i<ribbonStars;i++){const x=tier===12?36+i*8:33+i*5;r(x,23,1,5,shine);r(x-1,25,3,1,shine);}
+    const ribbonStars=tier>=12?tier-8:tier-3;
+    for(let i=0;i<ribbonStars;i++){const x=tier>=12?48+(i-(ribbonStars-1)/2)*8:33+i*5;r(x,23,1,5,shine);r(x-1,25,3,1,shine);}
     for(const x of [14,77]){r(x,61,5,22,metal);r(x+1,61,1,22,shine);r(x-2,61,9,2,shine);}
     r(39,83,18,3,shine);r(42,86,12,2,metal);
     if(tier===9){r(44,67,8,10,'#8ecbd5');r(45,68,3,3,'#e7fcff');r(41,16,15,2,shine);}
@@ -110,7 +111,7 @@ export function medalSvg(id) {
       for(const x of [39,53])for(const y of [73,78])r(x,y,4,2,stripe);
       r(46,76,4,8,ribbon);r(35,85,26,2,shine);
       if(tier===11){r(45,58,6,6,shine);r(33,88,30,2,metal);r(35,90,26,1,shine);}
-      if(tier===12){
+      if(tier>=12){
         // Silver orbital halo, violet enamel and four radiant command stars.
         pixels.push('<g data-galactic-emblem="true">');
         octagon(32,58,32,36,8,ribbon);
@@ -122,6 +123,11 @@ export function medalSvg(id) {
         r(43,70,4,3,'#d8ffff');r(46,77,7,3,'#486882');r(46,71,2,13,shine);
         for(const [x,y] of [[48,59],[33,76],[63,76],[48,91]]){
           r(x-1,y-3,2,7,shine);r(x-3,y-1,6,2,shine);
+        }
+        if(tier===13){
+          pixels.push('<g data-galactic-group-emblem="true">');
+          for(const x of [29,37,45,53,61]){r(x,96,2,6,shine);r(x-2,98,6,2,shine);}
+          r(25,92,46,2,metal);r(27,93,42,1,shine);pixels.push('</g>');
         }
         pixels.push('</g>');
       }

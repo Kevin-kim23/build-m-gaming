@@ -33,27 +33,27 @@ test('facilities build at level one, upgrade to twenty and never create a duplic
 
 test('level bonuses preserve fractional percentages and cached totals invalidate on an upgrade',()=>{
   const s=ready('kitchen');
-  const first=facilityBonus(s);assert.deepEqual(first,{passive:3,tap:0});assert.equal(first,facilityBonus(s));
+  const first=facilityBonus(s);assert.deepEqual(first,{passive:5,tap:0});assert.equal(first,facilityBonus(s));
   upgradeFacility(s,T,'kitchen');
-  assert.deepEqual(facilityBonus(s),{passive:3.45,tap:0});assert.notEqual(first,facilityBonus(s));
+  assert.deepEqual(facilityBonus(s),{passive:6,tap:0});assert.notEqual(first,facilityBonus(s));
   assert.equal(ownedFacilities(s)[0].level,2);
   for(let level=1;level<=20;level++){
     const stats=facilityStats('kitchen',level);
-    assert.equal(stats.passive,3*(100+15*(level-1))/100);
+    assert.equal(stats.passive,5*(100+20*(level-1))/100);
     for(const value of [1,10,Number.MAX_SAFE_INTEGER,9007199254740993n,MAX_GOLD-1n]){
       s.facilityLevels={kitchen:level};
-      assert.equal(exact(withFacilityIncome(s,value,'passive')),exact(value)*BigInt(10000+3*(100+15*(level-1)))/10000n);
+      assert.equal(exact(withFacilityIncome(s,value,'passive')),exact(value)*BigInt(10000+5*(100+20*(level-1)))/10000n);
     }
   }
   s.facilities=FACILITIES.map(f=>f.id);s.facilityLevels=Object.fromEntries(s.facilities.map(id=>[id,20]));
-  assert.deepEqual(facilityBonus(s),{passive:96.25,tap:77});
+  assert.deepEqual(facilityBonus(s),{passive:720,tap:619.2});
 });
 
 test('facility costs are exact rational geometric values across the safe integer boundary',()=>{
   let hasBigInt=false;
   for(const f of FACILITIES)for(let level=1;level<20;level++){
     const divisor=(2n**BigInt(level))*1000n;
-    const expected=(BigInt(f.cost)*3n*5n**BigInt(level-1)+divisor-1n)/divisor*1000n;
+    const expected=(BigInt(f.cost)*3n*BigInt(f.upgradeNumerator??5)**BigInt(level-1)+divisor-1n)/divisor*1000n;
     const cost=facilityUpgradeCost(f.id,level);
     assert.equal(exact(cost),expected);assert.ok(cost>0 && cost<MAX_GOLD);
     if(level>1)assert.ok(cost>facilityUpgradeCost(f.id,level-1));

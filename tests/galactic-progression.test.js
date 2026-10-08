@@ -24,7 +24,7 @@ test('four supreme commands form one galactic command at the special marshal thr
  const result=recruit(s,T);
  assert.equal(result.ok,true);assert.equal(result.promoted,true);assert.equal(result.rank,rank);
  assert.deepEqual(groupArmy(s).map(g=>[g.id,g.count]),[['galacticCommand',1]]);
- assert.equal(promotionProgress(s).ratio,1);
+ assert.equal(promotionProgress(s).ratio,.25);
  assert.equal(ACHIEVEMENTS.find(a=>a.id==='galacticCommand').title,'은하사령관');
  assert.ok(result.achievements.includes('galacticCommand'));
  assert.deepEqual(reconcileAchievements(s),[]);
@@ -32,8 +32,8 @@ test('four supreme commands form one galactic command at the special marshal thr
 });
 
 test('new highest power limit rejects one extra recruit without spending and restores exact money',()=>{
- assert.equal(MAX_SOLDIERS,GALACTIC_COMMAND_SIZE*4);
- const s=army(MAX_SOLDIERS-1);s.gold=MAX_GOLD-1n;
+ assert.equal(MAX_SOLDIERS,GALACTIC_COMMAND_SIZE*16);
+ const s=army(MAX_SOLDIERS-1);s.gold=MAX_GOLD;
  const cost=recruitOffer(s).cost,before=s.gold;
  assert.equal(recruit(s,T).ok,true);assert.equal(exact(s.gold),before-exact(cost));
  assert.equal(recruitOffer(s).reason,'limit');

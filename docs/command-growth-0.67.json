@@ -1,0 +1,454 @@
+[
+  {
+    "facilityUpgrades": false,
+    "milestones": [
+      {
+        "rank": "이등병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "일병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "상병",
+        "day": 0,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "병장",
+        "day": 0.001,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "하사",
+        "day": 0.001,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "중사",
+        "day": 0.001,
+        "activeMinutes": 2
+      },
+      {
+        "rank": "상사",
+        "day": 0.002,
+        "activeMinutes": 3
+      },
+      {
+        "rank": "원사",
+        "day": 0.003,
+        "activeMinutes": 4
+      },
+      {
+        "rank": "준위",
+        "day": 0.333,
+        "activeMinutes": 8
+      },
+      {
+        "rank": "소위",
+        "day": 0.333,
+        "activeMinutes": 8
+      },
+      {
+        "rank": "중위",
+        "day": 0.334,
+        "activeMinutes": 9
+      },
+      {
+        "rank": "대위",
+        "day": 0.337,
+        "activeMinutes": 12
+      },
+      {
+        "rank": "소령",
+        "day": 2.334,
+        "activeMinutes": 54
+      },
+      {
+        "rank": "중령",
+        "day": 2.334,
+        "activeMinutes": 54
+      },
+      {
+        "rank": "대령",
+        "day": 2.334,
+        "activeMinutes": 54
+      },
+      {
+        "rank": "준장",
+        "day": 3.001,
+        "activeMinutes": 69
+      },
+      {
+        "rank": "소장",
+        "day": 3.334,
+        "activeMinutes": 76
+      },
+      {
+        "rank": "중장",
+        "day": 4.334,
+        "activeMinutes": 99
+      },
+      {
+        "rank": "대장",
+        "day": 6.004,
+        "activeMinutes": 141
+      },
+      {
+        "rank": "준원수",
+        "day": 8.334,
+        "activeMinutes": 189
+      },
+      {
+        "rank": "소원수",
+        "day": 11.001,
+        "activeMinutes": 249
+      },
+      {
+        "rank": "중원수",
+        "day": 14.334,
+        "activeMinutes": 324
+      },
+      {
+        "rank": "대원수",
+        "day": 16.667,
+        "activeMinutes": 376
+      },
+      {
+        "rank": "특전원수",
+        "day": 18.334,
+        "activeMinutes": 414
+      },
+      {
+        "rank": "부사령관",
+        "day": 21.335,
+        "activeMinutes": 482
+      }
+    ],
+    "final": {
+      "rank": "부사령관",
+      "power": 1347008608,
+      "gold": "71949368610302",
+      "facilities": [
+        "kitchen",
+        "gym",
+        "futsal",
+        "infirmary",
+        "pcRoom",
+        "range",
+        "workshop",
+        "depot",
+        "comms",
+        "operations",
+        "research",
+        "logistics",
+        "simulation",
+        "strategy",
+        "spaceport",
+        "orbital",
+        "reactor",
+        "gate"
+      ],
+      "facilityLevels": {
+        "kitchen": 1,
+        "gym": 1,
+        "futsal": 1,
+        "infirmary": 1,
+        "pcRoom": 1,
+        "range": 1,
+        "workshop": 1,
+        "depot": 1,
+        "comms": 1,
+        "operations": 1,
+        "research": 1,
+        "logistics": 1,
+        "simulation": 1,
+        "strategy": 1,
+        "spaceport": 1,
+        "orbital": 1,
+        "reactor": 1,
+        "gate": 1
+      },
+      "equipment": [
+        {
+          "id": "artillery",
+          "level": 11
+        },
+        {
+          "id": "tank",
+          "level": 11
+        },
+        {
+          "id": "selfPropelled",
+          "level": 11
+        },
+        {
+          "id": "helicopter",
+          "level": 11
+        },
+        {
+          "id": "rocketLauncher",
+          "level": 11
+        },
+        {
+          "id": "transport",
+          "level": 11
+        },
+        {
+          "id": "fighter",
+          "level": 11
+        },
+        {
+          "id": "railgunTank",
+          "level": 11
+        },
+        {
+          "id": "icbm",
+          "level": 11
+        },
+        {
+          "id": "carrier",
+          "level": 11
+        },
+        {
+          "id": "flyingFortress",
+          "level": 11
+        },
+        {
+          "id": "orbitalAssault",
+          "level": 11
+        }
+      ],
+      "actions": 13987
+    }
+  },
+  {
+    "facilityUpgrades": true,
+    "milestones": [
+      {
+        "rank": "이등병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "일병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "상병",
+        "day": 0,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "병장",
+        "day": 0.001,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "하사",
+        "day": 0.001,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "중사",
+        "day": 0.001,
+        "activeMinutes": 2
+      },
+      {
+        "rank": "상사",
+        "day": 0.002,
+        "activeMinutes": 3
+      },
+      {
+        "rank": "원사",
+        "day": 0.003,
+        "activeMinutes": 4
+      },
+      {
+        "rank": "준위",
+        "day": 0.333,
+        "activeMinutes": 8
+      },
+      {
+        "rank": "소위",
+        "day": 0.333,
+        "activeMinutes": 8
+      },
+      {
+        "rank": "중위",
+        "day": 0.334,
+        "activeMinutes": 9
+      },
+      {
+        "rank": "대위",
+        "day": 0.337,
+        "activeMinutes": 12
+      },
+      {
+        "rank": "소령",
+        "day": 2.334,
+        "activeMinutes": 54
+      },
+      {
+        "rank": "중령",
+        "day": 2.334,
+        "activeMinutes": 54
+      },
+      {
+        "rank": "대령",
+        "day": 2.334,
+        "activeMinutes": 54
+      },
+      {
+        "rank": "준장",
+        "day": 3.001,
+        "activeMinutes": 69
+      },
+      {
+        "rank": "소장",
+        "day": 3.334,
+        "activeMinutes": 76
+      },
+      {
+        "rank": "중장",
+        "day": 4.001,
+        "activeMinutes": 91
+      },
+      {
+        "rank": "대장",
+        "day": 5.667,
+        "activeMinutes": 129
+      },
+      {
+        "rank": "준원수",
+        "day": 7.334,
+        "activeMinutes": 166
+      },
+      {
+        "rank": "소원수",
+        "day": 9.334,
+        "activeMinutes": 211
+      },
+      {
+        "rank": "중원수",
+        "day": 11.334,
+        "activeMinutes": 256
+      },
+      {
+        "rank": "대원수",
+        "day": 12.667,
+        "activeMinutes": 286
+      },
+      {
+        "rank": "특전원수",
+        "day": 13.667,
+        "activeMinutes": 309
+      },
+      {
+        "rank": "부사령관",
+        "day": 15.334,
+        "activeMinutes": 346
+      }
+    ],
+    "final": {
+      "rank": "부사령관",
+      "power": 1347008587,
+      "gold": "2218028585871820035",
+      "facilities": [
+        "kitchen",
+        "gym",
+        "futsal",
+        "infirmary",
+        "pcRoom",
+        "range",
+        "workshop",
+        "depot",
+        "comms",
+        "operations",
+        "research",
+        "logistics",
+        "simulation",
+        "strategy",
+        "spaceport",
+        "orbital",
+        "reactor",
+        "gate"
+      ],
+      "facilityLevels": {
+        "kitchen": 20,
+        "gym": 20,
+        "futsal": 20,
+        "infirmary": 20,
+        "pcRoom": 20,
+        "range": 20,
+        "workshop": 20,
+        "depot": 20,
+        "comms": 20,
+        "operations": 20,
+        "research": 20,
+        "logistics": 20,
+        "simulation": 20,
+        "strategy": 20,
+        "spaceport": 20,
+        "orbital": 20,
+        "reactor": 19,
+        "gate": 15
+      },
+      "equipment": [
+        {
+          "id": "artillery",
+          "level": 11
+        },
+        {
+          "id": "tank",
+          "level": 11
+        },
+        {
+          "id": "selfPropelled",
+          "level": 11
+        },
+        {
+          "id": "helicopter",
+          "level": 11
+        },
+        {
+          "id": "rocketLauncher",
+          "level": 11
+        },
+        {
+          "id": "transport",
+          "level": 11
+        },
+        {
+          "id": "fighter",
+          "level": 11
+        },
+        {
+          "id": "railgunTank",
+          "level": 11
+        },
+        {
+          "id": "icbm",
+          "level": 11
+        },
+        {
+          "id": "carrier",
+          "level": 11
+        },
+        {
+          "id": "flyingFortress",
+          "level": 11
+        },
+        {
+          "id": "orbitalAssault",
+          "level": 11
+        }
+      ],
+      "actions": 14322
+    }
+  }
+]

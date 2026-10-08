@@ -7,7 +7,7 @@ import {personalUpgradeStep,personalUpgradeOffer} from '../src/personal-enhancem
 import {enhancePersonalEquipment,enhanceEquipment,recruit,recruitOffer,unitCost,activateSword,activateAutoTouch,accrue,perSecond,baseTapIncome,tapGold,MAX_OFFLINE_MS} from '../src/game.js';
 import {equipmentStats,equipmentLevelLimit,equipmentIncome,EQUIPMENT,enhancementOffer} from '../src/equipment.js';
 import {equipmentCombatStats} from '../src/battle-balance.js';
-import {bulkRecruitDiscount,swordSkillStatus,autoTouchStatus} from '../src/personal-equipment.js';
+import {swordSkillStatus,autoTouchStatus} from '../src/personal-equipment.js';
 import {MAX_GOLD,subtractMoney,addMoney,scaleMoney,exact,serializeSave} from '../src/money.js';
 import {parseSave} from '../src/save.js';
 import {reconcileAchievements} from '../src/achievements.js';
@@ -88,7 +88,7 @@ test('flag advances each military cap through 30; all gear gains income, firepow
   }
 });
 
-test('baton adds five advanced officer batches and applies 2..10% discount after the cached exact sum',()=>{
+test('baton adds five advanced officer batches and preserves exact batch prices at levels16..20',()=>{
   const s=army();
   for(const [i,id] of ['colonel','brigadierGeneral','majorGeneral','lieutenantGeneral','general'].entries()) {
     s.personalLevels.commandBaton=10+i;assert.equal(recruitOffer(s,id,100).reason,'locked');
@@ -99,8 +99,7 @@ test('baton adds five advanced officer batches and applies 2..10% discount after
   assert.equal(typeof base,'bigint');
   for(let level=15;level<=20;level++) {
     s.personalLevels.commandBaton=level;
-    assert.equal(bulkRecruitDiscount(s),(level-15)*2);
-    assert.equal(recruitOffer(s,'soldier',100).cost,scaleMoney(base,100-(level-15)*2,100));
+    assert.equal(recruitOffer(s,'soldier',100).cost,base);
     assert.equal(recruitOffer(s,'soldier').cost,unitCost(s.soldiers,'soldier'));
   }
   const quote=recruitOffer(s,'soldier',100).cost;s.gold=subtractMoney(quote,1);

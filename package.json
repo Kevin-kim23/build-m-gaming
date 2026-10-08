@@ -1,6 +1,6 @@
 {
   "name": "budae-kiugi",
-  "version": "0.66.0",
+  "version": "0.67.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -21,7 +21,8 @@
     "android:apk": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/android-build.ps1 -Mode Debug",
     "android:release": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/android-build.ps1 -Mode Release",
     "balance:simulate": "node tools/growth-sim.mjs",
-    "android:unsigned": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/android-build.ps1 -Mode Unsigned"
+    "android:unsigned": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/android-build.ps1 -Mode Unsigned",
+    "qa:command": "vite --config tools/command-qa.config.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

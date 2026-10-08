@@ -1,3 +1,4 @@
+import { COMMAND_OFFICERS } from './command-officers.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { SPECIALIST_UNITS, WARRANT_OFFICER } from './specialist-units.js';
 // Store real headcounts; derive equivalent strength everywhere from this catalog.
@@ -57,17 +58,21 @@ export const UNITS = Object.freeze({
     color: "#784b3f", width: 18, height: 27,
   }),
   warrantOfficer: WARRANT_OFFICER,
-  ...Object.fromEntries([...OFFICER_GRADES, ...ADVANCED_OFFICERS].map(unit => [unit.id, unit])),
+  ...Object.fromEntries([...OFFICER_GRADES, ...ADVANCED_OFFICERS, ...COMMAND_OFFICERS].map(unit => [unit.id, unit])),
 });
 export const UNIT_LIST = Object.freeze(Object.values(UNITS));
+const SCHOOL_ACCESS = Object.freeze({
+  nco:{field:'ncoSchoolLevel',name:'부사관학교'},
+  officer:{field:'officerSchoolLevel',name:'사관학교',previous:'ncoSchoolLevel'},
+  advanced:{field:'advancedSchoolLevel',name:'고급 사관학교',previous:'officerSchoolLevel'},
+  command:{field:'commandSchoolLevel',name:'지휘 사관학교',previous:'advancedSchoolLevel'},
+});
 export function unitAccess(state, unit) {
-  const field = {nco:'ncoSchoolLevel',officer:'officerSchoolLevel',advanced:'advancedSchoolLevel'}[unit.school];
-  const level = state[field] ?? 0;
-  const schoolName = {nco:'부사관학교',officer:'사관학교',advanced:'고급 사관학교'}[unit.school];
+  const school=SCHOOL_ACCESS[unit.school],level=state[school?.field]??0;
   return {
-    visible: (unit.school === 'advanced' ? (state.officerSchoolLevel ?? 0) >= 5 : unit.school !== 'officer' || (state.ncoSchoolLevel ?? 0) >= 5) || (state[unit.field] ?? 0) > 0,
+    visible: !school?.previous || (state[school.previous]??0)>=5 || (state[unit.field]??0)>0,
     unlocked: unit.unlockPower ? armyPower(state)>=unit.unlockPower : !unit.school || level >= unit.schoolLevel,
-    requirement: unit.school ? `${schoolName} Lv.${unit.schoolLevel}${unit.unlockRank ? ' · '+unit.unlockRank+'부터 학교 확장' : ''}` : unit.unlockRank ? `${unit.unlockRank} 이상 · 전력 ${unit.unlockPower}` : '기본 모집',
+    requirement: unit.school ? `${school.name} Lv.${unit.schoolLevel}${unit.unlockRank ? ' · '+unit.unlockRank+'부터 학교 확장' : ''}` : unit.unlockRank ? `${unit.unlockRank} 이상 · 전력 ${unit.unlockPower}` : '기본 모집',
   };
 }
 export const armyPower = (s) =>

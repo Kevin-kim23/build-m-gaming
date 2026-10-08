@@ -9,7 +9,7 @@ import { personalIcon } from '../src/personal-art.js';
 import { personalMarkup } from '../src/personal-panels.js';
 import { shopMarkup } from '../src/shop.js';
 const T=1_800_000_000_000;
-const army=rank=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,gold:100_000_000_000_000});
+const army=rank=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,commandSchoolLevel:5,gold:100_000_000_000_000});
 
 test('legacy general ranks reset personal levels to one but retain active skill deadlines',()=>{
   const pictures=[];

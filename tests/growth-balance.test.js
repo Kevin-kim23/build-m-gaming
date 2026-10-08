@@ -53,14 +53,15 @@ test('existing paid armies, school levels, pending rewards and gold survive the 
   assert.equal(perSecond(restored),perSecond(s));assert.equal(perTap(restored),perTap(s));
 });
 
-test('construction-only current catalog stays around three-to-five weeks with new late-rank awards',()=>{
+test('construction-only facility buff keeps early pacing and a staged route to deputy commander',()=>{
   const report=constructionOnly();
   assert.equal(report.assumptions.facilityUpgrades,false);
   assert.ok(Object.values(report.final.facilityLevels).every(level=>level===1));
   const reached=Object.fromEntries(report.milestones.map(m=>[m.rank,m.day]));
   assert.ok(reached['대령']>=2&&reached['대령']<=5);
-  // Keep a ~three-week lower guard while including the real current rank rewards.
-  assert.ok(reached['대원수']>=20&&reached['대원수']<=35);
+  // v0.67 adds nine facility bonuses and an earlier academy. Measured baseline: 16.667 / 21.335 days.
+  assert.ok(reached['대원수']>=14&&reached['대원수']<=22);
+  assert.ok(reached['부사령관']>=18&&reached['부사령관']<=30);
   assert.equal(report.assumptions.personalAwards,true);
   for(const id of ['carrier','flyingFortress'])assert.ok(report.final.equipment.some(gear=>gear.id===id),'new late military must be included in the simulation');
   assert.ok(reached['준장']-reached['대령']<4);
@@ -73,7 +74,8 @@ test('facility-upgrade model evaluates real upgrades, preserves early pacing and
   assert.equal(report.assumptions.facilityUpgrades,true);
   assert.ok(reached['대령']>=2&&reached['대령']<=5);
   assert.ok(reached['준장']-reached['대령']<4);
-  assert.ok(reached['대원수']>=14&&reached['대원수']<=baseline);
+  assert.ok(reached['대원수']>=10&&reached['대원수']<=baseline);
+  assert.ok(reached['부사령관']>reached['특전원수']&&reached['부사령관']>=13);
   const levels=Object.values(report.final.facilityLevels);
   assert.equal(levels.length,report.final.facilities.length);
   assert.ok(levels.some(level=>level>1),'the model must actually buy upgrades');

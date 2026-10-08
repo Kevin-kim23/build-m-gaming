@@ -1,12 +1,12 @@
 import { facilityOffer, facilityUpgradeOffer, withFacilityIncome } from './facilities.js';
 export { parseSave } from './save.js';
-import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMoney, scaleMoney } from './money.js';
+import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMoney } from './money.js';
 import { pacedRecruitCost } from './growth-balance.js';
 export { MAX_GOLD, serializeSave } from './money.js';
 import { rankForArmy } from "./ranks.js";
 import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
 import { schoolOffer } from "./schools.js";
-import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, bulkRecruitDiscount, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration, withPersonalIncome, withPersonalEquipmentIncome } from "./personal-equipment.js";
+import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration, withPersonalIncome, withPersonalEquipmentIncome } from "./personal-equipment.js";
 import { personalUpgradeOffer } from './personal-enhancement.js';
 import { settleAutoTouch } from './auto-touch.js';
 import { withCampaignIncome } from './campaign-rewards.js';
@@ -77,7 +77,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
   const unit = recruitUnit(type, quantity), bulk = quantity > 1;
   const power = armyPower(s),
     owned = s[unit.field] ?? 0,
-    cost = bulk ? scaleMoney(batchRecruitCost(owned, type),100-bulkRecruitDiscount(s),100) : unitCost(owned, type);
+    cost = bulk ? batchRecruitCost(owned, type) : unitCost(owned, type);
   const baton = bulk ? bulkRecruitAccess(s, type) : null;
   const access = unitAccess(s, unit);
   const locked = !access.unlocked || (bulk && !baton.unlocked);

@@ -1,7 +1,9 @@
 import { drawGalacticCommand } from './galactic-command-art.js';
+import { drawGalacticGroup } from './galactic-group-art.js';
 
 // Original high-command architecture, rendered once into art.js's cached sprite.
 export function drawHighCommand(c, id, width, height) {
+  if (id === 'galacticGroupCommand') return drawGalacticGroup(c, width, height);
   if (id === 'galacticCommand') return drawGalacticCommand(c, width, height);
   const tier = ['alliedArmy','grandAlliedArmy','supremeCommand'].indexOf(id);
   if (tier < 0) return false;

@@ -7,7 +7,7 @@ import {layoutFieldWorld} from '../src/field-world.js';
 import {createFieldGesture,MAX_SIMULTANEOUS_TAPS} from '../src/field-gesture.js';
 import {createFieldNavigation} from '../src/field-navigation.js';
 const full=()=>({...freshState(1),soldiers:90000000,sergeants:300,ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,
-  facilities:FACILITIES.map(f=>f.id),equipment:Object.fromEntries(Object.keys(EQUIPMENT).map(id=>[id,{level:20,count:1,deployed:true}]))});
+  facilities:FACILITIES.slice(0,10).map(f=>f.id),equipment:Object.fromEntries(Object.keys(EQUIPMENT).map(id=>[id,{level:20,count:1,deployed:true}]))});
 
 test('ten independent fingers can tap; swipe, cancel, extra fingers and scroll cannot award gold',()=>{
   assert.equal(MAX_SIMULTANEOUS_TAPS,10);
@@ -22,7 +22,7 @@ test('ten independent fingers can tap; swipe, cancel, extra fingers and scroll c
   g.down(1,20,20,4);g.clear();assert.equal(g.up(1,20,20),false);
 });
 
-function element(){const events={};return {events,disabled:false,scrollLeft:0,clientWidth:320,clientHeight:400,style:{setProperty(){}},parentElement:{},addEventListener(type,fn){events[type]=fn;},scrollTo({left}){this.scrollLeft=left;this.events.scroll?.();},setPointerCapture(){}};}
+function element(){const events={};return {events,disabled:false,scrollLeft:0,scrollTop:0,clientWidth:320,clientHeight:400,style:{setProperty(){}},parentElement:{},addEventListener(type,fn){events[type]=fn;},scrollTo({left}){this.scrollLeft=left;this.events.scroll?.();},setPointerCapture(){}};}
 test('continuous scrolling retains tap/keyboard access and never rewards a swipe',()=>{
   const viewport=element(),zone=element(),hint=element();let earned=0;
   const ui=createFieldNavigation({viewport,zone,hint,earnTap:()=>earned++});

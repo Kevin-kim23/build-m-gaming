@@ -1,9 +1,14 @@
 import { SCHOOLS } from './schools.js';
+import { commandSchoolBody } from './late-facility-art.js';
 const drawings=new Map();
 // Original pixel campus, cached per school/level and shared by its shop card.
 export function schoolIcon(id,level) {
   const key=`${id}:${level}`;
   if(drawings.has(key)) return drawings.get(key);
+  if(id==='command') {
+    const svg=`<svg class="school-art" viewBox="0 0 96 72" role="img" aria-label="지휘 사관학교 Lv.${level} 건물" shape-rendering="crispEdges">${commandSchoolBody(level)}</svg>`;
+    drawings.set(key,svg);return svg;
+  }
   const officer=id==='officer'||id==='advanced';
   const floors=officer?Math.min(5,3+Math.max(1,level)):Math.max(1,level), color=id==='advanced'?'#69778e':officer?'#788fa1':'#8e9b74';
   const top=54-floors*7;

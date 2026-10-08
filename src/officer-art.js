@@ -27,4 +27,9 @@ export function officerDetails(c, unit, overhead = false) {
   if(unit.schoolLevel>=3){r(3,13,.5,6,light);r(3.5,18,2,.5,light);}
   if(gold){r(13,19,3,3,'#322d3c');r(13,19,3,.5,'#b8aa8a');r(14,20,.5,.5,light);}
   if(unit.schoolLevel>=5){r(14.5,12,.5,6,'#d7b771');r(3,3,2,1,'#d7b771');}
+  if(unit.school==='command') {
+    r(3,11,1,7,'#d7e5ea');r(13,11,1,7,'#d7e5ea');r(4,17,10,1,'#c6cdbd');
+    r(5,12,2,3,'#ac7d51');r(5,12,2,1,'#fff0bf');r(8,2,3,1,'#effaff');
+    for(let i=0;i<unit.marks;i++)r(6+i*1.6,13,1,1,'#f5ffff');
+  }
 }

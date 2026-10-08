@@ -44,7 +44,7 @@ function incomeMarkup() {
 }
 
 function fieldMarkup() {
-  return `<section class="field-region" aria-label="좌우로 넘기는 연병장"><div id="field-viewport"><button id="tap-zone" aria-label="화면 터치해서 골드 획득">
+  return `<section class="field-region" aria-label="상하좌우로 둘러보는 연병장"><div id="field-viewport"><button id="tap-zone" aria-label="화면 터치해서 골드 획득">
     <canvas id="field" aria-hidden="true">
     </canvas>
     <span id="field-labels" aria-hidden="true"></span>
