@@ -3,11 +3,14 @@ import assert from 'node:assert/strict';
 import {freshState} from '../src/state.js';
 import {grantPotion} from '../src/potions.js';
 import {usePotion} from '../src/game.js';
-import {createPotionTestAd} from '../src/potion-ad.js';
+import {createPotionAd} from '../src/potion-ad.js';
 import {potionsMarkup,renderPotions} from '../src/potion-panels.js';
 import {potionIcon} from '../src/potion-art.js';
 import {createIncomeHud} from '../src/income-hud.js';
-import {createBackHandler} from '../src/back-button.js';
+import {createGameSession} from '../src/session.js';
+import {createPotionController} from '../src/potion-controller.js';
+import {parseSave} from '../src/save.js';
+import {SAVE_KEY} from '../src/state.js';
 const T=1800000000000;
 function fakeNode(){
   const listeners={},children=new Map();let content='',writes=0;
@@ -17,19 +20,30 @@ function fakeNode(){
     querySelector(selector){if(!children.has(selector))children.set(selector,fakeNode());return children.get(selector);},
     click(){return listeners.click?.();}};
 }
-test('test ad popup grants only on confirm, cancels via Android back, and ignores late close events',async()=>{
-  const dialog={...fakeNode(),open:false,showModal(){this.open=true;},close(){this.open=false;}};
-  const root={createElement:()=>dialog,body:{append(){}},querySelector:s=>s==='#potion-ad-modal'?dialog:null};
-  const show=createPotionTestAd(root);
-  const first=show({itemId:'red'});
-  assert.match(dialog.innerHTML,/광고는 본 걸로 칩니다/);assert.match(dialog.innerHTML,/나중엔 광고가 나와요/);
-  assert.equal(dialog.querySelector('[data-potion-ad-reward]').textContent,'빨간물약 1개');
-  assert.equal((await show({itemId:'blue'})).status,'unavailable');
-  dialog.querySelector('[data-potion-ad-confirm]').click();assert.equal((await first).status,'rewarded');
-  const second=show({itemId:'blue'});dialog.listeners.close();assert.equal(dialog.open,true);
-  const back=createBackHandler({root,exit:()=>assert.fail('cannot exit while ad popup is open'),hint:()=>assert.fail('no exit hint')});
-  assert.equal(back(),'closed');dialog.listeners.close();assert.equal((await second).status,'cancelled');
-  const third=show({itemId:'blue'});dialog.querySelector('[data-potion-ad-confirm]').click();assert.equal((await third).status,'rewarded');
+test('native reward adapter rejects web, bad items, cancellation and failures without fake grants',async()=>{
+  let calls=0;
+  const plugin={showRewarded:async()=>{calls++;return {status:'rewarded'};}};
+  assert.equal((await createPotionAd({native:()=>false,plugin})({itemId:'red'})).status,'unavailable');
+  assert.equal((await createPotionAd({native:()=>true,plugin})({itemId:'bad'})).status,'unavailable');
+  assert.equal(calls,0);
+  for(const status of ['cancelled','unavailable','anything',undefined]){
+    const show=createPotionAd({native:()=>true,plugin:{showRewarded:async()=>({status})}});
+    assert.notEqual((await show({itemId:'red'})).status,'rewarded');
+  }
+  const show=createPotionAd({native:()=>true,plugin:{showRewarded:async()=>{throw Error('SDK unavailable');}}});
+  await assert.rejects(show({itemId:'red'}),/SDK unavailable/);
+  await assert.rejects(show({itemId:'red'}),/SDK unavailable/);
+});
+test('native rewarded result waits for foreground save lock and prevents duplicate requests',async()=>{
+  let finish,active=false,delays=0;
+  const show=createPotionAd({native:()=>true,plugin:{showRewarded:()=>new Promise(r=>finish=r)},
+    isActive:()=>active,delay:async()=>{delays++;active=true;}});
+  const pending=show({itemId:'blue'});
+  assert.equal((await show({itemId:'red'})).status,'unavailable');
+  finish({status:'rewarded'});
+  assert.equal((await pending).status,'rewarded');assert.equal(delays,1);
+  const inactive=createPotionAd({native:()=>true,plugin:{showRewarded:async()=>({status:'rewarded'})},isActive:()=>false,delay:async()=>{}});
+  assert.equal((await inactive({itemId:'red'})).status,'unavailable');
 });
 
 test('two item cards show stock, disable empty/busy use, and update text without replacing markup',()=>{
@@ -60,4 +74,18 @@ test('home HUD shows both potion timers, clears at expiry and does no extra writ
   for(let i=0;i<300;i++)ui.syncPotions(s,T);assert.equal(red.writes+blue.writes,writes);
   ui.syncPotions(s,T+60000);assert.equal(red.hidden,true);assert.equal(blue.hidden,false);
   ui.syncPotions(s,T+1800000);assert.equal(blue.hidden,true);
+});
+
+test('Android pause/reward/resume grants the selected potion exactly once and persists it',async()=>{
+  const saved=new Map();
+  const session=createGameSession({storage:{getItem:k=>saved.get(k)??null,setItem:(k,v)=>saved.set(k,v)},now:()=>T,setTimer:()=>1,clearTimer:()=>{}});
+  session.start();
+  const showAd=createPotionAd({native:()=>true,isActive:()=>session.active,
+    plugin:{showRewarded:async({itemId})=>{assert.equal(itemId,'blue');session.pause();return {status:'rewarded'};}},
+    delay:async()=>session.start()});
+  const controller=createPotionController(session,{showAd,now:()=>T});
+  assert.equal((await controller.watch('blue')).ok,true);
+  const state=parseSave(saved.get(SAVE_KEY),T);
+  assert.equal(state.potions.blue.count,1);assert.equal(state.potions.red.count,0);
+  session.pause();
 });

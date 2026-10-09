@@ -7,6 +7,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(PotionAdsPlugin.class);
         super.onCreate(savedInstanceState);
         // No extra icon/fade before the in-app Dongramco opening.
         if (Build.VERSION.SDK_INT >= 31) {

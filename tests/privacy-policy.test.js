@@ -26,11 +26,16 @@ test('docs/store/PRIVACY_POLICY.md is generated from the same source (run npm ru
   assert.equal(read('docs/store/PRIVACY_POLICY.md').replace(/\r\n/g, '\n'), privacyPolicyMarkdown());
 });
 
-// The policy says "no data collected, no ads, no payments". If the app starts doing any of these,
-// this test fails on purpose: update src/privacy-policy.js, the Play data-safety form, then this list.
+// Keep the SDK allowlist and the disclosure together. New SDKs require another review.
 test('the app still matches what the privacy policy promises', () => {
   const pkg = JSON.parse(read('package.json'));
   assert.deepEqual(Object.keys(pkg.dependencies ?? {}).sort(), ['@capacitor/android', '@capacitor/app', '@capacitor/core']);
+  const gradle=read('android/app/build.gradle');
+  const googleSdks=[...gradle.matchAll(/implementation "(com.google.[^"]+)"/g)].map(m=>m[1]);
+  assert.deepEqual(googleSdks,['com.google.android.gms:play-services-ads:25.5.0','com.google.android.ump:user-messaging-platform:4.0.0']);
+  const policy=privacyPolicyMarkdown();
+  assert.match(policy,/AdMob/);assert.match(policy,/IP 주소/);assert.match(policy,/식별자/);assert.match(policy,/외부 통신/);
+  assert.doesNotMatch(policy,/외부로 데이터를 보내지 않습니다|수집 자체가 없습니다/);
   const manifest = read('android/app/src/main/AndroidManifest.xml');
   const permissions = [...manifest.matchAll(/uses-permission android:name="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(permissions, ['android.permission.INTERNET']);

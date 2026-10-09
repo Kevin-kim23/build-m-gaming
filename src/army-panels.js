@@ -4,7 +4,7 @@ import { createPersonalAwardUI } from './personal-awards.js';
 import { renderPotions } from './potion-panels.js';
 import { POTIONS } from './potions.js';
 import { createPotionController } from './potion-controller.js';
-import { createPotionTestAd } from './potion-ad.js';
+import { createPotionAd } from './potion-ad.js';
 import './potions.css';
 import './personal-awards.css';
 import { buildFacility, upgradeFacility } from './game.js';
@@ -43,7 +43,7 @@ export function createArmyPanels(session, audio) {
   const schools = Object.values(SCHOOLS);
   let schoolLevels = [];
   const state = () => session.state;
-  const potionController=createPotionController(session,{showAd:createPotionTestAd(),onChange:()=>{
+  const potionController=createPotionController(session,{showAd:createPotionAd({isActive:()=>session.active}),onChange:()=>{
     if(dialog.open && activePanel==='shop' && category==='items')renderPotions(state(),dialog,{busy:potionController.busy,active:session.active});
   }});
   const homeAutoPurchase=createHomeAutoTapPurchase(session,{showPurchase:createAutoTapTestPurchase(),onChange:()=>{
@@ -243,7 +243,7 @@ export function createArmyPanels(session, audio) {
       if(result.ok)audio.ui(button.dataset.potionAd?'purchase':'equip',state().sound);
       if(dialog.open && activePanel==='shop' && category==='items')text('#shop-message',result.ok
         ? `${POTIONS[id].name} ${button.dataset.potionAd?'1개 획득!':`${POTIONS[id].durationLabel} 사용!`}`
-        : result.reason==='cancelled'?'광고 테스트를 취소했어요.':result.reason==='empty'?'보유한 물약이 없어요.':'지급·사용을 완료하지 못했어요. 다시 확인해 주세요.');
+        : result.reason==='cancelled'?'광고 시청을 완료하지 않았어요.':result.reason==='unavailable'?'광고를 불러올 수 없어요. Android 앱과 인터넷 연결을 확인해 주세요.':result.reason==='empty'?'보유한 물약이 없어요.':'지급·사용을 완료하지 못했어요. 다시 확인해 주세요.');
     }
     else if (button.hasAttribute('data-use-revolver')) {
       const result = session.change(s => activateAutoTouch(s));
