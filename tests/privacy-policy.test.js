@@ -26,6 +26,13 @@ test('docs/store/PRIVACY_POLICY.md is generated from the same source (run npm ru
   assert.equal(read('docs/store/PRIVACY_POLICY.md').replace(/\r\n/g, '\n'), privacyPolicyMarkdown());
 });
 
+test('the public HTML contains the complete in-app policy without a stale duplicate body', () => {
+  const html = read('docs/privacy/index.html');
+  const main = html.match(/<main><h1>부대 키우기 개인정보처리방침<\/h1>([\s\S]*?)<\/main>/);
+  assert.ok(main, 'public policy main content is missing');
+  assert.equal(main[1], privacyPolicyMarkup().body);
+});
+
 // Keep the SDK allowlist and the disclosure together. New SDKs require another review.
 test('the app still matches what the privacy policy promises', () => {
   const pkg = JSON.parse(read('package.json'));

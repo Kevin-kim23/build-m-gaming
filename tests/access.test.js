@@ -45,6 +45,19 @@ test('storage failures revoke in memory and cannot silently accept',()=>{
   assert.equal(store.setAds(false),false);assert.equal(store.adsAllowed,false);
   assert.equal(store.accept({age:19,terms:true,privacy:true}),false);assert.equal(store.accepted,false);assert.equal(errors.length,2);
 });
+
+test('the previous policy acknowledgement requires review without changing game progress',()=>{
+  const original=serializeSave({...freshState(T),gold:1000000000000000000n,soldiers:41});
+  const oldRecord={...consent(),policyRevision:5};
+  const data=new Map([[SAVE_KEY,original],[ACCESS_KEY,JSON.stringify(oldRecord)]]);
+  const store=createAccessStore({storage:{getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)},now:()=>T});
+  assert.equal(store.accepted,false);assert.equal(store.adsAllowed,false);
+  assert.equal(store.setAds(true),false);
+  assert.equal(store.accept({age:14,terms:true,privacy:true}),true);
+  assert.equal(store.adsAllowed,false);
+  assert.equal(store.setAds(true),true);assert.equal(store.adsAllowed,true);
+  assert.equal(data.get(SAVE_KEY),original);
+});
 test('no native calls before separate consent, malformed/stale/underage choice blocks requests',async()=>{
   let calls=0;
   const plugin={configureAccess:async()=>{calls++;return {status:'ready'};},showRewarded:async()=>{calls++;return {status:'rewarded'};}};

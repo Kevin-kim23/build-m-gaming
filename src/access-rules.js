@@ -2,7 +2,7 @@
 export const ACCESS_KEY='budae-kiugi-access-v1';
 export const ACCESS_SCHEMA=1;
 export const TERMS_REVISION=3;
-export const ACCESS_POLICY_REVISION=5;
+export const ACCESS_POLICY_REVISION=6;
 export const AD_NOTICE_REVISION=2;
 export const AGE_RECHECK_MS=365*24*60*60*1000;
 export function ageBand(value){
