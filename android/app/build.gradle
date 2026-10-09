@@ -12,7 +12,7 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.dongramco.budaekiugi"
     compileSdk = rootProject.ext.compileSdkVersion
-    // Test inventory only in this milestone; live activation requires policy review.
+    // Release uses the publisher inventory; debug always uses Google sample inventory.
     buildFeatures { resValues true }
     defaultConfig {
         applicationId "com.dongramco.budaekiugi"
@@ -33,8 +33,12 @@ android {
         debug {
             // Install beside the production app without replacing its saved game.
             applicationIdSuffix ".dev"
+            resValue "string", "admob_app_id", "ca-app-pub-3940256099942544~3347511713"
+            resValue "string", "potion_rewarded_ad_unit", "ca-app-pub-3940256099942544/5224354917"
         }
         release {
+            resValue "string", "admob_app_id", "ca-app-pub-6317135937361483~2481976415"
+            resValue "string", "potion_rewarded_ad_unit", "ca-app-pub-6317135937361483/8022077704"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

@@ -1,9 +1,9 @@
 // Separate, versioned preferences; never overwrite or migrate the army save.
 export const ACCESS_KEY='budae-kiugi-access-v1';
 export const ACCESS_SCHEMA=1;
-export const TERMS_REVISION=1;
-export const ACCESS_POLICY_REVISION=4;
-export const AD_NOTICE_REVISION=1;
+export const TERMS_REVISION=2;
+export const ACCESS_POLICY_REVISION=5;
+export const AD_NOTICE_REVISION=2;
 export const AGE_RECHECK_MS=365*24*60*60*1000;
 export function ageBand(value){
   if(!/^\d{1,3}$/.test(String(value)))return null;

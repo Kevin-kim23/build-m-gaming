@@ -77,7 +77,7 @@ export function createAccessUI({root=document,storage=localStorage,onExit=()=>{}
       adDialog.addEventListener('cancel',()=>finishAd(null));
       adDialog.addEventListener('close',()=>{if(!adDialog.open)finishAd(null);});
     }
-    adDialog.innerHTML=`<div class="access-head"><small>선택 사항 · 테스트 광고</small><h2 id="ad-choice-title">광고 이용 선택</h2></div><div class="access-body">${AD_DISCLOSURE}
+    adDialog.innerHTML=`<div class="access-head"><small>선택 사항 · 보상형 광고</small><h2 id="ad-choice-title">광고 이용 선택</h2></div><div class="access-body">${AD_DISCLOSURE}
       <button type="button" data-access-policy>게임 개인정보처리방침 보기</button>
       <label class="access-check"><input type="checkbox" data-ad-agree><span>[선택] 위 광고 정보 처리 안내를 읽고 광고 기능 이용에 동의합니다.</span></label>
       <p class="access-error" data-access-error role="alert"></p>
