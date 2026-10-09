@@ -20,18 +20,20 @@ test('test purchase dialog confirms explicitly, cancels via Android back, and sa
   const dialog={...fakeNode(),open:false,showModal(){this.open=true;},close(){this.open=false;}};
   const root={createElement:()=>dialog,body:{append(){}},querySelector:s=>s==='#test-purchase-modal'?dialog:null};
   const show=createAutoTapTestPurchase(root),first=show();
-  assert.match(dialog.innerHTML,/유료결제 테스트!/);assert.match(dialog.innerHTML,/특별히 이번엔 그냥 드릴게요/);
+  assert.match(dialog.innerHTML,/자동터치 무료 테스트/);assert.match(dialog.innerHTML,/법정대리인/);
   assert.match(dialog.innerHTML,/실제 요금은 청구되지 않아요/);
   assert.equal((await show()).status,'unavailable');
+  dialog.querySelector('[data-test-purchase-confirm]').click();assert.equal(dialog.open,true);
+  dialog.querySelector('[data-test-purchase-ack]').checked=true;
   dialog.querySelector('[data-test-purchase-confirm]').click();assert.deepEqual(await first,{status:'granted',source:'test'});
   const second=show();dialog.listeners.close();assert.equal(dialog.open,true);
   const back=createBackHandler({root,hint:()=>assert.fail(),exit:()=>assert.fail()});
   assert.equal(back(),'closed');dialog.listeners.close();assert.equal((await second).status,'cancelled');
-  const third=show();dialog.querySelector('[data-test-purchase-confirm]').click();assert.equal((await third).status,'granted');
+  const third=show();assert.equal(dialog.querySelector('[data-test-purchase-ack]').checked,false);dialog.querySelector('[data-test-purchase-ack]').checked=true;dialog.querySelector('[data-test-purchase-confirm]').click();assert.equal((await third).status,'granted');
 });
 
-test('item UI shows 4900 test price, locks repurchase, toggles accessibly and avoids unchanged text writes',()=>{
-  assert.match(homeAutoTapMarkup(),/4,900원/);assert.match(homeAutoTapMarkup(),/초당 2회/);
+test('item UI clearly shows free test, locks repurchase, toggles accessibly and avoids unchanged text writes',()=>{
+  assert.doesNotMatch(homeAutoTapMarkup(),/4,900원/);assert.match(homeAutoTapMarkup(),/무료 테스트 받기/);assert.match(homeAutoTapMarkup(),/초당 2회/);
   const s=freshState(1),root=fakeNode(),card=root.querySelector('[data-home-auto-tap]');
   renderHomeAutoTap(s,root);assert.equal(card.querySelector('[data-toggle-home-auto]').disabled,true);
   grantTestHomeAutoTap(s);renderHomeAutoTap(s,root);

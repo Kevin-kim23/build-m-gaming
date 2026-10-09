@@ -1,5 +1,5 @@
-import {HOME_AUTO_TAP,grantTestHomeAutoTap,toggleHomeAutoTap} from './home-auto-tap-rules.js';
-import {fmt,fmtGold} from './format.js';
+import {grantTestHomeAutoTap,toggleHomeAutoTap} from './home-auto-tap-rules.js';
+import {fmtGold} from './format.js';
 import {reportError} from './diagnostics.js';
 
 const icon=`<svg viewBox="0 0 66 80" role="img" aria-label="자동터치 커서 · AUTO" shape-rendering="crispEdges">
@@ -16,8 +16,8 @@ export function homeAutoTapMarkup(){
   return `<article class="potion-card auto-tap-card" aria-label="자동터치" data-home-auto-tap>
     <div class="potion-heading"><div class="potion-art">${icon}</div><div><h3>자동터치</h3><strong>초당 2회 · 영구 보유</strong><p>홈에서 자동으로 골드를 모아요.</p><b data-home-auto-status></b></div></div>
     <p class="potion-note">손가락 터치와 함께 사용할 수 있어요.<br>상점·전투·팝업·앱 종료 중에는 멈춥니다.</p>
-    <div class="potion-actions"><button type="button" data-buy-home-auto>${fmt(HOME_AUTO_TAP.priceWon)}원</button><button type="button" data-toggle-home-auto aria-pressed="false" disabled>자동터치 켜기</button></div>
-    <p class="potion-note">유료결제 테스트 · 실제 요금은 청구되지 않아요.</p></article>`;
+    <div class="potion-actions"><button type="button" data-buy-home-auto>무료 테스트 받기</button><button type="button" data-toggle-home-auto aria-pressed="false" disabled>자동터치 켜기</button></div>
+    <p class="potion-note">현재 무료 테스트 · 실제 구매와 구매 복원 기능은 아직 제공하지 않아요.</p></article>`;
 }
 export function renderHomeAutoTap(s,root,{busy=false,active=true}={}){
   const card=root.querySelector('[data-home-auto-tap]');if(!card)return;
@@ -25,7 +25,7 @@ export function renderHomeAutoTap(s,root,{busy=false,active=true}={}){
   const text=(node,next)=>{if(node.textContent!==next)node.textContent=next;};
   text(card.querySelector('[data-home-auto-status]'),owned?'영구 보유 · '+(enabled?'켜짐':'꺼짐'):'미보유');
   const buy=card.querySelector('[data-buy-home-auto]'),toggle=card.querySelector('[data-toggle-home-auto]');
-  buy.disabled=owned||busy||!active;text(buy,owned?'보유 중':fmt(HOME_AUTO_TAP.priceWon)+'원');
+  buy.disabled=owned||busy||!active;text(buy,owned?'보유 중':'무료 테스트 받기');
   toggle.disabled=!owned||busy||!active;text(toggle,enabled?'자동터치 끄기':'자동터치 켜기');
   toggle.setAttribute('aria-pressed',String(enabled));
 }

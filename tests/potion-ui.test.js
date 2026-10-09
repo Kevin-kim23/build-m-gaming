@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {freshState} from '../src/state.js';
 import {grantPotion} from '../src/potions.js';
 import {usePotion} from '../src/game.js';
-import {createPotionAd} from '../src/potion-ad.js';
+import {createPotionAd as createAdapter} from '../src/potion-ad.js';
+import {acceptAccess,AD_NOTICE_REVISION} from '../src/access-rules.js';
+const createPotionAd=options=>createAdapter({...options,requireConsent:async()=>({...acceptAccess({age:25,terms:true,privacy:true}),adsConsent:true,adNoticeRevision:AD_NOTICE_REVISION}),plugin:{configureAccess:async()=>({status:'ready'}),...options.plugin}});
 import {potionsMarkup,renderPotions} from '../src/potion-panels.js';
 import {potionIcon} from '../src/potion-art.js';
 import {createIncomeHud} from '../src/income-hud.js';
@@ -40,6 +42,7 @@ test('native rewarded result waits for foreground save lock and prevents duplica
     isActive:()=>active,delay:async()=>{delays++;active=true;}});
   const pending=show({itemId:'blue'});
   assert.equal((await show({itemId:'red'})).status,'unavailable');
+  await new Promise(resolve=>setImmediate(resolve));
   finish({status:'rewarded'});
   assert.equal((await pending).status,'rewarded');assert.equal(delays,1);
   const inactive=createPotionAd({native:()=>true,plugin:{showRewarded:async()=>({status:'rewarded'})},isActive:()=>false,delay:async()=>{}});

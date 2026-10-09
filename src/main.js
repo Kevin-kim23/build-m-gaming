@@ -13,6 +13,7 @@ import { createOpeningSystemBars } from './opening-system-bars.js';
 import { App } from "@capacitor/app";
 import { createBackHandler } from "./back-button.js";
 import { createOpeningScreen } from './opening.js';
+import {createAccessUI} from './access-ui.js';
 import { createGameLifecycle } from './game-lifecycle.js';
 import { showToast } from "./toast.js";
 import { FACILITIES, facilityOffer, facilityUpgradeOffer } from './facilities.js';
@@ -95,16 +96,24 @@ function drawHomeField() {
   drawScene(canvas,state,$('#field-labels'),world);
 }
 const battleUI = createBattleUI(session, gameAudio);
-const armyPanels = createArmyPanels(session, gameAudio);
+const accessUI=createAccessUI({onExit:()=>{
+  if(Capacitor.isNativePlatform())App.exitApp().catch(error=>reportError('app.exit',error));
+  else showToast('이 창을 닫으면 종료됩니다. 동의 전에는 게임이 시작되지 않습니다.');
+}});
+const armyPanels = createArmyPanels(session, gameAudio, accessUI);
 const achievementUI = createAchievementUI(session, gameAudio);
 const guideUI = createGuideUI();
 const infoUI = createInfoPanel(session);
-const settingsUI = createSettingsUI(session, infoUI, gameAudio, () => guideUI.resume());
+const settingsUI = createSettingsUI(session, infoUI, gameAudio, () => guideUI.resume(), accessUI);
 const offlineUI = createOfflineRewardUI(session);
 const openingBars = createOpeningSystemBars({native: Capacitor.isNativePlatform(), bars: SystemBars, onError: reportError});
 openingBars.sync();
-const opening = createOpeningScreen({onStart: () => {
+const opening = createOpeningScreen({onStart: async () => {
   openingBars.finish();
+  $('#app').inert=true;
+  try {if(!await accessUI.ensureStart())return;}
+  catch(error){reportError('access.start',error);showToast('시작 안내를 열지 못했습니다. 앱을 다시 실행해 주세요.');return;}
+  $('#app').inert=false;
   gameAudio.setMusicScene('home');
   lifecycle.start();
   if (!document.querySelector('dialog[open]')) zone.focus({preventScroll:true});

@@ -34,7 +34,7 @@ import './shop.css';
 import './schools.css';
 
 // One controller owns the shared shop/equipment dialog and its event listener.
-export function createArmyPanels(session, audio) {
+export function createArmyPanels(session, audio, access) {
   const dialog = document.querySelector('#modal');
   const $ = selector => dialog.querySelector(selector);
   let activePanel = 'shop', category = 'recruit', activeEquipment = 'artillery';
@@ -43,7 +43,7 @@ export function createArmyPanels(session, audio) {
   const schools = Object.values(SCHOOLS);
   let schoolLevels = [];
   const state = () => session.state;
-  const potionController=createPotionController(session,{showAd:createPotionAd({isActive:()=>session.active}),onChange:()=>{
+  const potionController=createPotionController(session,{showAd:createPotionAd({isActive:()=>session.active,requireConsent:()=>access?.ensureAds()??null}),onChange:()=>{
     if(dialog.open && activePanel==='shop' && category==='items')renderPotions(state(),dialog,{busy:potionController.busy,active:session.active});
   }});
   const homeAutoPurchase=createHomeAutoTapPurchase(session,{showPurchase:createAutoTapTestPurchase(),onChange:()=>{
