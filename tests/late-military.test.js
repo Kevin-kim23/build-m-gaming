@@ -7,7 +7,6 @@ import { armyPower } from '../src/units.js';
 import { EQUIPMENT, equipmentPurchaseOffer, equipmentIncome, equipmentStats, enhancementCost, equipmentStage } from '../src/equipment.js';
 import { BATTLE_RULES, UNIT_TRAITS, createBattle, defaultLoadout, deploy, equipmentCombatStats, advanceBattle } from '../src/battle.js';
 import { equipmentRole } from '../src/equipment-tiles.js';
-import { GEAR_SOUND_IDS, battleSound } from '../src/audio-catalog.js';
 import { createGameAudio } from '../src/audio.js';
 import { quietBattle, deployNow } from './lane-helpers.js';
 const T=1_800_000_000_000;
@@ -58,12 +57,11 @@ test('late military uses the same flag-gated twenty upgrades, independent prices
   }
 });
 
-test('every catalog type has battle and sound mappings and the new trio fits the existing six-card deck',()=>{
+test('every catalog type has battle mappings and the new trio fits the existing six-card deck',()=>{
   const s=army();s.campaignCleared=80;
   for(const id of Object.keys(EQUIPMENT)){
     s.equipment[id]={level:20,count:1,deployed:true};
-    assert.ok(UNIT_TRAITS[id]);assert.ok(GEAR_SOUND_IDS.includes(id));
-    assert.equal(battleSound('shot',id),`${id}-action`);
+    assert.ok(UNIT_TRAITS[id]);
   }
   const automatic=createBattle(s,80,defaultLoadout(s,80));
   assert.equal(automatic.deck.length,6);

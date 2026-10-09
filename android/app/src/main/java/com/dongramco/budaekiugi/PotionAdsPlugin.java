@@ -97,7 +97,7 @@ public class PotionAdsPlugin extends Plugin {
     public void showRewarded(PluginCall call) {
         getActivity().runOnUiThread(() -> {
             String item = call.getString("itemId", "");
-            if (!accessAllowed || pending != null || privacyBusy || !(item.equals("red") || item.equals("blue"))) {
+            if (!accessAllowed || pending != null || privacyBusy || !(item.equals("red") || item.equals("blue") || item.equals("offline-income"))) {
                 call.resolve(new JSObject().put("status", "unavailable")); return;
             }
             pending = call;

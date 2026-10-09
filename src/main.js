@@ -22,6 +22,7 @@ import { fmtGold } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
 import { createGameSession } from "./session.js";
 import { createOfflineRewardUI } from './offline-reward-ui.js';
+import { createOfflineNativeAd } from './potion-ad.js';
 import './offline-reward.css';
 import { createBattleUI } from "./battle-ui.js";
 import { createAchievementUI } from "./achievement-ui.js";
@@ -105,7 +106,9 @@ const achievementUI = createAchievementUI(session, gameAudio);
 const guideUI = createGuideUI();
 const infoUI = createInfoPanel(session);
 const settingsUI = createSettingsUI(session, infoUI, gameAudio, () => guideUI.resume(), accessUI);
-const offlineUI = createOfflineRewardUI(session);
+const offlineUI = createOfflineRewardUI(session,{showAd:createOfflineNativeAd({
+  isActive:()=>session.active,requireConsent:()=>accessUI.ensureAds(),
+})});
 const openingBars = createOpeningSystemBars({native: Capacitor.isNativePlatform(), bars: SystemBars, onError: reportError});
 openingBars.sync();
 const opening = createOpeningScreen({onStart: async () => {

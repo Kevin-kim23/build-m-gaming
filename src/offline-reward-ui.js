@@ -1,7 +1,6 @@
 import { fmt, fmtGold } from './format.js';
 import { MAX_GOLD, minMoney, subtractMoney, multiplyMoney } from './money.js';
 import { createOfflineRewardController } from './offline-reward-controller.js';
-import { OFFLINE_AD_TEST_MODE } from './rewarded-ads.js';
 
 export const offlineRewardMarkup = () => `<dialog id="offline-reward-modal" aria-labelledby="offline-title" aria-describedby="offline-description">
   <div class="offline-head"><span>복귀 보고</span><button type="button" data-offline-close aria-label="보상 나중에 받기">×</button></div>
@@ -12,7 +11,7 @@ export const offlineRewardMarkup = () => `<dialog id="offline-reward-modal" aria
   <p class="offline-note">오프라인 수입은 최대 8시간까지 쌓여요.<br>병력·장비·보너스 수입을 함께 정산해요.</p>
   <div class="offline-actions">
     <button type="button" data-offline-claim>받기<span data-offline-normal></span></button>
-    <button type="button" data-offline-double>두 배 받기<span>${OFFLINE_AD_TEST_MODE ? '개발 테스트 · 광고 없이' : '광고 시청 · 준비 중'}</span></button>
+    <button type="button" data-offline-double>광고 보고 2배 받기<span>시청 완료 시 지급</span></button>
   </div>
   <p class="offline-note">보유 골드 상한 1,000경 적용 · 닫아도 보상은 보관돼요.</p>
   <p class="offline-message" data-offline-message role="status" aria-live="polite"></p>
@@ -46,7 +45,7 @@ export function createOfflineRewardUI(session, {root=document,showAd}={}) {
   }
   function resultMessage(result) {
     if(result?.ok) { sync(); return; }
-    const messages={unavailable:'광고 기능을 준비 중이에요. 지금은 ‘받기’로 보상을 받아 주세요.',
+    const messages={unavailable:'지금 광고를 불러올 수 없어요. Android 앱의 인터넷 연결을 확인하거나 ‘받기’를 이용해 주세요.',
       cancelled:'광고 시청이 완료되지 않았어요. 보상은 그대로 보관돼요.',
       'ad-error':'광고를 불러오지 못했어요. 일반 받기를 이용할 수 있어요.',
       save:'보상을 저장하지 못했어요. 보상은 유지되니 잠시 후 다시 눌러 주세요.',

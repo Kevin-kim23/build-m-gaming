@@ -58,15 +58,15 @@ test('a delayed native close event cannot dismiss a newly reopened reward dialog
   f.session.pause();
 });
 
-test('production placeholder explains unavailability and leaves normal receiving usable',async()=>{
+test('an unavailable ad explains failure and leaves normal receiving usable',async()=>{
   const f=fixture();await f.node('[data-offline-double]').click();
   assert.equal(f.dialog.open,true);assert.equal(f.session.state.gold,0);
-  assert.match(f.node('[data-offline-message]').textContent,/광고 기능을 준비 중/);
+  assert.match(f.node('[data-offline-message]').textContent,/지금 광고를 불러올 수 없어요/);
   await f.node('[data-offline-claim]').click();assert.equal(f.session.state.gold,10800);
   f.session.pause();
 });
 
-test('development double receipt disables both buttons during the callback and pays exactly twice',async()=>{
+test('completed ad double receipt disables both buttons during the callback and pays exactly twice',async()=>{
   let finish;
   const f=fixture(()=>new Promise(resolve=>{finish=resolve;}));
   const job=f.node('[data-offline-double]').click();

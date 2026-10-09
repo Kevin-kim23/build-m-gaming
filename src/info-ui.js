@@ -1,3 +1,4 @@
+import { licenseListMarkup, licenseDetailMarkup } from './license-panel.js';
 import { Capacitor } from '@capacitor/core';
 import { APP_VERSION } from './version.js';
 import { errorLog, formatReport } from './error-log.js';
@@ -26,6 +27,24 @@ export function createInfoPanel(session) {
     return info;
   }
   const show = () => openDetail(infoPanelMarkup(snapshot()));
+  let notices;
+  async function showLicenses() {
+    if (!notices) {
+      const dialog = openDetail({title:'오픈소스 라이선스', body:'<p>앱에 포함된 고지를 불러오고 있어요.</p>'});
+      const loadingTitle = dialog.querySelector('#detail-title');
+      try {
+        // Packaged local chunk: no external request and no large startup parse.
+        notices = (await import('../docs/licenses/runtime-notices.json')).default;
+      } catch (error) {
+        reportError('info.licenses', error);
+        if (dialog.open && dialog.querySelector('#detail-title') === loadingTitle)
+          openDetail({title:'오픈소스 라이선스', body:'<p>고지를 열지 못했어요. 다시 시도해 주세요.</p><button type="button" class="detail-link" data-detail-action="open-licenses">다시 열기</button>'});
+        return;
+      }
+      if (!dialog.open || dialog.querySelector('#detail-title') !== loadingTitle) return;
+    }
+    openDetail(licenseListMarkup(notices));
+  }
   async function copy(dialog) {
     const area = dialog.querySelector('#error-report'), status = dialog.querySelector('[data-copy-status]');
     let copied = false;
@@ -43,6 +62,9 @@ export function createInfoPanel(session) {
     if (action === 'copy-error-log') copy(dialog);
     else if (action === 'clear-error-log') { errorLog.clear(); show(); }
     else if (action === 'open-privacy') openDetail(privacyPolicyMarkup());
+    else if (action === 'open-licenses') showLicenses();
+    else if (action === 'license-entry' && notices) openDetail(licenseDetailMarkup(notices, Number(data.licenseIndex)));
+    else if (action === 'back-info') show();
     else if (action === 'retry-save') { session.retryLoad(); show(); }
   });
 

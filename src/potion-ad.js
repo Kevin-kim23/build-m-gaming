@@ -13,11 +13,11 @@ export async function prepareAdPrivacy(){
   return ads.preparePrivacy();
 }
 // A fullscreen Android ad pauses the session; wait for its save lock on return.
-export function createPotionAd({native=()=>Capacitor.getPlatform()==='android',plugin=ads,
+function createRewardAd({native=()=>Capacitor.getPlatform()==='android',plugin=ads,
   requireConsent=async()=>null,isActive=()=>true,delay=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}) {
   let busy=false;
   return async ({itemId})=>{
-    if(!native()||busy||!isPotion(itemId))return {status:'unavailable'};
+    if(!native()||busy||!(isPotion(itemId)||itemId==='offline-income'))return {status:'unavailable'};
     busy=true;
     try {
       const record=await requireConsent();
@@ -30,6 +30,14 @@ export function createPotionAd({native=()=>Capacitor.getPlatform()==='android',p
       return {status:isActive()?'rewarded':'unavailable'};
     } finally {busy=false;}
   };
+}
+export function createPotionAd(options={}) {
+  const show=createRewardAd(options);
+  return request=>isPotion(request?.itemId)?show(request):Promise.resolve({status:'unavailable'});
+}
+export function createOfflineNativeAd(options={}) {
+  const show=createRewardAd(options);
+  return ()=>show({itemId:'offline-income'});
 }
 export async function showAdPrivacyOptions(){
   if(Capacitor.getPlatform()!=='android')return {status:'unsupported'};
