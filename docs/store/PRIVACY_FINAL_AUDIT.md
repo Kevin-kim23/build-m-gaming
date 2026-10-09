@@ -24,6 +24,10 @@ AAB: `C:/Users/foodb/Downloads/부대키우기-0.72.3-방침동기화/부대키�
 
 SHA-256: `C26CA52B77EBFC6EBE76BA2FB4E8F014F9DEEAF51625A69B64E7A6A58BB866D9`
 
+## 후속 확인 2026-10-09
+
+결제 계정 대한민국 및 해당 약관의 Google Asia Pacific Pte. Ltd. 확인. 광고 보관 정책의 조건부 9/18개월 익명화 기준을 조사했다. 구체 국가·항목별 적용은 미확정. [근거와 Google 문의 초안](GOOGLE_DATA_PROCESSING_REVIEW.md) 참조.
+
 ## 남은 일과 끝났다고 볼 기준
 
 ### 1. Google 처리와 동의 범위 확정 — 난이도 높음, 외부 확인 필요

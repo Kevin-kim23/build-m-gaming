@@ -1,3 +1,7 @@
+# Google 처리 정보 후속 확인 2026-10-09
+
+- docs/store/GOOGLE_DATA_PROCESSING_REVIEW.md: 계약 법인 Google Asia Pacific Pte. Ltd. (결제 대한민국/해당 약관), 광고 로그 조건부 9/18개월 익명화와 예외 확인. 국가별 목록/진단/UMP 기간은 미확정. 지원 질문 미발송. 앱0.72.3/방침6/Console 변경 없음.
+
 # 개인정보 최종 점검 5단계 2026-10-09
 
 - docs/store/PRIVACY_FINAL_AUDIT.md: 공개 개정6 재확인, Console Alpha 활성/최신0.71.0 확인. 준비AAB0.72.3/72003 SHA 일치. 코드/Docs 동기화와 설치본 배포 완료를 혼동하지 말 것. 국외 처리·추가 연락처·문의 근거·삭제요청/연령신호 신고 검토는 미완료. 상담 질문 준비만 했고 발송 안 함. 실제 광고 승인/결제 작업 보류 유지.
