@@ -1,10 +1,12 @@
 import {Capacitor,registerPlugin} from '@capacitor/core';
 import {isPotion} from './potions.js';
-import {adsAllowed,AD_NOTICE_REVISION} from './access-rules.js';
+import {adsAllowed} from './access-rules.js';
 const ads=registerPlugin('PotionAds');
+// Native bridge contract is independent of the consent document revision.
+const AD_ACCESS_PROTOCOL_REVISION=1;
 export async function configureAdAccess(record,plugin=ads,native=()=>Capacitor.getPlatform()==='android'){
   if(!native())return {status:'unsupported'};
-  return plugin.configureAccess({allowed:adsAllowed(record),ageBand:record?.ageBand??'unknown',revision:AD_NOTICE_REVISION});
+  return plugin.configureAccess({allowed:adsAllowed(record),ageBand:record?.ageBand??'unknown',revision:AD_ACCESS_PROTOCOL_REVISION});
 }
 export async function prepareAdPrivacy(){
   if(Capacitor.getPlatform()!=='android')return {status:'unsupported'};

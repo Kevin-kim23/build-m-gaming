@@ -56,7 +56,7 @@ test('no native calls before separate consent, malformed/stale/underage choice b
   let configured;
   for(const age of [14,18,19]){
     const show=createPotionAd({native:()=>true,plugin:{...plugin,configureAccess:async v=>{configured=v;return {status:'ready'};}},requireConsent:async()=>consent(age)});
-    assert.equal((await show({itemId:'red'})).status,'rewarded');assert.equal(configured.ageBand,age<19?'teen':'adult');
+    assert.equal((await show({itemId:'red'})).status,'rewarded');assert.equal(configured.ageBand,age<19?'teen':'adult');assert.equal(configured.revision,1,'native bridge protocol must not change with consent notice revision');
   }
   await configureAdAccess(null,{configureAccess:async v=>{assert.equal(v.allowed,false);assert.equal(v.ageBand,'unknown');}},()=>true);
 });
