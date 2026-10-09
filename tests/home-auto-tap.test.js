@@ -117,7 +117,7 @@ test('v32 migration preserves progress without granting entitlement; v33 validat
 
 test('test purchase grants only once, retains gold, persists ownership/off switch and cannot double-confirm',async()=>{
   const f=fixture();let finish;
-  const c=createHomeAutoTapPurchase(f.session,{showPurchase:()=>new Promise(r=>{finish=r;})});
+  const c=createHomeAutoTapPurchase(f.session,{allowTestGrant:true,showPurchase:()=>new Promise(r=>{finish=r;})});
   const pending=c.buy();assert.equal(c.busy,true);assert.equal((await c.buy()).ok,false);assert.equal(c.toggle().ok,false);
   finish({status:'granted',source:'test'});finish({status:'granted',source:'test'});
   assert.equal((await pending).ok,true);assert.equal(f.session.state.gold,0);assert.equal((await c.buy()).ok,false);
@@ -128,13 +128,21 @@ test('test purchase grants only once, retains gold, persists ownership/off switc
 
 test('cancelled, unknown, failed and inactive test purchases cannot grant ownership',async()=>{
   for(const result of [{status:'cancelled'},{status:'granted',source:'play'},undefined]){
-    const f=fixture(),c=createHomeAutoTapPurchase(f.session,{showPurchase:async()=>result});
+    const f=fixture(),c=createHomeAutoTapPurchase(f.session,{allowTestGrant:true,showPurchase:async()=>result});
     assert.equal((await c.buy()).ok,false);assert.equal(f.session.state.homeAutoTap.owned,false);f.session.pause();
   }
   const f=fixture(),errors=[];
-  const c=createHomeAutoTapPurchase(f.session,{showPurchase:async()=>{throw Error('test failure');},onError:(...e)=>errors.push(e)});
+  const c=createHomeAutoTapPurchase(f.session,{allowTestGrant:true,showPurchase:async()=>{throw Error('test failure');},onError:(...e)=>errors.push(e)});
   assert.equal((await c.buy()).reason,'error');assert.equal(errors[0][0],'homeAutoTap.purchase');assert.equal(c.busy,false);
-  let finish;const paused=createHomeAutoTapPurchase(f.session,{showPurchase:()=>new Promise(r=>{finish=r;})});
+  let finish;const paused=createHomeAutoTapPurchase(f.session,{allowTestGrant:true,showPurchase:()=>new Promise(r=>{finish=r;})});
   const pending=paused.buy();f.session.pause();finish({status:'granted',source:'test'});
   assert.equal((await pending).reason,'inactive');assert.equal(f.session.state.homeAutoTap.owned,false);
+});
+
+test('release blocks new free grants while grandfathered ownership survives save and toggle',async()=>{
+ const f=fixture();let calls=0;const c=createHomeAutoTapPurchase(f.session,{showPurchase:async()=>{calls++;return {status:'granted',source:'test'};}});
+ assert.equal((await c.buy()).ok,false);assert.equal(calls,0);assert.equal(f.session.state.homeAutoTap.owned,false);
+ grantTestHomeAutoTap(f.session.state);const restored=parseSave(serializeSave(f.session.state),T);
+ assert.equal(restored.homeAutoTap.owned,true);assert.equal(restored.homeAutoTap.source,'test');
+ assert.equal(toggleHomeAutoTap(restored).ok,true);assert.equal(restored.homeAutoTap.owned,true);f.session.pause();
 });

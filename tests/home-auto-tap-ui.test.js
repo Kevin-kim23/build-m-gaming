@@ -33,9 +33,9 @@ test('test purchase dialog confirms explicitly, cancels via Android back, and sa
 });
 
 test('item UI clearly shows free test, locks repurchase, toggles accessibly and avoids unchanged text writes',()=>{
-  assert.doesNotMatch(homeAutoTapMarkup(),/4,900원/);assert.match(homeAutoTapMarkup(),/무료 테스트 받기/);assert.match(homeAutoTapMarkup(),/초당 2회/);
+  assert.doesNotMatch(homeAutoTapMarkup(),/4,900원/);assert.match(homeAutoTapMarkup(),/구매 준비 중/);assert.match(homeAutoTapMarkup(),/초당 2회/);
   const s=freshState(1),root=fakeNode(),card=root.querySelector('[data-home-auto-tap]');
-  renderHomeAutoTap(s,root);assert.equal(card.querySelector('[data-toggle-home-auto]').disabled,true);
+  renderHomeAutoTap(s,root);assert.equal(card.querySelector('[data-toggle-home-auto]').disabled,true);assert.equal(card.querySelector('[data-buy-home-auto]').disabled,true);
   grantTestHomeAutoTap(s);renderHomeAutoTap(s,root);
   const buy=card.querySelector('[data-buy-home-auto]'),toggle=card.querySelector('[data-toggle-home-auto]');
   assert.equal(buy.disabled,true);assert.equal(buy.textContent,'보유 중');
