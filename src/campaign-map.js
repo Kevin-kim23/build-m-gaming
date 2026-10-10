@@ -25,7 +25,7 @@ export function campaignMarkup(state,countryId=null,selectedId=null,deckIds=null
     const p=countryProgress(state,c.id);
     return `<button data-country="${c.id}" class="nation-tab ${countryId===c.id?'active':''}" ${!p.unlocked?'disabled':''} aria-label="${c.name}${p.unlocked?' 지도 열기':' · 이전 국가 점령 필요'}"><span>${p.complete?'✓':p.unlocked?'0'+(c.localIndex+1):'🔒'}</span>${c.name.split(' ')[0]}</button>`;
   }).join('');
-  return `<header class="battle-header"><div><small>${space?'DEEP SPACE':'CONQUEST'} · ${country?'REGIONAL MAP':'WORLD MAP'}</small><h2 id="battle-title">${country?country.name:continent.name+' 대륙'}</h2></div><button data-battle-close aria-label="전투 메뉴 닫기">×</button></header>
+  return `<header class="battle-header"><div><small>${space?'DEEP SPACE':'CONQUEST'} · ${country?'REGIONAL MAP':'WORLD MAP'}</small><h2 id="battle-title">${country?country.name:continent.name+' 대륙'}</h2></div><button data-battle-close aria-label="전투 메뉴 닫기">×</button></header><p class="battle-session-note" role="status" data-battle-session></p>
   <nav class="continent-tabs" aria-label="원정 대륙">${continentButtons}</nav>
   <nav class="nation-tabs" aria-label="대륙의 국가">${countryButtons}</nav>
   <div class="atlas-toolbar"><button data-world ${country?'':'hidden'}>‹ 대륙으로</button><span>${country?country.terrain:space?'성운을 넘어 펼쳐지는 두 번째 원정':'남쪽 해안에서 시작하는 대륙 정복'}</span><b>${country?countryProgress(state,country.id).cleared+'/20':Math.floor(continentCleared/20)+'/4'} 점령 · 수입 +${campaignBonusPercent(state)}%</b></div>
@@ -53,7 +53,7 @@ export function campaignMarkup(state,countryId=null,selectedId=null,deckIds=null
     <button class="battle-primary" data-stage="${selected?.id??country.firstStage}" ${!access.unlocked||!selected||selected.id>cleared+1?'disabled':''}>${!access.unlocked?access.requirement:selected?.id<=cleared?'다시 도전':selected?.id===cleared+1?'전투 시작':'이전 지역 점령 필요'}</button>
     ${selected&&selected.id<=cleared+1?battleRewardMarkup(state,selected):''}</section>`:
   countryBriefMarkup()}
-  <p class="battle-session-note" data-battle-session></p>`;
+  `;
 }
 
 // Camera animation is short-lived. Idle maps have no animation loop or storage writes.

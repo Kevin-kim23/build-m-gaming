@@ -1,3 +1,4 @@
+import { CONSTELLATION_FORMATIONS } from './constellation-formations.js';
 import {exact,compactMoney} from './money.js';
 import { UNITS, armyPower } from "./units.js";
 import {
@@ -10,6 +11,7 @@ import {
 export * from './formation-sizes.js';
 // Display grouping only. Real headcounts are preserved in the save.
 export const FORMATIONS = Object.freeze([
+  ...CONSTELLATION_FORMATIONS.slice().reverse(),
   { id: 'galacticGrandAlliedArmy', name: '은하 대연합군', size: GALACTIC_GRAND_ALLIED_ARMY_SIZE, width: 416, height: 314 },
   { id: 'galacticAlliedArmy', name: '은하 연합군', size: GALACTIC_ALLIED_ARMY_SIZE, width: 384, height: 290 },
   { id: 'galacticArmyGroup', name: '은하 집단군', size: GALACTIC_ARMY_GROUP_SIZE, width: 356, height: 272 },

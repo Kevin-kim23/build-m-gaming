@@ -176,3 +176,6 @@
 @keyframes base-float { from { transform:translate(-50%,0); opacity:1; } to { transform:translate(-50%,-34px); opacity:0; } }
 @keyframes star-pop { from { transform:scale(.2); opacity:0; } to { transform:scale(1); opacity:1; } }
 @media (prefers-reduced-motion: reduce) { .base-hp.low .base-hp-bar,.battle-stars.pop { animation:none; } .base-float { animation-duration:.01s; } }
+
+.battle-session-note:empty { display:none; }
+.battle-session-note:not(:empty) { color:#ffe3ac; background:#4c3426; border:1px solid #c59264; border-radius:8px; padding:10px; margin:8px 0; font-size:13px; }

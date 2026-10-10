@@ -86,14 +86,14 @@ export function galacticRankBadge(tier) {
   if(tier>=16&&tier<=20){
     const key='constellation-'+tier;if(cache.has(key))return cache.get(key);
     const base=galacticRankBadge(tier-5);
-    const svg=base.replaceAll('galactic-'+(tier-5),'constellation-'+tier).replace('data-galactic-frame="'+(tier-5)+'"','data-galactic-frame="'+tier+'"').replace('amethyst','deep-space')
+    const svg=base.replaceAll('galactic-'+(tier-5),'constellation-'+tier).replace('data-galactic-frame="'+(tier-5)+'"','data-galactic-frame="'+tier+'"').replace('amethyst','obsidian-ruby')
       .replace(supremeRankSymbol(tier-5),supremeRankSymbol(tier))
-      .replaceAll('#9656ba','#254979').replaceAll('#4c246e','#112442').replaceAll('#1c0c34','#040c1d')
+      .replaceAll('#9656ba','#343842').replaceAll('#4c246e','#141821').replaceAll('#1c0c34','#06080e')
       .replaceAll('#fff1b9','#f1fbff').replaceAll('#d9ab53','#c6dbe8').replaceAll('#885321','#597589').replaceAll('#f6d787','#e7f7ff').replaceAll('#744019','#355368')
       .replaceAll('#ffffff','#dffaff').replaceAll('#fff0b7','#edfaff').replaceAll('#694222','#506479').replaceAll('#4e3024','#283c51')
       .replaceAll('#e0b762','#a9c8df').replaceAll('#7c4b30','#5c7c93').replaceAll('#f6dda3','#ebfaff').replaceAll('#865122','#506b83')
       .replaceAll('#e6b774','#adc9e3').replaceAll('#edc785','#b4d1e8').replaceAll('#ffe9ad','#f1fbff').replaceAll('#a47336','#718fa6')
-      .replaceAll('#e1a4ff','#92d0ff').replaceAll('#c282ee','#5998db').replaceAll('#e9c7ff','#b8e4ff').replaceAll('#dfa9ee','#9ad1ff');cache.set(key,svg);return svg;
+      .replaceAll('#e1a4ff','#d4dbe4').replaceAll('#c282ee','#8e98a8').replaceAll('#e9c7ff','#dbe2eb').replaceAll('#dfa9ee','#aab6c7');cache.set(key,svg);return svg;
   }
   if (!Number.isInteger(tier) || tier < 11 || tier > 15) throw new RangeError('Unknown framed galactic rank');
   const key = `galactic-${tier}`;

@@ -68,7 +68,7 @@ test("higher headquarters make earlier buildings proportionally smaller", () => 
 });
 test("small-screen layouts stay inside the troop area, sorted and non-overlapping", () => {
   const totals = new Set([0, 1, 19, 79, 319, 1279, MAX_SOLDIERS]);
-  for (const f of FORMATIONS)
+  for (const f of FORMATIONS.filter(f=>typeof f.size === "number"))
     for (const delta of [-1, 0, 1, 19])
       if (f.size + delta >= 0) totals.add(f.size + delta);
   for (let i = 0; i <= 2048; i++) totals.add(Math.floor(MAX_SOLDIERS*i/2048));
@@ -109,7 +109,7 @@ test("small-screen layouts stay inside the troop area, sorted and non-overlappin
 test("large saved armies load without discarding progress and remain finite", () => {
   const s = { ...army(MAX_SOLDIERS - 10), sergeants: 1, gold: 99999999 };
   assert.deepEqual(parseSave(JSON.stringify(s)), { ...s,
-    earnedAchievements: FORMATIONS.filter(f=>f.id!=='soldier').slice().reverse().map(f=>f.id) });
+    earnedAchievements: FORMATIONS.filter(f=>f.id!=='soldier' && f.size<=MAX_SOLDIERS).slice().reverse().map(f=>f.id) });
   assert.equal(parseSave(JSON.stringify({ ...s, sergeants: 2 })), null);
   assert.ok(Number.isSafeInteger(perTap(s)));
   assert.ok(Number.isSafeInteger(perSecond(s)));

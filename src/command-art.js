@@ -1,9 +1,11 @@
+import { drawConstellationBuilding } from './constellation-building-art.js';
 import { drawGalacticCommand } from './galactic-command-art.js';
 import { drawGalacticGroup } from './galactic-group-art.js';
 import { drawGalacticExpansion } from './galactic-expansion-art.js';
 
 // Original high-command architecture, rendered once into art.js's cached sprite.
 export function drawHighCommand(c, id, width, height) {
+  if (drawConstellationBuilding(c, id, width, height)) return true;
   if (drawGalacticExpansion(c, id, width, height)) return true;
   if (id === 'galacticGroupCommand') return drawGalacticGroup(c, width, height);
   if (id === 'galacticCommand') return drawGalacticCommand(c, width, height);

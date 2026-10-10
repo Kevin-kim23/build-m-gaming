@@ -37,7 +37,7 @@ export function battleDetailMarkup(state, stage) {
 }
 
 export function battlefieldMarkup(battle) {
-  return `<header class="battle-header slim"><div><small>STAGE ${String(battle.stageId).padStart(2,'0')}</small><h2 id="battle-title">${battle.stageName}</h2></div><b id="battle-time">0:00</b>${infoButton}<button id="battle-pause" aria-label="일시정지">⏸</button><button data-battle-close aria-label="전투 메뉴 닫기">×</button></header>
+  return `<header class="battle-header slim"><div><small>STAGE ${String(battle.stageId).padStart(2,'0')}</small><h2 id="battle-title">${battle.stageName}</h2></div><b id="battle-time">0:00</b>${infoButton}<button id="battle-pause" aria-label="일시정지">⏸</button><button data-battle-close aria-label="전투 메뉴 닫기">×</button></header><p class="battle-session-note" role="status" data-battle-session></p>
     <div class="battle-arena" id="battle-arena"><div id="battle-field"><canvas id="battle-canvas" width="360" height="440" aria-hidden="true"></canvas></div>
     <div class="base-hp enemy" id="base-hp-enemy" role="img" aria-label="적 ${battle.enemy.hq.name} 체력"><small>${battle.enemy.hq.name}${battle.enemy.fortress?' · 수도 본부':''}</small><div class="base-hp-bar"><i id="base-hp-enemy-fill"></i></div><b id="battle-enemy-hp"></b></div>
     <div class="base-hp player" id="base-hp-player" role="img" aria-label="우리 ${battle.player.hq.name} 체력"><small>${battle.player.hq.name}</small><div class="base-hp-bar"><i id="base-hp-player-fill"></i></div><b id="battle-player-hp"></b></div>
@@ -45,5 +45,5 @@ export function battlefieldMarkup(battle) {
     <div class="battle-overlay" id="battle-overlay" hidden><div><small id="battle-result-tag"></small><h3 id="battle-result-title"></h3><p class="battle-stars" id="battle-result-stars" aria-live="polite"></p><p class="battle-loot" id="battle-result-loot"></p><p id="battle-result-copy"></p><button class="battle-primary" id="battle-resume">전투 계속</button><div id="battle-result-actions" hidden><button class="battle-primary" data-battle-next hidden>다음 지역</button><button data-battle-retry>다시 도전</button><button data-battle-back>작전 지도</button></div></div></div></div>
     <div class="battle-mana"><span aria-hidden="true">💧</span><div class="battle-mana-bar"><i id="battle-mana-fill"></i></div><b id="battle-mana-text">0</b></div>
     <div class="battle-cards" id="battle-cards" style="--cards:${battle.deck.length}">${battle.deck.map((g) => `<button class="deploy-card" data-deploy="${g.id}" aria-pressed="false" aria-label="${EQUIPMENT[g.id].name} 카드, 마나 ${g.cost}" disabled><i class="card-cost">${g.cost}</i><canvas class="card-art" data-card-art="${g.id}" data-level="${g.level}" width="112" height="136" aria-hidden="true"></canvas><b>${EQUIPMENT[g.id].name}</b><small data-deploy-cost="${g.id}">마나 ${g.cost}</small></button>`).join('')}</div>
-    <p class="battle-session-note" data-battle-session></p>`;
+    `;
 }

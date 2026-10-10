@@ -1,3 +1,4 @@
+import { addMoney, multiplyMoney } from './money.js';
 import { FORMATIONS, groupArmy } from "./formations.js";
 import { UNITS } from "./units.js";
 
@@ -15,7 +16,7 @@ export function fieldArmy(army) {
     largest,
     hiddenPower: all
       .filter((g) => g.size < minimum.size)
-      .reduce((n, g) => n + g.size * g.count, 0),
+      .reduce((n, g) => addMoney(n, multiplyMoney(g.size, g.count)), 0),
   };
 }
 

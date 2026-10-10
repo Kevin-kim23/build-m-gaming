@@ -297,13 +297,14 @@ export function createBattleUI(session, audio = null) {
   function sync() {
     if (!dialog.open) return;
     if (mode === 'stages' && stagesKey !== mapKey()) { showStages(); return; }
-    text('[data-battle-session]', session.active ? '' : session.status);
+    text('[data-battle-session]', session.active ? '' : session.status + ' · 다른 게임 창을 닫고 이 창으로 돌아오면 전투를 시작할 수 있어요.');
     if (mode === 'stages') {
       const cleared = session.state.campaignCleared ?? 0, access = battleAccess(session.state);
       dialog.querySelectorAll('[data-stage]').forEach(button => { button.disabled = !session.active || !access.unlocked || Number(button.dataset.stage) > cleared + 1; });
     }
     if (mode === 'battle') {
       if (!session.active) suspend();
+      dialog.querySelectorAll('[data-battle-retry], [data-battle-next]').forEach(button => { button.disabled = !session.active; });
       if ($('#battle-resume')) $('#battle-resume').disabled = !session.active;
     }
   }
@@ -315,7 +316,7 @@ export function createBattleUI(session, audio = null) {
     const target = event.target.closest('button,[data-country],[data-region],[data-continent]');
     if (suppressClick && target?.dataset?.deploy) { suppressClick = false; return; }
     if (!target || target.disabled || target.getAttribute('aria-disabled')==='true') return;
-    if (mode==='stages' && campaignMap.handle(target)) { paintCardArt(); return; }
+    if (mode==='stages' && campaignMap.handle(target)) { paintCardArt(); sync(); return; }
     if (target.hasAttribute('data-battle-close')) close();
     else if (target.hasAttribute('data-stage')) quickStart(Number(target.dataset.stage));
     else if (target.hasAttribute('data-battle-back')) showStages();

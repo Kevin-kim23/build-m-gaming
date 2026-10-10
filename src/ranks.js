@@ -1,3 +1,4 @@
+import { CONSTELLATION_FORMATIONS } from './constellation-formations.js';
 import {CONSTELLATION_OFFICERS,CONSTELLATION_NAMES,CONSTELLATION_POWERS} from './constellation-officers.js';
 import { fmt } from "./format.js";
 import {
@@ -163,7 +164,7 @@ export const RANK_DEFINITIONS = Object.freeze([
   { name: '은하 중장', required: GALACTIC_ARMY_GROUP_SIZE, condition: '8개 은하 야전군 · 은하 집단군 1개', kind: 'general', marks: 13 },
   { name: '은하 대장', required: GALACTIC_ALLIED_ARMY_SIZE, condition: '8개 은하 집단군 · 은하 연합군 1개', kind: 'general', marks: 14 },
   { name: '은하 원수', required: GALACTIC_GRAND_ALLIED_ARMY_SIZE, condition: '8개 은하 연합군 · 은하 대연합군 1개', kind: 'general', marks: 15 },
-  ...CONSTELLATION_NAMES.map((name,i)=>({name,required:CONSTELLATION_POWERS[i],condition:'이전 계급 기준 전력의 16배',kind:'general',marks:16+i})),
+  ...CONSTELLATION_NAMES.map((name,i)=>({name,required:CONSTELLATION_POWERS[i],condition:`이전 계급 기준 전력의 16배 · ${CONSTELLATION_FORMATIONS[i].name} 1개`,kind:'general',marks:16+i})),
 ]);
 export const RANKS = RANK_DEFINITIONS.map((r) => r.name);
 export const RANK_REQUIREMENTS = RANK_DEFINITIONS.map((r) => r.required);

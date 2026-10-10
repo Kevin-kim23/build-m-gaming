@@ -78,9 +78,9 @@ test('fixed first clear and ten global daily replays persist across reload and c
  assert.equal(replayRemaining(copy,T+86400000),10);assert.ok(recordBattleVictory(copy,win(2),T+86400000).gold>0);assert.equal(copy.replayRewardCount,1);
  assert.equal(rewardDay(Date.UTC(2026,9,10,15)),rewardDay(Date.UTC(2026,9,10,14,59,59))+1);
 });
-test('five new navy platinum rank badges and academy levels have resolved SVG IDs',()=>{
+test('five new obsidian ruby rank badges and academy levels have resolved SVG IDs',()=>{
  for(let tier=16;tier<=20;tier++){
-  const html=galacticRankBadge(tier);assert.match(html,/deep-space/);assert.equal((html.match(/data-rank-star/g)||[]).length,tier-15);
+  const html=galacticRankBadge(tier);assert.match(html,/obsidian-ruby/);assert.equal((html.match(/data-rank-star/g)||[]).length,tier-15);
   const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(ids.length,new Set(ids).size);
   for(const [,id] of html.matchAll(/url\(#([^)]*)\)/g))assert.ok(ids.includes(id));
   assert.doesNotMatch(html,/undefined|NaN/);

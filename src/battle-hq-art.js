@@ -1,3 +1,4 @@
+import { CONSTELLATION_FORMATIONS } from './constellation-formations.js';
 import { artSurface } from './pixel-detail.js';
 
 // Separate original overhead plans; never render or resize the front-facing home art.
@@ -5,7 +6,7 @@ import { artSurface } from './pixel-detail.js';
 const IDS=Object.freeze(['soldier','squad','platoon','company','battalion','regiment',
   'division','corps','fieldArmy','armyGroup','alliedArmy','grandAlliedArmy','supremeCommand',
   'galacticCommand','galacticGroupCommand','galacticCorps','galacticFieldArmy',
-  'galacticArmyGroup','galacticAlliedArmy','galacticGrandAlliedArmy']);
+  'galacticArmyGroup','galacticAlliedArmy','galacticGrandAlliedArmy',...CONSTELLATION_FORMATIONS.map(f=>f.id)]);
 const TEAM=Object.freeze({
   player:{dark:'#273f36',body:'#688768',light:'#a6bea0',mark:'#e2ead3',flag:'#8dbbbb'},
   enemy:{dark:'#694947',body:'#bc8480',light:'#e4b8ad',mark:'#f9d7ca',flag:'#cd7c79'},
@@ -26,6 +27,7 @@ export function drawBattleHeadquarters(c,id,side='player'){
     metal:'#c9d9e8',glass:'#398d9f',glow:'#9ceff1',accent:'#a395d7'}:
     {edge:team.dark,shadow:'#3e5054',roof:team.body,light:team.light,
       metal:team.mark,glass:'#356976',glow:'#91c4cc',accent:team.flag};
+  if(tier>=20)Object.assign(p,{edge:'#090d15',shadow:'#171e2b',roof:'#343e50',light:'#778399',metal:'#c5ceda',glass:'#481629',glow:'#ff647c',accent:'#a72443'});
   const r=(x,y,w,h,color)=>{
     c.fillStyle=color;
     c.fillRect(x*sx,(side==='player'?100-y-h:y)*sy,w*sx,h*sy);
@@ -133,7 +135,15 @@ export function drawBattleHeadquarters(c,id,side='player'){
       // Four support commands surround the central roof, with each succeeding
       // plan adding a different corridor/halo/reactor arrangement.
       for(const [x,y] of [[23,19],[100,19],[23,60],[100,60]])roof(x,y,21,19,{solar:true});
-      if(galactic===0){
+      if(tier>=20){
+        const n=tier-20;
+        // Distinct overhead footprints: twin keep, terraces, arch, fan, observatory.
+        if(n===0){roof(39,27,23,45,{solar:true});roof(82,27,23,45,{solar:true});roof(59,43,26,12);core(62,35,20,28);}
+        if(n===1){roof(39,27,66,48);roof(48,23,48,48,{solar:true});core(59,19,26,48,3);}
+        if(n===2){roof(34,23,24,52,{solar:true});roof(86,23,24,52,{solar:true});roof(55,24,34,13);roof(55,62,34,13);core(61,38,22,22,3);}
+        if(n===3){for(let i=0;i<5;i++)roof(31+i*17,26+Math.abs(i-2)*6,14,45-Math.abs(i-2)*6,{solar:true});roof(40,57,64,12);core(63,21,18,43,3);}
+        if(n===4){roof(34,30,77,38,{solar:true});ring(72,48,47,29);core(51,24,42,48,4);for(const [x,y] of [[34,27],[110,27],[34,69],[110,69]])dish(x,y,true);}
+      }else if(galactic===0){
         roof(45,39,55,17);roof(62,22,20,54);ring(72,48,35,26);core(53,30,38,37,3);
       }else if(galactic===1){
         roof(36,39,72,17);roof(61,17,22,64);ring(72,48,43,29);core(51,27,42,42,3);dish(35,29);dish(110,29);
