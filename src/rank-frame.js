@@ -2,6 +2,16 @@ import { supremeRankSymbol } from './rank-emblem.js';
 
 // Original beveled enamel artwork; the reference supplies a material direction only.
 const cache = new Map();
+let instanceSerial = 0;
+
+// Inline SVG IDs belong to the whole document, including closed dialogs.
+// Keep cached artwork intact, but give each rendered copy its own definitions.
+export function rankBadgeInstance(art) {
+  const prefix = `rank-instance-${++instanceSerial}-`;
+  return art.replace(/\bid="([^"]+)"/g, (_, id) => `id="${prefix}${id}"`)
+    .replace(/url\(#([^)]*)\)/g, (_, id) => `url(#${prefix}${id})`);
+}
+
 const star = (x, y, radius, gold) => {
   const points = Array.from({ length: 10 }, (_, i) => {
     const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? radius * .44 : radius;

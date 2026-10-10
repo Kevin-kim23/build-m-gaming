@@ -39,7 +39,7 @@ test('home and rank guide use the same framed artwork for all implemented upper 
     assert.ok(RANKS.includes(rank));
     const html=insignia(RANKS.indexOf(rank));
     assert.match(html,/class="insignia general framed-rank"/);
-    assert.ok(html.includes(marshalRankBadge(tier)));
+    assert.ok(html.replace(/rank-instance-\d+-/g, '').includes(marshalRankBadge(tier)));
     assert.equal((html.match(/data-rank-star/g)||[]).length,tier-5);
   }
 });

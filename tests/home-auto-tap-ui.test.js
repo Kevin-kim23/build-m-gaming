@@ -61,7 +61,12 @@ test('every recruit gets its own existing insignia; enlisted specialists map to 
   }
   for(const unit of Object.values(UNITS)){
     const rank=recruitRank(unit);assert.ok(rank.index>=0,unit.id);
-    assert.ok(recruitRankMarkup(unit,insignia).includes(insignia(rank.index)),unit.id);
+    let rendered;
+    const html=recruitRankMarkup(unit,index=>{
+      assert.equal(index,rank.index,unit.id);
+      return rendered=insignia(index);
+    });
+    assert.ok(html.includes(rendered),unit.id);
   }
 });
 
