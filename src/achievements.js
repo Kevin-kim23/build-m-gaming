@@ -50,7 +50,7 @@ export function achievementProgress(state, id) {
   const achievement = ACHIEVEMENTS.find(a => a.id === id);
   if (!achievement) throw new RangeError("Unknown achievement");
   const earned = state.earnedAchievements?.includes(id) ?? false;
-  const current = Math.min(measuredProgress(state, achievement), achievement.required);
+  const current = Number(measuredProgress(state,achievement)<achievement.required?measuredProgress(state,achievement):achievement.required);
   return {
     earned,
     current,

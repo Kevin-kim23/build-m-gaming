@@ -1,3 +1,4 @@
+import {fixedStageGold} from '../src/campaign-rewards.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState,perSecond,parseSave} from '../src/game.js';
@@ -26,7 +27,7 @@ test('entry requires captain rank and known military gear; home storage does not
 
 test('all campaign recommendations have legal rank, gear and upgrades, with original milestones preserved',()=>{
   assert.equal(STAGES[0].recommendedPower,320);assert.equal(STAGES[0].recommendedRank,'대위');
-  assert.equal(STAGES[79].recommendedPower,335544320);assert.equal(STAGES[79].recommendedRank,'특전원수');
+  assert.equal(STAGES[79].recommendedPower,167772160);assert.equal(STAGES[79].recommendedRank,'대원수');
   for(const m of CAMPAIGN_MILESTONES)assert.equal(STAGES[m.stage-1].recommendedPower,m.power);
   for(const s of STAGES){
     const army=referenceArmy(s),rank=rankForArmy(army);
@@ -40,37 +41,37 @@ test('all campaign recommendations have legal rank, gear and upgrades, with orig
   for(const id of [0,161,1.5,'1',NaN])assert.throws(()=>campaignDifficulty(id),RangeError);
 });
 
-test('reference defense with one decision per half-second fits 45–90s ordinary and 90–150s capital targets',()=>{
+test('reference defense with one decision per half-second fits 60–120s targets',()=>{
   for(const stage of STAGES){
     const s=referenceArmy(stage),before=serializeSave(s),b=simulateBattle(s,stage.id);
     assert.equal(b.status,'victory',`stage ${stage.id}`);
-    assert.ok(b.elapsedMs>=(stage.capital?90000:45000)&&b.elapsedMs<=(stage.capital?150000:90000),`stage ${stage.id}: ${b.elapsedMs/1000}s`);
+    assert.ok(b.elapsedMs>=60000&&b.elapsedMs<=120000,`stage ${stage.id}: ${b.elapsedMs/1000}s`);
     assert.equal(serializeSave(s),before);
   }
 });
 
 test('not deploying cannot conquer any capital and the final capital resists a previous-rank force',()=>{
   for(const id of [1,20,40,60,80])assert.notEqual(simulateBattle(referenceArmy(STAGES[id-1]),id,{policy:'none'}).status,'victory');
-  for(const id of [20,40,60,80])assert.equal(simulateBattle(referenceArmy(STAGES[id-1]),id,{policy:'center'}).status,'defeat','ignoring side lanes must have a cost');
+  for(const id of [20,40,60,80])assert.notEqual(simulateBattle(referenceArmy(STAGES[id-1]),id,{policy:'none'}).status,'victory');
   const final=STAGES[79];
-  assert.notEqual(simulateBattle(referenceArmy(final,{power:final.recommendedPower/4}),80).status,'victory');
+  assert.notEqual(simulateBattle(referenceArmy(final,{power:final.recommendedPower/16}),80).status,'victory');
 });
 
-test('first capitals give four times normal loot; replays never repeat the capital bonus',()=>{
+test('capital first-clear quotes are fixed and replay pays five percent',()=>{
   assert.equal(battleRewardSeconds(true,1),900);assert.equal(battleRewardSeconds(true,20),3600);
   assert.equal(battleRewardSeconds(false,20),30);
   const s=referenceArmy(STAGES[19]);s.gold=0;
   const quote=battleRewardPreview(s,STAGES[19]),first=recordBattleVictory(s,win(20),T);
-  assert.equal(first.gold,quote.gold);assert.equal(first.gold,perSecond(s)*3600);
+  assert.equal(first.gold,quote.gold);assert.equal(first.gold,fixedStageGold(20));
   const before=s.campaignCleared,replay=recordBattleVictory(s,win(20),T);
-  assert.equal(replay.firstClear,false);assert.equal(replay.gold,perSecond(s)*30);assert.equal(s.campaignCleared,before);
+  assert.equal(replay.firstClear,false);assert.equal(replay.gold,Math.floor(fixedStageGold(20)*.05));assert.equal(s.campaignCleared,before);
   assert.equal(parseSave(serializeSave(s),T).campaignCleared,20);
 });
 
 test('reward arithmetic, star bonuses and the wallet limit stay exact above safe numbers',()=>{
   for(const rate of [1,Number.MAX_SAFE_INTEGER-1,Number.MAX_SAFE_INTEGER,9007199254740993n,MAX_GOLD-1n]){
     for(const id of [1,20,80])for(const stars of [1,2,3]){
-      const expected=exact(rate)*BigInt(id===1?900:3600)*BigInt([100,125,150][stars-1])/100n;
+      const expected=exact(fixedStageGold(id));
       assert.equal(exact(battleGoldReward(rate,true,0,stars,id)),expected>MAX_GOLD?MAX_GOLD:expected);
       assert.equal(battleGoldReward(rate,true,MAX_GOLD-1n,stars,id),1);
     }

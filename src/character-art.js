@@ -13,9 +13,11 @@ export function characterIndex(id) {
 }
 export function characterAtlas(index) {
   if (!Number.isInteger(index) || index < 0 || index >= RANKS.length) return null;
+  if(index>=30)index-=5;
   return {url:`${import.meta.env?.BASE_URL ?? '/'}characters/ranks-${Math.floor(index/6)+1}.png`, cell:index%6};
 }
 function load(index) {
+  if(index>=30)index-=5;
   const atlas=characterAtlas(index);
   if (!atlas || typeof Image === 'undefined') return null;
   if (atlases.has(atlas.url)) return atlases.get(atlas.url);
@@ -56,6 +58,7 @@ function load(index) {
   return promise;
 }
 export function characterSprite(index) {
+  if(index>=30)index-=5;
   if (!sprites.has(index)) load(index);
   return sprites.get(index) ?? null;
 }

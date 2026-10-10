@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState,SAVE_VERSION,SAVE_KEY} from '../src/state.js';
 import {parseSave} from '../src/save.js';
-import {MAX_GOLD,exact,serializeSave,subtractMoney,scaleMoney} from '../src/money.js';
+import {MAX_GOLD,GALACTIC_MAX_GOLD,exact,serializeSave,subtractMoney,scaleMoney} from '../src/money.js';
 import {BULK_RECRUIT,bulkRecruitDiscountPercent} from '../src/personal-equipment.js';
 import {PERSONAL_EQUIPMENT} from '../src/personal-catalog.js';
 import {GALACTIC_PERSONAL_COSTS,personalUpgradeStep} from '../src/personal-enhancement.js';
@@ -16,25 +16,18 @@ const T=1800000000000;
 const army=()=>({...freshState(T),soldiers:10000,sergeants:300,galacticBrigadiers:64,
   ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,commandSchoolLevel:5,galacticSchoolLevel:5,gold:MAX_GOLD});
 
-test('baton26..30 discounts the exact batch total by1..5%, with no single-price change',()=>{
-  const s=army();
-  for(const id of Object.keys(BULK_RECRUIT))for(let level=26;level<=30;level++) {
-    const field=UNITS[id].field;s[field]=id==='soldier'?10000:id==='sergeant'?300:7;
-    s.personalLevels.commandBaton=level;
-    const sum=Array.from({length:100},(_,i)=>exact(unitCost(s[field]+i,id))).reduce((a,b)=>a+b,0n);
-    const cost=sum*BigInt(125-level)/100n;
-    assert.equal(bulkRecruitDiscountPercent(s),level-25);
-    assert.equal(exact(recruitOffer(s,id,100).cost),cost);
-    assert.equal(recruitOffer(s,id,1).cost,unitCost(s[field],id));
-    s.gold=cost-1n;const before=structuredClone(s);
-    assert.equal(recruit(s,T,id,100).reason,'gold');assert.deepEqual(s,before);
-    s.gold=cost;assert.equal(recruit(s,T,id,100).ok,true);
-    assert.equal(s.gold,0);assert.equal(s[field],before[field]+100);
+test('baton26..30 replaces the old discounts with five new recruitment abilities',()=>{
+  for(let level=26;level<=30;level++){
+    const s=army();s.personalLevels.commandBaton=level;
+    assert.equal(bulkRecruitDiscountPercent(s),0);
+    const sum=Array.from({length:100},(_,i)=>exact(unitCost(s.sergeants+i,'sergeant'))).reduce((a,b)=>a+b,0n);
+    assert.equal(exact(recruitOffer(s,'sergeant',100).cost),sum);
+    assert.equal(Object.values(BULK_RECRUIT).filter(r=>r.level<=level).length,level);
   }
 });
 
 test('v34 preserves all levels and active windows; v35 round-trips new maxima and rejects overflow',()=>{
-  const s=army();s.version=34;s.gold=MAX_GOLD-1n;s.campaignCleared=160;s.campaignStars.fill(3);
+  const s=army();s.version=34;s.gold=GALACTIC_MAX_GOLD-1n;s.campaignCleared=160;s.campaignStars.fill(3);
   for(const id of Object.keys(s.personalLevels))s.personalLevels[id]=20;
   s.equipment.tank={level:30,count:1,deployed:true};
   s.swordActivatedAt=T;s.swordDurationMs=220000;s.autoTouchActivatedAt=T;s.autoTouchDurationMs=250000;

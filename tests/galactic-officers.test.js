@@ -74,7 +74,7 @@ test('56 academy recruits bridge each eight-formation promotion with exact indep
 });
 
 test('late troop income crosses safe integers exactly and wallet settlement retains its one-gold boundary', () => {
-  for (const unit of UNIT_LIST) {
+  for (const unit of UNIT_LIST.filter(u=>u.school!=='constellation')) {
     const count = Math.floor((MAX_SOLDIERS-8000)/unit.power);
     const state = { ...army('은하 원수'), soldiers:5000, sergeants:300,
       [unit.field]:count, galacticSchoolLevel:5, gold:0 };

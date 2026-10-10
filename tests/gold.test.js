@@ -30,7 +30,7 @@ test('cached gold labels never mix ordinary integers and compact buckets', () =>
 });
 
 test('1000해 saves and old balances retain every gold', () => {
-  assert.equal(MAX_GOLD, 100_000_000_000_000_000_000_000n);
+  assert.equal(MAX_GOLD, 10n**27n);
   assert.equal(typeof MAX_GOLD,'bigint');
   for (const gold of [1_000_000_000_000, 1_234_567_890_123, MAX_GOLD - 1n, MAX_GOLD]) {
     const s = { ...freshState(T), gold };
@@ -55,7 +55,7 @@ test('touch gains cross one trillion, preserve one-gold precision and stop at th
 test('compact display does not round a purchase or forgive a one-gold deficit', () => {
   const s = { ...freshState(T), soldiers: 1_310_000, gold: MAX_GOLD };
   const price = recruitCost(s.soldiers);
-  assert.equal(fmtGold(s.gold), '1,000해');
+  assert.equal(fmtGold(s.gold), '1,000자');
   assert.equal(recruit(s, T).cost, price);
   assert.equal(s.gold, MAX_GOLD - BigInt(price));
   s.gold = recruitCost(s.soldiers) - 1;

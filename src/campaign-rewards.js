@@ -1,5 +1,7 @@
+import {EQUIPMENT,enhancementCost} from './equipment.js';
+import {RANKS} from './ranks.js';
 import { campaignStages } from './campaign.js';
-import { MAX_GOLD, subtractMoney, multiplyMoney, minMoney, scaleMoney } from './money.js';
+import { MAX_GOLD, subtractMoney, minMoney, scaleMoney } from './money.js';
 import {CONTINENT_STAGE_COUNT} from './campaign-constants.js';
 
 export const REGION_INCOME_PERCENT = 1;
@@ -20,7 +22,7 @@ export function withCampaignIncome(state, baseIncome) {
   return bonus?scaleMoney(baseIncome,100+bonus,100):baseIncome;
 }
 
-// Current growth determines the payout. Capital bonuses are first-clear only.
+// Legacy duration exports retained for old integrations; current gold is a fixed stage quote.
 export const FIRST_CLEAR_REWARD_SECONDS = 900;
 export const CAPITAL_REWARD_SECONDS = 3600;
 export const REPLAY_REWARD_SECONDS = 30;
@@ -38,8 +40,20 @@ export function battleStars(battle) {
   const fast = battle.elapsedMs <= (campaignStages[battle.stageId-1]?.capital?CAPITAL_STAR_FAST_MS:STAR_FAST_MS), healthy = battle.player.hq.hp >= battle.player.hq.maxHp * STAR_HP_RATIO;
   return 1 + (fast || healthy ? 1 : 0) + (fast && healthy ? 1 : 0);
 }
-export function battleGoldReward(income, firstClear, gold = 0, stars = 1, stageId=1) {
-  const seconds = battleRewardSeconds(firstClear,stageId);
-  const percent = STAR_REWARD_PERCENT[Math.max(1, Math.min(3, stars))];
-  return minMoney(scaleMoney(multiplyMoney(income, seconds), percent, 100), subtractMoney(MAX_GOLD, gold));
+export function battleGoldReward(_income, firstClear, gold = 0, _stars = 1, stageId=1) {
+  const base=fixedStageGold(stageId);
+  return minMoney(firstClear?base:scaleMoney(base,5,100),subtractMoney(MAX_GOLD,gold));
 }
+
+export const REPLAY_DAILY_LIMIT=10;
+export function rewardDay(now){return Math.floor((now+9*3600000)/86400000);}
+export function replayRemaining(state,now=Date.now()){
+ const day=Math.max(state.replayRewardDay??0,rewardDay(Math.max(now,state.lastAccrual??0)));
+ return day>(state.replayRewardDay??0)?10:Math.max(0,10-(state.replayRewardCount??0));
+}
+const fixedQuotes=campaignStages.map(stage=>{
+ const rank=RANKS.indexOf(stage.recommendedRank),gears=Object.values(EQUIPMENT).filter(g=>RANKS.indexOf(g.unlockRank)<=rank);
+ const gear=gears.at(-1),cost=enhancementCost(Math.min(gear.maxLevel-1,stage.recommendedLevel),gear.id);
+ return scaleMoney(cost,stage.capital?20:10,100);
+});
+export function fixedStageGold(id){if(!Number.isInteger(id)||!fixedQuotes[id-1])throw new RangeError('Unknown reward stage');return fixedQuotes[id-1];}

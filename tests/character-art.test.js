@@ -5,8 +5,8 @@ import {UNIT_LIST} from '../src/units.js';
 import {RANKS} from '../src/ranks.js';
 import {characterAtlas,characterIndex,drawCharacterPortrait,characterSprite} from '../src/character-art.js';
 
-test('all30 ranks and every recruited unit map to packaged RGBA atlases without missing cells',()=>{
-  assert.equal(RANKS.length,30);
+test('all35 ranks and every recruited unit map to packaged RGBA atlases without missing cells',()=>{
+  assert.equal(RANKS.length,35);
   const cells=new Set();
   for(let i=0;i<RANKS.length;i++) {
     const spec=characterAtlas(i);cells.add(`${spec.url}:${spec.cell}`);

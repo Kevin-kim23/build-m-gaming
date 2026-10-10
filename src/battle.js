@@ -1,10 +1,11 @@
+import {chooseEnemyDeployment,enemyTargetScore} from './battle-ai.js';
 import { EQUIPMENT, equipmentCount } from "./equipment.js";
 import { FORMATIONS } from "./formations.js";
 import { armyPower } from "./units.js";
 import { RANKS, rankForArmy } from "./ranks.js";
 import {
   BATTLE_RULES, STAGES, UNIT_TRAITS, FORTRESS_SHIELD, equipmentCombatStats, classMatchup,
-  stageEnemyType, fortressShieldClass, isFortress, GEAR_CLASS, CLASS_NAMES, matchupMultiplier, enemyStack, enemyWeaponModifier,
+  CLASS_BEATS, stageEnemyType, fortressShieldClass, isFortress, GEAR_CLASS, CLASS_NAMES, matchupMultiplier, enemyStack, enemyWeaponModifier,
 } from "./battle-balance.js";
 export { BATTLE_RULES, STAGES, UNIT_TRAITS, equipmentCombatStats, matchupMultiplier, stageEnemyType,
   GEAR_CLASS, CLASS_NAMES, fortressShieldClass, isFortress, classMatchup } from "./battle-balance.js";
@@ -44,8 +45,8 @@ export function normalizeLoadout(state, input = {}) {
 
 const scaleHp = (id, level, count, power, upgrades) => {
   const stats = equipmentCombatStats(id, level, power, count, upgrades);
-  // 체력은 공격력과 같은 성장 곡선(전력·수량·레벨)을 따른다.
-  return { stats, hp: UNIT_TRAITS[id].hp * (stats.growth ?? 1) * count * (power / 1280) };
+  // 체력은 장비 종류와 강화 단계로 결정된다.
+  return { stats, hp:stats.hp };
 };
 
 function makeUnit(battle, side, id, level, count, power, modifier = 1, upgrades = true, stack = 1, lane = 1) {
@@ -71,19 +72,19 @@ export function createBattle(state, stageId, input) {
     throw new RangeError("Battle is locked");
   const loadout = normalizeLoadout(state, input===undefined?defaultLoadout(state,stageId):input);
   if (!loadout.equipment.length) throw new RangeError("Battle deployment is empty");
-  const power = armyPower(state), formation = FORMATIONS.find((f) => f.size <= power);
+  const power = Number(armyPower(state)), formation = FORMATIONS.find((f) => f.size <= power);
   const enemyFormation = FORMATIONS.find((f) => f.id === stage.formationId);
   return {
     stageId, stageName: stage.name, enemyName: stage.enemyName, countryId: stage.countryId, status: "running",
     elapsedMs: 0, remainderMs: 0, mana: BATTLE_RULES.manaStart, nextUid: 1, fx: [],
     deck: loadout.equipment.map((id) => ({
-      id, level: state.equipment[id].level, count: equipmentCount(state, id), cost: UNIT_TRAITS[id].cost, readyMs: 0,
+      id, level: state.equipment[id].level, count:1, cost: UNIT_TRAITS[id].cost, readyMs: 0,
     })),
     player: { hq: { id: formation.id, name: formation.name, maxHp: power, hp: power }, fortress: null, units: [], power,
       turret: { damage: turretDamage(power, 1), nextShotMs: BATTLE_RULES.turretIntervalMs } },
     enemy: {
       hq: { id: enemyFormation.id, name: enemyFormation.name, maxHp: stage.hqPower, hp: stage.hqPower },
-      fortress: isFortress(stageId) ? stage.countryId : null, units: [], spawned: 0,
+      fortress: isFortress(stageId) ? stage.countryId : null, units: [], spawned: 0, mana:40, ready:{},
       nextSpawnMs: stage.enemyFirstSpawnMs, power: stage.enemyPower,
       turret: { damage: turretDamage(stage.enemyPower, isFortress(stageId) ? BATTLE_RULES.fortressTurret : 1) * stage.enemyModifier, nextShotMs: BATTLE_RULES.turretIntervalMs },
     },
@@ -91,7 +92,7 @@ export function createBattle(state, stageId, input) {
 }
 
 function cloneBattle(b) {
-  const side = (s) => ({ ...s, hq: { ...s.hq }, turret: { ...s.turret }, units: s.units.map((u) => ({ ...u })) });
+  const side = (s) => ({ ...s, hq: { ...s.hq }, turret: { ...s.turret }, ready:s.ready?{...s.ready}:undefined, units: s.units.map((u) => ({ ...u })) });
   return { ...b, deck: b.deck.map((c) => ({ ...c })), player: side(b.player), enemy: side(b.enemy), fx: [...b.fx] };
 }
 
@@ -121,12 +122,14 @@ function finish(b) {
   else if (b.elapsedMs >= BATTLE_RULES.maxDurationMs) b.status = "draw";
 }
 
-// 적이 올 레인: 지역 번호와 출격 순서로 정해지는 고정 규칙(예고 없이 바로 등장, 같은 지역은 항상 같은 순서).
+// Legacy lane helper retained for replay/debug compatibility; active AI reads lane threats.
 export const enemyLane = (stageId, n) => (Math.imul((stageId * 7919 + n * 104729) >>> 0, 2654435761) >>> 16) % BATTLE_RULES.lanes;
 
 function spawnEnemy(b, stage) {
-  const type = stageEnemyType(b.stageId), id = type.pool[b.enemy.spawned % type.pool.length];
-  b.enemy.units.push(makeUnit(b, "enemy", id, stage.enemyLevel, 1, stage.enemyPower, stage.enemyModifier*enemyWeaponModifier(id), false, enemyStack(b.stageId, stage.enemyLevel), enemyLane(b.stageId, b.enemy.spawned)));
+  const type=stageEnemyType(b.stageId),choice=chooseEnemyDeployment(b,type.pool,UNIT_TRAITS,CLASS_BEATS);
+  if(!choice){b.enemy.nextSpawnMs=b.elapsedMs+500;return;}
+  const {id,lane}=choice;b.enemy.mana-=UNIT_TRAITS[id].cost;b.enemy.ready[id]=b.elapsedMs+UNIT_TRAITS[id].cooldownMs;
+  b.enemy.units.push(makeUnit(b, "enemy", id, stage.recommendedLevel, 1, stage.enemyPower, 0.55, true, .55, lane));
   const born = b.enemy.units[b.enemy.units.length - 1];
   b.fx.push({ at: b.elapsedMs, kind: "spawn", side: "enemy", id: born.id, lane: born.lane, from: born.x });
   b.enemy.spawned++;
@@ -135,6 +138,7 @@ function spawnEnemy(b, stage) {
 
 function step(b, stage) {
   const dt = BATTLE_RULES.stepMs / 1000, now = b.elapsedMs, L = BATTLE_RULES.laneLength;
+  b.enemy.mana=Math.min(100,b.enemy.mana+BATTLE_RULES.manaPerSecond*dt);
   b.mana = Math.min(BATTLE_RULES.manaMax, b.mana + BATTLE_RULES.manaPerSecond * dt);
   if (now >= b.enemy.nextSpawnMs) spawnEnemy(b, stage);
   const damage = new Map(), heal = new Map();
@@ -154,8 +158,8 @@ function step(b, stage) {
         if (!(front - u.x * u.dir < 60)) u.x += u.dir * u.speed * dt;
         continue;
       }
-      let target = null, best = u.range + 1;
-      for (const f of foes) { if (f.lane !== u.lane) continue; const d = Math.abs(f.x - u.x); if (d <= u.range && d < best) { best = d; target = f; } }
+      let target = null, best = u.range + 1, priority=-Infinity;
+      for (const f of foes) { if (f.lane !== u.lane) continue; const d = Math.abs(f.x - u.x); if(d<=u.range){const score=side==='enemy'?enemyTargetScore(u,f,d,CLASS_BEATS):-d;if(score>priority){priority=score;best=d;target=f;}} }
       const baseDist = Math.abs(baseX - u.x);
       if (!target && baseDist <= u.range) target = "base";
       if (!target) { u.x += u.dir * u.speed * dt; continue; }

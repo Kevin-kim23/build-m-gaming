@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MAX_GOLD, LEGACY_MAX_GOLD, parseGold, exact, compactMoney, addMoney, subtractMoney, multiplyMoney, scaleMoney, serializeSave } from '../src/money.js';
+import { MAX_GOLD, GALACTIC_MAX_GOLD, LEGACY_MAX_GOLD, parseGold, exact, compactMoney, addMoney, subtractMoney, multiplyMoney, scaleMoney, serializeSave } from '../src/money.js';
 import { freshState, parseSave, tapGold, accrue, perSecond, recruit, upgradeSchool, enhanceEquipment, SAVE_KEY, MAX_OFFLINE_MS } from '../src/game.js';
 import { enhancementOffer, enhancementCost } from '../src/equipment.js';
 import { fmtGold, fmtGoldCost } from '../src/format.js';
@@ -42,8 +42,8 @@ test('4000 mixed arithmetic operations match an independent integer reference at
 
 test('high gold is stored as canonical decimal text, malformed or rounded amounts are rejected',()=>{
   const s={...freshState(T),gold:MAX_GOLD-1n};
-  assert.equal(JSON.parse(serializeSave(s)).gold,'99999999999999999999999');
-  for(const gold of ['100000000000000000000001','1000000000000000000000000','1e23','+1','01','-1','1.0','Infinity','',null,{},[],Number.MAX_SAFE_INTEGER+1])
+  assert.equal(JSON.parse(serializeSave(s)).gold,(MAX_GOLD-1n).toString());
+  for(const gold of [(MAX_GOLD+1n).toString(),(MAX_GOLD*10n).toString(),'1e23','+1','01','-1','1.0','Infinity','',null,{},[],Number.MAX_SAFE_INTEGER+1])
     assert.equal(parseSave(JSON.stringify({...freshState(T),gold}),T),null);
   assert.equal(parseSave(JSON.stringify({...freshState(T),version:16,gold:'100000000000000'}),T),null);
   const old={...freshState(T),version:16,gold:99_999_999_999_999};
@@ -58,9 +58,9 @@ test('prices and balances format through 해 using two units without rounding pu
     [LEGACY_MAX_GOLD-1n,'999경 9,999조','1,000경'],[LEGACY_MAX_GOLD,'1,000경','1,000경'],
     [10n**20n-1n,'9,999경 9,999조','1해'],[10n**20n,'1해','1해'],
     [10n**20n+1n,'1해','1해 1경'],[123_456_789_012_345_678_901n,'1해 2,345경','1해 2,346경'],
-    [MAX_GOLD-1n,'999해 9,999경','1,000해'],[MAX_GOLD,'1,000해','1,000해'],
+    [MAX_GOLD-1n,'999자 9,999해','1,000자'],[MAX_GOLD,'1,000자','1,000자'],
   ]){assert.equal(fmtGold(n),wallet);assert.equal(fmtGoldCost(n),cost);}
-  const parseLabel=label=>[...label.matchAll(/([\d,]+)(해|경|조|억|만)/g)].reduce((sum,[,digits,unit])=>sum+BigInt(digits.replaceAll(',',''))*{해:10n**20n,경:10n**16n,조:10n**12n,억:10n**8n,만:10n**4n}[unit],0n);
+  const parseLabel=label=>[...label.matchAll(/([\d,]+)(자|해|경|조|억|만)/g)].reduce((sum,[,digits,unit])=>sum+BigInt(digits.replaceAll(',',''))*{자:10n**24n,해:10n**20n,경:10n**16n,조:10n**12n,억:10n**8n,만:10n**4n}[unit],0n);
   for(let i=1n;i<=1000n;i++) {
     const n=(MAX_GOLD/1000n)*i-17n;
     assert.ok(parseLabel(fmtGold(n))<=n);assert.ok(parseLabel(fmtGoldCost(n))>=n);
@@ -68,14 +68,14 @@ test('prices and balances format through 해 using two units without rounding pu
 });
 
 test('v34 opens the larger wallet without relaxing historical save validation',()=>{
-  assert.equal(MAX_GOLD,10n**23n);
+  assert.equal(MAX_GOLD,10n**27n);
   for(const version of [17,21,22,30,33]) {
     assert.equal(parseGold(LEGACY_MAX_GOLD.toString(),version),LEGACY_MAX_GOLD);
     assert.equal(parseGold((LEGACY_MAX_GOLD+1n).toString(),version),null);
     assert.equal(parseGold((10n**20n).toString(),version),null);
   }
   assert.equal(parseGold((LEGACY_MAX_GOLD+1n).toString(),34),LEGACY_MAX_GOLD+1n);
-  assert.equal(parseGold(MAX_GOLD.toString(),34),MAX_GOLD);
+  assert.equal(parseGold(GALACTIC_MAX_GOLD.toString(),34),GALACTIC_MAX_GOLD);
   assert.equal(parseGold((MAX_GOLD+1n).toString(),34),null);
 });
 
@@ -103,7 +103,7 @@ test('해-sized pending offline rewards round trip, double exactly and clamp onl
   assert.equal(loaded.offlineReward,null);
   const capped={...state,gold:MAX_GOLD-1n,incomeRemainder:777};
   assert.equal(claimOfflineReward(capped,T,2).amount,1);assert.equal(capped.gold,MAX_GOLD);assert.equal(capped.incomeRemainder,0);
-  for(const bad of [MAX_GOLD+1n,'1000000000000000000000000',Number.MAX_SAFE_INTEGER+1])
+  for(const bad of [MAX_GOLD+1n,(MAX_GOLD*10n).toString(),Number.MAX_SAFE_INTEGER+1])
     assert.equal(parseSave(serializeSave({...state,offlineReward:{...state.offlineReward,amount:bad}}),T),null);
   const away={...freshState(T),soldiers:1,gold:MAX_GOLD-1n,offlineReward:{id:T-1,durationMs:3600000,amount:MAX_GOLD-1n}};
   assert.equal(prepareOfflineReward(away,T+3600000),true);assert.equal(away.offlineReward.amount,MAX_GOLD);

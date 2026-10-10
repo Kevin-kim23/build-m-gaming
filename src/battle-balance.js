@@ -1,7 +1,7 @@
 import { BATTALION_SIZE } from "./formations.js";
 import { EQUIPMENT, MAX_EQUIPMENT_COUNT } from "./equipment.js";
 import { campaignStages } from './campaign.js';
-import {RANKS} from './ranks.js';
+import {RANKS,RANK_REQUIREMENTS} from './ranks.js';
 
 // 가로 전장 전투(0.45): 마나로 장비를 출격시켜 적 기지를 부순다. 수치는 모두 여기 한 곳에 둔다.
 export const BATTLE_RULES = Object.freeze({
@@ -126,10 +126,13 @@ export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, cou
     intervalMs: 3000,
   };
   const growth = 1 + level*.12 + (playerUpgrades ? Math.max(0,level-10)**2*.02 : 0);
+  const scale=playerUpgrades?combatScale(Number(RANK_REQUIREMENTS[RANKS.indexOf(type.unlockRank)])):combatScale(totalPower);
+  const copies=playerUpgrades?1:count;
   return {
     growth,
-    damage: count * base.damage * growth * combatScale(totalPower),
-    ...(base.healing ? { healing:count*base.healing*growth*combatScale(totalPower) } : {}),
+    hp:UNIT_TRAITS[id].hp*growth*copies*scale,
+    damage: copies * base.damage * growth * scale,
+    ...(base.healing ? { healing:copies*base.healing*growth*scale } : {}),
     intervalMs: Math.max(
       BATTLE_RULES.stepMs,
       Math.round(base.intervalMs / (1 + level * 0.08) / BATTLE_RULES.stepMs) * BATTLE_RULES.stepMs,
@@ -142,4 +145,11 @@ export function enemyStack(stageId, enemyLevel) {
   const refLevel=STAGES[stageId-1].recommendedLevel;
   const growth = (level, upgrades) => 1 + level * .12 + (upgrades ? Math.max(0, level - 10) ** 2 * .02 : 0);
   return Math.round(growth(refLevel,true)/growth(enemyLevel,false)*100)/100;
+}
+
+// A comparison index, not damage: 20s damage/healing plus one tenth of HP.
+export function equipmentCombatPower(id,level){
+ const s=equipmentCombatStats(id,level),t=UNIT_TRAITS[id];
+ const rate=t.kind==='strike'?s.damage*BATTLE_RULES.strikeMultiplier/(t.cooldownMs/1000):((s.damage||s.healing||0)*1000/s.intervalMs);
+ return Math.max(1,Math.round(rate*20+s.hp*.1));
 }

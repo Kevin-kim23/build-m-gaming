@@ -1,3 +1,5 @@
+import {compactGuidePower} from './power-format.js';
+import {equipmentCombatPower,equipmentCombatStats} from './battle-balance.js';
 import {multiplyMoney} from './money.js';
 import { fmt, fmtGold, fmtGoldCost } from './format.js';
 import {
@@ -24,7 +26,7 @@ export function equipmentDetailMarkup(s, id, { manage = true } = {}) {
     body: `<div class="detail-art detail-art-wide"><canvas data-gun-preview width="440" height="248" role="img" aria-label="${d.name} 외형"></canvas></div>
       <p>${equipmentRole(id)}</p>
       <dl class="detail-stats">
-        ${row('해금 계급', d.unlockRank)}${row('구매 가격', fmtGoldCost(d.cost) + ' G')}
+        ${row('장비 전투력',compactGuidePower(BigInt(equipmentCombatPower(id,level))))}${row('공격력 / 체력',fmt(Math.round(equipmentCombatStats(id,level).damage))+' / '+fmt(Math.round(equipmentCombatStats(id,level).hp)))}${row('해금 계급', d.unlockRank)}${row('구매 가격', fmtGoldCost(d.cost) + ' G')}
         ${row('보유', gun ? `${fmt(count)}문 · +${gun.level}강` : offer.locked ? '🔒 잠금' : '미보유')}
         ${row(gun ? '초당 수입(합계)' : '초당 수입(1문)', '+' + fmtGold(multiplyMoney(stats.passive,times)) + ' G')}
         ${row(gun ? '터치 보상(합계)' : '터치 보상(1문)', '+' + fmtGold(multiplyMoney(stats.tap,times)) + ' G')}

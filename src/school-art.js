@@ -6,8 +6,8 @@ const drawings=new Map();
 export function schoolIcon(id,level) {
   const key=`${id}:${level}`;
   if(drawings.has(key)) return drawings.get(key);
-  if(id==='galactic') {
-    const svg=`<svg class="school-art" viewBox="0 0 96 72" role="img" aria-label="은하 사관학교 Lv.${level} 건물" shape-rendering="crispEdges">${galacticSchoolBody(level)}</svg>`;
+  if(id==='galactic'||id==='constellation') {
+    const svg=`<svg class="school-art" viewBox="0 0 96 72" role="img" aria-label="${SCHOOLS[id].name} Lv.${level} 건물" shape-rendering="crispEdges">${id==='constellation'?galacticSchoolBody(level).replaceAll('#a395d7','#82aecf').replaceAll('#77718c','#31567c'):galacticSchoolBody(level)}</svg>`;
     drawings.set(key,svg);return svg;
   }
   if(id==='command') {

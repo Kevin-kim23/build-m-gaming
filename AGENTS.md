@@ -14,7 +14,7 @@
 - 저장 키 budae-kiugi-recruits-v3 와 parseSave의 이전(migration) 처리를 유지한다.
 - 저장 구조를 바꾸면 version을 올리고, 이전 버전 저장을 읽는 테스트를 추가한다.
 - 사용자의 실제 저장 기록을 테스트용 기록으로 덮어쓰지 않는다.
-- 골드 상한 1,000해은 Number 안전 정수 범위를 넘는다. 금액 연산은 `money.js`의 공통 함수, 저장은 `serializeSave`를 사용한다. 큰 금액을 Number로 변환하거나 `JSON.stringify(state)`로 직접 저장하지 않는다.
+- 골드 상한 1,000자는 Number 안전 정수 범위를 넘는다. 금액 연산은 `money.js`의 공통 함수, 저장은 `serializeSave`를 사용한다. 큰 금액을 Number로 변환하거나 `JSON.stringify(state)`로 직접 저장하지 않는다.
 - 골드 계산 변경 시 안전 정수 경계, 상한 직전 1G, 큰 구매 비용 차감·부족 금액, 저장 후 재접속을 검증한다.
 
 ## 성능

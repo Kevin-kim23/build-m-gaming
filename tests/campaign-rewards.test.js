@@ -1,3 +1,4 @@
+import {fixedStageGold} from '../src/campaign-rewards.js';
 import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
 import test from 'node:test';
@@ -34,14 +35,14 @@ test('troops and deployed copies receive passive bonuses, while stored equipment
   assert.equal(s.autoTouchTicks,200);
   assert.equal(s.gold-noBonus.gold,(perSecond(s)-perSecond(noBonus))*60);
 });
-test('first victory settles the old rate, then pays 15 min of loot; replays pay 30 sec and never stack income',()=>{
+test('first victory settles the old rate, then pays a fixed quote; replays pay five percent and never stack income',()=>{
   const s=state(),old=perSecond(s);
   assert.equal(recordBattleVictory(s,victory(1),T+1000).firstClear,true);
   const updated=perSecond(s);assert.equal(updated,old+Math.floor(old/100));
-  assert.equal(s.gold,old+updated*900);assert.equal(s.campaignCleared,1); // 정산 후 15분치 전리품
+  assert.equal(s.gold,old+fixedStageGold(1));assert.equal(s.campaignCleared,1); // 정산 후 15분치 전리품
   const g1=s.gold;
   assert.equal(recordBattleVictory(s,victory(1),T+2000).firstClear,false);
-  assert.equal(s.gold,g1+updated+updated*30);assert.equal(s.campaignCleared,1); // 1초 수입 + 재도전 30초치
+  assert.equal(s.gold,g1+updated+Math.floor(fixedStageGold(1)*.05));assert.equal(s.campaignCleared,1); // 1초 수입 + 재도전 30초치
   const g2=s.gold;
   assert.equal(recordBattleVictory(s,victory(2),T+2000).firstClear,true);
   assert.ok(s.gold>g2);assert.equal(campaignBonusPercent(s),2);

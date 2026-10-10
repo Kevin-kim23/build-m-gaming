@@ -1,3 +1,5 @@
+import {compactGuidePower} from './power-format.js';
+import {equipmentCombatPower,equipmentCombatStats} from './battle-balance.js';
 import { subtractMoney } from './money.js';
 import { personalMarkup } from "./personal-panels.js";
 import { repeatPurchaseMarkup, renderRepeatPurchase } from "./equipment-repeat-ui.js";
@@ -31,7 +33,7 @@ export function equipmentPanelMarkup(s, id, category = "military") {
     );
   return (
     head +
-    `<p class="deployment-count" id="deployment-count"></p><nav class="equipment-select" aria-label="관리할 장비">${items.map((item) => `<button data-select-equipment="${item.id}" aria-pressed="${id === item.id}">${item.name} <span data-select-count="${item.id}">[${fmt(equipmentCount(s, item.id))}문]</span></button>`).join("")}</nav><article class="equipment-detail"><div class="equipment-detail-title"><div><h3>${d.name} <b id="equipment-level"></b></h3><span class="equipment-quantity" id="equipment-count"></span></div><span id="equipment-deployed"></span><button type="button" class="detail-open" data-detail-equipment="${id}" aria-label="${d.name} 능력 상세보기">능력 상세</button></div><div class="equipment-preview"><canvas data-gun-preview width="440" height="248" role="img" aria-label="${d.name} 외형"></canvas></div><p id="equipment-empty"></p><button class="buy" id="purchase-equipment" data-buy-equipment="${id}">${d.name} 구매</button><div id="owned-equipment" hidden><button class="equipment-deploy" id="toggle-equipment"></button><section class="enhancement-box"><div class="price-line"><span>강화 비용</span><strong id="enhancement-cost"></strong></div><button class="buy" id="enhance-equipment"></button></section>${repeatPurchaseMarkup(id)}</div></article><p id="equipment-message" role="status" aria-live="polite"></p>`
+    `<p class="deployment-count" id="deployment-count"></p><nav class="equipment-select" aria-label="관리할 장비">${items.map((item) => `<button data-select-equipment="${item.id}" aria-pressed="${id === item.id}">${item.name} <span data-select-count="${item.id}">[${fmt(equipmentCount(s, item.id))}문]</span></button>`).join("")}</nav><article class="equipment-detail"><div class="equipment-detail-title"><div><h3>${d.name} <b id="equipment-level"></b></h3><span class="equipment-quantity" id="equipment-count"></span></div><span id="equipment-deployed"></span><button type="button" class="detail-open" data-detail-equipment="${id}" aria-label="${d.name} 능력 상세보기">능력 상세</button></div><div class="equipment-preview"><canvas data-gun-preview width="440" height="248" role="img" aria-label="${d.name} 외형"></canvas></div><p id="equipment-combat-power"></p><p id="equipment-empty"></p><button class="buy" id="purchase-equipment" data-buy-equipment="${id}">${d.name} 구매</button><div id="owned-equipment" hidden><button class="equipment-deploy" id="toggle-equipment"></button><section class="enhancement-box"><div class="price-line"><span>강화 비용</span><strong id="enhancement-cost"></strong></div><button class="buy" id="enhance-equipment"></button></section>${repeatPurchaseMarkup(id)}</div></article><p id="equipment-message" role="status" aria-live="polite"></p>`
   );
 }
 export function renderEquipmentPanel(s, root, id) {
@@ -43,6 +45,7 @@ export function renderEquipmentPanel(s, root, id) {
     offer = enhancementOffer(s, id),
     level = gun?.level ?? 0,
     purchase = equipmentPurchaseOffer(s, id);
+  text(root,"equipment-combat-power",`장비 전투력 ${compactGuidePower(BigInt(equipmentCombatPower(id,level)))} · 종류·강화 기준`);
   text(root, "equipment-level", gun ? "+" + level : "");
   text(root, "equipment-count", `[${fmt(equipmentCount(s, id))}문]`);
   for (const node of root.querySelectorAll("[data-select-count]")) node.textContent = `[${fmt(equipmentCount(s, node.dataset.selectCount))}문]`;

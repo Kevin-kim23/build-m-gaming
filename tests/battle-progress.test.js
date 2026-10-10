@@ -1,3 +1,4 @@
+import {fixedStageGold} from '../src/campaign-rewards.js';
 import { CAMPAIGN_STAGE_COUNT } from '../src/campaign-constants.js';
 import { SAVE_VERSION } from '../src/state.js';
 import { test } from 'node:test';
@@ -123,13 +124,13 @@ test('failed victory save preserves pending progress and retries without duplica
   h.session.pause();
 });
 
-test('battle loot is income x 15 min on first clear, x 30 sec on replay, and respects the gold cap', async () => {
+test('battle loot is fixed on first clear, five percent on replay, and respects the gold cap', async () => {
   const { battleGoldReward } = await import('../src/campaign-rewards.js');
   const { MAX_GOLD } = await import('../src/money.js');
-  assert.equal(battleGoldReward(10, true), 9000);
-  assert.equal(battleGoldReward(10, false), 300);
+  assert.equal(battleGoldReward(10, true), fixedStageGold(1));
+  assert.equal(battleGoldReward(10, false), Math.floor(fixedStageGold(1)*.05));
   assert.equal(battleGoldReward(10, true, MAX_GOLD - 5n), 5);
-  assert.equal(battleGoldReward(Number.MAX_SAFE_INTEGER, true) > BigInt(Number.MAX_SAFE_INTEGER), true);
+  assert.equal(battleGoldReward(Number.MAX_SAFE_INTEGER, true),fixedStageGold(1));
   const state = army(), first = win(state, 1);
   const r1 = recordBattleVictory(state, first), g1 = state.gold;
   const r2 = recordBattleVictory(state, win(state, 1));
@@ -137,7 +138,7 @@ test('battle loot is income x 15 min on first clear, x 30 sec on replay, and res
   assert.ok(r1.gold > r2.gold && r2.gold > 0 && state.gold === g1 + r2.gold);
 });
 
-test('stars: 1 for any win, 2 for fast OR healthy HQ, 3 for both; they scale only the loot', async () => {
+test('stars: 1 for any win, 2 for fast OR healthy HQ, 3 for both; they do not multiply gold', async () => {
   const { battleStars, battleGoldReward } = await import('../src/campaign-rewards.js');
   const b = (elapsedMs, hp, status = 'victory') => ({ status, elapsedMs, player: { hq: { hp, maxHp: 100 } } });
   assert.equal(battleStars(b(100000, 49)), 1);
@@ -145,10 +146,10 @@ test('stars: 1 for any win, 2 for fast OR healthy HQ, 3 for both; they scale onl
   assert.equal(battleStars(b(100000, 50)), 2);
   assert.equal(battleStars(b(75000, 50)), 3);
   assert.equal(battleStars(b(10000, 100, 'defeat')), 0);
-  assert.equal(battleGoldReward(10, true, 0, 1), 9000);
-  assert.equal(battleGoldReward(10, true, 0, 2), 11250);
-  assert.equal(battleGoldReward(10, true, 0, 3), 13500);
-  assert.equal(battleGoldReward(10, false, 0, 3), 450);
+  assert.equal(battleGoldReward(10, true, 0, 1), fixedStageGold(1));
+  assert.equal(battleGoldReward(10, true, 0, 2), fixedStageGold(1));
+  assert.equal(battleGoldReward(10, true, 0, 3), fixedStageGold(1));
+  assert.equal(battleGoldReward(10, false, 0, 3), Math.floor(fixedStageGold(1)*.05));
 });
 
 test('the best star per region is saved, never lowered, and shown only for conquered regions', async () => {

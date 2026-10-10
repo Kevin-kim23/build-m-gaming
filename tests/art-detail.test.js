@@ -10,7 +10,7 @@ import { UNITS } from '../src/units.js';
 test('rank insignia preserves enlisted marks and frames all general and marshal star counts', () => {
   RANK_DEFINITIONS.forEach((rank,i) => {
     if(rank.kind==='general'){
-      const art=insignia(i),stars=rank.marks>=11?rank.marks-10:rank.marks<=5?rank.marks:rank.marks-5;
+      const art=insignia(i),stars=rank.marks>=16?rank.marks-15:rank.marks>=11?rank.marks-10:rank.marks<=5?rank.marks:rank.marks-5;
       assert.match(art,/framed-rank-badge/);
       assert.match(art,new RegExp(`data-${rank.marks>=11?'galactic':rank.marks<=5?'general':'marshal'}-frame="${rank.marks}"`));
       assert.equal((art.match(/data-rank-star/g)||[]).length,stars);

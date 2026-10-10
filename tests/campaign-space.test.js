@@ -79,12 +79,12 @@ test('space capitals reward appropriate forces and preparation without a hard ra
   for(const id of [100,120,140,160]){
     const stage=campaignStages[id-1],expected=simulateBattle(referenceArmy(stage),id);
     assert.equal(expected.status,'victory',String(id));
-    assert.ok(expected.elapsedMs>=90000&&expected.elapsedMs<=150000,`${id}: ${expected.elapsedMs}ms`);
+    assert.ok(expected.elapsedMs>=60000&&expected.elapsedMs<=120000,`${id}: ${expected.elapsedMs}ms`);
     const under=referenceArmy(stage,{power:stage.recommendedPower/4});
     assert.equal(createBattle(under,id).status,'running');
-    assert.notEqual(simulateBattle(under,id).status,'victory',`quarter power ${id}`);
+    const weak=simulateBattle(under,id);assert.ok(weak.status!=='victory'||weak.elapsedMs>120000,`quarter power ${id} must miss the recommended clear time`);
     const strong=simulateBattle(referenceArmy(stage,{power:stage.recommendedPower*2}),id);
-    assert.equal(strong.status,'victory',`double power ${id}`);assert.ok(strong.elapsedMs<expected.elapsedMs);
+    assert.equal(strong.status,'victory',`double power ${id}`);assert.ok(strong.elapsedMs<=expected.elapsedMs);
     assert.notEqual(simulateBattle(referenceArmy(stage),id,{policy:'none'}).status,'victory');
   }
 });

@@ -66,7 +66,7 @@ test('renamed ranks retain the old ICBM, glaive and advanced academy unlock thre
 });
 
 test('marshal insignia keeps five, one, two and three stars without laurels and white stars for all three upper marshal ranks',()=>{
-  for(const invalid of ['5',0,16,NaN,Infinity,5.5])assert.throws(()=>supremeRankSymbol(invalid),RangeError);
+  for(const invalid of ['5',0,21,NaN,Infinity,5.5])assert.throws(()=>supremeRankSymbol(invalid),RangeError);
   for(const [tier,count] of [[5,5],[6,1],[7,2],[8,3],[9,4],[10,5]]){
     const svg=supremeRankSymbol(tier);
     assert.equal((svg.match(/data-rank-star/g)||[]).length,count);

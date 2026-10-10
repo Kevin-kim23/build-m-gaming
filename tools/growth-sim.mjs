@@ -1,7 +1,10 @@
 // Planning model, not a prediction of human play. Runs only on an in-memory fresh save.
+import {personalUpgradeOffer} from '../src/personal-enhancement.js';
+import {PERSONAL_EQUIPMENT} from '../src/personal-catalog.js';
+import {simulateBattle} from './campaign-sim.mjs';
 import { FACILITIES, facilityOffer, facilityBonus, facilityLevel, facilityUpgradeOffer } from '../src/facilities.js';
 import { pathToFileURL } from 'node:url';
-import { freshState, unitCost, perSecond, perTap, accrue, recruit, upgradeSchool, buyEquipment, enhanceEquipment, buildFacility, upgradeFacility } from '../src/game.js';
+import { freshState, recruitOffer, enhancePersonalEquipment, unitCost, perSecond, perTap, accrue, recruit, upgradeSchool, buyEquipment, enhanceEquipment, buildFacility, upgradeFacility } from '../src/game.js';
 import { UNIT_LIST, unitAccess, armyPower } from '../src/units.js';
 import { SCHOOLS, schoolOffer } from '../src/schools.js';
 import { EQUIPMENT, equipmentStats, enhancementOffer, equipmentPurchaseOffer } from '../src/equipment.js';
@@ -22,9 +25,23 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
   const effective=(passive,tap)=>{const bonus=facilityBonus(state);return passive*(100+bonus.passive)/100+tap*tapWeight*(100+bonus.tap)/100;};
   function candidates() {
     const result=[], rank=rankForArmy(state);
-    for(const u of UNIT_LIST) if(unitAccess(state,u).unlocked) {
+    for(const u of UNIT_LIST) if(unitAccess(state,u).unlocked&&recruitOffer(state,u.id).reason!=='limit') {
       const cost=unitCost(state[u.field],u.id), gain=effective(u.passive,u.tap);
       result.push({kind:'unit',id:u.id,cost,score:Number(cost)/gain,apply:()=>recruit(state,START+elapsed*1000,u.id)});
+    }
+    for(const item of Object.values(PERSONAL_EQUIPMENT)) {
+      const offer=personalUpgradeOffer(state,item.id);if(offer.reason==='locked'||offer.reason==='max')continue;
+      const next={...state,personalLevels:{...state.personalLevels,[item.id]:offer.nextLevel}};
+      let gain=Number(perSecond(next))-Number(perSecond(state))+(Number(perTap(next,START+elapsed*1000))-Number(perTap(state,START+elapsed*1000)))*tapWeight;
+      // Flag investments include the income unlocked by the next upgrade of owned gear.
+      if(item.id==='divisionFlag')for(const gear of Object.values(EQUIPMENT))if(state.equipment[gear.id]){
+        const after=enhancementOffer(next,gear.id),before=enhancementOffer(state,gear.id);
+        if(before.reason==='max'&&after.reason!=='max'){
+          const a=equipmentStats(state.equipment[gear.id].level+1,gear.id),b=equipmentStats(state.equipment[gear.id].level,gear.id);
+          gain+=effective(a.passive-b.passive,a.tap-b.tap)*Number(offer.cost)/(Number(offer.cost)+Number(after.cost));
+        }
+      }
+      if(gain>0)result.push({kind:'personal',id:item.id,cost:offer.cost,score:Number(offer.cost)/gain,apply:()=>enhancePersonalEquipment(state,START+elapsed*1000,item.id)});
     }
     for(const school of Object.values(SCHOOLS)) {
       const offer=schoolOffer(state,school.id);
@@ -80,13 +97,15 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
     if(state.offlineReward)claimOfflineReward(state,state.offlineReward.id);
     accrue(state,START+elapsed*1000);
     const end=elapsed+duration;
-    const stage=campaignStages[state.campaignCleared];
-    if(battles&&stage&&armyPower(state)>=stage.recommendedPower&&battleAccess(state).unlocked) {
-      // Optimistic sensitivity case: one first-clear/visit, always 3 stars, costing 60s of active time.
-      elapsed+=60;activeSeconds+=60;
-      recordBattleVictory(state,{stageId:stage.id,status:'victory',elapsedMs:60000,enemy:{hq:{hp:0}},player:{hq:{hp:100,maxHp:100}}},START+elapsed*1000);
-    }
+    let failedStage=0;
     while(elapsed<end&&rankForArmy(state)<LAST_RANK) {
+      const stage=campaignStages[state.campaignCleared];
+      if(battles&&stage&&stage.id!==failedStage&&end-elapsed>=120&&armyPower(state)>=stage.recommendedPower&&battleAccess(state).unlocked){
+        const battle=simulateBattle(state,stage.id);
+        elapsed+=Math.ceil(battle.elapsedMs/1000);activeSeconds+=Math.ceil(battle.elapsedMs/1000);
+        if(battle.status==='victory')recordBattleVictory(state,battle,START+elapsed*1000);else failedStage=stage.id;
+        continue;
+      }
       const choice=candidates();if(!choice)break;
       if(state.gold>=choice.cost) {
         const result=choice.apply();if(!result.ok)throw Error(`Simulation action failed: ${choice.kind}.${choice.id}: ${result.reason}`);
@@ -100,7 +119,7 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
       state.gold=minMoney(MAX_GOLD,addMoney(state.gold,touch));state.taps+=tapsPerSecond*step;
     }
   }
-  return {assumptions:{visitsPerDay:3,minutes,tapsPerSecond,days,investmentHours,ads:false,personalAwards:true,personalUpgrades:false,battles,facilities,facilityUpgrades:facilities&&facilityUpgrades},milestones,unlocks,
+  return {assumptions:{visitsPerDay:3,minutes,tapsPerSecond,days,investmentHours,ads:false,personalAwards:true,personalUpgrades:true,battles,facilities,facilityUpgrades:facilities&&facilityUpgrades},milestones,unlocks,
     final:{rank:RANKS[rankForArmy(state)],power:armyPower(state),gold:String(state.gold),facilities:[...state.facilities],facilityLevels:{...state.facilityLevels},equipment:Object.entries(state.equipment).filter(([,gear])=>gear).map(([id,gear])=>({id,level:gear.level})),actions}};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href) {

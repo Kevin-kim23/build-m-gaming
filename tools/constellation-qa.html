@@ -1,0 +1,16 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>은하단·전투 개편 검증</title>
+<style>body{margin:0;background:#14202c;color:#e4eaf0;font:14px sans-serif;overflow:auto!important}main{width:360px;max-width:100%;margin:16px auto}.badges{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}.badges svg{width:100%;height:auto}.badges b{display:block;text-align:center;font-size:12px}.campus svg{width:180px;height:135px}.quick-deck{display:grid;grid-template-columns:repeat(3,1fr)}h2{font-size:18px}.rank-step{font-size:12px}button{padding:12px;margin:6px}</style>
+<main><h1>은하단 확장</h1><p>검증용 화면 · 실제 저장 변경 없음</p><div id="badges" class="badges"></div><div id="school" class="campus"></div><div id="ranks"></div><h2>군사 장비 +50강</h2><div id="deck"></div><button id="promote">은하단 원수 진급식</button></main>
+<script type="module">
+import '/src/style.css';import '/src/battle.css';import '/src/general-promotion.css';
+import {freshState} from '/src/state.js';import {RANKS} from '/src/ranks.js';import {insignia} from '/src/home-view.js';import {schoolIcon} from '/src/school-art.js';
+import {rankGuideMarkup} from '/src/rank-guide.js';import {quickDeckMarkup} from '/src/quick-deck.js';import {STAGES} from '/src/battle.js';import {EQUIPMENT} from '/src/equipment.js';import {showPromotion} from '/src/promotion.js';import {drawEquipment} from '/src/equipment-art.js';
+const s={...freshState(),soldiers:10000,sergeants:300,constellationMarshals:64};s.personalLevels.divisionFlag=40;
+for(const g of Object.values(EQUIPMENT))s.equipment[g.id]={level:50,count:1,deployed:true};
+document.querySelector('#badges').innerHTML=RANKS.slice(30).map((n,i)=>'<article>'+insignia(i+30)+'<b>'+n+'</b></article>').join('');
+document.querySelector('#school').innerHTML=schoolIcon('constellation',5)+'<h2>은하단 사관학교 Lv.5</h2>';
+document.querySelector('#ranks').innerHTML=rankGuideMarkup(s,insignia);
+document.querySelector('#deck').innerHTML=quickDeckMarkup(s,STAGES[159],['novaCannon']);
+for(const c of document.querySelectorAll('[data-card-art]'))drawEquipment(c,50,c.dataset.cardArt);
+document.querySelector('#promote').onclick=()=>showPromotion(34,insignia);
+</script></html>

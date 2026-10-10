@@ -2,6 +2,7 @@
 import {pathToFileURL} from 'node:url';
 import {freshState} from '../src/state.js';
 import {RANKS,RANK_REQUIREMENTS,rankForArmy} from '../src/ranks.js';
+import {equipmentCombatPower} from '../src/battle-balance.js';
 import {EQUIPMENT} from '../src/equipment.js';
 import {STAGES,createBattle,advanceBattle,deploy,BATTLE_RULES} from '../src/battle.js';
 
@@ -16,13 +17,16 @@ export function referenceArmy(stage,{power=stage.recommendedPower,level=stage.re
   return s;
 }
 
-export function simulateBattle(state,stageId,{policy='defend',deck}={}) {
+export function simulateBattle(state,stageId,{policy='defend',deck,hqPower}={}) {
   let b=createBattle(state,stageId,deck?{equipment:deck}:undefined),k=0,nextInput=0;
+  if(hqPower)b.enemy.hq.hp=b.enemy.hq.maxHp=hqPower;
   while(b.status==='running') {
     if(policy!=='none'&&b.elapsedMs>=nextInput){
       // A human-sized decision interval; the model cannot respond every engine frame.
       nextInput=b.elapsedMs+500;
-      const ready=b.deck.filter(c=>b.mana>=c.cost&&b.elapsedMs>=c.readyMs);
+      const strongest=Math.max(...b.deck.map(c=>equipmentCombatPower(c.id,c.level)/c.cost));
+      const options=b.deck.filter(c=>equipmentCombatPower(c.id,c.level)/c.cost>=strongest*.12&&b.elapsedMs>=c.readyMs).sort((a,c)=>equipmentCombatPower(c.id,c.level)/c.cost-equipmentCombatPower(a.id,a.level)/a.cost);
+      const ready=options[0]&&b.mana>=options[0].cost?[options[0]]:[];
       if(ready.length){
         let lane=1,nearest=Infinity;
         if(policy==='defend')for(const foe of b.enemy.units)if(foe.x<nearest){nearest=foe.x;lane=foe.lane;}

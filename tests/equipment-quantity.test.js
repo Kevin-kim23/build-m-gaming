@@ -84,14 +84,14 @@ test('current saves reject missing, malformed and impossible quantities', () => 
   s.equipment.tank={level:9,deployed:true,count:2}; assert.equal(parseSave(serializeSave(s),T),null);
   s.equipment.tank.level=10;assert.equal(parseSave(serializeSave(s),T).equipment.tank.count,2);
 });
-test('all copies of one equipment type deploy as one grouped unit without accelerating or duplicating selected ids', () => {
+test('legacy copies deploy as a single weapon without accelerating or duplicating selected ids', () => {
   const s = army();maxGun(s,'tank');s.equipment.tank.count=2;s.campaignCleared=80;
   const one = equipmentCombatStats('tank',10,s.soldiers+3000);
   const battle = deployNow(quietBattle(s,1,['tank','tank']),'tank');
   assert.equal(battle.deck.length,1);assert.equal(battle.player.units.length,1);
   const unit=battle.player.units[0];
-  assert.equal(unit.count,2);assert.equal(unit.damage,one.damage*2);assert.equal(unit.intervalMs,one.intervalMs);
-  assert.equal(unit.maxHp,UNIT_TRAITS.tank.hp*one.growth*2*((s.soldiers+3000)/1280),'hp scales with copies like damage');
+  assert.equal(unit.count,1);assert.equal(unit.damage,one.damage);assert.equal(unit.intervalMs,one.intervalMs);
+  assert.equal(unit.maxHp,one.hp,'legacy copies do not multiply combat HP');
 });
 test('large valid quantities retain exact arithmetic and clamp offline income to wallet limit', () => {
   const s = army();

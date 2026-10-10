@@ -9,7 +9,7 @@ import { personalIcon } from '../src/personal-art.js';
 import { personalMarkup } from '../src/personal-panels.js';
 import { shopMarkup } from '../src/shop.js';
 const T=1_800_000_000_000;
-const army=rank=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,commandSchoolLevel:5,galacticSchoolLevel:5,gold:100_000_000_000_000});
+const army=rank=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,commandSchoolLevel:5,galacticSchoolLevel:5,constellationSchoolLevel:5,gold:100_000_000_000_000});
 
 test('legacy general ranks reset personal levels to one but retain active skill deadlines',()=>{
   const pictures=[];
@@ -29,7 +29,8 @@ test('each baton level adds exactly one supported 100-person button and keeps ea
     const html=shopMarkup(s,'',()=>'', 'recruit');
     assert.equal((html.match(/data-buy-bulk=/g)||[]).length,index+1);
     for(const [earlier] of rules.slice(0,index+1))assert.match(html,new RegExp(`data-buy-bulk="${earlier}"`));
-    assert.equal(recruitOffer(s,id,100).canBuy,true);
+    assert.equal(recruitOffer(s,id,100).locked,false);
+    assert.equal(recruitOffer(s,id,100).canBuy,recruitOffer(s,id,100).cost<=MAX_GOLD);
   }
 });
 for(const id of ['masterSergeant','sergeantMajor','lieutenant'])test(`${id} batch charges 100 sequential prices with school, paid level, gold and capacity gates`,()=>{

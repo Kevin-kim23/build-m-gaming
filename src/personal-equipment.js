@@ -1,3 +1,4 @@
+import {CONSTELLATION_OFFICERS} from './constellation-officers.js';
 import { catalogVisible, rankForArmy, RANKS } from './ranks.js';
 import { PERSONAL_EQUIPMENT, COMMAND_BATON, GENERAL_SWORD, DIVISION_FLAG, GENERAL_REVOLVER, MARSHAL_GLAIVE, ADMIRALS_COMPASS, STRATEGIC_TABLET, SUPREME_SEAL, personalIncomePercent, AUTO_TOUCH } from './personal-catalog.js';
 import { scaleMoney } from './money.js';
@@ -54,6 +55,7 @@ export const BULK_RECRUIT = Object.freeze(Object.fromEntries([
   'colonel','brigadierGeneral','majorGeneral','lieutenantGeneral','general',
   'juniorMarshal','minorMarshal','middleMarshal','grandMarshal','specialMarshal',
   ...GALACTIC_OFFICERS.map(unit=>unit.id),
+  ...CONSTELLATION_OFFICERS.map(unit=>unit.id),
 ].map((id,i)=>[id,Object.freeze({level:i+1})])));
 export function bulkRecruitAccess(state,type) {
   const rule=BULK_RECRUIT[type];
@@ -61,7 +63,7 @@ export function bulkRecruitAccess(state,type) {
   const baton=commandBatonStatus(state);
   return {visible:baton.level>=rule.level,unlocked:baton.level>=rule.level,requirement:`지휘봉 Lv.${rule.level} 필요`};
 }
-export const bulkRecruitDiscountPercent = state=>Math.max(0,Math.min(5,commandBatonStatus(state).level-25));
+export const bulkRecruitDiscountPercent = state=>0;
 // Active windows snapshot their start-time level, so enhancement cannot extend a running skill.
 export function swordSkillStatus(state,now=Date.now()) {
   const owned=generalSwordStatus(state).owned,at=state.swordActivatedAt??null;

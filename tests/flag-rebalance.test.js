@@ -59,14 +59,14 @@ test('equipment income is integer, grows increasingly, and reaches 6x and 17x',(
 });
 test('player attack and healing upgrade rewards increase for players while enemy units keep their stage stats',()=>{
   for(const id of Object.keys(EQUIPMENT)){
-    const old=equipmentCombatStats(id,15,1280,1,false),next=equipmentCombatStats(id,15);
-    assert.ok((next.healing??next.damage)>(old.healing??old.damage));assert.equal(next.intervalMs,old.intervalMs);
+    const old=equipmentCombatStats(id,14),next=equipmentCombatStats(id,15);
+    assert.ok((next.healing??next.damage)>(old.healing??old.damage));assert.ok(next.intervalMs<=old.intervalMs);
   }
   const s={...army('소원수'),campaignCleared:80};s.equipment.tank={level:15,count:1,deployed:true};
   const stage=STAGES[79];let battle=createBattle(s,80,{equipment:['tank']});
   battle=until(battle,stage.spawnMs+3000); // 적이 출격할 때까지
   const enemy=battle.enemy.units[0];assert.ok(enemy);
-  assert.ok(Math.abs(enemy.damage-equipmentCombatStats(enemy.id,stage.enemyLevel,stage.enemyPower,1,false).damage*stage.enemyModifier*enemyStack(80,stage.enemyLevel))<1e-6);
+  assert.ok(Math.abs(enemy.damage-equipmentCombatStats(enemy.id,stage.recommendedLevel).damage*.55*.55)<1e-6);
 });
 test('personal cards have only detail buttons, while home skill controls remain',()=>{
   const s=army('준원수'),html=personalMarkup(s);

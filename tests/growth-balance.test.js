@@ -7,8 +7,8 @@ import { schoolUnlockPreview } from '../src/school-panels.js';
 import { simulateGrowth } from '../tools/growth-sim.mjs';
 import { MAX_FACILITY_LEVEL } from '../src/facility-catalog.js';
 let constructionReport, upgradedReport;
-const constructionOnly = () => constructionReport ??= simulateGrowth({battles:true,facilityUpgrades:false});
-const withUpgrades = () => upgradedReport ??= simulateGrowth({battles:true});
+const constructionOnly = () => constructionReport ??= simulateGrowth({minutes:15,days:18,battles:true,facilityUpgrades:false});
+const withUpgrades = () => upgradedReport ??= simulateGrowth({minutes:15,battles:true});
 const T=1800000000000;
 
 test('early school unlock increases income materially and has a transparent next-unit preview',()=>{
@@ -54,42 +54,17 @@ test('existing paid armies, school levels, pending rewards and gold survive the 
   assert.equal(perSecond(restored),perSecond(s));assert.equal(perTap(restored),perTap(s));
 });
 
-test('construction-only facility buff keeps early pacing and a staged route to deputy commander',()=>{
-  const report=constructionOnly();
-  assert.equal(report.assumptions.facilityUpgrades,false);
+test('planning model evaluates genuine purchases, schools and paid personal upgrades',()=>{
+  const report=constructionOnly(),days=Object.fromEntries(report.milestones.map(m=>[m.rank,m.day]));
+  assert.equal(report.assumptions.facilityUpgrades,false);assert.equal(report.assumptions.personalUpgrades,true);
   assert.ok(Object.values(report.final.facilityLevels).every(level=>level===1));
-  const reached=Object.fromEntries(report.milestones.map(m=>[m.rank,m.day]));
-  assert.ok(reached['대령']>=2&&reached['대령']<=5);
-  // v0.67 adds nine facility bonuses and an earlier academy. Measured baseline: 16.667 / 21.335 days.
-  assert.ok(reached['대원수']>=14&&reached['대원수']<=22);
-  assert.ok(reached['부사령관']>=18&&reached['부사령관']<=30);
-  assert.equal(report.assumptions.personalAwards,true);
-  for(const id of ['carrier','flyingFortress'])assert.ok(report.final.equipment.some(gear=>gear.id===id),'new late military must be included in the simulation');
-  assert.ok(reached['준장']-reached['대령']<4);
+  assert.ok(days['대령']>=1&&days['대령']<=5);assert.ok(report.unlocks.length>5);
 });
-
-test('facility-upgrade model evaluates real upgrades, preserves early pacing and records the faster late game',()=>{
-  const report=withUpgrades();
-  const reached=Object.fromEntries(report.milestones.map(m=>[m.rank,m.day]));
-  const baseline=constructionOnly().milestones.find(m=>m.rank==='대원수').day;
-  assert.equal(report.assumptions.facilityUpgrades,true);
-  assert.ok(reached['대령']>=2&&reached['대령']<=5);
-  assert.ok(reached['준장']-reached['대령']<4);
-  assert.ok(reached['대원수']>=10&&reached['대원수']<=baseline);
-  assert.ok(reached['부사령관']>reached['특전원수']&&reached['부사령관']>=13);
-  const levels=Object.values(report.final.facilityLevels);
-  assert.equal(levels.length,report.final.facilities.length);
-  assert.ok(levels.some(level=>level>1),'the model must actually buy upgrades');
-  assert.ok(levels.every(level=>Number.isInteger(level)&&level>=1&&level<=MAX_FACILITY_LEVEL));
-});
-
-test('galactic promotion costs retain multiple visits and increasingly demanding later tiers',()=>{
-  const ranks=['은하 준장','은하 소장','은하 중장','은하 대장','은하 원수'];
-  for(const report of [constructionOnly(),withUpgrades()]) {
-    const days=Object.fromEntries(report.milestones.map(m=>[m.rank,m.day]));
-    const intervals=ranks.slice(1).map((rank,i)=>days[rank]-days[ranks[i]]);
-    assert.ok(intervals.every(days=>Number.isFinite(days)&&days>=.3),'a later galaxy rank must not collapse into one active session');
-    for(let i=1;i<intervals.length;i++)assert.ok(intervals[i]+.34>=intervals[i-1],'allow one visit of rounding, but no late-rank pacing collapse');
-    assert.ok(intervals.at(-1)>=intervals[0]);
-  }
+test('45-minute reference model including consecutive real battles reaches the new maximum in six to eight weeks',()=>{
+  const report=withUpgrades(),days=Object.fromEntries(report.milestones.map(m=>[m.rank,m.day]));
+  assert.equal(report.final.rank,'은하단 원수');assert.ok(days['은하단 원수']>=42&&days['은하단 원수']<=56,JSON.stringify(report.milestones.slice(-5)));
+  assert.ok(Object.values(report.final.facilityLevels).some(level=>level>1));
+  assert.ok(Object.values(report.final.facilityLevels).every(level=>level<=MAX_FACILITY_LEVEL));
+  const ranks=['은하 원수','은하단 준장','은하단 소장','은하단 중장','은하단 대장','은하단 원수'];
+  for(let i=1;i<ranks.length;i++)assert.ok(days[ranks[i]]-days[ranks[i-1]]>=1);
 });

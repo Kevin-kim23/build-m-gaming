@@ -1,0 +1,1481 @@
+[
+  {
+    "minutesPerDay": 30,
+    "assumptions": {
+      "visitsPerDay": 3,
+      "minutes": 10,
+      "tapsPerSecond": 3,
+      "days": 90,
+      "investmentHours": 8,
+      "ads": false,
+      "personalAwards": true,
+      "personalUpgrades": true,
+      "battles": true,
+      "facilities": true,
+      "facilityUpgrades": true
+    },
+    "milestones": [
+      {
+        "rank": "이등병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "일병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "상병",
+        "day": 0,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "병장",
+        "day": 0.001,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "하사",
+        "day": 0.001,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "중사",
+        "day": 0.001,
+        "activeMinutes": 2
+      },
+      {
+        "rank": "상사",
+        "day": 0.002,
+        "activeMinutes": 3
+      },
+      {
+        "rank": "원사",
+        "day": 0.003,
+        "activeMinutes": 4
+      },
+      {
+        "rank": "준위",
+        "day": 0.007,
+        "activeMinutes": 10
+      },
+      {
+        "rank": "소위",
+        "day": 0.333,
+        "activeMinutes": 10
+      },
+      {
+        "rank": "중위",
+        "day": 0.333,
+        "activeMinutes": 10
+      },
+      {
+        "rank": "대위",
+        "day": 0.333,
+        "activeMinutes": 10
+      },
+      {
+        "rank": "소령",
+        "day": 2.337,
+        "activeMinutes": 75
+      },
+      {
+        "rank": "중령",
+        "day": 2.337,
+        "activeMinutes": 75
+      },
+      {
+        "rank": "대령",
+        "day": 2.337,
+        "activeMinutes": 75
+      },
+      {
+        "rank": "준장",
+        "day": 3.005,
+        "activeMinutes": 98
+      },
+      {
+        "rank": "소장",
+        "day": 3.334,
+        "activeMinutes": 102
+      },
+      {
+        "rank": "중장",
+        "day": 4.333,
+        "activeMinutes": 130
+      },
+      {
+        "rank": "대장",
+        "day": 5.339,
+        "activeMinutes": 168
+      },
+      {
+        "rank": "준원수",
+        "day": 7,
+        "activeMinutes": 211
+      },
+      {
+        "rank": "소원수",
+        "day": 8.667,
+        "activeMinutes": 261
+      },
+      {
+        "rank": "중원수",
+        "day": 10,
+        "activeMinutes": 301
+      },
+      {
+        "rank": "대원수",
+        "day": 10.667,
+        "activeMinutes": 322
+      },
+      {
+        "rank": "특전원수",
+        "day": 11.333,
+        "activeMinutes": 341
+      },
+      {
+        "rank": "부사령관",
+        "day": 12.333,
+        "activeMinutes": 371
+      },
+      {
+        "rank": "은하 준장",
+        "day": 13.006,
+        "activeMinutes": 400
+      },
+      {
+        "rank": "은하 소장",
+        "day": 13.339,
+        "activeMinutes": 410
+      },
+      {
+        "rank": "은하 중장",
+        "day": 13.673,
+        "activeMinutes": 420
+      },
+      {
+        "rank": "은하 대장",
+        "day": 14.006,
+        "activeMinutes": 429
+      },
+      {
+        "rank": "은하 원수",
+        "day": 14.006,
+        "activeMinutes": 429
+      },
+      {
+        "rank": "은하단 준장",
+        "day": 16,
+        "activeMinutes": 481
+      },
+      {
+        "rank": "은하단 소장",
+        "day": 20.333,
+        "activeMinutes": 611
+      },
+      {
+        "rank": "은하단 중장",
+        "day": 26.667,
+        "activeMinutes": 801
+      },
+      {
+        "rank": "은하단 대장",
+        "day": 36.333,
+        "activeMinutes": 1091
+      },
+      {
+        "rank": "은하단 원수",
+        "day": 49.667,
+        "activeMinutes": 1491
+      }
+    ],
+    "unlocks": [
+      {
+        "school": "nco",
+        "level": 1,
+        "day": 0.005,
+        "income": 146
+      },
+      {
+        "school": "nco",
+        "level": 2,
+        "day": 0.667,
+        "income": 4993
+      },
+      {
+        "school": "nco",
+        "level": 3,
+        "day": 1,
+        "income": 11922
+      },
+      {
+        "school": "nco",
+        "level": 4,
+        "day": 2,
+        "income": 108463
+      },
+      {
+        "school": "nco",
+        "level": 5,
+        "day": 3.669,
+        "income": 13625775
+      },
+      {
+        "school": "officer",
+        "level": 1,
+        "day": 3.669,
+        "income": 13913561
+      },
+      {
+        "school": "officer",
+        "level": 2,
+        "day": 4.001,
+        "income": 17226562
+      },
+      {
+        "school": "officer",
+        "level": 3,
+        "day": 4.004,
+        "income": 27801669
+      },
+      {
+        "school": "officer",
+        "level": 4,
+        "day": 5.333,
+        "income": 165945057
+      },
+      {
+        "school": "officer",
+        "level": 5,
+        "day": 6.667,
+        "income": 1329895590
+      },
+      {
+        "school": "advanced",
+        "level": 1,
+        "day": 8,
+        "income": 33532805892
+      },
+      {
+        "school": "advanced",
+        "level": 2,
+        "day": 9.001,
+        "income": 155652020052
+      },
+      {
+        "school": "advanced",
+        "level": 3,
+        "day": 9.333,
+        "income": 343990492848
+      },
+      {
+        "school": "advanced",
+        "level": 4,
+        "day": 10,
+        "income": 1132132703940
+      },
+      {
+        "school": "advanced",
+        "level": 5,
+        "day": 10.667,
+        "income": 3980593777092
+      },
+      {
+        "school": "command",
+        "level": 1,
+        "day": 11.002,
+        "income": 21313580004592
+      },
+      {
+        "school": "command",
+        "level": 2,
+        "day": 11.006,
+        "income": 55391859995808
+      },
+      {
+        "school": "command",
+        "level": 3,
+        "day": 11.667,
+        "income": 188730110245542
+      },
+      {
+        "school": "command",
+        "level": 4,
+        "day": 12.333,
+        "income": 627142825540764
+      },
+      {
+        "school": "command",
+        "level": 5,
+        "day": 13.001,
+        "income": 2543500348048694
+      },
+      {
+        "school": "galactic",
+        "level": 1,
+        "day": 13.001,
+        "income": 2543500348048694
+      },
+      {
+        "school": "galactic",
+        "level": 2,
+        "day": 13.006,
+        "income": "16059543072163492"
+      },
+      {
+        "school": "galactic",
+        "level": 3,
+        "day": 13.339,
+        "income": "58138874024883137"
+      },
+      {
+        "school": "galactic",
+        "level": 4,
+        "day": 13.673,
+        "income": "206351978395805117"
+      },
+      {
+        "school": "galactic",
+        "level": 5,
+        "day": 14.006,
+        "income": "726159803024283707"
+      },
+      {
+        "school": "constellation",
+        "level": 1,
+        "day": 14.672,
+        "income": "5633896103988494519"
+      },
+      {
+        "school": "constellation",
+        "level": 2,
+        "day": 16,
+        "income": "5952026380956494519"
+      },
+      {
+        "school": "constellation",
+        "level": 3,
+        "day": 20.333,
+        "income": "6826229590030094519"
+      },
+      {
+        "school": "constellation",
+        "level": 4,
+        "day": 26.667,
+        "income": "8414988118030094519"
+      },
+      {
+        "school": "constellation",
+        "level": 5,
+        "day": 36.667,
+        "income": "11592505174030094519"
+      }
+    ],
+    "final": {
+      "rank": "은하단 원수",
+      "power": "46116992125669212160",
+      "gold": "411051080095089180972858",
+      "facilities": [
+        "kitchen",
+        "gym",
+        "futsal",
+        "pcRoom",
+        "infirmary",
+        "range",
+        "workshop",
+        "depot",
+        "comms",
+        "operations",
+        "research",
+        "logistics",
+        "simulation",
+        "strategy",
+        "spaceport",
+        "orbital",
+        "reactor",
+        "gate",
+        "nexus"
+      ],
+      "facilityLevels": {
+        "kitchen": 20,
+        "gym": 20,
+        "futsal": 20,
+        "pcRoom": 20,
+        "infirmary": 20,
+        "range": 20,
+        "workshop": 20,
+        "depot": 20,
+        "comms": 20,
+        "operations": 20,
+        "research": 20,
+        "logistics": 20,
+        "simulation": 20,
+        "strategy": 20,
+        "spaceport": 20,
+        "orbital": 20,
+        "reactor": 20,
+        "gate": 20,
+        "nexus": 20
+      },
+      "equipment": [
+        {
+          "id": "artillery",
+          "level": 40
+        },
+        {
+          "id": "tank",
+          "level": 40
+        },
+        {
+          "id": "selfPropelled",
+          "level": 40
+        },
+        {
+          "id": "helicopter",
+          "level": 40
+        },
+        {
+          "id": "rocketLauncher",
+          "level": 40
+        },
+        {
+          "id": "transport",
+          "level": 40
+        },
+        {
+          "id": "fighter",
+          "level": 40
+        },
+        {
+          "id": "railgunTank",
+          "level": 40
+        },
+        {
+          "id": "icbm",
+          "level": 40
+        },
+        {
+          "id": "carrier",
+          "level": 40
+        },
+        {
+          "id": "flyingFortress",
+          "level": 40
+        },
+        {
+          "id": "orbitalAssault",
+          "level": 40
+        },
+        {
+          "id": "plasmaTank",
+          "level": 49
+        },
+        {
+          "id": "droneCarrier",
+          "level": 50
+        },
+        {
+          "id": "siegeMech",
+          "level": 50
+        },
+        {
+          "id": "stellarBomber",
+          "level": 50
+        },
+        {
+          "id": "novaCannon",
+          "level": 50
+        }
+      ],
+      "actions": 38393
+    }
+  },
+  {
+    "minutesPerDay": 45,
+    "assumptions": {
+      "visitsPerDay": 3,
+      "minutes": 15,
+      "tapsPerSecond": 3,
+      "days": 90,
+      "investmentHours": 8,
+      "ads": false,
+      "personalAwards": true,
+      "personalUpgrades": true,
+      "battles": true,
+      "facilities": true,
+      "facilityUpgrades": true
+    },
+    "milestones": [
+      {
+        "rank": "이등병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "일병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "상병",
+        "day": 0,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "병장",
+        "day": 0.001,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "하사",
+        "day": 0.001,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "중사",
+        "day": 0.001,
+        "activeMinutes": 2
+      },
+      {
+        "rank": "상사",
+        "day": 0.002,
+        "activeMinutes": 3
+      },
+      {
+        "rank": "원사",
+        "day": 0.002,
+        "activeMinutes": 4
+      },
+      {
+        "rank": "준위",
+        "day": 0.006,
+        "activeMinutes": 9
+      },
+      {
+        "rank": "소위",
+        "day": 0.008,
+        "activeMinutes": 12
+      },
+      {
+        "rank": "중위",
+        "day": 0.01,
+        "activeMinutes": 15
+      },
+      {
+        "rank": "대위",
+        "day": 0.333,
+        "activeMinutes": 15
+      },
+      {
+        "rank": "소령",
+        "day": 2.002,
+        "activeMinutes": 93
+      },
+      {
+        "rank": "중령",
+        "day": 2.002,
+        "activeMinutes": 93
+      },
+      {
+        "rank": "대령",
+        "day": 2.002,
+        "activeMinutes": 93
+      },
+      {
+        "rank": "준장",
+        "day": 2.668,
+        "activeMinutes": 122
+      },
+      {
+        "rank": "소장",
+        "day": 3,
+        "activeMinutes": 135
+      },
+      {
+        "rank": "중장",
+        "day": 3.667,
+        "activeMinutes": 166
+      },
+      {
+        "rank": "대장",
+        "day": 4.671,
+        "activeMinutes": 217
+      },
+      {
+        "rank": "준원수",
+        "day": 6.001,
+        "activeMinutes": 271
+      },
+      {
+        "rank": "소원수",
+        "day": 7.667,
+        "activeMinutes": 345
+      },
+      {
+        "rank": "중원수",
+        "day": 8.668,
+        "activeMinutes": 392
+      },
+      {
+        "rank": "대원수",
+        "day": 9.335,
+        "activeMinutes": 422
+      },
+      {
+        "rank": "특전원수",
+        "day": 10,
+        "activeMinutes": 450
+      },
+      {
+        "rank": "부사령관",
+        "day": 10.672,
+        "activeMinutes": 487
+      },
+      {
+        "rank": "은하 준장",
+        "day": 11.34,
+        "activeMinutes": 520
+      },
+      {
+        "rank": "은하 소장",
+        "day": 11.676,
+        "activeMinutes": 539
+      },
+      {
+        "rank": "은하 중장",
+        "day": 12.01,
+        "activeMinutes": 554
+      },
+      {
+        "rank": "은하 대장",
+        "day": 12.343,
+        "activeMinutes": 568
+      },
+      {
+        "rank": "은하 원수",
+        "day": 12.343,
+        "activeMinutes": 568
+      },
+      {
+        "rank": "은하단 준장",
+        "day": 14.333,
+        "activeMinutes": 645
+      },
+      {
+        "rank": "은하단 소장",
+        "day": 18.667,
+        "activeMinutes": 840
+      },
+      {
+        "rank": "은하단 중장",
+        "day": 24.667,
+        "activeMinutes": 1110
+      },
+      {
+        "rank": "은하단 대장",
+        "day": 34.333,
+        "activeMinutes": 1545
+      },
+      {
+        "rank": "은하단 원수",
+        "day": 47,
+        "activeMinutes": 2115
+      }
+    ],
+    "unlocks": [
+      {
+        "school": "nco",
+        "level": 1,
+        "day": 0.005,
+        "income": 146
+      },
+      {
+        "school": "nco",
+        "level": 2,
+        "day": 0.338,
+        "income": 4992
+      },
+      {
+        "school": "nco",
+        "level": 3,
+        "day": 0.677,
+        "income": 11919
+      },
+      {
+        "school": "nco",
+        "level": 4,
+        "day": 1.667,
+        "income": 108457
+      },
+      {
+        "school": "nco",
+        "level": 5,
+        "day": 3.333,
+        "income": 13625751
+      },
+      {
+        "school": "officer",
+        "level": 1,
+        "day": 3.333,
+        "income": 13913537
+      },
+      {
+        "school": "officer",
+        "level": 2,
+        "day": 3.335,
+        "income": 17253295
+      },
+      {
+        "school": "officer",
+        "level": 3,
+        "day": 3.667,
+        "income": 27606360
+      },
+      {
+        "school": "officer",
+        "level": 4,
+        "day": 4.667,
+        "income": 164979079
+      },
+      {
+        "school": "officer",
+        "level": 5,
+        "day": 6,
+        "income": 1304376526
+      },
+      {
+        "school": "advanced",
+        "level": 1,
+        "day": 7,
+        "income": 31888422290
+      },
+      {
+        "school": "advanced",
+        "level": 2,
+        "day": 8.001,
+        "income": 155670871320
+      },
+      {
+        "school": "advanced",
+        "level": 3,
+        "day": 8.01,
+        "income": 340119729456
+      },
+      {
+        "school": "advanced",
+        "level": 4,
+        "day": 8.668,
+        "income": 1132134974316
+      },
+      {
+        "school": "advanced",
+        "level": 5,
+        "day": 9.334,
+        "income": 3980593479096
+      },
+      {
+        "school": "command",
+        "level": 1,
+        "day": 9.669,
+        "income": 21136149645184
+      },
+      {
+        "school": "command",
+        "level": 2,
+        "day": 9.676,
+        "income": 55391858941414
+      },
+      {
+        "school": "command",
+        "level": 3,
+        "day": 10.333,
+        "income": 188730108978314
+      },
+      {
+        "school": "command",
+        "level": 4,
+        "day": 10.672,
+        "income": 627142915614979
+      },
+      {
+        "school": "command",
+        "level": 5,
+        "day": 11.334,
+        "income": 2543500474785468
+      },
+      {
+        "school": "galactic",
+        "level": 1,
+        "day": 11.334,
+        "income": 2543500474785468
+      },
+      {
+        "school": "galactic",
+        "level": 2,
+        "day": 11.672,
+        "income": "17410345912037812"
+      },
+      {
+        "school": "galactic",
+        "level": 3,
+        "day": 12.005,
+        "income": "66126640072626221"
+      },
+      {
+        "school": "galactic",
+        "level": 4,
+        "day": 12.336,
+        "income": "222104038041349755"
+      },
+      {
+        "school": "galactic",
+        "level": 5,
+        "day": 12.343,
+        "income": "761956413271364269"
+      },
+      {
+        "school": "constellation",
+        "level": 1,
+        "day": 13.003,
+        "income": "5633896089779913729"
+      },
+      {
+        "school": "constellation",
+        "level": 2,
+        "day": 14.333,
+        "income": "5952026366747913729"
+      },
+      {
+        "school": "constellation",
+        "level": 3,
+        "day": 18.667,
+        "income": "6826229575821513729"
+      },
+      {
+        "school": "constellation",
+        "level": 4,
+        "day": 24.67,
+        "income": "8414988103821513729"
+      },
+      {
+        "school": "constellation",
+        "level": 5,
+        "day": 34.333,
+        "income": "11592505159821513729"
+      }
+    ],
+    "final": {
+      "rank": "은하단 원수",
+      "power": "46116992125669212160",
+      "gold": "282390938013632284864940",
+      "facilities": [
+        "kitchen",
+        "gym",
+        "futsal",
+        "pcRoom",
+        "infirmary",
+        "range",
+        "workshop",
+        "depot",
+        "comms",
+        "operations",
+        "research",
+        "logistics",
+        "simulation",
+        "strategy",
+        "spaceport",
+        "orbital",
+        "reactor",
+        "gate",
+        "nexus"
+      ],
+      "facilityLevels": {
+        "kitchen": 20,
+        "gym": 20,
+        "futsal": 20,
+        "pcRoom": 20,
+        "infirmary": 20,
+        "range": 20,
+        "workshop": 20,
+        "depot": 20,
+        "comms": 20,
+        "operations": 20,
+        "research": 20,
+        "logistics": 20,
+        "simulation": 20,
+        "strategy": 20,
+        "spaceport": 20,
+        "orbital": 20,
+        "reactor": 20,
+        "gate": 20,
+        "nexus": 20
+      },
+      "equipment": [
+        {
+          "id": "artillery",
+          "level": 40
+        },
+        {
+          "id": "tank",
+          "level": 40
+        },
+        {
+          "id": "selfPropelled",
+          "level": 40
+        },
+        {
+          "id": "helicopter",
+          "level": 40
+        },
+        {
+          "id": "rocketLauncher",
+          "level": 40
+        },
+        {
+          "id": "transport",
+          "level": 40
+        },
+        {
+          "id": "fighter",
+          "level": 40
+        },
+        {
+          "id": "railgunTank",
+          "level": 40
+        },
+        {
+          "id": "icbm",
+          "level": 40
+        },
+        {
+          "id": "carrier",
+          "level": 40
+        },
+        {
+          "id": "flyingFortress",
+          "level": 40
+        },
+        {
+          "id": "orbitalAssault",
+          "level": 40
+        },
+        {
+          "id": "plasmaTank",
+          "level": 49
+        },
+        {
+          "id": "droneCarrier",
+          "level": 50
+        },
+        {
+          "id": "siegeMech",
+          "level": 50
+        },
+        {
+          "id": "stellarBomber",
+          "level": 50
+        },
+        {
+          "id": "novaCannon",
+          "level": 50
+        }
+      ],
+      "actions": 38638
+    }
+  },
+  {
+    "minutesPerDay": 60,
+    "assumptions": {
+      "visitsPerDay": 3,
+      "minutes": 20,
+      "tapsPerSecond": 3,
+      "days": 90,
+      "investmentHours": 8,
+      "ads": false,
+      "personalAwards": true,
+      "personalUpgrades": true,
+      "battles": true,
+      "facilities": true,
+      "facilityUpgrades": true
+    },
+    "milestones": [
+      {
+        "rank": "이등병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "일병",
+        "day": 0,
+        "activeMinutes": 0
+      },
+      {
+        "rank": "상병",
+        "day": 0,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "병장",
+        "day": 0.001,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "하사",
+        "day": 0.001,
+        "activeMinutes": 1
+      },
+      {
+        "rank": "중사",
+        "day": 0.001,
+        "activeMinutes": 2
+      },
+      {
+        "rank": "상사",
+        "day": 0.002,
+        "activeMinutes": 3
+      },
+      {
+        "rank": "원사",
+        "day": 0.002,
+        "activeMinutes": 3
+      },
+      {
+        "rank": "준위",
+        "day": 0.006,
+        "activeMinutes": 9
+      },
+      {
+        "rank": "소위",
+        "day": 0.008,
+        "activeMinutes": 11
+      },
+      {
+        "rank": "중위",
+        "day": 0.01,
+        "activeMinutes": 15
+      },
+      {
+        "rank": "대위",
+        "day": 0.012,
+        "activeMinutes": 18
+      },
+      {
+        "rank": "소령",
+        "day": 1.669,
+        "activeMinutes": 103
+      },
+      {
+        "rank": "중령",
+        "day": 1.669,
+        "activeMinutes": 103
+      },
+      {
+        "rank": "대령",
+        "day": 1.669,
+        "activeMinutes": 103
+      },
+      {
+        "rank": "준장",
+        "day": 2.012,
+        "activeMinutes": 137
+      },
+      {
+        "rank": "소장",
+        "day": 2.335,
+        "activeMinutes": 143
+      },
+      {
+        "rank": "중장",
+        "day": 3.001,
+        "activeMinutes": 181
+      },
+      {
+        "rank": "대장",
+        "day": 4.001,
+        "activeMinutes": 242
+      },
+      {
+        "rank": "준원수",
+        "day": 5.006,
+        "activeMinutes": 309
+      },
+      {
+        "rank": "소원수",
+        "day": 6.667,
+        "activeMinutes": 400
+      },
+      {
+        "rank": "중원수",
+        "day": 7.667,
+        "activeMinutes": 460
+      },
+      {
+        "rank": "대원수",
+        "day": 8.014,
+        "activeMinutes": 500
+      },
+      {
+        "rank": "특전원수",
+        "day": 8.667,
+        "activeMinutes": 520
+      },
+      {
+        "rank": "부사령관",
+        "day": 9.333,
+        "activeMinutes": 560
+      },
+      {
+        "rank": "은하 준장",
+        "day": 10.006,
+        "activeMinutes": 609
+      },
+      {
+        "rank": "은하 소장",
+        "day": 10.346,
+        "activeMinutes": 639
+      },
+      {
+        "rank": "은하 중장",
+        "day": 10.677,
+        "activeMinutes": 654
+      },
+      {
+        "rank": "은하 대장",
+        "day": 10.679,
+        "activeMinutes": 657
+      },
+      {
+        "rank": "은하 원수",
+        "day": 11.013,
+        "activeMinutes": 678
+      },
+      {
+        "rank": "은하단 준장",
+        "day": 13,
+        "activeMinutes": 780
+      },
+      {
+        "rank": "은하단 소장",
+        "day": 17,
+        "activeMinutes": 1020
+      },
+      {
+        "rank": "은하단 중장",
+        "day": 23,
+        "activeMinutes": 1380
+      },
+      {
+        "rank": "은하단 대장",
+        "day": 32.012,
+        "activeMinutes": 1937
+      },
+      {
+        "rank": "은하단 원수",
+        "day": 44.667,
+        "activeMinutes": 2680
+      }
+    ],
+    "unlocks": [
+      {
+        "school": "nco",
+        "level": 1,
+        "day": 0.005,
+        "income": 146
+      },
+      {
+        "school": "nco",
+        "level": 2,
+        "day": 0.334,
+        "income": 4946
+      },
+      {
+        "school": "nco",
+        "level": 3,
+        "day": 0.667,
+        "income": 11919
+      },
+      {
+        "school": "nco",
+        "level": 4,
+        "day": 1.333,
+        "income": 108451
+      },
+      {
+        "school": "nco",
+        "level": 5,
+        "day": 2.667,
+        "income": 13625725
+      },
+      {
+        "school": "officer",
+        "level": 1,
+        "day": 2.667,
+        "income": 13939673
+      },
+      {
+        "school": "officer",
+        "level": 2,
+        "day": 2.67,
+        "income": 17253268
+      },
+      {
+        "school": "officer",
+        "level": 3,
+        "day": 3,
+        "income": 27606332
+      },
+      {
+        "school": "officer",
+        "level": 4,
+        "day": 4,
+        "income": 162412523
+      },
+      {
+        "school": "officer",
+        "level": 5,
+        "day": 5,
+        "income": 1298823963
+      },
+      {
+        "school": "advanced",
+        "level": 1,
+        "day": 6,
+        "income": 31888988471
+      },
+      {
+        "school": "advanced",
+        "level": 2,
+        "day": 7.001,
+        "income": 155111479176
+      },
+      {
+        "school": "advanced",
+        "level": 3,
+        "day": 7.007,
+        "income": 340120588626
+      },
+      {
+        "school": "advanced",
+        "level": 4,
+        "day": 7.667,
+        "income": 1124704762806
+      },
+      {
+        "school": "advanced",
+        "level": 5,
+        "day": 8.01,
+        "income": 3944836907748
+      },
+      {
+        "school": "command",
+        "level": 1,
+        "day": 8.337,
+        "income": 21136213095963
+      },
+      {
+        "school": "command",
+        "level": 2,
+        "day": 8.667,
+        "income": 55391926047704
+      },
+      {
+        "school": "command",
+        "level": 3,
+        "day": 9,
+        "income": 178677090039179
+      },
+      {
+        "school": "command",
+        "level": 4,
+        "day": 9.333,
+        "income": 608697542731866
+      },
+      {
+        "school": "command",
+        "level": 5,
+        "day": 10,
+        "income": 2543500596237465
+      },
+      {
+        "school": "galactic",
+        "level": 1,
+        "day": 10,
+        "income": 2543500596237465
+      },
+      {
+        "school": "galactic",
+        "level": 2,
+        "day": 10.008,
+        "income": "16359721726236669"
+      },
+      {
+        "school": "galactic",
+        "level": 3,
+        "day": 10.346,
+        "income": "62619924491348974"
+      },
+      {
+        "school": "galactic",
+        "level": 4,
+        "day": 10.679,
+        "income": "218953626367759064"
+      },
+      {
+        "school": "galactic",
+        "level": 5,
+        "day": 11.005,
+        "income": "777297817798908786"
+      },
+      {
+        "school": "constellation",
+        "level": 1,
+        "day": 11.338,
+        "income": "5633615475302272562"
+      },
+      {
+        "school": "constellation",
+        "level": 2,
+        "day": 13,
+        "income": "5951745752270272562"
+      },
+      {
+        "school": "constellation",
+        "level": 3,
+        "day": 17,
+        "income": "6825948961343872562"
+      },
+      {
+        "school": "constellation",
+        "level": 4,
+        "day": 23,
+        "income": "8414707489343872562"
+      },
+      {
+        "school": "constellation",
+        "level": 5,
+        "day": 32.333,
+        "income": "11592224545343872562"
+      }
+    ],
+    "final": {
+      "rank": "은하단 원수",
+      "power": "46116992125669212160",
+      "gold": "311886322399489207224170",
+      "facilities": [
+        "kitchen",
+        "gym",
+        "futsal",
+        "pcRoom",
+        "infirmary",
+        "range",
+        "workshop",
+        "depot",
+        "comms",
+        "operations",
+        "research",
+        "logistics",
+        "simulation",
+        "strategy",
+        "spaceport",
+        "orbital",
+        "reactor",
+        "gate",
+        "nexus"
+      ],
+      "facilityLevels": {
+        "kitchen": 20,
+        "gym": 20,
+        "futsal": 20,
+        "pcRoom": 20,
+        "infirmary": 20,
+        "range": 20,
+        "workshop": 20,
+        "depot": 20,
+        "comms": 20,
+        "operations": 20,
+        "research": 20,
+        "logistics": 20,
+        "simulation": 20,
+        "strategy": 20,
+        "spaceport": 20,
+        "orbital": 20,
+        "reactor": 20,
+        "gate": 20,
+        "nexus": 20
+      },
+      "equipment": [
+        {
+          "id": "artillery",
+          "level": 40
+        },
+        {
+          "id": "tank",
+          "level": 40
+        },
+        {
+          "id": "selfPropelled",
+          "level": 40
+        },
+        {
+          "id": "helicopter",
+          "level": 40
+        },
+        {
+          "id": "rocketLauncher",
+          "level": 40
+        },
+        {
+          "id": "transport",
+          "level": 40
+        },
+        {
+          "id": "fighter",
+          "level": 40
+        },
+        {
+          "id": "railgunTank",
+          "level": 40
+        },
+        {
+          "id": "icbm",
+          "level": 40
+        },
+        {
+          "id": "carrier",
+          "level": 40
+        },
+        {
+          "id": "flyingFortress",
+          "level": 40
+        },
+        {
+          "id": "orbitalAssault",
+          "level": 40
+        },
+        {
+          "id": "plasmaTank",
+          "level": 49
+        },
+        {
+          "id": "droneCarrier",
+          "level": 50
+        },
+        {
+          "id": "siegeMech",
+          "level": 50
+        },
+        {
+          "id": "stellarBomber",
+          "level": 50
+        },
+        {
+          "id": "novaCannon",
+          "level": 50
+        }
+      ],
+      "actions": 38361
+    }
+  }
+]

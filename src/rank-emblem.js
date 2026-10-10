@@ -1,7 +1,7 @@
 // Original insignia geometry, shared by the tiny badge and promotion ceremony.
 const cache = new Map();
 const symbols = {5:'junior-marshal',6:'minor-marshal',7:'middle-marshal',8:'grand-marshal',9:'special-marshal',10:'deputy-commander',
-  11:'galactic-brigadier',12:'galactic-major-general',13:'galactic-lieutenant-general',14:'galactic-general',15:'galactic-marshal'};
+  11:'galactic-brigadier',12:'galactic-major-general',13:'galactic-lieutenant-general',14:'galactic-general',15:'galactic-marshal',16:'constellation-brigadier',17:'constellation-major',18:'constellation-lieutenant',19:'constellation-general',20:'constellation-marshal'};
 function star(x, y, radius, metal = 'gold') {
   const white = metal === 'white', copper = metal === 'copper-gold';
   const points = Array.from({length:10}, (_, i) => {
@@ -23,8 +23,8 @@ export function supremeRankSymbol(tier) {
   if (tier === 5) {
     art = [[15,15],[49,15],[32,32],[15,49],[49,49]].map(([x,y])=>star(x,y,10)).join('');
   } else {
-    const count=tier>10?tier-10:tier-5, gap=count===5?12:count===2?30:count===4?16:21, radius=count===5?6:count===1?19:count===2?14:count===4?8:10;
-    art = Array.from({length:count},(_,i)=>star(32+(i-(count-1)/2)*gap,32,radius,tier>10?'copper-gold':'white')).join('');
+    const count=tier>15?tier-15:tier>10?tier-10:tier-5, gap=count===5?12:count===2?30:count===4?16:21, radius=count===5?6:count===1?19:count===2?14:count===4?8:10;
+    art = Array.from({length:count},(_,i)=>star(32+(i-(count-1)/2)*gap,32,radius,tier>15?'white':tier>10?'copper-gold':'white')).join('');
   }
   cache.set(tier,art);
   return art;

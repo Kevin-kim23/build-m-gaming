@@ -9,10 +9,10 @@ const star = (x,y,r,fill) => {
   return `<polygon points="${points}" fill="${fill}" stroke="#fff1b4" stroke-width="1"/>`;
 };
 export function generalEmblem(tier) {
-  if(!Number.isInteger(tier)||tier<1||tier>15)throw new RangeError('Unknown general ceremony tier');
+  if(!Number.isInteger(tier)||tier<1||tier>20)throw new RangeError('Unknown general ceremony tier');
   if(cache.has(tier))return cache.get(tier);
   const id=`general-ceremony-${tier}`, gold=`url(#${id}-gold)`, enamel=`url(#${id}-enamel)`;
-  const enamelColors=tier>=11?['#9560b8','#522774','#221034']:['#49685c','#213e36','#101d1c'];
+  const enamelColors=tier>=16?['#426b96','#132c4d','#060e20']:tier>=11?['#9560b8','#522774','#221034']:['#49685c','#213e36','#101d1c'];
   const feathers=Array.from({length:7+Math.min(tier,6)},(_,i)=>{
     const x=19+i*9+Math.max(0,i-4)*8,y=24+i*19,root=145+i*7;
     return `<path d="M281 ${root} Q182 ${y+64} ${x} ${y} Q${x+5} ${y+28} ${x+29} ${y+43} Q185 ${y+96} 283 ${root+34}Z" fill="${gold}" stroke="#77572c" stroke-width="1.8"/>
@@ -27,7 +27,7 @@ export function generalEmblem(tier) {
     : Array.from({length:tier},(_,i)=>star(300+(i-(tier-1)/2)*29,169,15,gold)).join('');
   const gems=tier>=3?`${star(74,92,7,'#f8e1a0')}${star(526,92,7,'#f8e1a0')}`:'';
   const crown=tier>=4?`<path d="m273 75 7 13 7-18 13 14 13-14 7 18 7-13-5 26h-44Z" fill="${gold}" stroke="#fff1bc" stroke-width="1.5"/><path d="M282 95h36" stroke="#77512b" stroke-width="2"/>`:star(300,85,9,gold);
-  const svg=`<svg class="general-emblem" data-ceremony-theme="${tier>=11?'amethyst':'forest'}" viewBox="0 0 600 330" aria-hidden="true" focusable="false">
+  const svg=`<svg class="general-emblem" data-ceremony-theme="${tier>=16?'deep-space':tier>=11?'amethyst':'forest'}" viewBox="0 0 600 330" aria-hidden="true" focusable="false">
     <defs><linearGradient id="${id}-gold" x1="0" y1="0" x2=".35" y2="1"><stop stop-color="#fff8cf"/><stop offset=".22" stop-color="#efd084"/><stop offset=".48" stop-color="#bd873d"/><stop offset=".7" stop-color="#ffe7a1"/><stop offset="1" stop-color="#89602d"/></linearGradient>
     <linearGradient id="${id}-enamel" x2=".7" y2="1"><stop stop-color="${enamelColors[0]}"/><stop offset=".48" stop-color="${enamelColors[1]}"/><stop offset="1" stop-color="${enamelColors[2]}"/></linearGradient></defs>
     <g class="general-wing left">${wing}</g><g transform="translate(600 0) scale(-1 1)"><g class="general-wing right">${wing}</g></g>

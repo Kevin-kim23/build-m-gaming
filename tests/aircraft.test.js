@@ -27,7 +27,7 @@ test('transport counts and upgrades improve healing amount and rate',()=>{
   assert.ok(three.healing>one.healing*3);assert.ok(three.intervalMs<one.intervalMs);
   assert.equal(UNIT_TRAITS.transport.kind,'heal');
 });
-test('fighter is an air unit whose attack scales with copies and every upgrade through twenty improves aircraft effects',()=>{
+test('fighter is an air unit whose attack ignores legacy copies and every upgrade through twenty improves aircraft effects',()=>{
   for(const id of ['transport','fighter']){
     let before=equipmentCombatStats(id,0);
     for(let level=1;level<=20;level++){
@@ -37,7 +37,7 @@ test('fighter is an air unit whose attack scales with copies and every upgrade t
   }
   const s={...freshState(T),soldiers:78920,sergeants:300,campaignCleared:80};s.equipment.fighter={level:20,count:2,deployed:false};
   const b=deployNow(quietBattle(s,1,['fighter']),'fighter'),u=b.player.units[0],stats=equipmentCombatStats('fighter',20,81920,2);
-  assert.equal(u.cls,'air');assert.equal(u.count,2);assert.equal(u.damage,stats.damage);assert.equal(u.intervalMs,stats.intervalMs);
+  assert.equal(u.cls,'air');assert.equal(u.count,1);assert.equal(u.damage,stats.damage);assert.equal(u.intervalMs,stats.intervalMs);
 });
 test('all equipment stages have cached sprites and fit the preview including glowing upgrades',()=>{
   const previous=globalThis.document;

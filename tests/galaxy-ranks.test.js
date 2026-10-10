@@ -18,7 +18,7 @@ test('galaxy formations preserve existing saves and require eight previous forma
   assert.equal(GALACTIC_COMMAND_SIZE, 335544320);
   assert.equal(GALACTIC_GROUP_COMMAND_SIZE, 1342177280);
   assert.equal(RANK_DEFINITIONS[RANKS.indexOf('부사령관')].required, GALACTIC_GROUP_COMMAND_SIZE);
-  assert.deepEqual(RANKS.slice(-5), ranks);
+  assert.deepEqual(RANKS.slice(25,30), ranks);
   let previous = FORMATIONS.find(f => f.id === 'galacticGroupCommand');
   for (const [i, name] of ranks.entries()) {
     const next = FORMATIONS.find(f => f.id === ids[i]);

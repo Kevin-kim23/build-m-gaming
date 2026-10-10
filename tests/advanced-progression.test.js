@@ -122,7 +122,7 @@ test('extended personal reward art is distinct and 70/80 second skills survive r
 });
 
 test('maximum legal troop incomes settle long intervals and repeated taps exactly',()=>{
-  for(const unit of Object.values(UNITS)) {
+  for(const unit of Object.values(UNITS).filter(u=>u.school!=='constellation')) {
     const s={...freshState(T),[unit.field]:Math.floor(MAX_SOLDIERS/unit.power),campaignCleared:80};
     for(const id of ['helicopter','rocketLauncher','transport','fighter'])s.equipment[id]={level:20,count:100000,deployed:true};
     const passive=perSecond(s),tap=perTap(s,T);

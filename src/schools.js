@@ -1,3 +1,4 @@
+import {CONSTELLATION_OFFICERS} from './constellation-officers.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { COMMAND_OFFICERS } from './command-officers.js';
 import { GALACTIC_OFFICERS } from './galactic-officers.js';
@@ -29,6 +30,8 @@ export const SCHOOLS = Object.freeze({
     costs:Object.freeze(GALACTIC_OFFICERS.map(grade=>grade.academyCost)),
     effects:Object.freeze(GALACTIC_OFFICERS.map(grade=>grade.name+' 모집')),
     requiredRanks:Object.freeze(GALACTIC_OFFICERS.map(grade=>grade.unlockRank))}),
+  constellation:Object.freeze({id:'constellation',name:'은하단 사관학교',field:'constellationSchoolLevel',maxLevel:5,prerequisite:'galactic',
+    costs:Object.freeze(CONSTELLATION_OFFICERS.map(u=>u.academyCost)),effects:Object.freeze(CONSTELLATION_OFFICERS.map(u=>u.name+' 모집')),requiredRanks:Object.freeze(CONSTELLATION_OFFICERS.map(u=>u.unlockRank))}),
 });
 export function schoolOffer(state,id) {
   const school=SCHOOLS[id];

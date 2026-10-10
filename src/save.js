@@ -1,3 +1,4 @@
+import {CONSTELLATION_OFFICERS} from './constellation-officers.js';
 import { emptyHomeAutoTap } from './home-auto-tap-rules.js';
 import { COMMAND_OFFICERS } from './command-officers.js';
 import { GALACTIC_OFFICERS } from './galactic-officers.js';
@@ -5,14 +6,14 @@ import { emptyPotions, POTIONS } from './potions.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { NEW_RECRUITS } from './specialist-units.js';
 import { MAX_GOLD, minMoney, parseGold } from './money.js';
-import { armyPower } from './units.js';
+import { armyPower,legacyArmyPower } from './units.js';
 import { NEW_OFFICER_GRADES } from './officer-progression.js';
 import { legacySchoolLevel } from './schools.js';
 import { GENERAL_SWORD } from './personal-equipment.js';
 import { AUTO_TOUCH, PERSONAL_EQUIPMENT } from './personal-catalog.js';
 import { reconcileAchievements } from './achievements.js';
 import { emptyEquipment, EQUIPMENT, deployedEquipment, MAX_DEPLOYED_EQUIPMENT } from './equipment.js';
-import { freshState, MAX_SOLDIERS, SAVE_VERSION, CAMPAIGN_STAGE_COUNT } from './state.js';
+import { freshState, MAX_SOLDIERS, MAX_ARMY_POWER, SAVE_VERSION, CAMPAIGN_STAGE_COUNT } from './state.js';
 import { validateSave, requireSave, SaveValidationError } from './save-validation.js';
 
 // Pure parsing: callers decide when to report a diagnostic. Missing saves are not errors.
@@ -42,6 +43,9 @@ function migrateSave(s, now) {
   if (s.version === 2) return { ...freshState(now), gold: minMoney(gold, MAX_GOLD), taps: s.taps, sound: s.sound, sfxVolume: s.sound ? 0.7 : 0, musicVolume: s.sound ? 0.45 : 0 };
   const migrated = {
     version: SAVE_VERSION,
+    constellationSchoolLevel:s.version>=37?s.constellationSchoolLevel:0,
+    replayRewardDay:s.version>=37?s.replayRewardDay:0,replayRewardCount:s.version>=37?s.replayRewardCount:0,
+    ...Object.fromEntries(CONSTELLATION_OFFICERS.map(u=>[u.field,s.version>=37?s[u.field]:0])),
     homeAutoTap:s.version>=33?{...s.homeAutoTap}:emptyHomeAutoTap(),
     potions:s.version>=32?Object.fromEntries(Object.keys(POTIONS).map(id=>[id,{...s.potions[id]}])):emptyPotions(),
     facilities: s.version >= 25 ? [...s.facilities] : [],
@@ -89,7 +93,8 @@ function migrateSave(s, now) {
     incomeRemainder: s.incomeRemainder,
     revision: s.revision,
   };
-  requireSave(armyPower(migrated) <= MAX_SOLDIERS, 'armyPower');
+  requireSave(legacyArmyPower(migrated)<=MAX_SOLDIERS,'armyPower');
+  requireSave(armyPower(migrated) <= (s.version>=37?MAX_ARMY_POWER:MAX_SOLDIERS), 'armyPower');
   if (s.version < 9) migrated.ncoSchoolLevel = legacySchoolLevel(migrated);
   for (const id of Object.keys(EQUIPMENT)) {
     const gun =

@@ -1,7 +1,7 @@
 import { STAGES, battleAccess } from './battle.js';
 import { reconcileAchievements } from './achievements.js';
-import { accrue, basePassiveIncome } from './game.js';
-import { battleGoldReward, battleStars } from './campaign-rewards.js';
+import { accrue } from './game.js';
+import { battleGoldReward, battleStars, replayRemaining, rewardDay } from './campaign-rewards.js';
 import { addMoney } from './money.js';
 
 // Settle the old rate before a first clear raises the passive income bonus.
@@ -16,9 +16,12 @@ export function recordBattleVictory(state, battle, now = Date.now()) {
   state.campaignCleared = Math.max(cleared, stage.id);
   const stars = battleStars(battle), previousBest = state.campaignStars?.[stage.id - 1] ?? 0;
   if (!Array.isArray(state.campaignStars)) state.campaignStars = Array(STAGES.length).fill(0);
-  state.campaignStars[stage.id - 1] = Math.max(previousBest, stars);   // 최고 별만 저장(전리품 별 배율은 이번 판 별 기준)
+  state.campaignStars[stage.id - 1] = Math.max(previousBest, stars);   // 최고 별만 저장; 골드는 별 수와 무관
   const firstClear = stage.id > cleared;
-  const gold = battleGoldReward(basePassiveIncome(state), firstClear, state.gold, stars, stage.id); // Permanent income; temporary potions only boost accrual.
+  const clock=Math.max(now,state.lastAccrual),day=Math.max(state.replayRewardDay??0,rewardDay(clock));
+  const available=firstClear||replayRemaining(state,clock)>0;
+  const gold=available?battleGoldReward(0,firstClear,state.gold,stars,stage.id):0;
+  if(!firstClear&&gold>0){state.replayRewardCount=day>(state.replayRewardDay??0)?1:(state.replayRewardCount??0)+1;state.replayRewardDay=day;}
   state.gold = addMoney(state.gold, gold);
   return { ok: true, firstClear, gold, stars, newBest: stars > previousBest, achievements: reconcileAchievements(state) };
 }

@@ -1,3 +1,4 @@
+import {exact,compactMoney} from './money.js';
 import { UNITS, armyPower } from "./units.js";
 import {
   SQUAD_SIZE, PLATOON_SIZE, COMPANY_SIZE, BATTALION_SIZE, REGIMENT_SIZE,
@@ -42,14 +43,14 @@ export const FORMATIONS = Object.freeze([
   { id: "squad", name: "분대", size: SQUAD_SIZE, width: 29, height: 29 },
   { id: "soldier", name: "일반병", size: 1, width: 16, height: 25 },
 ]);
-const INDIVIDUAL_TYPES = Object.freeze(Object.values(UNITS).filter(u=>u.id!=='soldier').sort((a,b)=>b.power-a.power));
+const INDIVIDUAL_TYPES = Object.freeze(Object.values(UNITS).filter(u=>u.id!=='soldier').sort((a,b)=>a.power>b.power?-1:a.power<b.power?1:0));
 export function groupSoldiers(total) {
-  if (!Number.isSafeInteger(total) || total < 0)
+  if ((typeof total!=='bigint'&&!Number.isSafeInteger(total)) || total < 0)
     throw new RangeError("Soldier count must be a non-negative safe integer.");
-  let remaining = total;
+  let remaining = exact(total);
   return FORMATIONS.flatMap((type) => {
-    const count = Math.floor(remaining / type.size);
-    remaining %= type.size;
+    const count = Number(remaining / exact(type.size));
+    remaining %= exact(type.size);
     return count ? [{ ...type, count }] : [];
   });
 }
@@ -65,8 +66,8 @@ export function groupArmy(s) {
   let remainder = groups.find((g) => g.id === "soldier")?.count ?? 0;
   const individuals=[];
   for(const unit of INDIVIDUAL_TYPES) {
-    const count=Math.min(s[unit.field]??0,Math.floor(remainder/unit.power));
-    if(count) { individuals.push({...unit,size:unit.power,count});remainder-=count*unit.power; }
+    const count=Math.min(s[unit.field]??0,Number(exact(remainder)/exact(unit.power)));
+    if(count) { individuals.push({...unit,size:unit.power,count});remainder=compactMoney(exact(remainder)-BigInt(count)*exact(unit.power)); }
   }
   return [
     ...groups.filter((g) => g.id !== "soldier"),
@@ -76,7 +77,7 @@ export function groupArmy(s) {
 }
 export function describeFormation(total) {
   const groups =
-    typeof total === "number" ? groupSoldiers(total) : groupArmy(total);
+    typeof total === "number"||typeof total === "bigint" ? groupSoldiers(total) : groupArmy(total);
   return groups.length
     ? groups
         .map((g) =>

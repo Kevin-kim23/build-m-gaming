@@ -11,14 +11,14 @@ const MAX_CACHED_LABELS = 256;
 function goldLabel(value, roundUp) {
   const n = exact(value);
   if(n < BigInt(MAN_GOLD_THRESHOLD)) return fmt(n);
-  const unit = n >= 100_000_000_000_000_000_000n ? 10_000_000_000_000_000n
+  const unit = n >= 1_000_000_000_000_000_000_000_000n ? 100_000_000_000_000_000_000n : n >= 100_000_000_000_000_000_000n ? 10_000_000_000_000_000n
     : n >= 10_000_000_000_000_000n ? 1_000_000_000_000n : n >= BigInt(COMPACT_GOLD_THRESHOLD) ? 100_000_000n : 10_000n;
   const rounded = (n/unit + (roundUp && n%unit ? 1n : 0n))*unit;
   const key = rounded.toString();
   if (goldLabels.has(key)) return goldLabels.get(key);
   let remaining=rounded;
   const parts=[];
-  for(const [divisor,suffix] of [[100_000_000_000_000_000_000n,'해'],[10_000_000_000_000_000n,'경'],[1_000_000_000_000n,'조'],[100_000_000n,'억'],[10_000n,'만']]) {
+  for(const [divisor,suffix] of [[1_000_000_000_000_000_000_000_000n,'자'],[100_000_000_000_000_000_000n,'해'],[10_000_000_000_000_000n,'경'],[1_000_000_000_000n,'조'],[100_000_000n,'억'],[10_000n,'만']]) {
     const part=remaining/divisor;remaining%=divisor;
     if(part)parts.push(fmt(part)+suffix);
   }

@@ -5,7 +5,7 @@ import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMone
 import { pacedRecruitCost } from './growth-balance.js';
 export { MAX_GOLD, serializeSave } from './money.js';
 import { rankForArmy } from "./ranks.js";
-import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
+import { UNITS, armyPower, legacyArmyPower, troopIncome, unitAccess } from "./units.js";
 import { schoolOffer } from "./schools.js";
 import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, bulkRecruitDiscountPercent, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration, withPersonalIncome, withPersonalEquipmentIncome } from "./personal-equipment.js";
 import { personalUpgradeOffer } from './personal-enhancement.js';
@@ -24,7 +24,7 @@ import {
 export { UNITS, armyPower } from "./units.js";
 export { RANKS, RANK_REQUIREMENTS, rankFor } from "./ranks.js";
 export { SAVE_KEY, LEGACY_KEY, MAX_SOLDIERS, freshState } from './state.js';
-import { MAX_SOLDIERS } from './state.js';
+import { MAX_SOLDIERS,MAX_ARMY_POWER } from './state.js';
 import { MAX_OFFLINE_MS } from './offline-rules.js';
 export { MAX_OFFLINE_MS } from './offline-rules.js';
 export const baseTapIncome = s => withPersonalIncome(s,withFacilityIncome(s,addMoney(addMoney(1,troopIncome(s,'tap')),withPersonalEquipmentIncome(s,equipmentIncome(s).tap)),'tap'),'tap');
@@ -85,7 +85,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
   const locked = !access.unlocked || (bulk && !baton.unlocked);
   const reason = locked
     ? "locked"
-    : power + unit.power * quantity > MAX_SOLDIERS
+    : (unit.school!=='constellation' && addMoney(legacyArmyPower(s),multiplyMoney(unit.power,quantity))>MAX_SOLDIERS) || addMoney(power,multiplyMoney(unit.power,quantity)) > MAX_ARMY_POWER
       ? "limit"
       : s.gold < cost
         ? "gold"

@@ -1,3 +1,4 @@
+import {CONSTELLATION_OFFICERS} from './constellation-officers.js';
 import { COMMAND_OFFICERS } from './command-officers.js';
 import { GALACTIC_OFFICERS } from './galactic-officers.js';
 import { CONTINENT_STAGE_COUNT } from './campaign-constants.js';
@@ -15,7 +16,7 @@ import { PERSONAL_EQUIPMENT, GENERAL_SWORD, GENERAL_REVOLVER } from './personal-
 import { validAchievementIds } from './achievements.js';
 import { validEquipment } from './equipment.js';
 import { FIELD_THEMES } from './field-theme.js';
-import { MAX_SOLDIERS, SAVE_VERSION, CAMPAIGN_STAGE_COUNT } from './state.js';
+import { MAX_SOLDIERS, MAX_ARMY_POWER, SAVE_VERSION, CAMPAIGN_STAGE_COUNT } from './state.js';
 import { MAX_OFFLINE_MS, OFFLINE_POPUP_MS } from './offline-rules.js';
 
 // Only fixed codes and known field names leave the parser, never stored values or JSON snippets.
@@ -34,6 +35,11 @@ export function validateSave(s) {
   if (!s || typeof s !== 'object' || Array.isArray(s)) throw new SaveValidationError('invalid-record');
   if (!Number.isInteger(s.version) || s.version < 2 || s.version > SAVE_VERSION)
     throw new SaveValidationError('unsupported-version', 'version');
+  if(s.version>=37){
+    requireSave(integer(s.constellationSchoolLevel,5)&&(s.constellationSchoolLevel===0||s.galacticSchoolLevel===5),'constellationSchoolLevel');
+    for(const u of CONSTELLATION_OFFICERS)requireSave(integer(s[u.field],Number(MAX_ARMY_POWER/u.power)),u.field);
+    requireSave(integer(s.replayRewardDay,2000000),'replayRewardDay');requireSave(integer(s.replayRewardCount,10),'replayRewardCount');
+  }
   requireSave(typeof s.sound === 'boolean', 'sound');
   if(s.version>=33)requireSave(validHomeAutoTap(s.homeAutoTap),'homeAutoTap');
   if(s.version>=32)requireSave(validPotions(s.potions),'potions');

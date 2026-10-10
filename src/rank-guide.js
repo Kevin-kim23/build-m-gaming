@@ -6,15 +6,8 @@ import { openDetail } from './detail-popup.js';
 
 // Guide labels only. Promotion thresholds, save values and other number labels
 // retain their full precision; e.g. 5,242,880 is displayed as 524만, never 525만.
-export function compactGuidePower(value) {
-  if ((typeof value !== 'number' && typeof value !== 'bigint') || value < 0 ||
-      (typeof value === 'number' && !Number.isSafeInteger(value)))
-    throw new RangeError('Guide power must be a non-negative safe integer or bigint.');
-  const units=['','만','억','조','경','해'];
-  let power=BigInt(value),unit=0;
-  while(power>=10_000n&&unit<units.length-1){power/=10_000n;unit++;}
-  return unit ? `${power}${units[unit]}` : fmt(power);
-}
+export {compactGuidePower} from './power-format.js';
+import {compactGuidePower} from './power-format.js';
 
 // Opened from the rank badge at the top left of the home screen.
 function rankFormationLabel(rank) {
