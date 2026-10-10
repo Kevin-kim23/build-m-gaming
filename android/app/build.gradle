@@ -12,7 +12,8 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.dongramco.budaekiugi"
     compileSdk = rootProject.ext.compileSdkVersion
-    // Release uses the publisher inventory; debug always uses Google sample inventory.
+    // Closed-test build: both release and debug use Google sample inventory.
+    // Restore publisher IDs and revalidate before production launch (docs/store/LIVE_ADS_072.md).
     buildFeatures { resValues true }
     defaultConfig {
         applicationId "com.dongramco.budaekiugi"
@@ -37,8 +38,8 @@ android {
             resValue "string", "potion_rewarded_ad_unit", "ca-app-pub-3940256099942544/5224354917"
         }
         release {
-            resValue "string", "admob_app_id", "ca-app-pub-6317135937361483~2481976415"
-            resValue "string", "potion_rewarded_ad_unit", "ca-app-pub-6317135937361483/8022077704"
+            resValue "string", "admob_app_id", "ca-app-pub-3940256099942544~3347511713"
+            resValue "string", "potion_rewarded_ad_unit", "ca-app-pub-3940256099942544/5224354917"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
