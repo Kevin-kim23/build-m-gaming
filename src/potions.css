@@ -11,3 +11,10 @@
 #potion-ad-modal{width:min(340px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;padding:24px;border:1px solid #d4be81;border-radius:14px;background:#253c30;color:#f0ead7;text-align:center}
 #potion-ad-modal::backdrop{background:#09160ddd}#potion-ad-modal h2{margin:0 0 16px;font-size:20px}#potion-ad-modal p{line-height:1.9;font-size:14px}#potion-ad-modal strong{display:block;color:#e6c77d;margin:16px 0}
 #potion-ad-modal button{width:100%;min-height:44px;border:0;border-radius:7px;padding:12px;background:#ddc486;color:#25342c;font-weight:700;cursor:pointer}
+
+/* Original CSS artwork; no external image or animation dependency. */
+.potion-ad-loading{display:flex;align-items:center;justify-content:center;gap:10px;margin:12px 0 0;padding:12px 8px;border:1px solid #948253;border-radius:7px;background:#182b23;color:#f2d893;font-size:13px;line-height:1.5;word-break:keep-all}
+.potion-ad-loading[hidden]{display:none}
+.potion-ad-spinner{flex:none;width:18px;height:18px;box-sizing:border-box;border:2px solid #6b7050;border-top-color:#ffe4a0;border-radius:50%;animation:potion-ad-spin .8s linear infinite}
+@keyframes potion-ad-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.potion-ad-spinner{animation:none}}

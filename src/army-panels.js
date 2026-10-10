@@ -44,7 +44,7 @@ export function createArmyPanels(session, audio, access) {
   let schoolLevels = [];
   const state = () => session.state;
   const potionController=createPotionController(session,{showAd:createPotionAd({isActive:()=>session.active,requireConsent:()=>access?.ensureAds()??null}),onChange:()=>{
-    if(dialog.open && activePanel==='shop' && category==='items')renderPotions(state(),dialog,{busy:potionController.busy,active:session.active});
+    if(dialog.open && activePanel==='shop' && category==='items')renderPotions(state(),dialog,{busy:potionController.busy,busyItem:potionController.busyItem,active:session.active});
   }});
   const homeAutoPurchase=createHomeAutoTapPurchase(session,{showPurchase:createAutoTapTestPurchase(),onChange:()=>{
     if(dialog.open && activePanel==='shop' && category==='items')renderHomeAutoTap(state(),dialog,{busy:homeAutoPurchase.busy,active:session.active});
@@ -73,7 +73,7 @@ export function createArmyPanels(session, audio, access) {
     if (category === 'schools') renderSchools(s, dialog);
     if (category === 'facilities') renderFacilities(s, dialog);
     if (category === 'items') {
-      renderPotions(s,dialog,{busy:potionController.busy,active:session.active});
+      renderPotions(s,dialog,{busy:potionController.busy,busyItem:potionController.busyItem,active:session.active});
       renderHomeAutoTap(s,dialog,{busy:homeAutoPurchase.busy,active:session.active});
     }
     if (category !== 'recruit') return;

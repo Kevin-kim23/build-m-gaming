@@ -92,3 +92,30 @@ test('Android pause/reward/resume grants the selected potion exactly once and pe
   assert.equal(state.potions.blue.count,1);assert.equal(state.potions.red.count,0);
   session.pause();
 });
+
+
+test('selected potion shows loading immediately, blocks repeats, and clears on every ad result',async()=>{
+  assert.match(potionsMarkup(),/광고가 곧 재생되어요!/);
+  assert.match(potionsMarkup(),/role="status"/);
+  for(const outcome of ['rewarded','cancelled','unavailable','error']) {
+    const root=fakeNode(),s=freshState(T);let finish,calls=0;
+    const session={state:s,active:true,change:fn=>fn(s)};
+    const controller=createPotionController(session,{now:()=>T,onError:()=>{},
+      showAd:()=>{calls++;return new Promise((resolve,reject)=>finish=()=>outcome==='error'?reject(Error('load failed')):resolve({status:outcome}));},
+      onChange:()=>renderPotions(s,root,{busy:controller.busy,busyItem:controller.busyItem,now:T})});
+    renderPotions(s,root,{now:T});
+    const red=root.querySelector('[data-potion="red"]'),blue=root.querySelector('[data-potion="blue"]');
+    const pending=controller.watch('red');
+    assert.equal(controller.busyItem,'red');
+    assert.equal(red.querySelector('[data-potion-loading]').hidden,false);
+    assert.equal(blue.querySelector('[data-potion-loading]').hidden,true);
+    assert.equal(red.querySelector('[data-potion-ad]').disabled,true);
+    assert.equal(blue.querySelector('[data-potion-ad]').disabled,true);
+    await controller.watch('blue');assert.equal(calls,1);
+    finish();await pending;
+    assert.equal(controller.busyItem,null);
+    assert.equal(red.querySelector('[data-potion-loading]').hidden,true);
+    assert.equal(red.querySelector('[data-potion-ad]').disabled,false);
+    assert.equal(s.potions.red.count,outcome==='rewarded'?1:0);
+  }
+});
