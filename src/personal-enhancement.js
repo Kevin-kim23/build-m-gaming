@@ -1,4 +1,4 @@
-import { PERSONAL_EQUIPMENT, PERSONAL_MAX_LEVEL } from './personal-catalog.js';
+import { PERSONAL_EQUIPMENT } from './personal-catalog.js';
 import { personalStatus } from './personal-equipment.js';
 import { multiplyMoney, scaleMoney } from './money.js';
 
@@ -12,6 +12,7 @@ const steps = Object.fromEntries(Object.values(PERSONAL_EQUIPMENT).map(item => {
   let cost = item.baseUpgradeCost;
   return [item.id, Object.freeze(Array.from({length:item.maxLevel-1}, (_, index) => {
     if (index===19) cost=GALACTIC_PERSONAL_COSTS[item.id];
+    else if (item.id==='divisionFlag' && index>=29) cost=scaleMoney(cost,index===29?2:3,index===29?1:2);
     else if (index) cost = index < 10 || index>19 ? multiplyMoney(cost,2) : scaleMoney(cost,8,5);
     return Object.freeze({level:index+1,nextLevel:index+2,cost});
   }))];
@@ -23,7 +24,7 @@ export function personalUpgradeStep(id, level) {
 }
 export function personalUpgradeOffer(state, id) {
   const status = personalStatus(state,id);
-  const step = status.level>0 && status.level<PERSONAL_MAX_LEVEL ? personalUpgradeStep(id,status.level) : null;
+  const step = status.level>0 && status.level<PERSONAL_EQUIPMENT[id].maxLevel ? personalUpgradeStep(id,status.level) : null;
   const reason = !status.owned ? 'locked' : !step ? 'max' : state.gold<step.cost ? 'gold' : null;
   return { ...status, ...step, cost:step?.cost??null, reason, canUpgrade:reason===null };
 }

@@ -2,7 +2,7 @@ import { artLevel, personalLustre } from './personal-lustre.js';
 // Original ceremonial pixel art; reused by the personal equipment catalogue.
 const cache = new Map();
 export function generalRewardIcon(kind, level = 1) {
-  level=artLevel(level);
+  level=artLevel(level,kind==='flag'?40:30);
   const key = `${kind}:${level}`;
   if (cache.has(key)) return cache.get(key);
   const p = [], r = (x,y,w,h,c) => p.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`);

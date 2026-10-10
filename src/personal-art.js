@@ -5,7 +5,7 @@ import { artLevel, personalLustre } from './personal-lustre.js';
 // Original high-density pixel geometry. The reference informs colors/materials only.
 const icons = new Map();
 export function personalIcon(kind, level = 1) {
-  level=artLevel(level);
+  level=artLevel(level,kind==='flag'?40:30);
   if(['compass','tablet','seal'].includes(kind))return latePersonalIcon(kind,level);
   if(kind==='glaive')return glaiveIcon(level);
   if (kind === 'flag' || kind === 'revolver') return generalRewardIcon(kind, level);

@@ -115,7 +115,7 @@ export function validateSave(s) {
   if(s.version>=19){
     requireSave(s.personalLevels&&typeof s.personalLevels==='object'&&!Array.isArray(s.personalLevels),'personalLevels');
     for(const item of Object.values(PERSONAL_EQUIPMENT).filter(item=>item.introducedVersion<=s.version))
-      requireSave(integer(s.personalLevels[item.id],s.version<30?10:s.version<35?20:item.maxLevel)&&s.personalLevels[item.id]>=1,`personalLevels.${item.id}`);
+      requireSave(integer(s.personalLevels[item.id],s.version<30?10:s.version<35?20:s.version<36?30:item.maxLevel)&&s.personalLevels[item.id]>=1,`personalLevels.${item.id}`);
   }
   return gold;
 }
