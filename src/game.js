@@ -85,7 +85,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
   const locked = !access.unlocked || (bulk && !baton.unlocked);
   const reason = locked
     ? "locked"
-    : (unit.school!=='constellation' && addMoney(legacyArmyPower(s),multiplyMoney(unit.power,quantity))>MAX_SOLDIERS) || addMoney(power,multiplyMoney(unit.power,quantity)) > MAX_ARMY_POWER
+    : (!['constellation','galactic'].includes(unit.school) && addMoney(legacyArmyPower(s),multiplyMoney(unit.power,quantity))>MAX_SOLDIERS) || addMoney(power,multiplyMoney(unit.power,quantity)) > MAX_ARMY_POWER
       ? "limit"
       : s.gold < cost
         ? "gold"

@@ -49,6 +49,6 @@ export function countryCamera(country,aspect){
 }
 export function campaignHomeCamera(cleared,aspect,continentId=continentForProgress(cleared).id){
   const countries=COUNTRIES.filter(c=>c.continentId===continentId);
-  const focus=countries[Math.max(0,Math.min(3,Math.floor((cleared-countries[0].firstStage+1)/20)))],width=Math.min(2600,Math.max(1150,1250*aspect));
+  const focus=countries[Math.max(0,Math.min(countries.length-1,Math.floor((cleared-countries[0].firstStage+1)/20)))],width=Math.min(2600,Math.max(1150,1250*aspect));
   return clampCamera({width,height:width/aspect,x:500-width/2,y:focus.label[1]-width/aspect/2});
 }

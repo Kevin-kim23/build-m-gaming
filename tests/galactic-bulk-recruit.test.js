@@ -8,7 +8,7 @@ import {MAX_GOLD,addMoney,subtractMoney} from '../src/money.js';
 const T=1800000000000;
 test('baton levels21..25 unlock exact100 galaxy recruits and still require the academy',()=>{
   for(const [i,unit] of GALACTIC_OFFICERS.entries()){
-    const s={...freshState(T),soldiers:10000,sergeants:300,gold:MAX_GOLD,galacticSchoolLevel:i+1};
+    const s={...freshState(T),soldiers:unit.recruitRankPower-3000,sergeants:300,gold:MAX_GOLD,galacticSchoolLevel:i+1};
     assert.equal(BULK_RECRUIT[unit.id]?.level,21+i);
     s.personalLevels.commandBaton=20+i;
     assert.equal(recruitOffer(s,unit.id,100).reason,'locked');

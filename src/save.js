@@ -94,6 +94,7 @@ function migrateSave(s, now) {
     revision: s.revision,
   };
   requireSave(legacyArmyPower(migrated)<=MAX_SOLDIERS,'armyPower');
+  if(s.version<38)requireSave(GALACTIC_OFFICERS.reduce((total,u)=>total+BigInt(migrated[u.field]??0)*BigInt(u.power),BigInt(legacyArmyPower(migrated)))<=BigInt(MAX_SOLDIERS),'armyPower');
   requireSave(armyPower(migrated) <= (s.version>=37?MAX_ARMY_POWER:MAX_SOLDIERS), 'armyPower');
   if (s.version < 9) migrated.ncoSchoolLevel = legacySchoolLevel(migrated);
   for (const id of Object.keys(EQUIPMENT)) {

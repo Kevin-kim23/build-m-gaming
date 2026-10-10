@@ -27,9 +27,9 @@ test("battle menu previews at private first class and captain needs military equ
   assert.throws(()=>createBattle(s,1),RangeError);
 });
 
-test("160 conquest regions enforce sequential progress across eight countries", () => {
-  assert.equal(STAGES.length, 160);
-  assert.equal(new Set(STAGES.map(s=>s.name)).size,160);
+test("200 conquest regions enforce sequential progress across ten countries", () => {
+  assert.equal(STAGES.length, 200);
+  assert.equal(new Set(STAGES.map(s=>s.name)).size,200);
   const s = { ...army(), campaignCleared: 0 };
   assert.equal(createBattle(s, 1).stageId, 1);
   assert.throws(() => createBattle(s, 2), RangeError);

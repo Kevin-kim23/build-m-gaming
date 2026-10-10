@@ -1,3 +1,4 @@
+import {ABYSS_COUNTRY_DEFINITIONS} from './campaign-abyss.js';
 import { rankFor, RANKS } from './ranks.js';
 import { FORMATIONS } from './formations.js';
 import {campaignDifficulty} from './campaign-progression.js';
@@ -6,7 +7,8 @@ import {REGIONS_PER_COUNTRY, COUNTRIES_PER_CONTINENT, CONTINENT_STAGE_COUNT, CAM
 // Original fictional geography. Shared border vertices keep the four nations contiguous.
 export const CONTINENTS = Object.freeze([
   Object.freeze({id:'astera',name:'아스테라',theme:'earth',width:1000,height:2500,regionsPerCountry:REGIONS_PER_COUNTRY,firstStage:1,lastStage:CONTINENT_STAGE_COUNT}),
-  Object.freeze({id:'aetherion',name:'에테리온',theme:'space',width:1000,height:2500,regionsPerCountry:REGIONS_PER_COUNTRY,firstStage:CONTINENT_STAGE_COUNT+1,lastStage:CAMPAIGN_STAGE_COUNT}),
+  Object.freeze({id:'aetherion',name:'에테리온',theme:'space',width:1000,height:2500,regionsPerCountry:REGIONS_PER_COUNTRY,firstStage:CONTINENT_STAGE_COUNT+1,lastStage:CONTINENT_STAGE_COUNT*2}),
+  Object.freeze({id:'erebus',name:'에레보스',theme:'abyss',width:1000,height:2500,regionsPerCountry:20,firstStage:161,lastStage:CAMPAIGN_STAGE_COUNT}),
 ]);
 export const CONTINENT = CONTINENTS[0];
 export function continentForProgress(cleared=0){return CONTINENTS.findLast(c=>cleared>=c.firstStage-1)??CONTINENT;}
@@ -27,7 +29,7 @@ const definitions=[
     polygon:[[230,660],[188,612],[215,560],[176,507],[222,457],[200,400],[256,360],[242,300],[300,264],[315,205],[370,192],[398,135],[450,150],[478,96],[535,125],[577,105],[620,165],[679,183],[696,245],[751,266],[732,325],[796,350],[776,410],[828,440],[798,498],[822,550],[772,600],[765,700],...border34.slice(1,-1).reverse()],
     names:['눈보라 변경','얼어붙은 다리','백야 초소','서리 계곡','은빛 침엽림','빙하 여울','버려진 광산','설원 관문','검은 얼음길','서리 요새','거인의 능선','북부 군수창','푸른 빙벽','백색 고원','왕관 산맥','제국 전초선','노르가드 외곽','강철 성문','황제의 방벽','수도 노르가드']},
 ];
-export const COUNTRIES=Object.freeze([...definitions,...SPACE_COUNTRY_DEFINITIONS].map((c,index)=>Object.freeze({...c,index,localIndex:index%COUNTRIES_PER_CONTINENT,continentId:CONTINENTS[Math.floor(index/COUNTRIES_PER_CONTINENT)].id,theme:CONTINENTS[Math.floor(index/COUNTRIES_PER_CONTINENT)].theme,firstStage:index*REGIONS_PER_COUNTRY+1,lastStage:(index+1)*REGIONS_PER_COUNTRY,
+export const COUNTRIES=Object.freeze([...definitions,...SPACE_COUNTRY_DEFINITIONS,...ABYSS_COUNTRY_DEFINITIONS].map((c,index)=>Object.freeze({...c,index,localIndex:index%COUNTRIES_PER_CONTINENT,continentId:CONTINENTS[Math.floor(index/COUNTRIES_PER_CONTINENT)].id,theme:CONTINENTS[Math.floor(index/COUNTRIES_PER_CONTINENT)].theme,firstStage:index*REGIONS_PER_COUNTRY+1,lastStage:(index+1)*REGIONS_PER_COUNTRY,
   polygon:Object.freeze(c.polygon.map(p=>Object.freeze(p))),powers:Object.freeze(Array.from({length:REGIONS_PER_COUNTRY},(_,i)=>campaignDifficulty(index*REGIONS_PER_COUNTRY+i+1).recommendedPower)),names:Object.freeze(c.names)})));
 export function countryProgress(state,id){
   const country=COUNTRIES.find(c=>c.id===id);if(!country)throw new RangeError('Unknown country');

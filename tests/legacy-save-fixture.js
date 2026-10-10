@@ -4,7 +4,8 @@ import { serializeSave } from '../src/money.js';
 // Encode the actual historical 80-region shape; leave the current expected object
 // intact so migration assertions still check newly appended regions are empty.
 export function serializeLegacySave(state) {
-  if (state.version >= 22 && state.version < 34 && state.campaignStars?.length === 160)
+  if (state.version >= 22 && state.version < 34 && state.campaignStars?.length >= 160)
     return serializeSave({ ...state, campaignStars:state.campaignStars.slice(0, 80) });
+  if(state.version>=34 && state.version<38 && state.campaignStars?.length===200)return serializeSave({...state,campaignStars:state.campaignStars.slice(0,160)});
   return serializeSave(state);
 }

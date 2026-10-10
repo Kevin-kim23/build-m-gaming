@@ -41,18 +41,18 @@ test('galactic academy requires command academy completion plus rank and exact g
   }
   assert.equal(upgradeSchool(state, T, 'galactic').reason, 'max');
   const details = schoolDetailMarkup(state, 'galactic').body;
-  assert.match(details, /부사령관 이상 필수/);
-  assert.match(details, /은하 대장 이상 필수/);
+  assert.match(details, /은하 준장 이상 필수/);
+  assert.match(details, /은하 원수 이상 필수/);
   assert.doesNotMatch(details, /undefined|NaN/);
 });
 
-test('56 academy recruits bridge each eight-formation promotion with exact independent affordable prices', () => {
+test('448 current-rank academy recruits bridge each eight-formation promotion with exact independent affordable prices', () => {
   for (const grade of GALACTIC_OFFICERS) {
     const state = army(grade.unlockRank);
     state.galacticSchoolLevel = grade.schoolLevel;
     const other = GALACTIC_OFFICERS.find(unit => unit.id !== grade.id);
     const otherCost = unitCost(0, other.id);
-    for (let count=0; count<56; count++) {
+    for (let count=0; count<448; count++) {
       const [base, linear, quadratic] = grade.price.map(exact);
       const n = BigInt(count), expected = base + linear*n + quadratic*n*n;
       const price = unitCost(count, grade.id);
@@ -65,11 +65,11 @@ test('56 academy recruits bridge each eight-formation promotion with exact indep
       assert.equal(result.ok, true);
       assert.equal(state.gold, 0);
       assert.equal(state[grade.field], count+1);
-      assert.equal(result.promoted, count===55);
+      assert.equal(result.promoted, count===447 && grade.schoolLevel<5);
       assert.equal(unitCost(0, other.id), otherCost);
     }
-    assert.equal(RANKS[rankForArmy(state)], grade.name);
-    assert.equal(parseSave(serializeSave(state), T)?.[grade.field], 56);
+    assert.equal(rankForArmy(state),RANKS.indexOf(grade.name)+(grade.schoolLevel===5?0:1));
+    assert.equal(parseSave(serializeSave(state), T)?.[grade.field], 448);
   }
 });
 

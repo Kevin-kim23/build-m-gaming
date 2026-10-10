@@ -11,6 +11,8 @@ const palettes = [
   ['#443753','#bca3bb','#bf875c','#f5d8a4'],
   ['#344967','#9bdce0','#d5ad6a','#fff0c5'],
   ['#382547','#a991c8','#c99c62','#ffe9bd'],
+  ['#241925','#ce677f','#bbc6d7','#ffe0e6'],
+  ['#151a28','#7a719d','#cad6e5','#f19bb3'],
 ];
 export function battleMedalSvg(tier) {
   if(!Number.isInteger(tier)||tier<0||tier>=palettes.length)throw new RangeError('Unknown battle medal');
@@ -96,6 +98,15 @@ export function battleMedalSvg(tier) {
       }
       p('44,68 48,61 52,68 50,87 48,91 46,87',metal);r(47,66,2,18,light);
       p('40,63 39,57 45,60 48,54 51,60 57,57 56,63',light);
+    }else if(tier===11){
+      // Rubrion: twin iron keeps framing a cut ruby.
+      for(const x of [34,56]){r(x,64,7,26,metal);r(x+1,62,5,3,light);r(x+2,69,2,15,cloth);}
+      p('48,60 55,71 48,87 41,71',thread);p('48,62 48,83 43,71',light);r(33,89,30,3,metal);
+    }else if(tier===12){
+      // Mordrath: an eclipsed core inside a six-point gravity cage.
+      parts.push(`<circle cx="48" cy="74" r="12" fill="${metal}"/><circle cx="48" cy="74" r="8" fill="${shadow}"/>`);
+      for(let i=0;i<6;i++){const a=i*Math.PI/3;star(48+Math.round(16*Math.cos(a)),74+Math.round(16*Math.sin(a)),3,light);}
+      r(46,69,4,10,thread);r(44,72,8,3,light);
     }else{
       // Noctaris: an eclipsed star behind a four-tower imperial gate.
       star(48,73,17,metal);star(48,73,12,light);star(48,73,8,cloth);

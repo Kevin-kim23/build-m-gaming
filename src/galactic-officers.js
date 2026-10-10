@@ -5,21 +5,20 @@ import {
 } from './formation-sizes.js';
 
 const ranks = ['은하 준장','은하 소장','은하 중장','은하 대장','은하 원수'];
-const unlockRanks = ['부사령관', ...ranks.slice(0, -1)];
+const unlockRanks = ranks;
 const ids = ['galacticBrigadier','galacticMajorGeneral','galacticLieutenantGeneral','galacticGeneral','galacticMarshal'];
 const sizes = [GALACTIC_CORPS_SIZE,GALACTIC_FIELD_ARMY_SIZE,GALACTIC_ARMY_GROUP_SIZE,GALACTIC_ALLIED_ARMY_SIZE,GALACTIC_GRAND_ALLIED_ARMY_SIZE];
 const colors = ['#624077','#694484','#74498f','#805197','#8c58a1'];
-const academyCosts = [120n,240n,400n,640n,900n].map(value => value * 10_000_000_000_000_000n);
+const academyCosts = [120n,240n,400n,640n,900n].map(value => value * 50_000_000_000_000_000n);
 
-// The academy prepares troops for the next promotion. From each previous boundary,
-// 56 recruits cover the seven additional formations needed for an eight-way merger.
+// Recruit only at the same player rank; 448 current-rank troops bridge an eightfold promotion.
 // Price grows ×3.5 while income grows ×2, keeping later ranks progressively costly.
 // Exact integer ratios keep even the 56th marshal recruit below the wallet limit.
 export const GALACTIC_OFFICERS = Object.freeze(ranks.map((name, i) => {
   const base = 120_000_000_000_000_000n * 7n ** BigInt(i) / 2n ** BigInt(i);
   return Object.freeze({
     id:ids[i], name, field:ids[i]+'s', school:'galactic', schoolLevel:i+1,
-    unlockRank:unlockRanks[i], power:sizes[i]/64,
+    unlockRank:unlockRanks[i], recruitRankPower:sizes[i], power:sizes[i]/64,
     passive:350_000_000_000*2**i, tap:2_400_000_000_000*2**i,
     price:Object.freeze([base,base*8n/1000n,base/10000n].map(compactMoney)),
     academyCost:compactMoney(academyCosts[i]), color:colors[i],

@@ -68,7 +68,7 @@ export const CLASS_NAMES = Object.freeze({ firepower: "화력", armor: "기갑",
 
 // 상성 삼각형: 공중 > 기갑 > 화력 > 공중. 유리 ×strong, 불리 ×weak(나라가 뒤로 갈수록 차이가 커진다).
 export const CLASS_BEATS = Object.freeze({ air: "armor", armor: "firepower", firepower: "air" });
-export const MATCHUP_BY_COUNTRY = Object.freeze([{ strong: 1.3, weak: 0.8 }, { strong: 1.4, weak: 0.7 }, { strong: 1.5, weak: 0.65 }, { strong: 1.6, weak: 0.6 }, {strong:1.65,weak:.58}, {strong:1.7,weak:.56}, {strong:1.75,weak:.54}, {strong:1.8,weak:.52}]);
+export const MATCHUP_BY_COUNTRY = Object.freeze([{ strong: 1.3, weak: 0.8 }, { strong: 1.4, weak: 0.7 }, { strong: 1.5, weak: 0.65 }, { strong: 1.6, weak: 0.6 }, {strong:1.65,weak:.58}, {strong:1.7,weak:.56}, {strong:1.75,weak:.54}, {strong:1.8,weak:.52},{strong:1.85,weak:.5},{strong:1.9,weak:.48}]);
 export const FORTRESS_SHIELD = 0.6; // 수도 요새 기지: 방어 분류 장비의 피해가 40% 줄어듦
 export const countryIndex = (stageId) => Math.floor((stageId - 1) / 20);
 export function classMatchup(attackerClass, targetClass, stageId) {

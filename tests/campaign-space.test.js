@@ -13,8 +13,8 @@ import {referenceArmy,simulateBattle} from '../tools/campaign-sim.mjs';
 import {exact} from '../src/money.js';
 
 test('a second original continent has four sequential nations and eighty uniquely named regions',()=>{
-  assert.equal(CONTINENTS.length,2);assert.equal(campaignStages.length,CAMPAIGN_STAGE_COUNT);
-  for(const continent of CONTINENTS){
+  assert.equal(CONTINENTS.length,3);assert.equal(campaignStages.length,CAMPAIGN_STAGE_COUNT);
+  for(const continent of CONTINENTS.slice(0,2)){
     const countries=COUNTRIES.filter(c=>c.continentId===continent.id);
     assert.equal(countries.length,4);assert.equal(countries[0].firstStage,continent.firstStage);assert.equal(countries.at(-1).lastStage,continent.lastStage);
     assert.deepEqual(countries.map(c=>c.localIndex),[0,1,2,3]);
@@ -54,7 +54,7 @@ test('continent navigation shows four nations, locked entry, direct crossing and
 });
 
 test('space map artwork is cached, scoped to its continent and all local paint references resolve',()=>{
-  const countries=COUNTRIES.slice(4);
+  const countries=COUNTRIES.slice(4,8);
   const art=mapDefs('aetherion')+oceanArt('space')+countries.map(countryLand).join('');
   assert.equal(oceanArt('space'),oceanArt('space'));
   assert.doesNotMatch(art,/undefined|NaN|Infinity|coast-serdin/);
@@ -67,8 +67,8 @@ test('space map artwork is cached, scoped to its continent and all local paint r
 test('original conquests keep one percent and space conquests add two percent without compounding',()=>{
   for(const id of [1,20,80])assert.equal(regionIncomePercent(id),1);
   for(const id of [81,100,160])assert.equal(regionIncomePercent(id),2);
-  for(const id of [0,161,1.5])assert.throws(()=>regionIncomePercent(id),RangeError);
-  for(const [count,bonus]of [[0,0],[80,80],[81,82],[100,120],[120,160],[140,200],[160,240],[999,240]]){
+  for(const id of [0,201,1.5])assert.throws(()=>regionIncomePercent(id),RangeError);
+  for(const [count,bonus]of [[0,0],[80,80],[81,82],[100,120],[120,160],[140,200],[160,240],[200,320],[999,320]]){
     assert.equal(campaignBonusPercent({campaignCleared:count}),bonus);
     const value=9007199254740993n;
     assert.equal(exact(withCampaignIncome({campaignCleared:count},value)),value*BigInt(100+bonus)/100n);

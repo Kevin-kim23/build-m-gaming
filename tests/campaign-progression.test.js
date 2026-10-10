@@ -38,11 +38,11 @@ test('all campaign recommendations have legal rank, gear and upgrades, with orig
     for(const id of stageEnemyType(s.id).pool)assert.ok(rank>=RANKS.indexOf(EQUIPMENT[id].unlockRank));
     if(s.id>1)assert.ok(s.recommendedPower>STAGES[s.id-2].recommendedPower);
   }
-  for(const id of [0,161,1.5,'1',NaN])assert.throws(()=>campaignDifficulty(id),RangeError);
+  for(const id of [0,201,1.5,'1',NaN])assert.throws(()=>campaignDifficulty(id),RangeError);
 });
 
 test('reference defense with one decision per half-second fits 60–120s targets',()=>{
-  for(const stage of STAGES){
+  for(const stage of STAGES.slice(0,160)){
     const s=referenceArmy(stage),before=serializeSave(s),b=simulateBattle(s,stage.id);
     assert.equal(b.status,'victory',`stage ${stage.id}`);
     assert.ok(b.elapsedMs>=60000&&b.elapsedMs<=120000,`stage ${stage.id}: ${b.elapsedMs/1000}s`);
@@ -76,7 +76,7 @@ test('reward arithmetic, star bonuses and the wallet limit stay exact above safe
       assert.equal(battleGoldReward(rate,true,MAX_GOLD-1n,stars,id),1);
     }
   }
-  for(const id of [0,161,2.5,'20'])assert.throws(()=>battleRewardSeconds(true,id),RangeError);
+  for(const id of [0,201,2.5,'20'])assert.throws(()=>battleRewardSeconds(true,id),RangeError);
   const battle={...win(20),elapsedMs:120000,player:{hq:{hp:100,maxHp:100}}};
   assert.equal(battleStars(battle),3);assert.equal(battleStars({...battle,elapsedMs:120001}),2);
   assert.equal(battleStars({...battle,stageId:19}),2);

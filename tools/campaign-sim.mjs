@@ -1,3 +1,4 @@
+import {CONSTELLATION_OFFICERS} from '../src/constellation-officers.js';
 // Deterministic planning model. Never touches a real save or simulates unaffordable extra copies.
 import {pathToFileURL} from 'node:url';
 import {freshState} from '../src/state.js';
@@ -9,7 +10,10 @@ import {STAGES,createBattle,advanceBattle,deploy,BATTLE_RULES} from '../src/batt
 export function referenceArmy(stage,{power=stage.recommendedPower,level=stage.recommendedLevel}={}) {
   const s=freshState(1800000000000);
   s.sergeants=power>=RANK_REQUIREMENTS[RANKS.indexOf('준장')]?300:power>=640?40:0;
-  s.soldiers=power-s.sergeants*10;s.campaignCleared=stage.id-1;
+  const reserve=power>=1310720?5000:0;
+  let remaining=BigInt(power)-BigInt(s.sergeants*10+reserve);
+  for(const unit of [...CONSTELLATION_OFFICERS].reverse()){const count=remaining/unit.power;s[unit.field]=Number(count);remaining-=count*unit.power;}
+  s.soldiers=Number(remaining)+reserve;s.campaignCleared=stage.id-1;
   s.ncoSchoolLevel=1;
   s.personalLevels.divisionFlag=Math.max(1,level-10);
   const rank=rankForArmy(s);
@@ -43,4 +47,4 @@ export function campaignReport(){return STAGES.map(stage=>{
   return {id:stage.id,rank:stage.recommendedRank,power:stage.recommendedPower,level:stage.recommendedLevel,
     status:b.status,seconds:b.elapsedMs/1000,hp:Math.round(b.player.hq.hp/b.player.hq.maxHp*100),enemyHp:Math.round(b.enemy.hq.hp/b.enemy.hq.maxHp*100),deck:b.deck.map(c=>c.id)};
 });}
-if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)console.log(JSON.stringify(campaignReport(),null,2));
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)console.log(JSON.stringify(campaignReport(),(_k,v)=>typeof v==='bigint'?v.toString():v,2));

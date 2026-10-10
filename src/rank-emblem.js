@@ -24,10 +24,7 @@ export function supremeRankSymbol(tier) {
     art = [[15,15],[49,15],[32,32],[15,49],[49,49]].map(([x,y])=>star(x,y,10)).join('');
   } else {
     const count=tier>15?tier-15:tier>10?tier-10:tier-5, gap=count===5?12:count===2?30:count===4?16:21, radius=count===5?6:count===1?19:count===2?14:count===4?8:10;
-    if(tier>15){
-      const positions=count===5?[[14,19],[32,19],[50,19],[23,43],[41,43]]:count===4?[[18,19],[46,19],[18,45],[46,45]]:count===3?[[32,17],[17,43],[47,43]]:count===2?[[17,32],[47,32]]:[[32,32]];
-      art=positions.map(([x,y])=>star(x,y,count===1?21:count===2?14:count===3?12:count===4?11:9,'white')).join('');
-    }else art = Array.from({length:count},(_,i)=>star(32+(i-(count-1)/2)*gap,32,radius,tier>15?'white':tier>10?'copper-gold':'white')).join('');
+    art = Array.from({length:count},(_,i)=>star(32+(i-(count-1)/2)*gap,32,radius,tier>15?'white':tier>10?'copper-gold':'white')).join('');
   }
   if(tier>15)art=art.replaceAll('data-metal="white"','data-metal="ruby"').replaceAll('#ffffff','#d93650').replaceAll('#bccbd2','#f6a3ad').replaceAll('#d6e2ec','#ff8a99').replaceAll('#9cadbe','#790d28');
   cache.set(tier,art);

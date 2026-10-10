@@ -1,3 +1,4 @@
+import {serializeLegacySave} from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState,SAVE_VERSION,SAVE_KEY} from '../src/state.js';
@@ -27,12 +28,12 @@ test('baton26..30 replaces the old discounts with five new recruitment abilities
 });
 
 test('v34 preserves all levels and active windows; v35 round-trips new maxima and rejects overflow',()=>{
-  const s=army();s.version=34;s.gold=GALACTIC_MAX_GOLD-1n;s.campaignCleared=160;s.campaignStars.fill(3);
+  const s=army();s.version=34;s.gold=GALACTIC_MAX_GOLD-1n;s.campaignCleared=160;s.campaignStars=[...Array(160).fill(3),...Array(40).fill(0)];
   for(const id of Object.keys(s.personalLevels))s.personalLevels[id]=20;
   s.equipment.tank={level:30,count:1,deployed:true};
   s.swordActivatedAt=T;s.swordDurationMs=220000;s.autoTouchActivatedAt=T;s.autoTouchDurationMs=250000;
   reconcileAchievements(s);
-  const loaded=parseSave(serializeSave(s),T);assert.deepEqual(loaded,{...s,version:SAVE_VERSION});
+  const loaded=parseSave(serializeLegacySave(s),T);assert.deepEqual(loaded,{...s,version:SAVE_VERSION});
   for(const patch of [{personalLevels:{...s.personalLevels,commandBaton:21}},
     {equipment:{...s.equipment,tank:{level:31,count:1,deployed:true}}},
     {swordDurationMs:230000},{autoTouchDurationMs:260000}])assert.equal(parseSave(serializeSave({...s,...patch}),T),null);

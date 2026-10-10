@@ -1,3 +1,4 @@
+import {abyssDifficulty} from './campaign-abyss-balance.js';
 import {CAMPAIGN_HQ} from './campaign-hq.js';
 import {RANKS,RANK_REQUIREMENTS} from './ranks.js';
 import {CAMPAIGN_STAGE_COUNT} from './campaign-constants.js';
@@ -16,6 +17,7 @@ export const CAMPAIGN_MILESTONES=Object.freeze([
 
 export function campaignDifficulty(id) {
   if(!Number.isInteger(id)||id<1||id>CAMPAIGN_STAGE_COUNT)throw new RangeError('Unknown campaign stage');
+  if(id>160)return abyssDifficulty(id);
   const index=CAMPAIGN_MILESTONES.findLastIndex(m=>m.stage<=id),from=CAMPAIGN_MILESTONES[index];
   const to=CAMPAIGN_MILESTONES[index+1]??from,t=to===from?0:(id-from.stage)/(to.stage-from.stage);
   const mix=key=>from[key]+(to[key]-from[key])*t;

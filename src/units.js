@@ -76,8 +76,8 @@ export function unitAccess(state, unit) {
   const school=SCHOOL_ACCESS[unit.school],level=state[school?.field]??0;
   return {
     visible: !school?.previous || (state[school.previous]??0)>=5 || (state[unit.field]??0)>0,
-    unlocked: unit.unlockPower ? armyPower(state)>=unit.unlockPower : !unit.school || level >= unit.schoolLevel,
-    requirement: unit.school ? `${school.name} Lv.${unit.schoolLevel}${unit.unlockRank ? ' · '+unit.unlockRank+'부터 학교 확장' : ''}` : unit.unlockRank ? `${unit.unlockRank} 이상 · 전력 ${unit.unlockPower}` : '기본 모집',
+    unlocked: unit.recruitRankPower ? level>=unit.schoolLevel && armyPower(state)>=unit.recruitRankPower && (state.soldiers??0)>=5000 && (state.sergeants??0)>=300 : unit.unlockPower ? armyPower(state)>=unit.unlockPower : !unit.school || level >= unit.schoolLevel,
+    requirement: unit.school ? `${school.name} Lv.${unit.schoolLevel}${unit.unlockRank ? ' · '+unit.unlockRank+' 이상 모집·학교 확장' : ''}` : unit.unlockRank ? `${unit.unlockRank} 이상 · 전력 ${unit.unlockPower}` : '기본 모집',
   };
 }
 export const armyPower = (s) =>
@@ -85,5 +85,5 @@ export const armyPower = (s) =>
 export const troopIncome = (s, kind) =>
   UNIT_LIST.reduce((n, u) => addMoney(n, multiplyMoney(s[u.field] ?? 0, u[kind])), 0);
 
-const legacyUnits=UNIT_LIST.filter(u=>u.school!=='constellation');
+const legacyUnits=UNIT_LIST.filter(u=>!['constellation','galactic'].includes(u.school));
 export const legacyArmyPower=s=>legacyUnits.reduce((sum,u)=>addMoney(sum,multiplyMoney(s[u.field]??0,u.power)),0);

@@ -37,9 +37,9 @@ test('actual version33 save preserves all prior progression, exact gold and gran
   assert.equal(loaded.version,SAVE_VERSION);
   assert.equal(loaded.galacticSchoolLevel,0);
   for(const unit of GALACTIC_OFFICERS)assert.equal(loaded[unit.field],0);
-  assert.equal(loaded.campaignStars.length,160);
+  assert.equal(loaded.campaignStars.length,200);
   assert.deepEqual(loaded.campaignStars.slice(0,80),old.campaignStars);
-  assert.deepEqual(loaded.campaignStars.slice(80),Array(80).fill(0));
+  assert.deepEqual(loaded.campaignStars.slice(80),Array(120).fill(0));
   for(const [key,value] of Object.entries(old))
     if(!['version','equipment','campaignStars'].includes(key))assert.deepEqual(loaded[key],value,key);
   for(const item of Object.values(EQUIPMENT))

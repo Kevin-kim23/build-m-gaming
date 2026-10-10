@@ -27,9 +27,9 @@ test('five galactic formation medals have distinct copper stars, purple enamel a
   assert.deepEqual(newAwards.map(a=>a.title),['은하 군단장','은하 야전군사령관','은하 집단군 사령관','은하 연합군 사령관','은하 대연합군 사령관']);
 });
 
-test('all eight nation conquest medals have distinct silhouettes and no off-canvas ornaments',()=>{
+test('all ten nation conquest medals have distinct silhouettes and no off-canvas ornaments',()=>{
   const art=COUNTRIES.map(c=>medalSvg('conquer-'+c.id));
-  assert.equal(new Set(art.map(svg=>svg.replace(/#[\da-f]{6}/gi,'color'))).size,8);
+  assert.equal(new Set(art.map(svg=>svg.replace(/#[\da-f]{6}/gi,'color'))).size,10);
   for(const svg of art){
     for(const rect of svg.matchAll(/<rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/g)){
       const [,x,y,w,h]=rect.map(Number);assert.ok(x>=0&&y>=0&&x+w<=96&&y+h<=112);

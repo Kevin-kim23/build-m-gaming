@@ -36,12 +36,12 @@ test('new five thresholds are exactly sixteenfold, including the final one-power
  const max=armyAt(MAX_ARMY_POWER);assert.equal(recruitOffer(max,OFFICERS[4].id).reason,'limit');
  assert.ok(layoutFieldArmy(max,{x:0,y:0,width:360,height:200}).length<40);
 });
-test('new academy requires sequential levels and the preceding rank; 100 recruits charge every gold',()=>{
+test('new academy requires sequential levels and its own rank; 100 recruits charge every gold',()=>{
  for(const [i,u] of OFFICERS.entries()){
-  const s=armyAt(i?CONSTELLATION_POWERS[i-1]:43980465111040n);s.constellationSchoolLevel=i;
+  const s=armyAt(CONSTELLATION_POWERS[i]);s.constellationSchoolLevel=i;
   const cost=schoolOffer(s,'constellation').cost;s.gold=cost;
   assert.equal(upgradeSchool(s,T,'constellation').ok,true);assert.equal(s.gold,0);
-  const lower=armyAt((i?CONSTELLATION_POWERS[i-1]:43980465111040n)-1n);lower.constellationSchoolLevel=i;
+  const lower=armyAt((CONSTELLATION_POWERS[i])-1n);lower.constellationSchoolLevel=i;
   assert.equal(schoolOffer(lower,'constellation').reason,'locked');
   s.personalLevels.commandBaton=26+i;s.gold=MAX_GOLD;const quote=recruitOffer(s,u.id,100);assert.equal(quote.canBuy,true);assert.ok(quote.cost<MAX_GOLD);
   s.gold=exact(quote.cost)-1n;const before=serializeSave(s);assert.equal(recruit(s,T,u.id,100).reason,'gold');assert.equal(serializeSave(s),before);
@@ -50,7 +50,7 @@ test('new academy requires sequential levels and the preceding rank; 100 recruit
  }
 });
 test('v36 migration preserves paid assets and wallet; v37 handles the expanded exact cap',()=>{
- const s={...freshState(T),version:36,gold:GALACTIC_MAX_GOLD-1n};s.personalLevels.divisionFlag=40;s.equipment.tank={level:50,count:1,deployed:true};
+ const s={...freshState(T),version:36,campaignStars:Array(160).fill(0),gold:GALACTIC_MAX_GOLD-1n};s.personalLevels.divisionFlag=40;s.equipment.tank={level:50,count:1,deployed:true};
  const restored=parseSave(serializeSave(s),T);assert.equal(restored.gold,s.gold);assert.deepEqual(restored.equipment,s.equipment);assert.equal(restored.constellationSchoolLevel,0);
  for(const u of OFFICERS)assert.equal(restored[u.field],0);
  restored.gold=MAX_GOLD-1n;assert.deepEqual(parseSave(serializeSave(restored),T),restored);

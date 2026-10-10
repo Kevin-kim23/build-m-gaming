@@ -36,7 +36,7 @@ test('all17 military weapons upgrade41..50 and stop without charging at50',()=>{
  }
 });
 test('save35 preserves40강 but cannot claim new flag40 or military50',()=>{
- const s=army();s.version=35;s.personalLevels.divisionFlag=30;s.equipment.tank={level:40,count:1,deployed:true};
+ const s=army();s.version=35;s.campaignStars=Array(160).fill(0);s.personalLevels.divisionFlag=30;s.equipment.tank={level:40,count:1,deployed:true};
  assert.equal(parseSave(serializeSave(s),T).equipment.tank.level,40);
  s.personalLevels.divisionFlag=31;assert.equal(parseSave(serializeSave(s),T),null);
  s.personalLevels.divisionFlag=30;s.equipment.tank.level=41;assert.equal(parseSave(serializeSave(s),T),null);

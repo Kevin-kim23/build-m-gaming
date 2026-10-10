@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import {campaignStages} from '../src/campaign.js';
+import {COMMAND_OFFICERS} from '../src/command-officers.js';
+import {GALACTIC_OFFICERS} from '../src/galactic-officers.js';
+import {CONSTELLATION_OFFICERS,CONSTELLATION_POWERS} from '../src/constellation-officers.js';
+import {fmtGoldCost} from '../src/format.js';
+import {referenceArmy,simulateBattle} from './campaign-sim.mjs';
+const lines=['# 에레보스·학교 조정 0.76.0','','## 확정 규칙','','- 원수·은하·은하단 학교의 모집 및 학교 확장은 해당 계급 이상에서만 가능. 기존 소유 병력과 학교 단계는 보존.','- 지휘/은하 학교 건설·확장 비용 5배, 은하단 학교 10배. 원수·은하 모집 단가는 유지하고 은하단 모집 곡선은 아래처럼 조정했다.','- 은하 원수 병력으로 은하단 준장에 진급할 수 있도록 은하 병력은 기존 하위 병력 한도가 아닌 총전력 한도를 적용한다. 은하단 16배 진급 조건은 유지.','- 신규 40지역: 루브리온 철혈령 20 + 모르드라스 심연제국 20. 에테리온 전체 점령 후 순차 해금.','- 권장 전력은 도전 제한이 아니다. 장비 종류·강화·출격 운영에 따라 결과가 달라진다.','- 점령당 수입 +2%, 전체 200지역 +320%. 별3개 추가 보상은 없음. 지역별 고정 골드와 반복 보상 5%/하루10회 기존 규칙 사용.','','## 학교 단계별 가격','','|학교|모집 계급|단계별 가격|','|---|---|---|'];
+for(const catalog of [COMMAND_OFFICERS,GALACTIC_OFFICERS,CONSTELLATION_OFFICERS])for(const u of catalog)lines.push(`|${u.school}|${u.name}|${fmtGoldCost(u.academyCost)} G|`);
+lines.push('','## 은하단 모집 곡선','','기본가: Lv.1 병종130해→70해, 이후 계급마다2배. 보유 수 n의 가격은 기본가 × (1 + n/1600 + n²/2560000)이며 실제 연산은 정수 계수로 처리한다. 이전 n/100 + n²/10000 상승폭을 각각16배·256배 완화했다. 현재 계급 병력960명 안팎으로 다음16배 진급을 준비하는 구조에 맞췄다. 병력 전력·수입과 이미 구매한 수량은 유지한다. 학교 비용은 인상값 그대로다.','','## 전투 계산','','종류당 장비 1문, 출격 의사결정 0.5초 간격, 위협받는 차선 방어 모델. 실제 사람의 모든 전략을 보장하는 결과는 아니다.','현재 만렙 기준 = 은하단 원수 최소 진급 전력 + 군사 장비50강. 후반은 더 많은 병력만으로 완주를 보장하지 않으며 향후 장비 성장도 필요할 수 있다.','','|전체 지역|신규 지역|권장 계급|권장 강화|권장 편성 결과|현재 만렙 결과|','|---|---|---|---|---|---|');
+for(const s of campaignStages.slice(160)){const a=simulateBattle(referenceArmy(s),s.id),b=simulateBattle(referenceArmy(s,{power:CONSTELLATION_POWERS.at(-1),level:50}),s.id);lines.push(`|${s.id}|${s.id-160}|${s.recommendedRank}|${s.recommendedLevel}|${a.status} ${(a.elapsedMs/1000).toFixed(1)}초|${b.status} ${(b.elapsedMs/1000).toFixed(1)}초|`);}
+lines.push('','## 검증 범위','','저장37→38, 기존160별 보존/40별0 추가, 학교별 계급 경계, 1G부족/정확 비용, 은하 원수→은하단 준장 모집, 별3개/5개 가로 배열을 자동 검사. 브라우저에서 별 배열·대륙 진입·다음 국가 잠금 확인. 실폰 및 Android 패키지는 이번 범위에서 미검증.','','## 자산·정책','','새 국가 지형과 훈장은 자체 도형이며 기존 캐시 그림을 재사용한다. 외부 자산·라이브러리·SDK·권한·광고·결제·개인정보 처리 변경 없음.');
+if(fs.existsSync('docs/balance/GROWTH_0760.json')){const r=JSON.parse(fs.readFileSync('docs/balance/GROWTH_0760.json','utf8'));lines.push('','## 성장 기준 계산','','하루3회 ×15분, 초당3회 터치, 광고·물약 없이 실제 구매·전투·방치 보상을 계산. 수입 효율에는 개인장비/점령 효과도 반영하고, 은하단 진입 후 매10번째 투자에서는 학교 확장 또는 가장 높은 병력 모집을 우선한다. 사용자의 실제 저장은 사용하지 않는다.','이 모델의 만렙 도달: '+r.milestones.at(-1).day+'일. 인간 플레이·최적화 전략의 실제 기간을 보장하는 값은 아니다.','','|계급|도달 일수|','|---|---|',...r.milestones.slice(-6).map(m=>'|'+m.rank+'|'+m.day+'일|'));}
+fs.mkdirSync('docs/balance',{recursive:true});fs.writeFileSync('docs/balance/EREBUS_0760.md',lines.join('\n')+'\n');
