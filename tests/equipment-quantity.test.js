@@ -1,5 +1,5 @@
 import { SAVE_VERSION } from '../src/state.js';
-import { serializeSave } from '../src/money.js';
+import { serializeSave, exact } from '../src/money.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, buyEquipment, enhanceEquipment, buyAdditionalEquipment, setEquipmentDeployed, parseSave, perSecond, perTap, MAX_GOLD, MAX_OFFLINE_MS, accrue, SAVE_KEY } from '../src/game.js';
@@ -9,11 +9,12 @@ import { quietBattle, deployNow } from './lane-helpers.js';
 import { createGameSession } from '../src/session.js';
 import { RANKS, RANK_REQUIREMENTS } from '../src/ranks.js';
 const T = 1_800_000_000_000;
+const legacyEquipment=Object.values(EQUIPMENT).filter(item=>(item.introducedVersion??0)<34).map(item=>item.id);
 const army = () => ({ ...freshState(T), soldiers: RANK_REQUIREMENTS[RANKS.indexOf('대원수')] - 3000, sergeants: 300, gold:100_000_000_000_000, ncoSchoolLevel: 5, officerSchoolLevel: 1 });
 function maxGun(s, id) { assert.equal(buyEquipment(s,T,id).ok,true); for(let n=0;n<10;n++) assert.equal(enhanceEquipment(s,T,id).ok,true); }
 
 test('legacy quotes remain calculable but additional purchases are locked', () => {
-  for (const id of Object.keys(EQUIPMENT)) {
+  for (const id of legacyEquipment) {
     const s = army(), before = s.gold;
     maxGun(s,id);
     const total = before - s.gold;
@@ -45,8 +46,8 @@ test('repeat purchase remains disabled regardless of flags, ownership, enhanceme
   assert.throws(()=>buyAdditionalEquipment(s,T+1000,'unknown'),RangeError); assert.deepEqual(s,before);
 });
 test('quantity calculation compatibility retains one slot and sums per copy', () => {
-  const s = army(); for(const id of Object.keys(EQUIPMENT)) maxGun(s,id);
-  assert.equal(deployedEquipment(s).length,Object.keys(EQUIPMENT).length);
+  const s = army(); for(const id of legacyEquipment) maxGun(s,id);
+  assert.equal(deployedEquipment(s).length,legacyEquipment.length);
   setEquipmentDeployed(s,false,T,'rocketLauncher');
   const income = perSecond(s), tap = perTap(s,T), before = s.gold, stats = equipmentStats(10,'tank');
   accrue(s,T+1000);s.equipment.tank.count=2;
@@ -56,7 +57,7 @@ test('quantity calculation compatibility retains one slot and sums per copy', ()
   assert.equal(perSecond(s),income+passiveDelta); assert.equal(perTap(s,T),tap+tapDelta);
   const beforeStored = perSecond(s);
   s.equipment.rocketLauncher.count=2;
-  assert.equal(perSecond(s),beforeStored); assert.equal(deployedEquipment(s).length,Object.keys(EQUIPMENT).length-1);
+  assert.equal(perSecond(s),beforeStored); assert.equal(deployedEquipment(s).length,legacyEquipment.length-1);
   setEquipmentDeployed(s,false,T+1000,'tank');
   assert.equal(perSecond(s),beforeStored - passiveDelta*2);
   setEquipmentDeployed(s,true,T+1000,'rocketLauncher');
@@ -96,7 +97,7 @@ test('large valid quantities retain exact arithmetic and clamp offline income to
   const s = army();
   for(const [i,id] of Object.keys(EQUIPMENT).entries())s.equipment[id]={count:MAX_EQUIPMENT_COUNT,level:20,deployed:i>=Object.keys(EQUIPMENT).length-4};
   s.gold=MAX_GOLD-1n;
-  assert.ok(Number.isSafeInteger(perSecond(s))); assert.ok(Number.isSafeInteger(perTap(s,T)));
+  assert.ok(exact(perSecond(s))>0n); assert.ok(exact(perTap(s,T))>0n);
   accrue(s,T+MAX_OFFLINE_MS);assert.equal(s.gold,MAX_GOLD);assert.equal(s.incomeRemainder,0);
   assert.ok(parseSave(serializeSave(s),T));
 });

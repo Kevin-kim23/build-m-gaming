@@ -64,7 +64,7 @@ function pack(items, area, factor) {
   return placed;
 }
 
-export function layoutFieldArmy(army, area) {
+export function layoutFieldArmy(army, area, {compactOnly=false,preserveSize=false}={}) {
   const { groups, largest } = fieldArmy(army);
   if (!groups.length) return [];
   const hierarchy = [...FORMATIONS].reverse();
@@ -72,7 +72,7 @@ export function layoutFieldArmy(army, area) {
     0,
     hierarchy.findIndex((f) => f.id === largest.id),
   );
-  const displayWidth = ['alliedArmy', 'grandAlliedArmy', 'supremeCommand', 'galacticCommand', 'galacticGroupCommand'].includes(largest.id) ? 84 : 56;
+  const displayWidth = largest.size >= FORMATIONS.find(f=>f.id==='alliedArmy').size ? 84 : 56;
   const scale = UNITS[largest.id] ? 1 : Math.min(1.35, displayWidth / largest.width);
   const makeItems = (compact, visibleGroups) =>
     visibleGroups.flatMap((g) => {
@@ -91,10 +91,10 @@ export function layoutFieldArmy(army, area) {
     });
   // Prefer all groups. On very short screens progressively omit smaller groups,
   // preserving the largest headquarters instead of dropping the entire army.
-  for(let visibleCount=groups.length;visibleCount>0;visibleCount--) {
-    for (const compact of [false, true]) {
+  for(let visibleCount=groups.length;visibleCount>=(preserveSize?groups.length:1);visibleCount--) {
+    for (const compact of compactOnly?[true]:[false,true]) {
       const items = makeItems(compact, groups.slice(0,visibleCount));
-      for (let factor = 1; factor >= (compact ? 0.1 : 0.65); factor -= 0.05) {
+      for (let factor = 1; factor >= (preserveSize?1:compact?0.1:0.65); factor -= 0.05) {
         const result = pack(items, area, factor);
         if (result) return result;
       }

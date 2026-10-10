@@ -1,3 +1,5 @@
+import { emptyEquipment as equipmentDefaults } from '../src/equipment.js';
+import { CAMPAIGN_STAGE_COUNT } from '../src/campaign-constants.js';
 import { emptyPersonalLevels } from '../src/personal-catalog.js';
 import { SAVE_VERSION } from '../src/state.js';
 import { test } from "node:test";
@@ -137,9 +139,9 @@ test("v4 migration preserves troop balances and adds empty equipment", () => {
   delete old.equipment;
   assert.deepEqual(parseSave(JSON.stringify(old)), {
     ...old,
-    version:SAVE_VERSION,offlineReward:null,campaignStars:Array(80).fill(0),personalLevels:emptyPersonalLevels(),autoTouchDurationMs:60000, ncoSchoolLevel: 1,
+    version:SAVE_VERSION,offlineReward:null,campaignStars:Array(CAMPAIGN_STAGE_COUNT).fill(0),personalLevels:emptyPersonalLevels(),autoTouchDurationMs:60000, ncoSchoolLevel: 1,
     earnedAchievements: ["squad", "platoon", "company"],
-    equipment: { artillery: null, tank: null, selfPropelled: null, helicopter: null, rocketLauncher: null, transport: null, fighter: null, railgunTank: null, icbm: null, carrier:null, flyingFortress:null, orbitalAssault:null },
+    equipment: { ...equipmentDefaults(), artillery: null, tank: null, selfPropelled: null, helicopter: null, rocketLauncher: null, transport: null, fighter: null, railgunTank: null, icbm: null, carrier:null, flyingFortress:null, orbitalAssault:null },
   });
 });
 test("invalid equipment saves are rejected instead of loading impossible bonuses", () => {

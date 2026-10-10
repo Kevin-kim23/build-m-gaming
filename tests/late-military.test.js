@@ -100,10 +100,8 @@ test('full expanded military income and eight-hour offline settlement stay exact
   const expected=Object.keys(EQUIPMENT).reduce((sum,id)=>{
     const stats=equipmentStats(20,id);sum.passive+=BigInt(stats.passive)*100000n;sum.tap+=BigInt(stats.tap)*100000n;return sum;
   },{passive:0n,tap:0n});
-  assert.equal(Object.keys(EQUIPMENT).length,12,'recheck safe raw sums if the catalog grows');
-  for(const kind of ['passive','tap'])assert.ok(expected[kind]<=BigInt(Number.MAX_SAFE_INTEGER),'raw equipment income must stay within safe integer range before personal multipliers');
-  const income=equipmentIncome(s);assert.ok(Number.isSafeInteger(income.passive)&&Number.isSafeInteger(income.tap));
-  assert.equal(exact(income.passive),expected.passive);assert.equal(exact(income.tap),expected.tap);
+  const income=equipmentIncome(s);
+  for(const kind of ['passive','tap'])assert.equal(exact(income[kind]),expected[kind]>MAX_GOLD?MAX_GOLD:expected[kind]);
   const rate=perSecond(s),earned=multiplyMoney(rate,MAX_OFFLINE_MS/1000);
   accrue(s,T+MAX_OFFLINE_MS*2);assert.equal(exact(s.gold),earned<MAX_GOLD?exact(earned):MAX_GOLD);
   const loaded=parseSave(serializeSave(s),s.lastAccrual);assert.equal(loaded.gold,s.gold);

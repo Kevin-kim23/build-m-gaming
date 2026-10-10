@@ -1,3 +1,5 @@
+import { LEGACY_MAX_GOLD } from '../src/money.js';
+import { serializeLegacySave } from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, upgradeSchool, recruit, buildFacility, buyEquipment, enhanceEquipment } from '../src/game.js';
@@ -45,19 +47,19 @@ test('owned and upgraded gear does not restart first-purchase or first-upgrade g
   assert.equal(guideCandidates(s).some(g=>g.id==='equipment-upgrade'),false);
 });
 test('deferring a guide does not spend gold or silently complete the action',()=>{
-  const flow=createGuideFlow(),s=state({gold:MAX_GOLD}),before=serializeSave(s);
+  const flow=createGuideFlow(),s=state({gold:MAX_GOLD}),before=serializeLegacySave(s);
   const first=flow.next(s);flow.defer(first.id);
   assert.equal(flow.paused,true,'later pauses other spotlights for the session too');
   assert.notEqual(flow.next(s)?.id,first.id);
   flow.resume();assert.equal(flow.paused,false);assert.equal(flow.next(s).id,first.id);
-  assert.equal(serializeSave(s),before);
+  assert.equal(serializeLegacySave(s),before);
 });
 test('returning players skip completed lessons after save round trips and schema28 migration',()=>{
   for(const version of [28,29]) {
-    const s=state({version,soldiers:20000,sergeants:300,ncoSchoolLevel:5,gold:MAX_GOLD,
+    const s=state({version,soldiers:20000,sergeants:300,ncoSchoolLevel:5,gold:LEGACY_MAX_GOLD,
       facilities:['gym'],facilityLevels:{gym:7}});
     s.equipment.tank={level:4,count:1,deployed:true};
-    const restored=parseSave(serializeSave(s),T),before=serializeSave(restored);
+    const restored=parseSave(serializeLegacySave(s),T),before=serializeSave(restored);
     const flow=createGuideFlow();assert.equal(flow.next(restored),null);
     flow.resume();assert.equal(flow.next(restored),null);
     assert.equal(serializeSave(restored),before);

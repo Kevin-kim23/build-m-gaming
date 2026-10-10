@@ -1,5 +1,6 @@
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { COMMAND_OFFICERS } from './command-officers.js';
+import { GALACTIC_OFFICERS } from './galactic-officers.js';
 import { rankForArmy, RANKS } from './ranks.js';
 import { OFFICER_GRADES } from './officer-progression.js';
 import { NCO_SCHOOL_COSTS } from './growth-balance.js';
@@ -23,6 +24,11 @@ export const SCHOOLS = Object.freeze({
     costs:Object.freeze(COMMAND_OFFICERS.map(grade=>grade.academyCost)),
     effects:Object.freeze(COMMAND_OFFICERS.map(grade=>grade.name+' 모집')),
     requiredRanks:Object.freeze(COMMAND_OFFICERS.map(grade=>grade.unlockRank))}),
+  galactic: Object.freeze({id:'galactic',name:'은하 사관학교',field:'galacticSchoolLevel',maxLevel:GALACTIC_OFFICERS.length,
+    prerequisite:'command',
+    costs:Object.freeze(GALACTIC_OFFICERS.map(grade=>grade.academyCost)),
+    effects:Object.freeze(GALACTIC_OFFICERS.map(grade=>grade.name+' 모집')),
+    requiredRanks:Object.freeze(GALACTIC_OFFICERS.map(grade=>grade.unlockRank))}),
 });
 export function schoolOffer(state,id) {
   const school=SCHOOLS[id];

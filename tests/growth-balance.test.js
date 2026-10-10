@@ -6,8 +6,9 @@ import { schoolOffer } from '../src/schools.js';
 import { schoolUnlockPreview } from '../src/school-panels.js';
 import { simulateGrowth } from '../tools/growth-sim.mjs';
 import { MAX_FACILITY_LEVEL } from '../src/facility-catalog.js';
-let constructionReport;
+let constructionReport, upgradedReport;
 const constructionOnly = () => constructionReport ??= simulateGrowth({battles:true,facilityUpgrades:false});
+const withUpgrades = () => upgradedReport ??= simulateGrowth({battles:true});
 const T=1800000000000;
 
 test('early school unlock increases income materially and has a transparent next-unit preview',()=>{
@@ -68,7 +69,7 @@ test('construction-only facility buff keeps early pacing and a staged route to d
 });
 
 test('facility-upgrade model evaluates real upgrades, preserves early pacing and records the faster late game',()=>{
-  const report=simulateGrowth({battles:true});
+  const report=withUpgrades();
   const reached=Object.fromEntries(report.milestones.map(m=>[m.rank,m.day]));
   const baseline=constructionOnly().milestones.find(m=>m.rank==='대원수').day;
   assert.equal(report.assumptions.facilityUpgrades,true);
@@ -80,4 +81,15 @@ test('facility-upgrade model evaluates real upgrades, preserves early pacing and
   assert.equal(levels.length,report.final.facilities.length);
   assert.ok(levels.some(level=>level>1),'the model must actually buy upgrades');
   assert.ok(levels.every(level=>Number.isInteger(level)&&level>=1&&level<=MAX_FACILITY_LEVEL));
+});
+
+test('galactic promotion costs retain multiple visits and increasingly demanding later tiers',()=>{
+  const ranks=['은하 준장','은하 소장','은하 중장','은하 대장','은하 원수'];
+  for(const report of [constructionOnly(),withUpgrades()]) {
+    const days=Object.fromEntries(report.milestones.map(m=>[m.rank,m.day]));
+    const intervals=ranks.slice(1).map((rank,i)=>days[rank]-days[ranks[i]]);
+    assert.ok(intervals.every(days=>Number.isFinite(days)&&days>=.3),'a later galaxy rank must not collapse into one active session');
+    for(let i=1;i<intervals.length;i++)assert.ok(intervals[i]+.34>=intervals[i-1],'allow one visit of rounding, but no late-rank pacing collapse');
+    assert.ok(intervals.at(-1)>=intervals[0]);
+  }
 });

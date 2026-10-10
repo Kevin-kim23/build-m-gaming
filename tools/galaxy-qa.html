@@ -1,0 +1,36 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>은하 확장 검증</title></head><body>
+<style>body{background:#101b29;color:#e6e0ed;font:14px/1.6 system-ui;margin:0;padding:20px}button{padding:10px;background:#332746;color:#f4e5c9;border:1px solid #c49a63;border-radius:6px}#badges{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}#badges>div{width:115px;text-align:center}#badges .insignia{display:block;width:72px;height:72px;margin:auto}#badges svg{width:100%;height:100%}#weapons{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}article{background:#233148;padding:10px;border-radius:10px}article canvas{width:100%;image-rendering:pixelated}#result{white-space:pre-wrap}#battle-modal.in-battle{width:min(100% - 16px,480px)}</style>
+<h1>은하 확장 · 저장하지 않는 검증 화면</h1>
+<div id="badges"></div><button id="open-battle">새 대륙 열기</button> <button id="all-cleared">전체 점령 지도</button> <button id="preview-ending">승리 연출 빠른 검증</button> <button id="open-guide">계급과 편제 안내</button>
+<p id="result">실제 게임 저장을 읽거나 쓰지 않습니다.</p><div id="weapons"></div><dialog id="battle-modal"></dialog>
+<script type="module">
+import '/src/style.css';
+import '/src/promotion-tier.css';
+import '/src/detail.css';
+import {openRankGuide} from '/src/rank-guide.js';
+import {freshState} from '/src/state.js';
+import {EQUIPMENT} from '/src/equipment.js';
+import {RANK_DEFINITIONS} from '/src/ranks.js';
+import {insignia} from '/src/home-view.js';
+import {createBattleUI} from '/src/battle-ui.js';
+import {drawEquipment} from '/src/equipment-art.js';
+import {drawWeaponShot} from '/src/weapon-fx.js';
+const s=freshState();Object.assign(s,{soldiers:RANK_DEFINITIONS.at(-1).required-3000,sergeants:300,campaignCleared:80,sound:false});
+for(const g of Object.values(EQUIPMENT))s.equipment[g.id]={level:30,count:1,deployed:true};
+const session={state:s,active:true,change(fn){const r=fn(s);document.querySelector('#result').textContent=`점령 ${s.campaignCleared} / 160 · ${r?.ok?'정산 완료':'대기'}`;return r;}};
+const ui=createBattleUI(session);
+const qaStyle=document.createElement('style');qaStyle.textContent='html,body{height:auto;overflow:auto}body{padding:20px}#detail-modal .rank-step .insignia{width:32px;height:32px}';document.head.append(qaStyle);
+document.querySelector('#open-guide').onclick=()=>openRankGuide(s,insignia);
+document.querySelector('#open-battle').onclick=()=>{s.campaignCleared=80;ui.open();};
+document.querySelector('#all-cleared').onclick=()=>{s.campaignCleared=160;ui.open();};
+document.querySelector('#preview-ending').onclick=()=>{s.campaignCleared=80;s.soldiers=RANK_DEFINITIONS.at(-1).required*3-3000;ui.open();};
+RANK_DEFINITIONS.forEach((r,i)=>{if(r.marks<11)return;const div=document.createElement('div');div.innerHTML=insignia(i)+`<b>${r.name}</b>`;document.querySelector('#badges').append(div);});
+const previews=[];
+for(const gear of Object.values(EQUIPMENT)){
+ const card=document.createElement('article');card.innerHTML=`<b>${gear.name}</b><canvas width="220" height="124"></canvas><canvas class="shot" width="180" height="150"></canvas>`;
+ drawEquipment(card.querySelector('canvas'),10,gear.id);previews.push([gear.id,card.querySelector('.shot')]);document.querySelector('#weapons').append(card);
+}
+let loop;const animate=t=>{for(const [id,c]of previews){const ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#152030';ctx.fillRect(0,0,c.width,c.height);drawWeaponShot(ctx,{id,side:'player'},t%1200,90,120,25);}loop=requestAnimationFrame(animate);};loop=requestAnimationFrame(animate);
+window.addEventListener('pagehide',()=>cancelAnimationFrame(loop),{once:true});
+document.body.dataset.ready='true';
+</script></body></html>

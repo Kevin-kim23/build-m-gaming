@@ -1,3 +1,5 @@
+import { LEGACY_MAX_GOLD } from '../src/money.js';
+import { serializeLegacySave } from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState,buildFacility,perSecond,perTap,baseTapIncome,accrue,tapGold,activateSword,activateAutoTouch,buyEquipment} from '../src/game.js';
@@ -78,13 +80,13 @@ test('offline facility income caps at eight hours, survives reload and claims on
 });
 
 test('version24 assets migrate without losing equipment or pending reward; malformed facilities report diagnostics',()=>{
-  const old=army('대원수');old.version=24;delete old.facilities;
+  const old=army('대원수');old.version=24;old.gold=LEGACY_MAX_GOLD;delete old.facilities;
   old.offlineReward={id:T,durationMs:3600000,amount:9007199254740993n};
   for(const item of Object.values(EQUIPMENT)){
     if((item.introducedVersion??0)<=24)old.equipment[item.id]={level:10,count:1,deployed:item.id==='tank'};
     else delete old.equipment[item.id];
   }
-  const next=parseSave(serializeSave(old),T);
+  const next=parseSave(serializeLegacySave(old),T);
   assert.equal(next.version,SAVE_VERSION);assert.deepEqual(next.facilities,[]);
   for(const key of ['gold','soldiers','sergeants','offlineReward'])assert.deepEqual(next[key],old[key]);
   for(const item of Object.values(EQUIPMENT))assert.deepEqual(next.equipment[item.id],(item.introducedVersion??0)<=24?old.equipment[item.id]:null);
@@ -95,7 +97,7 @@ test('version24 assets migrate without losing equipment or pending reward; malfo
 });
 
 test('all home equipment can coexist while previously stored equipment stays stored after migration',()=>{
-  const s=army('대원수');for(const id of Object.keys(EQUIPMENT))assert.equal(buyEquipment(s,T,id).deployed,true);
+  const s=army('은하 원수');s.gold=MAX_GOLD;for(const id of Object.keys(EQUIPMENT))assert.equal(buyEquipment(s,T,id).deployed,true);
   assert.equal(deployedEquipment(s).length,Object.keys(EQUIPMENT).length);assert.deepEqual(parseSave(serializeSave(s),T).equipment,s.equipment);
 });
 

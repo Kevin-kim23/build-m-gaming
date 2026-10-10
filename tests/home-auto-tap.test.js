@@ -1,3 +1,5 @@
+import { LEGACY_MAX_GOLD } from '../src/money.js';
+import { serializeLegacySave } from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState,SAVE_KEY,SAVE_VERSION} from '../src/state.js';
@@ -103,9 +105,9 @@ test('auto rewards cross safe integers, cap at one gold remaining, round-trip ex
 });
 
 test('v32 migration preserves progress without granting entitlement; v33 validates test source and enabled state',()=>{
-  const legacy={...owned(),version:32,gold:MAX_GOLD-1n,facilities:['pcRoom'],facilityLevels:{pcRoom:20}};
+  const legacy={...owned(),version:32,gold:LEGACY_MAX_GOLD-1n,facilities:['pcRoom'],facilityLevels:{pcRoom:20}};
   legacy.potions.red.count=4;legacy.equipment.artillery={level:30,deployed:true,count:1};
-  const migrated=parseSave(serializeSave(legacy),T);
+  const migrated=parseSave(serializeLegacySave(legacy),T);
   assert.equal(migrated.version,SAVE_VERSION);assert.deepEqual(migrated.homeAutoTap,emptyHomeAutoTap());
   assert.equal(migrated.gold,legacy.gold);assert.deepEqual(migrated.facilityLevels,legacy.facilityLevels);
   assert.deepEqual(migrated.potions,legacy.potions);assert.deepEqual(migrated.equipment,legacy.equipment);

@@ -1,3 +1,5 @@
+import { LEGACY_MAX_GOLD } from '../src/money.js';
+import { serializeLegacySave } from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState,SAVE_KEY,SAVE_VERSION} from '../src/state.js';
@@ -52,7 +54,7 @@ test('offline popup includes blue only for remaining duration, honors eight hour
   assert.equal(prepareOfflineReward(s,T+12*3600000),true);
   assert.equal(s.offlineReward.durationMs,MAX_OFFLINE_MS);
   const expected=7*(8*3600+1800);assert.equal(s.offlineReward.amount,expected);
-  const saved=parseSave(serializeSave(s),T+12*3600000);assert.equal(potionStatus(saved,'blue',saved.lastAccrual).active,false);
+  const saved=parseSave(serializeLegacySave(s),T+12*3600000);assert.equal(potionStatus(saved,'blue',saved.lastAccrual).active,false);
   const id=saved.offlineReward.id;assert.equal(claimOfflineReward(saved,id,2).amount,expected*2);
   assert.equal(claimOfflineReward(saved,id,2).ok,false);
   const gold=saved.gold;accrue(saved,T+12*3600000);assert.equal(saved.gold,gold);
@@ -78,20 +80,20 @@ test('exact amounts cross the safe integer boundary, cap with one gold, and surv
   for(const gold of [9007199254740991n,MAX_GOLD-1n]){
     const s={...freshState(T),gold};give(s,'red');usePotion(s,T,'red');
     const earned=tapGold(s,T);assert.equal(exact(earned),gold===MAX_GOLD-1n?1n:2n);
-    assert.equal(exact(parseSave(serializeSave(s),T).gold),gold+exact(earned));
+    assert.equal(exact(parseSave(serializeLegacySave(s),T).gold),gold+exact(earned));
   }
   const s=general();s.specialMarshals=100;s.commandSchoolLevel=5;s.advancedSchoolLevel=5;s.officerSchoolLevel=5;s.ncoSchoolLevel=5;
   s.gold=9007199254740991n;give(s,'blue');usePotion(s,T,'blue');
   const expected=exact(s.gold)+exact(basePassiveIncome(s))*3600n;
-  accrue(s,T+1800000);assert.equal(exact(s.gold),expected);assert.equal(parseSave(serializeSave(s),s.lastAccrual).gold,s.gold);
+  accrue(s,T+1800000);assert.equal(exact(s.gold),expected);assert.equal(parseSave(serializeLegacySave(s),s.lastAccrual).gold,s.gold);
   const cap={...freshState(T),soldiers:1,gold:MAX_GOLD-1n};give(cap,'blue');usePotion(cap,T,'blue');
   assert.equal(accrue(cap,T+1000),1);assert.equal(cap.gold,MAX_GOLD);assert.equal(cap.incomeRemainder,0);
 });
 
 test('legacy saves gain empty inventory and invalid records cannot corrupt counts, time or other progress',()=>{
-  const s=general();s.version=31;s.gold=MAX_GOLD-1n;s.equipment.artillery={level:30,deployed:true,count:1};
+  const s=general();s.version=31;s.gold=LEGACY_MAX_GOLD-1n;s.equipment.artillery={level:30,deployed:true,count:1};
   s.potions={red:{count:99,startedAt:T,expiresAt:T+60000}};
-  const migrated=parseSave(serializeSave(s),T);
+  const migrated=parseSave(serializeLegacySave(s),T);
   assert.equal(migrated.version,SAVE_VERSION);assert.deepEqual(migrated.potions,emptyPotions());
   assert.equal(migrated.gold,s.gold);assert.deepEqual(migrated.equipment,s.equipment);
   for(const red of [{count:-1,startedAt:null,expiresAt:null},{count:1.5,startedAt:null,expiresAt:null},

@@ -1,3 +1,5 @@
+import { LEGACY_MAX_GOLD } from '../src/money.js';
+import { serializeLegacySave } from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, SAVE_VERSION } from '../src/state.js';
@@ -12,13 +14,13 @@ const personalIds=['admiralsCompass','strategicTablet','supremeSeal'];
 const army=()=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf('대원수')]-3000,sergeants:300,gold:MAX_GOLD-1n});
 
 test('version26 adds only new gear defaults, preserves all paid assets and pending return reward',()=>{
-  const old=army();old.version=26;
+  const old=army();old.version=26;old.gold=LEGACY_MAX_GOLD-1n;
   for(const id of gearIds)delete old.equipment[id];
   for(const id of personalIds)delete old.personalLevels[id];
   old.equipment.icbm={level:19,count:1,deployed:false};old.personalLevels.generalSword=8;
   old.facilities=['futsal','kitchen'];old.facilityLevels={futsal:20,kitchen:7};
   old.offlineReward={id:T,durationMs:28_800_000,amount:9007199254740993n};
-  const next=parseSave(serializeSave(old),T);assert.ok(next);assert.equal(next.version,SAVE_VERSION);
+  const next=parseSave(serializeLegacySave(old),T);assert.ok(next);assert.equal(next.version,SAVE_VERSION);
   for(const field of ['gold','soldiers','sergeants','facilities','facilityLevels','offlineReward','lastAccrual','campaignStars'])assert.deepEqual(next[field],old[field]);
   for(const [id,value] of Object.entries(old.equipment))assert.deepEqual(next.equipment[id],value);
   for(const [id,value] of Object.entries(old.personalLevels))assert.equal(next.personalLevels[id],value);

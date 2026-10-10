@@ -18,7 +18,7 @@ test('conquest adds one percent per unique region up to eighty, rounding combine
     assert.equal(campaignBonusPercent(s),cleared);
     assert.equal(withCampaignIncome(s,12345),12345+Math.floor(12345*cleared/100));
   }
-  assert.equal(campaignBonusPercent({campaignCleared:81}),80);
+  assert.equal(campaignBonusPercent({campaignCleared:81}),82);
   assert.equal(campaignBonusPercent({campaignCleared:-1}),0);
   for(const bad of [NaN,Infinity,.5,'20',null,undefined])assert.equal(campaignBonusPercent({campaignCleared:bad}),0);
 });

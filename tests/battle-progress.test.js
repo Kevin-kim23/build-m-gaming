@@ -1,3 +1,4 @@
+import { CAMPAIGN_STAGE_COUNT } from '../src/campaign-constants.js';
 import { SAVE_VERSION } from '../src/state.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -28,7 +29,7 @@ test('a real victory records progress, its medal and the loot gold without chang
   assert.deepEqual({ ...result, gold: undefined, stars: undefined }, { ok: true, firstClear: true, gold: undefined, stars: undefined, newBest: true, achievements: ['firstVictory'] });
   assert.ok(result.stars >= 1 && result.stars <= 3);
   assert.equal(state.gold, before.gold + result.gold);
-  assert.deepEqual({ ...state, gold: 0 }, { ...before, gold: 0, campaignCleared: 1, campaignStars: [result.stars, ...Array(79).fill(0)], earnedAchievements: [...before.earnedAchievements, 'firstVictory'] });
+  assert.deepEqual({ ...state, gold: 0 }, { ...before, gold: 0, campaignCleared: 1, campaignStars: [result.stars, ...Array(CAMPAIGN_STAGE_COUNT-1).fill(0)], earnedAchievements: [...before.earnedAchievements, 'firstVictory'] });
   assert.equal(battle.enemy.hq.hp, 0);
   assert.ok(battle.player.hq.hp > 0);
 });
@@ -166,13 +167,13 @@ test('the best star per region is saved, never lowered, and shown only for conqu
 });
 
 test('format 22 saves keep stars, format 21 and older saves migrate with zero stars, impossible star records are rejected', () => {
-  const s = army(); s.campaignCleared = 3; s.campaignStars = [3, 2, 1, ...Array(77).fill(0)];
+  const s = army(); s.campaignCleared = 3; s.campaignStars = [3, 2, 1, ...Array(CAMPAIGN_STAGE_COUNT-3).fill(0)];
   const loaded = parseSave(serializeSave(s), T);
   assert.equal(loaded.version, SAVE_VERSION); assert.deepEqual(loaded.campaignStars, s.campaignStars);
   const old = { ...s, version: 21 }; delete old.campaignStars;
   const migrated = parseSave(JSON.stringify(old), T);
-  assert.equal(migrated.version, SAVE_VERSION); assert.deepEqual(migrated.campaignStars, Array(80).fill(0));
+  assert.equal(migrated.version, SAVE_VERSION); assert.deepEqual(migrated.campaignStars, Array(CAMPAIGN_STAGE_COUNT).fill(0));
   assert.equal(migrated.campaignCleared, 3); assert.equal(migrated.gold, s.gold);
-  for (const bad of [[3], Array(80).fill(4), Array(80).fill(-1), Array(80).fill(0.5), [0, 0, 0, 0, 2, ...Array(75).fill(0)], null, 'x'])
+  for (const bad of [[3], Array(CAMPAIGN_STAGE_COUNT).fill(4), Array(CAMPAIGN_STAGE_COUNT).fill(-1), Array(CAMPAIGN_STAGE_COUNT).fill(0.5), [0, 0, 0, 0, 2, ...Array(75).fill(0)], null, 'x'])
     assert.equal(parseSave(serializeSave({ ...s, campaignStars: bad }), T), null);
 });

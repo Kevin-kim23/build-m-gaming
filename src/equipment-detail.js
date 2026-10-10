@@ -1,3 +1,4 @@
+import {multiplyMoney} from './money.js';
 import { fmt, fmtGold, fmtGoldCost } from './format.js';
 import {
   EQUIPMENT, equipmentOf, equipmentCount, equipmentStats, equipmentLevelLimit, equipmentStage,
@@ -25,8 +26,8 @@ export function equipmentDetailMarkup(s, id, { manage = true } = {}) {
       <dl class="detail-stats">
         ${row('해금 계급', d.unlockRank)}${row('구매 가격', fmtGoldCost(d.cost) + ' G')}
         ${row('보유', gun ? `${fmt(count)}문 · +${gun.level}강` : offer.locked ? '🔒 잠금' : '미보유')}
-        ${row(gun ? '초당 수입(합계)' : '초당 수입(1문)', '+' + fmtGold(stats.passive * times) + ' G')}
-        ${row(gun ? '터치 보상(합계)' : '터치 보상(1문)', '+' + fmtGold(stats.tap * times) + ' G')}
+        ${row(gun ? '초당 수입(합계)' : '초당 수입(1문)', '+' + fmtGold(multiplyMoney(stats.passive,times)) + ' G')}
+        ${row(gun ? '터치 보상(합계)' : '터치 보상(1문)', '+' + fmtGold(multiplyMoney(stats.tap,times)) + ' G')}
         ${row('현재 외형', equipmentStage(id, level))}${row('현재 최대 강화', equipmentLevelLimit(s) + '강')}
         ${row('다음 강화', upgrade)}${gun && !max ? row('강화 비용', fmtGoldCost(up.cost) + ' G · ' + fmt(count) + '문 합계') : ''}
         ${row('장비 추가 구매', '🔒 현재 잠금')}

@@ -1,5 +1,5 @@
 import { personalIcon } from './personal-art.js';
-import { generalRankBadge, marshalRankBadge, rankBadgeInstance } from './rank-frame.js';
+import { generalRankBadge, marshalRankBadge, galacticRankBadge, rankBadgeInstance } from './rank-frame.js';
 import { RANK_DEFINITIONS } from "./ranks.js";
 import { APP_VERSION } from "./version.js";
 import { medalShelfMarkup } from "./achievement-markup.js";
@@ -124,6 +124,8 @@ export function insignia(index) {
   const r = RANK_DEFINITIONS[index];
   if (r.kind === 'general' && r.marks <= 5)
     return `<span class="insignia general framed-rank">${rankBadgeInstance(generalRankBadge(r.marks))}</span>`;
+  if (r.kind === 'general' && r.marks >= 11)
+    return `<span class="insignia general framed-rank">${rankBadgeInstance(galacticRankBadge(r.marks))}</span>`;
   if (r.kind === 'general' && r.marks >= 6)
     return `<span class="insignia general framed-rank">${rankBadgeInstance(marshalRankBadge(r.marks))}</span>`;
   return (

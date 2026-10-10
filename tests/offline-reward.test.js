@@ -1,3 +1,4 @@
+import { serializeLegacySave } from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, SAVE_KEY, SAVE_VERSION } from '../src/state.js';
@@ -70,7 +71,7 @@ test('large rewards serialize exactly, double exactly and clamp to the wallet li
 });
 test('version 22 migration preserves assets and ignores injected unclaimed reward fields',()=>{
   const old={...freshState(T),version:22,gold:9007199254740993n,soldiers:4,offlineReward:{amount:999,id:T,durationMs:HOUR}};
-  const loaded=parseSave(serializeSave(old));assert.equal(loaded.version,SAVE_VERSION);assert.equal(loaded.offlineReward,null);
+  const loaded=parseSave(serializeLegacySave(old));assert.equal(loaded.version,SAVE_VERSION);assert.equal(loaded.offlineReward,null);
   assert.equal(loaded.gold,old.gold);assert.equal(loaded.soldiers,4);assert.deepEqual(loaded.equipment,old.equipment);
   for(const reward of [undefined,{},[],{id:T+1,durationMs:HOUR,amount:1},{id:T,durationMs:8*HOUR+1,amount:1},
     {id:T,durationMs:HOUR-1,amount:1},{id:T,durationMs:HOUR,amount:'-1'},{id:T,durationMs:HOUR,amount:Number.MAX_SAFE_INTEGER+1}])

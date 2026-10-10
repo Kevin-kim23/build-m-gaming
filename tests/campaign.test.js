@@ -28,8 +28,8 @@ function army(power,level=6,copies=1){
 function simulate(state,id,policy='cycle'){return simulateBattle(state,id,{policy:policy==='cycle'?'defend':policy});}
 
 test('four original countries each contain twenty ordered, progressively stronger regions',()=>{
-  assert.equal(COUNTRIES.length,4);assert.equal(campaignStages.length,80);
-  assert.equal(new Set(campaignStages.map(s=>s.name)).size,80);
+  assert.equal(COUNTRIES.length,8);assert.equal(campaignStages.length,160);
+  assert.equal(new Set(campaignStages.map(s=>s.name)).size,160);
   for(const country of COUNTRIES){
     const stages=campaignStages.filter(s=>s.countryId===country.id);assert.equal(stages.length,20);
     assert.equal(stages.at(-1).capital,true);assert.equal(stages.filter(s=>s.capital).length,1);
@@ -39,7 +39,7 @@ test('four original countries each contain twenty ordered, progressively stronge
 });
 test('only conquest of all twenty regions unlocks the next country, including replays and final completion',()=>{
   const state={...army(81920),campaignCleared:0};
-  for(let cleared=0;cleared<=80;cleared++){
+  for(let cleared=0;cleared<=160;cleared++){
     state.campaignCleared=cleared;
     for(const [i,c]of COUNTRIES.entries()){
       const p=countryProgress(state,c.id);assert.equal(p.unlocked,cleared>=i*20);assert.equal(p.complete,cleared>=(i+1)*20);assert.equal(p.cleared,Math.max(0,Math.min(20,cleared-i*20)));
@@ -52,7 +52,7 @@ test('only conquest of all twenty regions unlocks the next country, including re
 });
 test('every recommended force can win by deploying available equipment to defend threatened lanes',()=>{
   for(const stage of campaignStages){
-    const state={...referenceArmy(stage),campaignCleared:80},before=structuredClone(state);
+    const state={...referenceArmy(stage),campaignCleared:160},before=structuredClone(state);
     assert.equal(RANKS[rankForArmy(state)],stage.recommendedRank);
     const result=simulate(state,stage.id);
     assert.equal(result.status,'victory',`${stage.enemyName} ${stage.region}`);
@@ -82,7 +82,7 @@ test('legacy combat records are preserved without skipping any new conquest regi
     const current={...army(81920),campaignCleared:cleared},loaded=parseSave(JSON.stringify(current),T);
     assert.equal(loaded.campaignCleared,cleared);assert.equal(armyPower(loaded),armyPower(current));assert.deepEqual(loaded.equipment,current.equipment);assert.deepEqual(parseSave(JSON.stringify(loaded),T),loaded);
   }
-  for(const invalid of [-1,81,.5,'20',null,undefined])assert.equal(parseSave(JSON.stringify({...freshState(T),campaignCleared:invalid}),T),null);
+  for(const invalid of [-1,161,.5,'20',null,undefined])assert.equal(parseSave(JSON.stringify({...freshState(T),campaignCleared:invalid}),T),null);
 });
 test('country geometry produces twenty cached regions with interior labels and no territorial gaps',()=>{
   for(const country of COUNTRIES){
@@ -126,10 +126,10 @@ test('completed country maps offer a direct northern route only to the next unlo
   for(const c of COUNTRIES){
     assert.doesNotMatch(campaignMarkup({campaignCleared:c.lastStage-1},c.id,c.lastStage),/class="atlas-next-country"/);
     const completed=campaignMarkup({...army(81920),campaignCleared:c.lastStage},c.id,c.firstStage);
-    if(c.index<3){
+    if(c.index<COUNTRIES.length-1){
       const next=COUNTRIES[c.index+1];
       assert.match(completed,new RegExp('class="atlas-next-country" data-country="'+next.id+'"'));
-      assert.match(completed,new RegExp('다음 나라 · '+next.name));
+      assert.match(completed,new RegExp(c.continentId===next.continentId?'다음 나라 · '+next.name:'다음 대륙 · 에테리온'));
       assert.ok(completed.indexOf('class="atlas-next-country"')<completed.indexOf('class="atlas-window"'));
       assert.match(completed,/다시 도전/);
     }else assert.doesNotMatch(completed,/class="atlas-next-country"/);
@@ -146,7 +146,7 @@ test('upper countries provide a southern route to the conquered previous country
       const previous=COUNTRIES[c.index-1];
       assert.ok(route,`${c.id} after ${cleared} clears needs a return route`);
       assert.ok(route.includes(`data-country="${previous.id}"`));
-      assert.ok(route.includes(`이전 나라 · ${previous.name}`));
+      assert.ok(route.includes(c.continentId===previous.continentId?`이전 나라 · ${previous.name}`:'이전 대륙 · 아스테라'));
       assert.ok(html.indexOf(route)>html.indexOf('</svg>\n  <div class="atlas-compass"'));
     }
   }
@@ -163,7 +163,7 @@ test('country capitals connect colonel, lieutenant general, minor marshal and sp
 });
 test('strategy matters: never sending equipment cannot take any capital fortress, while sending it wins',()=>{
   for(const stage of campaignStages.filter(s=>s.capital)){
-    const state={...referenceArmy(stage),campaignCleared:80};
+    const state={...referenceArmy(stage),campaignCleared:160};
     assert.equal(simulate(state,stage.id).status,'victory',stage.name);
     assert.notEqual(simulate(state,stage.id,'none').status,'victory',stage.name);
   }

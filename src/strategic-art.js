@@ -69,13 +69,26 @@ export function drawOverheadStrategic(c,level,p,id) {
     for(let y=8;y<27;y+=6){r(21,y,5,2,p.body);r(30,y,5,2,p.body);}
     for(let y=48;y<55;y+=2)r(21,y,15,.7,p.dark);
   }else{
-    for(let y=15;y<62;y+=9){r(6,y,6,7,p.dark);r(44,y,6,7,p.dark);r(7,y,1,6,p.light);r(48,y,1,6,p.light);}
-    r(12,12,32,51,p.dark);r(14,14,28,46,p.body);r(15,14,1,44,p.light);
-    r(14,9,10,14,p.body);r(33,9,10,14,p.body);r(16,12,6,5,glow);r(35,12,6,5,glow);
-    r(23,16,10,43,p.light);r(25,16,5,43,p.mark);r(31,17,2,40,p.body);
-    r(24,10,8,6,p.body);r(25,6,6,6,p.dark);r(27,2,2,7,p.dark);
-    for(const y of [26,38,50]){r(23,y,10,2,p.dark);r(24,y,8,2,p.light);}
-    r(25,59,6,3,p.dark);r(17,56,4,4,p.light);r(36,56,4,4,p.light);
+    // A broad pointed warhead, exposed stage bands, swept tail fins and a
+    // recessed rocket nozzle read as a missile even at a small battle scale.
+    // The narrower transport chassis stays behind the missile silhouette.
+    for(let y=26;y<59;y+=10){r(7,y,6,7,p.dark);r(43,y,6,7,p.dark);r(8,y+1,1,5,p.light);r(47,y+1,1,5,p.light);}
+    r(13,24,30,36,p.dark);r(15,26,26,31,p.body);r(16,27,1,27,p.light);
+    for(const x of [15,36]){r(x,31,5,16,p.dark);r(x+1,32,3,5,p.body);r(x+1,32,3,1,p.light);}
+    r(26,1,4,3,p.dark);r(24,4,8,3,p.dark);r(22,7,12,4,p.dark);r(20,11,16,41,p.dark);
+    r(27,2,2,3,p.mark);r(25,5,6,3,p.light);r(23,8,10,4,p.light);
+    r(22,12,12,39,p.light);r(23,12,4,39,p.mark);r(32,12,2,39,p.body);
+    r(22,14,12,4,'#ac654a');r(23,14,4,4,'#e6b48b');
+    for(const y of [25,39]){r(21,y,14,2,p.dark);r(22,y,12,.8,p.light);r(23,y+1,4,.5,p.mark);}
+    // Separate left/right fins widen only at the tail, unlike a pill or vehicle hood.
+    for(let n=0;n<4;n++){
+      r(20-n*2,44+n*3,3+n*2,3,p.dark);r(33,44+n*3,3+n*2,3,p.dark);
+      r(21-n*2,44+n*3,2+n*2,1,p.light);r(33,44+n*3,2+n*2,1,p.light);
+    }
+    r(22,50,12,8,p.dark);r(24,50,8,7,p.body);r(25,51,3,5,p.light);
+    r(23,57,10,4,p.dark);r(24,57,8,1,p.light);r(25,59,6,3,'#7a544b');
+    r(26,59,4,2,'#dc9563');r(27,59,2,1,'#ffe0a0');
+    for(const x of [17,37]){r(x,56,2,5,p.light);r(x,56,2,1,p.mark);}
   }
   for(let i=0;i<Math.min(level,10);i++){const x=i%2?37:16,y=26+Math.floor(i/2)*6;r(x,y,3,2,level>=8?'#e7cd89':p.light);r(x,y,1,1,p.mark);}
   if(level>=7){r(43,5,1,16,p.light);r(41,6,5,2,glow);}

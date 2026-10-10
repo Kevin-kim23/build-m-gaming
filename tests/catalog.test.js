@@ -1,3 +1,5 @@
+import { emptyEquipment as equipmentDefaults } from '../src/equipment.js';
+import { CAMPAIGN_STAGE_COUNT } from '../src/campaign-constants.js';
 import { emptyPersonalLevels } from '../src/personal-catalog.js';
 import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
@@ -181,11 +183,11 @@ test("v5 saves preserve artillery, balances and armies while adding empty new sl
   delete old.staffSergeants;
   assert.deepEqual(parseSave(serializeSave(old)), {
     ...old,
-    version:SAVE_VERSION,offlineReward:null,campaignStars:Array(80).fill(0),personalLevels:emptyPersonalLevels(),autoTouchDurationMs:60000, ncoSchoolLevel: 1,
+    version:SAVE_VERSION,offlineReward:null,campaignStars:Array(CAMPAIGN_STAGE_COUNT).fill(0),personalLevels:emptyPersonalLevels(),autoTouchDurationMs:60000, ncoSchoolLevel: 1,
     earnedAchievements: ["squad", "platoon", "company"],
     staffSergeants: 0,
     equipment: {
-      artillery: {...old.equipment.artillery, count: 1},
+      ...equipmentDefaults(), artillery: {...old.equipment.artillery, count: 1},
       tank: null,
       selfPropelled: null, helicopter: null, rocketLauncher: null, transport: null, fighter: null, railgunTank: null, icbm: null, carrier:null, flyingFortress:null, orbitalAssault:null,
     },

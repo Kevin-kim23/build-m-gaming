@@ -2,12 +2,13 @@ import { brush } from './pixel-detail.js';
 
 // Original dress-uniform details shared by recruitment/home portraits and battle sprites.
 export function officerDetails(c, unit, overhead = false) {
-  const r=brush(c), gold=unit.insigniaKind!=='officer', light=gold?'#edce80':'#ecf2e2';
+  const r=brush(c), galactic=unit.insigniaKind==='galactic', gold=unit.insigniaKind!=='officer', light=galactic?'#dfad72':gold?'#edce80':'#ecf2e2';
   if(overhead) {
     r(4,3,5,2,unit.color);r(4,3,5,.5,light);r(4,5,5,1,'#192d3c');
     for(let i=0;i<unit.marks;i++)r(4+i*2,10,1,2,light);
     r(2,8,1,3,light);r(10,8,1,3,light);
     if(gold){r(4,8,4,.6,'#c7ab66');r(10,12,2,3,'#413c4e');}
+    if(galactic){r(2,7,1,5,'#a373be');r(10,7,1,5,'#a373be');r(3,7,2,1,light);r(8,7,2,1,light);r(6,3,1,1,'#ffdab0');}
     return;
   }
   // Peaked cap, polished visor, a shaded jacket and bright shoulder boards.
@@ -20,7 +21,7 @@ export function officerDetails(c, unit, overhead = false) {
   r(11,13,3,.8,'#973d38');r(11,14,1,.6,'#eed489');r(12,14,2,.6,'#6e9da6');
   for(let i=0;i<unit.marks;i++) {
     const x=7+i*2;
-    if(unit.insigniaKind==='general'){r(x,12,.6,3,light);r(x-.7,13,2,1,light);r(x-.4,14,1.4,.5,'#fff5c8');}
+    if(unit.insigniaKind==='general'||galactic){r(x,12,.6,3,light);r(x-.7,13,2,1,light);r(x-.4,14,1.4,.5,galactic?'#985232':'#fff5c8');}
     else if(gold){r(x,12,1,3,light);r(x-.5,13,2,1,light);r(x,13,.5,.5,'#fff1be');}
     else {r(x,12,.7,2.5,light);r(x-.5,13,1.7,.7,light);}
   }
@@ -31,5 +32,14 @@ export function officerDetails(c, unit, overhead = false) {
     r(3,11,1,7,'#d7e5ea');r(13,11,1,7,'#d7e5ea');r(4,17,10,1,'#c6cdbd');
     r(5,12,2,3,'#ac7d51');r(5,12,2,1,'#fff0bf');r(8,2,3,1,'#effaff');
     for(let i=0;i<unit.marks;i++)r(6+i*1.6,13,1,1,'#f5ffff');
+  }
+  if(galactic) {
+    // High violet collar, copper shoulder armor and a restrained cyan service strip.
+    r(3,10,2,8,'#4c286b');r(14,10,2,8,'#4c286b');
+    r(3,10,3,1,light);r(13,10,3,1,light);r(3,11,.6,7,'#f3c992');r(15.4,11,.6,7,'#f3c992');
+    r(7,9,5,1.5,'#43235a');r(7,9,5,.5,light);
+    r(5,17,9,1,'#30213f');r(5,17,9,.4,light);r(8,17,3,1.3,'#d4a366');
+    r(5,14,1,2,'#6be0d7');r(5,14,1,.5,'#d7ffef');
+    r(8,2.5,3,1.5,light);r(9,2.5,1,.5,'#ffedc5');
   }
 }

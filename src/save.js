@@ -1,5 +1,6 @@
 import { emptyHomeAutoTap } from './home-auto-tap-rules.js';
 import { COMMAND_OFFICERS } from './command-officers.js';
+import { GALACTIC_OFFICERS } from './galactic-officers.js';
 import { emptyPotions, POTIONS } from './potions.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { NEW_RECRUITS } from './specialist-units.js';
@@ -62,9 +63,10 @@ function migrateSave(s, now) {
     officerSchoolLevel: s.version >= 9 ? s.officerSchoolLevel : 0,
     advancedSchoolLevel: s.version >= 17 ? s.advancedSchoolLevel : 0,
     commandSchoolLevel: s.version >= 31 ? s.commandSchoolLevel : 0,
+    galacticSchoolLevel: s.version >= 34 ? s.galacticSchoolLevel : 0,
     battleCleared: s.version >= 7 ? s.battleCleared : 0,
     campaignCleared: s.version >= 15 ? s.campaignCleared : 0,
-    campaignStars: s.version >= 22 ? [...s.campaignStars] : Array(CAMPAIGN_STAGE_COUNT).fill(0),
+    campaignStars: Array.from({length:CAMPAIGN_STAGE_COUNT},(_,i)=>s.version>=22?(s.campaignStars[i]??0):0),
     earnedAchievements: s.version >= 8 ? [...s.earnedAchievements] : [],
     gold,
     taps: s.taps,
@@ -78,6 +80,7 @@ function migrateSave(s, now) {
     ...Object.fromEntries(NEW_OFFICER_GRADES.map(unit=>[unit.field,s.version >= 14 ? s[unit.field] : 0])),
     ...Object.fromEntries(ADVANCED_OFFICERS.map(unit=>[unit.field,s.version >= 17 ? s[unit.field] : 0])),
     ...Object.fromEntries(COMMAND_OFFICERS.map(unit=>[unit.field,s.version >= 31 ? s[unit.field] : 0])),
+    ...Object.fromEntries(GALACTIC_OFFICERS.map(unit=>[unit.field,s.version >= 34 ? s[unit.field] : 0])),
     equipment: emptyEquipment(),
     sound: s.sound,
     sfxVolume: s.version >= 29 ? s.sfxVolume : s.sound ? 0.7 : 0,

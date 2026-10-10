@@ -36,7 +36,7 @@ test('existing version fifteen conquest saves receive earned medals on load whil
 test('old campaign-less saves start combat awards at zero and earned awards remain permanent',()=>{
   const old={...freshState(T),version:14,battleCleared:10,campaignCleared:80};
   assert.deepEqual(parseSave(JSON.stringify(old),T).earnedAchievements,[]);
-  const s={...freshState(T),campaignCleared:80};reconcileAchievements(s);
+  const s={...freshState(T),campaignCleared:COUNTRIES.at(-1).lastStage};reconcileAchievements(s);
   s.campaignCleared=0;
   for(const a of BATTLE_ACHIEVEMENTS){assert.equal(achievementProgress(s,a.id).ratio,1);assert.equal(achievementProgress(s,a.id).earned,true);}
   assert.deepEqual(reconcileAchievements(s),[]);
@@ -44,10 +44,10 @@ test('old campaign-less saves start combat awards at zero and earned awards rema
 test('combat list explains region totals and country conditions with distinct detailed emblems',()=>{
   const s={...freshState(T),campaignCleared:19};reconcileAchievements(s);
   const html=achievementListMarkup(s,'conquer-serdin');
-  assert.match(html,/대륙 정복 · 7종/);assert.match(html,/19 \/ 20/);
+  assert.ok(html.includes(`대륙 정복 · ${BATTLE_ACHIEVEMENTS.length}종`));assert.match(html,/19 \/ 20/);
   assert.match(html,/재도전 승리는 중복 집계하지 않습니다/);
   for(const c of COUNTRIES)assert.ok(html.includes(`${c.name} 20개 지역과 수도 점령`));
   assert.doesNotMatch(html,/undefined|NaN/);
   const art=BATTLE_ACHIEVEMENTS.map(a=>medalSvg(a.id));
-  assert.equal(new Set(art.map(svg=>svg.replace(/#[0-9a-f]{6}/g,'color'))).size,7);
+  assert.equal(new Set(art.map(svg=>svg.replace(/#[0-9a-f]{6}/g,'color'))).size,BATTLE_ACHIEVEMENTS.length);
 });

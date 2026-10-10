@@ -126,9 +126,11 @@ test('maximum legal troop incomes settle long intervals and repeated taps exactl
     const s={...freshState(T),[unit.field]:Math.floor(MAX_SOLDIERS/unit.power),campaignCleared:80};
     for(const id of ['helicopter','rocketLauncher','transport','fighter'])s.equipment[id]={level:20,count:100000,deployed:true};
     const passive=perSecond(s),tap=perTap(s,T);
-    assert.ok(Number.isSafeInteger(passive));assert.ok(Number.isSafeInteger(tap));
-    accrue(s,T+100000);assert.equal(exact(s.gold),exact(passive)*100n);
+    assert.ok(exact(passive)>0n);assert.ok(exact(tap)>0n);
+    const offline=exact(passive)*100n;
+    accrue(s,T+100000);assert.equal(exact(s.gold),offline>MAX_GOLD?MAX_GOLD:offline);
     for(let n=0;n<400;n++)tapGold(s,T+100000);
-    assert.equal(exact(s.gold),exact(passive)*100n+exact(tap)*400n);
+    const total=offline+exact(tap)*400n;
+    assert.equal(exact(s.gold),total>MAX_GOLD?MAX_GOLD:total);
   }
 });

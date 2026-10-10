@@ -1,3 +1,4 @@
+import { serializeLegacySave } from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState,buildFacility,upgradeFacility,perSecond,accrue,tapGold} from '../src/game.js';
@@ -24,10 +25,10 @@ test('facilities build at level one, upgrade to twenty and never create a duplic
     assert.equal(exact(s.gold),exact(previous)-exact(offer.cost));
     assert.equal(facilityLevel(s,'operations'),level+1);
   }
-  const before=serializeSave(s);
+  const before=serializeLegacySave(s);
   assert.equal(upgradeFacility(s,T,'operations').reason,'max');
   assert.equal(buildFacility(s,T,'operations').reason,'owned');
-  assert.equal(serializeSave(s),before);assert.deepEqual(s.facilities,['operations']);
+  assert.equal(serializeLegacySave(s),before);assert.deepEqual(s.facilities,['operations']);
   assert.equal(facilityUpgradeCost('operations',20),null);
 });
 
@@ -73,28 +74,28 @@ test('upgrade spending and insufficient balance stay exact, settle old income, a
     if(gold<cost)assert.equal(exact(subtractMoney(offer.cost,gold)),exact(cost)-exact(gold));
     assert.equal(upgradeFacility(s,T,'operations').ok,gold>=cost);
     assert.equal(exact(s.gold),exact(gold)-(gold>=cost?exact(cost):0n));
-    const restored=parseSave(serializeSave(s),T);assert.ok(restored);assert.equal(restored.gold,s.gold);
+    const restored=parseSave(serializeLegacySave(s),T);assert.ok(restored);assert.equal(restored.gold,s.gold);
     assert.deepEqual(restored.facilityLevels,s.facilityLevels);
   }
   const s=ready('kitchen');s.gold=facilityUpgradeCost('kitchen',1);
-  const oldIncome=perSecond(s),before=serializeSave(s);
-  assert.throws(()=>upgradeFacility(s,T+1000,'constructor'),RangeError);assert.equal(serializeSave(s),before);
+  const oldIncome=perSecond(s),before=serializeLegacySave(s);
+  assert.throws(()=>upgradeFacility(s,T+1000,'constructor'),RangeError);assert.equal(serializeLegacySave(s),before);
   upgradeFacility(s,T+1000,'kitchen');assert.equal(s.gold,oldIncome);
   const newIncome=perSecond(s);assert.ok(newIncome>oldIncome);
   accrue(s,T+2000);assert.equal(s.gold,oldIncome+newIncome);
   s.gold=MAX_GOLD-1n;assert.equal(tapGold(s,T+2000),1);assert.equal(s.gold,MAX_GOLD);
-  assert.equal(parseSave(serializeSave(s),T+2000).gold,MAX_GOLD);
+  assert.equal(parseSave(serializeLegacySave(s),T+2000).gold,MAX_GOLD);
 });
 
 test('version25 owned facilities migrate to level one without changing saves or balances',()=>{
   const s=ready('futsal');s.version=25;delete s.facilityLevels;
   s.gold=9007199254740993n;s.equipment.tank={level:13,count:1,deployed:true};
   s.offlineReward={id:T,durationMs:3600000,amount:9007199254740993n};
-  const next=parseSave(serializeSave(s),T);assert.ok(next);
+  const next=parseSave(serializeLegacySave(s),T);assert.ok(next);
   assert.equal(next.version,SAVE_VERSION);assert.deepEqual(next.facilityLevels,{futsal:1});
   for(const key of ['facilities','gold','soldiers','sergeants','equipment','personalLevels','offlineReward'])assert.deepEqual(next[key],s[key]);
   const v24={...s,version:24};delete v24.facilities;
-  assert.deepEqual(parseSave(serializeSave(v24),T).facilityLevels,{});
+  assert.deepEqual(parseSave(serializeLegacySave(v24),T).facilityLevels,{});
   assert.deepEqual(parseSave(serializeSave(next),T).facilityLevels,{futsal:1});
 });
 
@@ -115,7 +116,7 @@ test('maximum facility bonuses survive reload and eight-hour offline settlement 
   const income=perSecond(s),later=T+12*3600000;
   prepareOfflineReward(s,later);
   assert.equal(exact(s.offlineReward.amount),exact(income)*8n*3600n);
-  const restored=parseSave(serializeSave(s),later),id=restored.offlineReward.id;
+  const restored=parseSave(serializeLegacySave(s),later),id=restored.offlineReward.id;
   assert.equal(perSecond(restored),income);
   const claim=claimOfflineReward(restored,id,2);
   assert.equal(exact(claim.amount),exact(income)*8n*3600n*2n);

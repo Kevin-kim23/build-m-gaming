@@ -74,7 +74,16 @@ export function createSynthAudio(
     // 전투 효과음: deploy(출격), shot(사격), boom(폭발), hit(기지 피격), win, lose. 호출하는 쪽이 너무 자주 부르지 않게 간격을 둔다.
     battle(kind, enabled, gearId) {
       play(enabled, (t) => {
-        if (gearId === 'carrier') { tone(420, t, 0.16, 0.025, 'triangle'); tone(125, t + 0.09, 0.16, 0.028, 'sawtooth'); }
+        if(kind==='collapse') {
+          for(const [i,f] of [92,61,43,35].entries())tone(f,t+i*.17,.55,.035,'sawtooth');
+          tone(180,t+.08,.18,.022,'square');tone(112,t+.32,.28,.025,'triangle');
+        }
+        else if(gearId==='plasmaTank'){tone(330,t,.12,.025,'sine');tone(95,t+.07,.2,.035,'sawtooth');}
+        else if(gearId==='droneCarrier'){for(let i=0;i<3;i++)tone(720-i*110,t+i*.07,.13,.02,'triangle');}
+        else if(gearId==='siegeMech'){tone(75,t,.22,.035,'square');tone(64,t+.13,.3,.035,'sawtooth');}
+        else if(gearId==='stellarBomber'){for(let i=0;i<4;i++)tone(100-i*12,t+i*.065,.16,.025,'sawtooth');}
+        else if(gearId==='novaCannon'){tone(860,t,.28,.022,'triangle');tone(1440,t+.12,.2,.022,'sine');tone(42,t+.24,.6,.035,'sawtooth');}
+        else if (gearId === 'carrier') { tone(420, t, 0.16, 0.025, 'triangle'); tone(125, t + 0.09, 0.16, 0.028, 'sawtooth'); }
         else if (gearId === 'flyingFortress') { tone(115, t, 0.2, 0.035, 'square'); tone(90, t + 0.09, 0.21, 0.028, 'sawtooth'); tone(65, t + 0.18, 0.18, 0.025, 'triangle'); }
         else if (gearId === 'orbitalAssault') { tone(1040, t, 0.22, 0.025, 'triangle'); tone(520, t + 0.08, 0.22, 0.03, 'sawtooth'); tone(55, t + 0.16, 0.35, 0.04, 'square'); }
         else if (kind === "deploy") { tone(300, t, 0.09, 0.035, "square"); tone(450, t + 0.07, 0.12, 0.03, "square"); }

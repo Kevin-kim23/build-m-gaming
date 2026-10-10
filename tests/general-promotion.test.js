@@ -22,16 +22,16 @@ test('only general ranks gain wings and bilateral salutes with all shots finishe
 
 test('general artwork is cached, tier-specific and resolves every unique gradient reference',()=>{
   const art=[];
-  for(let tier=1;tier<=10;tier++){
+  for(let tier=1;tier<=15;tier++){
     const svg=generalEmblem(tier);art.push(svg);assert.equal(generalEmblem(tier),svg);
     const ids=[...svg.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
     assert.equal(ids.length,new Set(ids).size);
     for(const [,id] of svg.matchAll(/url\(#([^)]*)\)/g))assert.ok(ids.includes(id));
-    assert.equal((svg.match(/<g class="general-rank-stars">([^]*?)<\/g>/)[1].match(/<polygon/g)||[]).length,tier>=6?tier-5:tier);
+    assert.equal((svg.match(/<g class="general-rank-stars">([^]*?)<\/g>/)[1].match(/<polygon/g)||[]).length,tier>=11?tier-10:tier>=6?tier-5:tier);
     assert.match(svg,/viewBox="0 0 600 330"/);assert.doesNotMatch(svg,/<image|https?:|<script/);
   }
-  assert.equal(new Set(art).size,10);
-  for(const value of [0,11,NaN,1.5])assert.throws(()=>generalEmblem(value),RangeError);
+  assert.equal(new Set(art).size,15);
+  for(const value of [0,16,NaN,1.5])assert.throws(()=>generalEmblem(value),RangeError);
 });
 
 test('repeated ceremonies reuse one dialog, replace one timeout and clear general styling for normal promotions',()=>{

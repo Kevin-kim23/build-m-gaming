@@ -1,3 +1,4 @@
+import { serializeLegacySave } from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createMusicPlayer } from '../src/music.js';
@@ -57,7 +58,7 @@ test('schema28 migration preserves old mute, gold, troops and independent schema
   for(const sound of [false,true]) {
     const state={...freshState(100),version:28,sound,gold:1000000000000000000n,soldiers:100};
     delete state.sfxVolume;delete state.musicVolume;
-    const migrated=parseSave(serializeSave(state),100);
+    const migrated=parseSave(serializeLegacySave(state),100);
     assert.equal(migrated.version,SAVE_VERSION);assert.equal(migrated.sound,sound);
     assert.equal(migrated.sfxVolume,sound?0.7:0);assert.equal(migrated.musicVolume,sound?0.45:0);
     assert.equal(migrated.gold,state.gold);assert.equal(migrated.soldiers,100);

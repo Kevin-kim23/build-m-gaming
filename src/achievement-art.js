@@ -1,5 +1,6 @@
 import { ACHIEVEMENTS } from "./achievements.js";
 import { battleMedalSvg } from './battle-medal-art.js';
+import { galacticFormationMedalSvg } from './galactic-medal-art.js';
 
 // Original 96 × 112 pixel medals, sharing a compact 18 × 21 CSS-pixel shelf slot.
 const cache = new Map();
@@ -30,6 +31,7 @@ export function medalSvg(id) {
     return svg;
   }
   const tier = definition.tier;
+  if(tier>=14){const svg=galacticFormationMedalSvg(tier-13);cache.set(id,svg);return svg;}
   const [ribbon, stripe, metal, shine] = palettes[tier];
   const pixels = [];
   const r = (x,y,w,h,color) => pixels.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${color}"/>`);

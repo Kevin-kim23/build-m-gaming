@@ -1,4 +1,4 @@
-import { campaignBonusPercent, REGION_INCOME_PERCENT } from "./campaign-rewards.js";
+import { campaignBonusPercent, regionIncomePercent } from "./campaign-rewards.js";
 import { STAGES, battleAccess, defaultLoadout, normalizeLoadout, createBattle, advanceBattle, deploy, battleSlots, BATTLE_RULES } from './battle.js';
 import { recordBattleVictory } from './battle-progress.js';
 import { drawLane, LANE_CENTERS, LANE_CANVAS } from './lane-art.js';
@@ -15,6 +15,8 @@ import { createCampaignMap } from './campaign-map.js';
 import { COUNTRIES } from './campaign.js';
 import { ACHIEVEMENTS } from './achievements.js';
 import { createBattleAudioEvents } from './battle-audio-events.js';
+import { battleNumber } from './battle-format.js';
+import { headquartersDestructionTiming, headquartersDestructionFrame } from './weapon-fx.js';
 
 // Owns one dialog and one animation loop; the economic session stays separate.
 export function createBattleUI(session, audio = null) {
@@ -31,6 +33,7 @@ export function createBattleUI(session, audio = null) {
   let mode = 'stages', stageId = 1, loadout = null, loadoutStage = 0, battle = null;
   let raf = 0, lastFrame = 0, paused = false, finalized = false, selected = null, drag = null, suppressClick = false;
   let stagesKey = '';
+  let ending = null;
   const audioEvents = createBattleAudioEvents();
   const healedAt = new Map();
   // 연출 상태(저장하지 않음): 기지 피격 번쩍임·흔들림 시각, 이전 체력, 효과음 간격
@@ -59,12 +62,14 @@ export function createBattleUI(session, audio = null) {
   }
   function stop() { cancelAnimationFrame(raf); raf = 0; lastFrame = 0; }
   function close() {
-    stop(); campaignMap.stop(); battle = null;
+    endDrag();
+    stop(); ending = null; campaignMap.stop(); battle = null;
     audio?.stop?.();
     if (dialog.open) dialog.close();
   }
-  function showStages(countryId = campaignMap.countryId) {
-    stop(); battle = null; mode = 'stages';
+  function showStages(countryId = battle?.countryId ?? campaignMap.countryId) {
+    endDrag();
+    stop(); ending = null; battle = null; mode = 'stages';
     audio?.setMusicScene?.('home');
     stagesKey = mapKey();
     campaignMap.show(countryId);
@@ -86,6 +91,7 @@ export function createBattleUI(session, audio = null) {
   }
   // 지도에서 시작(체크한 덱) 또는 결과 화면에서 다시/다음(주어진 덱)으로 바로 전투를 시작한다.
   function start(deck = null) {
+    endDrag();
     if (!session.active || document.hidden) return;
     loadout = deck ? normalizeLoadout(session.state, { equipment: deck }) : selection();
     if (!loadout.equipment.length) {
@@ -97,7 +103,7 @@ export function createBattleUI(session, audio = null) {
       text('#battle-message', '출전 조건이 바뀌었어요. 작전 지도에서 다시 선택해 주세요.'); return;
     }
     audio?.setMusicScene?.('battle');
-    stop(); campaignMap.stop(); mode = 'battle'; paused = false; finalized = false; selected = null;
+    stop(); ending = null; campaignMap.stop(); mode = 'battle'; paused = false; finalized = false; selected = null;
     audioEvents.reset(); healedAt.clear();
     audio?.stop?.(); audio?.prepareBattle?.();
     fx = { flash: { player: -1e9, enemy: -1e9 }, shakeAt: -1e9, prevHp: null, accum: { player: 0, enemy: 0 }, lastFloat: { player: 0, enemy: 0 }, lastSound: {} };
@@ -109,13 +115,15 @@ export function createBattleUI(session, audio = null) {
   }
   function view() {
     const now = performance.now(), flash = (side) => Math.max(0, 1 - (now - fx.flash[side]) / 380);
-    return { elapsed: battle.elapsedMs, countryId: battle.countryId, player: battle.player, enemy: battle.enemy, fx: battle.fx, flash: { player: flash('player'), enemy: flash('enemy') }, shake: Math.max(0, 3 * (1 - (now - fx.shakeAt) / 260)) };
+    const age=ending?Math.max(0,now-ending.startedAt):0;
+    const destruction=ending?headquartersDestructionFrame(ending,age):null;
+    return { elapsed: battle.elapsedMs+age, countryId: battle.countryId, player: battle.player, enemy: battle.enemy, fx: battle.fx, destruction, flash: { player: flash('player'), enemy: flash('enemy') }, shake: ending?(destruction&&!ending.reduced?Math.max(0,5*(1-destruction.age/900)):0):Math.max(0, 3 * (1 - (now - fx.shakeAt) / 260)) };
   }
   // 값이 바뀔 때만 글자·버튼 상태를 바꾼다(매 프레임 DOM 재생성 없음).
   // 기지 위에 남은 체력을 막대와 숫자로 보여 준다(값이 바뀔 때만 DOM을 건드림). 25% 이하면 깜빡이며 경고.
   function baseHp(side) {
     const hq = battle[side].hq, frac = Math.max(0, Math.min(1, hq.hp / hq.maxHp));
-    text(`#battle-${side}-hp`, fmtGold(Math.ceil(hq.hp)));
+    text(`#battle-${side}-hp`, battleNumber(hq.hp));
     const fill = $(`#base-hp-${side}-fill`), width = `${(frac * 100).toFixed(1)}%`;
     if (fill && fill.style.width !== width) fill.style.width = width;
     const box = $(`#base-hp-${side}`); if (box) box.classList.toggle('low', frac <= 0.25);
@@ -151,12 +159,15 @@ export function createBattleUI(session, audio = null) {
   function floatNumber(side, amount) {
     const arena = $('#battle-arena'); if (!arena || amount <= 0) return;
     const note = document.createElement('span');
-    note.className = `base-float ${side}`; note.textContent = `-${fmtGold(Math.round(amount))}`;
+    note.className = `base-float ${side}`; note.textContent = `-${battleNumber(amount)}`;
     note.addEventListener('animationend', () => note.remove(), { once: true });
     arena.append(note);
   }
   function paint() {
     if (!battle || !$('#battle-canvas')) return;
+    if(ending&&!ending.impactPlayed&&performance.now()-ending.startedAt>=ending.impactDelayMs){
+      ending.impactPlayed=true;sound('collapse',0);haptic(ending.reduced?[]:[60,90,120]);
+    }
     drawLane($('#battle-canvas'), view());
     baseHp('player'); baseHp('enemy'); react();
     const seconds = Math.floor(battle.elapsedMs / 1000), mana = Math.floor(battle.mana);
@@ -182,11 +193,17 @@ export function createBattleUI(session, audio = null) {
     text('#battle-time', `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`);
   }
   function schedule() {
-    if (!raf && !paused && battle?.status === 'running' && session.active && !document.hidden)
+    if (!raf && !paused && (battle?.status === 'running'||ending) && session.active && !document.hidden)
       raf = requestAnimationFrame(frame);
   }
   function frame(now) {
     raf = 0;
+    if(ending){
+      paint();
+      if(!session.active||document.hidden||now-ending.startedAt>=ending.durationMs){const done=ending.done;ending=null;done();}
+      else schedule();
+      return;
+    }
     if (!session.active || document.hidden) { suspend(); return; }
     if (paused || battle?.status !== 'running') return;
     if (!lastFrame) lastFrame = now;
@@ -226,6 +243,7 @@ export function createBattleUI(session, audio = null) {
     dialog.querySelectorAll('[data-deploy],[data-lane]').forEach(button => { button.disabled = true; });
   }
   function suspend() {
+    if(ending){const done=ending.done;ending=null;stop();done();return;}
     if (battle?.status !== 'running' || !dialog.open) return;
     paused = true; stop();
     audio?.setMusicScene?.(null);
@@ -243,6 +261,7 @@ export function createBattleUI(session, audio = null) {
   // 결과 화면: 제목 · 별 · 전리품 · 짧은 한 줄 · 버튼(다음 지역/다시 도전/작전 지도). 자세한 설명은 길게 쓰지 않는다.
   function finish() {
     if (finalized) return;
+    endDrag();
     finalized = true; stop();
     const won = battle.status === 'victory';
     let copy = won ? '' : '장비는 그대로예요. 정비하고 다시 도전하세요.', loot = '', stars = '', canNext = false;
@@ -253,13 +272,14 @@ export function createBattleUI(session, audio = null) {
         stars = '★'.repeat(result.stars) + '☆'.repeat(3 - result.stars) + (result.newBest && !result.firstClear ? ' 신기록!' : '');
         loot = `+${fmtGold(result.gold)} G`;
         const bits = [];
-        if (result.firstClear) bits.push(stageId === STAGES.length ? '대륙 정복 완료!' : stageId % 20 === 0 ? `${COUNTRIES[Math.floor(stageId / 20)-1].name} 점령!` : '지역 점령!', `초당 수입 +${REGION_INCOME_PERCENT}%`);
+        if (result.firstClear) bits.push(stageId % 80 === 0 ? '대륙 정복 완료!' : stageId % 20 === 0 ? `${COUNTRIES[Math.floor(stageId / 20)-1].name} 점령!` : '지역 점령!', `초당 수입 +${regionIncomePercent(stageId)}%`);
         if (result.achievements?.length) bits.push(`훈장 ${result.achievements.map(id => ACHIEVEMENTS.find(a => a.id === id).title).join(', ')}`);
         if (result.firstClear && stageId % 20 === 0 && stageId < STAGES.length) audio?.ui?.('unlock',session.state.sound);
         copy = bits.join(' · ');
         canNext = stageId < STAGES.length && (session.state.campaignCleared ?? 0) >= stageId;
       } else copy = '클리어 기록을 반영하지 못했어요. 작전 지도에서 확인해 주세요.';
     }
+    const reveal=()=>{
     overlay(won ? '승리' : battle.status === 'defeat' ? '패배' : '무승부', copy, true);
     text('#battle-result-stars', stars); text('#battle-result-loot', loot);
     const next = $('[data-battle-next]'); if (next) next.hidden = !canNext;
@@ -267,6 +287,12 @@ export function createBattleUI(session, audio = null) {
     sound(won ? 'win' : battle.status === 'draw' ? 'draw' : 'lose', 0); haptic(won ? [30, 60, 30, 60, 90] : [120]);
     sync();
     $('#battle-result-title').setAttribute('role','status');
+    };
+    if(won||battle.status==='defeat'){
+      const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+      ending={...headquartersDestructionTiming(battle,reduced),startedAt:performance.now(),impactPlayed:false,done:reveal};
+      $('#battle-pause').disabled=true;paint();schedule();
+    }else reveal();
   }
   function sync() {
     if (!dialog.open) return;
@@ -286,7 +312,7 @@ export function createBattleUI(session, audio = null) {
     dialog.classList.add('in-campaign'); dialog.showModal(); showStages(null); sync();
   }
   dialog.addEventListener('click', event => {
-    const target = event.target.closest('button,[data-country],[data-region]');
+    const target = event.target.closest('button,[data-country],[data-region],[data-continent]');
     if (suppressClick && target?.dataset?.deploy) { suppressClick = false; return; }
     if (!target || target.disabled || target.getAttribute('aria-disabled')==='true') return;
     if (mode==='stages' && campaignMap.handle(target)) { paintCardArt(); return; }
@@ -364,6 +390,6 @@ export function createBattleUI(session, audio = null) {
     if(target && ['Enter',' '].includes(event.key)){event.preventDefault();campaignMap.handle(target);}
   });
   dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
-  dialog.addEventListener('close', () => { stop(); campaignMap.stop(); battle = null; audio?.stop?.(); audio?.setMusicScene?.('home'); document.querySelector('#open-battle')?.focus(); });
+  dialog.addEventListener('close', () => { stop(); ending=null; campaignMap.stop(); battle = null; audio?.stop?.(); audio?.setMusicScene?.('home'); document.querySelector('#open-battle')?.focus(); });
   return {open, sync, suspend};
 }

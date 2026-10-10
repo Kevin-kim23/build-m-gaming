@@ -1,6 +1,7 @@
 // Exact integer money. Keep the fast Number path while safe, then use BigInt.
 // Never turn an already-rounded unsafe Number into a supposedly exact balance.
-export const MAX_GOLD = 10_000_000_000_000_000_000n; // 1,000경
+export const LEGACY_MAX_GOLD = 10_000_000_000_000_000_000n; // v17–33: 1,000경
+export const MAX_GOLD = 100_000_000_000_000_000_000_000n; // v34+: 1,000해
 const SAFE = BigInt(Number.MAX_SAFE_INTEGER);
 export function exact(value) {
   if (typeof value === 'bigint') return value;
@@ -30,8 +31,9 @@ export function scaleMoney(value,numerator,denominator) {
 }
 export const serializeSave = value => JSON.stringify(value, (_key, item) => typeof item === 'bigint' ? item.toString() : item);
 export function parseGold(value, version) {
-  if (typeof value === 'number') return Number.isSafeInteger(value) && value >= 0 && value <= MAX_GOLD ? value : null;
-  if (version < 17 || typeof value !== 'string' || !/^(0|[1-9]\d{0,19})$/.test(value)) return null;
+  const cap = version < 34 ? LEGACY_MAX_GOLD : MAX_GOLD;
+  if (typeof value === 'number') return Number.isSafeInteger(value) && value >= 0 && value <= cap ? value : null;
+  if (version < 17 || typeof value !== 'string' || !/^(0|[1-9]\d{0,23})$/.test(value)) return null;
   const gold = BigInt(value);
-  return gold <= MAX_GOLD ? compactMoney(gold) : null;
+  return gold <= cap ? compactMoney(gold) : null;
 }

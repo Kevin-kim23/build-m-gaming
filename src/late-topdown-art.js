@@ -30,15 +30,24 @@ function fortress(r,p) {
   r(22,51,12,5,p.light);r(25,53,6,6,p.flag);
 }
 function orbital(r,p) {
-  for(let n=0;n<8;n++){r(9+n*2,47-n*4,38-n*4,5,p.dark);r(11+n*2,46-n*4,34-n*4,3,p.body);}
-  r(22,8,12,49,p.dark);r(24,4,8,52,p.body);r(26,1,4,57,p.light);r(27,3,2,55,p.flag);
-  r(19,26,18,16,p.dark);r(21,27,14,12,p.body);r(23,28,10,2,p.light);
-  r(24,17,8,7,p.dark);r(25,17,6,2,p.flag);r(25,20,6,2,p.body);
-  engine(r,6,41,p);engine(r,43,41,p);
-  r(21,51,14,10,p.dark);r(24,54,8,7,p.body);r(25,60,6,4,p.flag);r(27,64,2,2,p.mark);
-  for(const x of [17,36]){r(x,29,3,15,p.dark);r(x,30,1,13,p.light);r(x+1,23,1,10,p.flag);}
-  for(let y=34;y<50;y+=4){r(12+(50-y)/4,y,5,1,p.light);r(39-(50-y)/4,y,5,1,p.light);}
-  r(24,34,8,6,p.dark);r(26,34,4,6,p.flag);
+  // A visible gun assembly: wide muzzle, stepped barrel, recoil rails and a
+  // luminous circular breech on an orbital support frame, rather than a blade.
+  r(12,34,32,24,p.dark);r(8,40,40,13,p.dark);r(14,35,28,20,p.body);
+  r(10,41,36,8,p.body);r(14,35,28,2,p.light);
+  for(const x of [8,42]){r(x,28,6,29,p.dark);r(x+1,29,4,25,p.body);r(x+1,30,1,22,p.light);r(x+1,55,4,4,p.flag);}
+  for(const x of [16,34]){r(x,25,6,26,p.dark);r(x+1,26,4,21,p.light);for(let y=30;y<47;y+=4)r(x+1,y,4,1,p.body);}
+  // Muzzle aperture and thick barrel separate the laser cannon from the ICBM.
+  r(18,2,20,8,p.dark);r(20,3,16,6,p.light);r(23,3,10,4,p.dark);r(24,4,8,2,p.flag);r(26,4,4,1,p.mark);
+  r(21,9,14,24,p.dark);r(23,9,10,23,p.body);r(23,9,2,22,p.light);r(29,10,3,21,p.flag);
+  for(const y of [12,19,26]){r(19,y,18,3,p.dark);r(20,y,16,1,p.light);r(27,y+1,5,1,p.flag);}
+  // Octagonal breech and capacitors under the gun, with a glowing circular lens.
+  r(19,32,18,22,p.dark);r(16,36,24,13,p.dark);r(20,33,16,20,p.light);r(18,37,20,11,p.body);
+  r(23,35,10,16,p.body);r(21,38,14,10,p.dark);r(24,36,8,14,p.dark);
+  r(24,38,8,10,p.flag);r(22,40,12,6,p.flag);r(25,39,6,8,p.mark);r(23,41,10,3,p.mark);
+  for(const x of [13,39]){r(x,39,3,12,p.light);r(x,40,3,2,p.flag);r(x,47,3,2,p.flag);}
+  r(21,54,14,7,p.dark);r(23,55,10,5,p.body);r(24,56,8,1,p.light);
+  engine(r,5,42,p);engine(r,44,42,p);
+  for(const x of [15,35]){r(x,56,6,6,p.dark);r(x+1,57,4,3,p.light);}
 }
 const PAINTERS=Object.freeze({carrier,flyingFortress:fortress,orbitalAssault:orbital});
 export function drawOverheadLateEquipment(c,level,p,id) {

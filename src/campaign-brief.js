@@ -1,4 +1,5 @@
 import { COUNTRIES, CONTINENT, countryProgress } from './campaign.js';
+import {regionIncomePercent} from './campaign-rewards.js';
 import { fmt } from './format.js';
 
 export function countryBriefMarkup() {
@@ -13,7 +14,7 @@ export function updateCountryBrief(root, state, country) {
   const progress = countryProgress(state, country.id);
   const set = (selector, value) => { const node=section.querySelector(selector);if(node.textContent!==value)node.textContent=value; };
   set('[data-country-title]',country.name);
-  set('[data-country-detail]',`${CONTINENT.regionsPerCountry}개 지역 · 수도 권장 전력 ${fmt(country.powers.at(-1))}`);
+  set('[data-country-detail]',`${CONTINENT.regionsPerCountry}개 지역 · 수도 권장 전력 ${fmt(country.powers.at(-1))} · 지역당 수입 +${regionIncomePercent(country.firstStage)}%`);
   set('[data-country-status]',progress.unlocked?`${country.terrain} · ${progress.cleared}/${CONTINENT.regionsPerCountry} 점령`:`🔒 ${COUNTRIES[country.index-1].name} 점령 후 해금`);
   const button=section.querySelector('[data-country-entry]');
   button.dataset.country=country.id;button.disabled=!progress.unlocked;

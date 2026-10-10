@@ -105,5 +105,5 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href) {
   const minutes=Number(process.argv.find(arg=>arg.startsWith('--minutes='))?.split('=')[1]??7.5);
-  console.log(JSON.stringify(simulateGrowth({minutes,battles:process.argv.includes('--battles')}),null,2));
+  console.log(JSON.stringify(simulateGrowth({minutes,battles:process.argv.includes('--battles')}),(_key,value)=>typeof value==='bigint'?value.toString():value,2));
 }

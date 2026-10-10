@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>은하 건축 · 전투 조감도 검수</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:28px;background:#121b2a;color:#e6eaf1;font:15px/1.6 system-ui,sans-serif}h1{margin:0;color:#e6dcff;font-size:25px}p{color:#a4b2c5}section{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:22px 0 36px}article{background:#1c2939;border:1px solid #4e526c;border-radius:12px;padding:15px;min-width:0}h2{margin:0 0 8px;font-size:17px;color:#ceeef1}h3{font-size:20px;margin:10px 0}canvas{display:block;width:100%;height:auto;image-rendering:pixelated}small{display:block;margin-top:8px;color:#a4b2c5}.bases{display:flex;gap:10px}.bases figure{margin:0;width:50%}figcaption{font-size:12px;color:#a4b2c5;text-align:center}
+.qa-phone{width:320px;padding:20px;background:#263229;border-radius:18px;box-shadow:0 0 0 1px #536656}
+.qa-field-scroll{width:280px;height:420px;overflow:auto;background:#b1b3ab;border-radius:6px}
+.qa-field-world{position:relative}.qa-field-world>canvas,.qa-field-labels{position:absolute;inset:0;width:100%;height:100%}
+.qa-field-labels{pointer-events:none}.qa-field-labels .field-label{position:absolute;color:#233323;font:600 11px/14px "Malgun Gothic",system-ui,sans-serif;letter-spacing:0;white-space:nowrap;text-shadow:0 1px 1px #e3d9b7}
+.qa-field-labels .field-label-wrap{white-space:normal;overflow-wrap:anywhere}.qa-field-labels .field-school{position:absolute}.qa-field-labels .field-school .school-art{display:block;width:100%;height:100%}
+.qa-field-labels .field-school-name{position:absolute;top:100%;left:0;width:100%;color:#233323;font:600 10px/12px "Malgun Gothic",system-ui,sans-serif;white-space:normal;word-break:keep-all;text-align:center;letter-spacing:0;text-shadow:0 1px 1px #e3d9b7}
+.qa-field-labels .field-equipment-level{display:block;font-size:10px;line-height:12px}
+</style></head><body>
+<h1>은하 건축 · 전투 조감도</h1><p>현재 코드가 그리는 원본 그림입니다. 저장 기록을 읽거나 변경하지 않습니다.</p>
+<p><a href="#field" style="color:#9ceff1">320px 연병장</a> · <a href="#home" style="color:#9ceff1">은하 건물</a> · <a href="#school" style="color:#9ceff1">사관학교</a> · <a href="#battle" style="color:#9ceff1">전투 기지</a> · <a href="#equipment" style="color:#9ceff1">전체 장비</a></p>
+<h3 id="field">320px 화면 · 최대 성장 연병장</h3><p>실제 게임 배치·그림·이름표로 표시합니다. 안쪽을 가로·세로로 스크롤할 수 있습니다.</p>
+<div class="qa-phone"><div class="qa-field-scroll"><div class="qa-field-world"><canvas id="qa-field"></canvas><span class="qa-field-labels"></span></div></div></div><small id="qa-field-note"></small>
+<h3>새로운 은하 편제 5단계 · 연병장</h3><section id="home"></section>
+<h3>은하 사관학교 · 5단계</h3><section id="school"></section>
+<h3>전체 편제 · 전투 전용 상공 시점</h3><section id="battle"></section>
+<h3>전체 군사 장비 · 연병장 / 전투 시점</h3><section id="equipment"></section>
+<script type="module">
+import { FORMATIONS } from '../src/formations.js';
+import { drawHighCommand } from '../src/command-art.js';
+import { GALACTIC_BUILDINGS } from '../src/galactic-expansion-art.js';
+import { battleHeadquartersSprite } from '../src/battle-hq-art.js';
+import { artSurface } from '../src/pixel-detail.js';
+import { schoolIcon } from '../src/school-art.js';
+import { EQUIPMENT } from '../src/equipment.js';
+import { drawEquipment } from '../src/equipment-art.js';
+import { unitSprite } from '../src/unit-sprites.js';
+import { freshState } from '../src/state.js';
+import { FACILITIES } from '../src/facilities.js';
+import { layoutFieldWorld } from '../src/field-world.js';
+import { drawScene } from '../src/art.js';
+const fieldState={...freshState(1),soldiers:5000,sergeants:300,galacticMarshals:250,
+  ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,commandSchoolLevel:5,galacticSchoolLevel:5,
+  facilities:FACILITIES.map(f=>f.id),facilityLevels:Object.fromEntries(FACILITIES.map(f=>[f.id,20])),
+  equipment:Object.fromEntries(Object.keys(EQUIPMENT).map(id=>[id,{level:30,count:1,deployed:true}]))};
+const fieldWorld=layoutFieldWorld(fieldState,140,210),fieldContainer=document.querySelector('.qa-field-world');
+fieldContainer.style.width=`${fieldWorld.width*2}px`;fieldContainer.style.height=`${fieldWorld.height*2}px`;
+drawScene(document.querySelector('#qa-field'),fieldState,document.querySelector('.qa-field-labels'),fieldWorld);
+document.querySelector('#qa-field-note').textContent=`가장 큰 건물 ${fieldWorld.army[0].width*2}px · 사관학교 ${fieldWorld.schools.length}개 · 시설 ${fieldWorld.facilities.length}개 · 장비 ${fieldWorld.equipment.length}개 · 실제 배치 ${fieldWorld.width*2} × ${fieldWorld.height*2}px`;
+fieldContainer.dataset.ready='true';
+for(const id of GALACTIC_BUILDINGS){
+  const f=FORMATIONS.find(f=>f.id===id),card=document.createElement('article'),title=document.createElement('h2'),canvas=artSurface(f.width,f.height),note=document.createElement('small');
+  title.textContent=f.name;drawHighCommand(canvas.getContext('2d'),id,f.width,f.height);note.textContent=`${f.width} × ${f.height} 원본 · ${id}`;card.append(title,canvas,note);document.querySelector('#home').append(card);
+}
+for(let level=1;level<=5;level++){
+  const card=document.createElement('article');card.innerHTML=`<h2>은하 사관학교 Lv.${level}</h2>${schoolIcon('galactic',level)}`;document.querySelector('#school').append(card);
+}
+for(const f of [...FORMATIONS].reverse()){
+  const card=document.createElement('article'),title=document.createElement('h2'),bases=document.createElement('div');title.textContent=f.name;bases.className='bases';
+  for(const side of ['player','enemy']){const figure=document.createElement('figure'),caption=document.createElement('figcaption');caption.textContent=side==='player'?'아군':'적군';figure.append(battleHeadquartersSprite(f.id,side),caption);bases.append(figure);}
+  card.append(title,bases);document.querySelector('#battle').append(card);
+}
+for(const gear of Object.values(EQUIPMENT)){
+  const card=document.createElement('article'),title=document.createElement('h2'),home=document.createElement('canvas'),bases=document.createElement('div');
+  title.textContent=gear.name;home.width=330;home.height=186;drawEquipment(home,0,gear.id);bases.className='bases';
+  for(const side of ['player','enemy']){const figure=document.createElement('figure'),caption=document.createElement('figcaption');caption.textContent=side==='player'?'아군 전투':'적군 전투';figure.append(unitSprite(gear.id,side,0),caption);bases.append(figure);}
+  card.append(title,home,bases);document.querySelector('#equipment').append(card);
+}
+document.body.dataset.ready='true';
+</script></body></html>

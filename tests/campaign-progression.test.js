@@ -24,7 +24,7 @@ test('entry requires captain rank and known military gear; home storage does not
   assert.equal(battleAccess({...freshState(T),soldiers:4}).visible,true);
 });
 
-test('all eighty recommendations have legal rank, gear and upgrades, and reach special marshal exactly',()=>{
+test('all campaign recommendations have legal rank, gear and upgrades, with original milestones preserved',()=>{
   assert.equal(STAGES[0].recommendedPower,320);assert.equal(STAGES[0].recommendedRank,'대위');
   assert.equal(STAGES[79].recommendedPower,335544320);assert.equal(STAGES[79].recommendedRank,'특전원수');
   for(const m of CAMPAIGN_MILESTONES)assert.equal(STAGES[m.stage-1].recommendedPower,m.power);
@@ -37,7 +37,7 @@ test('all eighty recommendations have legal rank, gear and upgrades, and reach s
     for(const id of stageEnemyType(s.id).pool)assert.ok(rank>=RANKS.indexOf(EQUIPMENT[id].unlockRank));
     if(s.id>1)assert.ok(s.recommendedPower>STAGES[s.id-2].recommendedPower);
   }
-  for(const id of [0,81,1.5,'1',NaN])assert.throws(()=>campaignDifficulty(id),RangeError);
+  for(const id of [0,161,1.5,'1',NaN])assert.throws(()=>campaignDifficulty(id),RangeError);
 });
 
 test('reference defense with one decision per half-second fits 45–90s ordinary and 90–150s capital targets',()=>{
@@ -75,7 +75,7 @@ test('reward arithmetic, star bonuses and the wallet limit stay exact above safe
       assert.equal(battleGoldReward(rate,true,MAX_GOLD-1n,stars,id),1);
     }
   }
-  for(const id of [0,81,2.5,'20'])assert.throws(()=>battleRewardSeconds(true,id),RangeError);
+  for(const id of [0,161,2.5,'20'])assert.throws(()=>battleRewardSeconds(true,id),RangeError);
   const battle={...win(20),elapsedMs:120000,player:{hq:{hp:100,maxHp:100}}};
   assert.equal(battleStars(battle),3);assert.equal(battleStars({...battle,elapsedMs:120001}),2);
   assert.equal(battleStars({...battle,stageId:19}),2);

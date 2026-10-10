@@ -1,3 +1,4 @@
+import { LEGACY_MAX_GOLD } from '../src/money.js';
 import { SAVE_VERSION } from '../src/state.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -24,7 +25,7 @@ test('promotion grants Lv.1 only and cannot replace paid personal levels', () =>
   assert.equal(personal.generalRevolverStatus(s).level, 1);
 });
 test('v18 migrates once to Lv.1 while preserving exact gold, military gear and running skills', () => {
-  const s = { ...army(), version: 18, gold: MAX_GOLD - 1n, swordActivatedAt: T - 5000, swordDurationMs: 80000,
+  const s = { ...army(), version: 18, gold: LEGACY_MAX_GOLD - 1n, swordActivatedAt: T - 5000, swordDurationMs: 80000,
     autoTouchActivatedAt: T - 900, autoTouchTicks: 3 };
   s.equipment.tank = { level: 20, count: 1, deployed: true };
   const next = game.parseSave(serializeSave(s), T);
@@ -78,7 +79,7 @@ test('v19 validates every persisted level and activation duration, while v18 can
   for(const patch of [{autoTouchDurationMs:undefined},{autoTouchDurationMs:60001},{autoTouchDurationMs:260000},{swordDurationMs:230000}])
     assert.equal(game.parseSave(serializeSave({...state,...patch}),T),null);
   state.personalLevels.generalSword=10;
-  assert.equal(game.parseSave(serializeSave({...state,version:18}),T).personalLevels.generalSword,1);
+  assert.equal(game.parseSave(serializeSave({...state,version:18,gold:LEGACY_MAX_GOLD}),T).personalLevels.generalSword,1);
 });
 test('a guaranteed upgrade persists through failed writes, retry and reload without another charge', async () => {
   const {createGameSession}=await import('../src/session.js');

@@ -1,5 +1,6 @@
 import { MILITARY_MAX_LEVEL } from './equipment-limits.js';
-import { multiplyMoney } from './money.js';
+import { multiplyMoney, addMoney, exact, compactMoney, minMoney, MAX_GOLD } from './money.js';
+import { GALACTIC_EQUIPMENT } from './galactic-equipment.js';
 import { LATE_EQUIPMENT } from './late-equipment-catalog.js';
 import { rankForArmy, RANKS } from "./ranks.js";
 import { divisionFlagStatus, enhancementLimitForFlag } from './personal-equipment.js';
@@ -75,6 +76,7 @@ export const EQUIPMENT = Object.freeze({
     stages:Object.freeze(['기본 ICBM','동체 외장','운반대 보강','차체 장갑','지지대 확장','기수 도장','관측 센서','지원 설비','위장 패널','통신 안테나','최종 개량형']),
   }),
   ...LATE_EQUIPMENT,
+  ...GALACTIC_EQUIPMENT,
 });
 // The horizontal home map expands with the catalog. Battle deployment has its own limits.
 export const MAX_DEPLOYED_EQUIPMENT = Object.keys(EQUIPMENT).length;
@@ -130,7 +132,7 @@ export function equipmentIncome(s) {
     (sum, d) => {
       const stats = equipmentStats(d.level, d.id);
       const count = equipmentCount(s, d.id);
-      return { passive: sum.passive + stats.passive * count, tap: sum.tap + stats.tap * count };
+      return { passive: minMoney(MAX_GOLD,addMoney(sum.passive,multiplyMoney(stats.passive,count))), tap: minMoney(MAX_GOLD,addMoney(sum.tap,multiplyMoney(stats.tap,count))) };
     },
     { passive: 0, tap: 0 },
   );
@@ -138,6 +140,11 @@ export function equipmentIncome(s) {
 export function enhancementCost(level, id = "artillery") {
   const d = equipmentType(id);
   equipmentStats(level, id);
+  if (GALACTIC_EQUIPMENT[id]) {
+    if(level===d.maxLevel)return null;
+    const numerator=exact(d.cost)*118n**BigInt(level),denominator=4n*100n**BigInt(level)*10000n;
+    return compactMoney((numerator+denominator-1n)/denominator*10000n);
+  }
   return level === d.maxLevel
     ? null
     : Math.ceil(((d.cost / 4) * 1.4 ** level) / 10000) * 10000;
@@ -177,7 +184,7 @@ export function additionalEquipmentCost(id, level = REPEAT_EQUIPMENT_LEVEL) {
   const d = equipmentType(id);
   equipmentStats(level,id);
   let cost = d.cost;
-  for (let step = 0; step < level; step++) cost += enhancementCost(step, id);
+  for (let step = 0; step < level; step++) cost = addMoney(cost,enhancementCost(step, id));
   return cost;
 }
 export function additionalEquipmentOffer(s, id) {

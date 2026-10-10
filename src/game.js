@@ -27,7 +27,7 @@ export { SAVE_KEY, LEGACY_KEY, MAX_SOLDIERS, freshState } from './state.js';
 import { MAX_SOLDIERS } from './state.js';
 import { MAX_OFFLINE_MS } from './offline-rules.js';
 export { MAX_OFFLINE_MS } from './offline-rules.js';
-export const baseTapIncome = s => withPersonalIncome(s,withFacilityIncome(s,addMoney(1+troopIncome(s,'tap'),withPersonalEquipmentIncome(s,equipmentIncome(s).tap)),'tap'),'tap');
+export const baseTapIncome = s => withPersonalIncome(s,withFacilityIncome(s,addMoney(addMoney(1,troopIncome(s,'tap')),withPersonalEquipmentIncome(s,equipmentIncome(s).tap)),'tap'),'tap');
 export const perTap = (s, now = Date.now()) => multiplyMoney(baseTapIncome(s),swordSkillStatus(s,now).multiplier*potionStatus(s,'red',now).multiplier);
 export const basePassiveIncome = (s) =>
   withPersonalIncome(s,withCampaignIncome(s, withFacilityIncome(s,addMoney(troopIncome(s, 'passive'),withPersonalEquipmentIncome(s,equipmentIncome(s).passive)),'passive')));

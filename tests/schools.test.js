@@ -54,7 +54,7 @@ test('officer academy needs both NCO level five and actual major general rank',(
   assert.equal(schoolOffer(s,'officer').cost,30_000_000_000);
 });
 test('every new recruit changes only its count and price and adds its catalog power and income',()=>{
-  const s={...wealthy(),ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,commandSchoolLevel:5,soldiers:15};
+  const s={...wealthy(),ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,commandSchoolLevel:5,galacticSchoolLevel:5,soldiers:15};
   for(const u of Object.values(UNITS)) {
     const prices=Object.fromEntries(Object.keys(UNITS).map(id=>[id,recruitOffer(s,id).cost]));
     const old={gold:s.gold,power:armyPower(s),passive:perSecond(s),tap:perTap(s)};

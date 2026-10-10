@@ -12,7 +12,7 @@ import { quietBattle, until, deployNow, play } from "./lane-helpers.js";
 
 function army(power = 1280, level = 3) {
   return { ...freshState(1000), soldiers: power - 600, sergeants: 40, staffSergeants: 10,
-    campaignCleared: 80,
+    campaignCleared: STAGES.length,
     equipment: Object.fromEntries(["artillery", "tank", "selfPropelled"].map((id) => [id, { level, deployed: true }])),
   };
 }
@@ -27,9 +27,9 @@ test("battle menu previews at private first class and captain needs military equ
   assert.throws(()=>createBattle(s,1),RangeError);
 });
 
-test("eighty conquest regions enforce sequential progress across four countries", () => {
-  assert.equal(STAGES.length, 80);
-  assert.equal(new Set(STAGES.map(s=>s.name)).size,80);
+test("160 conquest regions enforce sequential progress across eight countries", () => {
+  assert.equal(STAGES.length, 160);
+  assert.equal(new Set(STAGES.map(s=>s.name)).size,160);
   const s = { ...army(), campaignCleared: 0 };
   assert.equal(createBattle(s, 1).stageId, 1);
   assert.throws(() => createBattle(s, 2), RangeError);

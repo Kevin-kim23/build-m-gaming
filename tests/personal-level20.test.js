@@ -1,3 +1,5 @@
+import { LEGACY_MAX_GOLD } from '../src/money.js';
+import { serializeLegacySave } from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState,SAVE_VERSION} from '../src/state.js';
@@ -44,15 +46,15 @@ test('all eight items upgrade every paid step exactly once, without random outco
 });
 
 test('v29 preserves earned levels, exact wallet, equipment and running windows; v30 validates new caps',()=>{
-  const old=army();old.version=29;old.gold=MAX_GOLD-1n;
+  const old=army();old.version=29;old.gold=LEGACY_MAX_GOLD-1n;
   for(const id of Object.keys(old.personalLevels))old.personalLevels[id]=10;
   old.equipment.tank={level:20,count:1,deployed:true};
   old.swordActivatedAt=T-1000;old.swordDurationMs=120000;
   old.autoTouchActivatedAt=T-1000;old.autoTouchDurationMs=150000;old.autoTouchTicks=3;
-  old.campaignCleared=80;old.campaignStars.fill(3);
+  old.campaignCleared=80;old.campaignStars.fill(3,0,80);
   old.offlineReward={id:T-2000,durationMs:3600000,amount:12345678901234567n};
   reconcileAchievements(old);
-  const restored=parseSave(serializeSave(old),T);
+  const restored=parseSave(serializeLegacySave(old),T);
   assert.deepEqual(restored,{...old,version:SAVE_VERSION});
   for(const id of Object.keys(restored.personalLevels))restored.personalLevels[id]=20;
   restored.equipment.tank.level=30;restored.swordDurationMs=220000;restored.autoTouchDurationMs=250000;
@@ -64,7 +66,7 @@ test('v29 preserves earned levels, exact wallet, equipment and running windows; 
   const badGear=structuredClone(restored);badGear.equipment.tank.level=31;
   assert.equal(parseSave(serializeSave(badGear),T),null);
   for(const patch of [{personalLevels:restored.personalLevels},{equipment:restored.equipment},
-    {swordDurationMs:220000},{autoTouchDurationMs:250000}])assert.equal(parseSave(serializeSave({...old,...patch}),T),null);
+    {swordDurationMs:220000},{autoTouchDurationMs:250000}])assert.equal(parseSave(serializeLegacySave({...old,...patch}),T),null);
 });
 
 test('flag advances each military cap through 30; all gear gains income, firepower or healing and speed',()=>{
@@ -128,8 +130,10 @@ test('maximum personal and military gear preserves exact eight-hour income and w
   for(const id of Object.keys(EQUIPMENT))s.equipment[id]={level:30,count:100000,deployed:true};
   reconcileAchievements(s);
   const gear=equipmentIncome(s);
-  assert.equal(exact(gear.passive),Object.values(EQUIPMENT).reduce((sum,d)=>sum+BigInt(d.passive)*34n*100000n,0n));
-  assert.equal(exact(gear.tap),Object.values(EQUIPMENT).reduce((sum,d)=>sum+BigInt(d.tap)*34n*100000n,0n));
+  for(const kind of ['passive','tap']) {
+    const raw=Object.values(EQUIPMENT).reduce((sum,d)=>sum+BigInt(d[kind])*34n*100000n,0n);
+    assert.equal(exact(gear[kind]),raw>MAX_GOLD?MAX_GOLD:raw);
+  }
   const expected=exact(perSecond(s))*BigInt(MAX_OFFLINE_MS)/1000n;
   accrue(s,T+MAX_OFFLINE_MS*2);assert.equal(exact(s.gold),expected>MAX_GOLD?MAX_GOLD:expected);
   assert.deepEqual(parseSave(serializeSave(s),s.lastAccrual),s);

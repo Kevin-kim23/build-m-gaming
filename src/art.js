@@ -251,14 +251,14 @@ function sprite(id) {
       r(c, 3, 2, 13, 4, u.color);
       r(c, 12, 3, 2, 2, "#e7d293");
       r(c, 7, 12, 6, 7, "#354d4a");
-      if(['officer','advanced','command'].includes(u.school)) {
+      if(['officer','advanced','command'].includes(u.school)||u.insigniaKind==='galactic') {
         r(c,9,12,2,1,"#eef0d1");r(c,8,13,4,2,"#eef0d1");r(c,9,15,2,1,"#eef0d1");
         r(c,3,10,3,2,"#eef0d1");r(c,13,10,3,2,"#eef0d1");
       } else for(let i=0;i<u.schoolLevel;i++)r(c,7,12+i*2,5,1,"#e7c679");
     }
   } else building(c, id);
   if (UNITS[id]) uniformDetails(c,id);
-  if (['officer','advanced','command'].includes(UNITS[id]?.school)) officerDetails(c,UNITS[id]);
+  if (['officer','advanced','command'].includes(UNITS[id]?.school)||UNITS[id]?.insigniaKind==='galactic') officerDetails(c,UNITS[id]);
   if (UNITS[id]?.role || id==='warrantOfficer') specialistDetails(c,UNITS[id]);
   sprites.set(id, canvas);
   return canvas;

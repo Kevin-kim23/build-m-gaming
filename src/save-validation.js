@@ -1,4 +1,6 @@
 import { COMMAND_OFFICERS } from './command-officers.js';
+import { GALACTIC_OFFICERS } from './galactic-officers.js';
+import { CONTINENT_STAGE_COUNT } from './campaign-constants.js';
 import { validHomeAutoTap } from './home-auto-tap-rules.js';
 import { validPotions } from './potions.js';
 import { validFacilities, validFacilityLevels } from './facility-catalog.js';
@@ -78,9 +80,9 @@ export function validateSave(s) {
   if (s.version >= 12) requireSave(typeof s.fieldTheme === 'string' && Object.hasOwn(FIELD_THEMES, s.fieldTheme), 'fieldTheme');
   if (s.version >= 14) for (const unit of NEW_OFFICER_GRADES)
     requireSave(integer(s[unit.field], Math.floor(MAX_SOLDIERS / unit.power)), unit.field);
-  if (s.version >= 15) requireSave(integer(s.campaignCleared, STAGES.length), 'campaignCleared');
+  if (s.version >= 15) requireSave(integer(s.campaignCleared, s.version<34?CONTINENT_STAGE_COUNT:STAGES.length), 'campaignCleared');
   // 별 기록(형식22~): 길이 80, 각 0~3, 아직 점령하지 않은 지역은 0
-  if (s.version >= 22) requireSave(Array.isArray(s.campaignStars) && s.campaignStars.length === CAMPAIGN_STAGE_COUNT &&
+  if (s.version >= 22) requireSave(Array.isArray(s.campaignStars) && s.campaignStars.length === (s.version<34?CONTINENT_STAGE_COUNT:CAMPAIGN_STAGE_COUNT) &&
     s.campaignStars.every((stars, index) => integer(stars, 3) && (stars === 0 || index < s.campaignCleared)), 'campaignStars');
   if (s.version >= 16) {
     requireSave(s.autoTouchActivatedAt === null || integer(s.autoTouchActivatedAt, s.lastAccrual), 'autoTouchActivatedAt');
@@ -105,6 +107,10 @@ export function validateSave(s) {
       (s.commandSchoolLevel === 0 || s.advancedSchoolLevel === 5), 'commandSchoolLevel');
     for (const unit of COMMAND_OFFICERS)
       requireSave(integer(s[unit.field], Math.floor(MAX_SOLDIERS / unit.power)), unit.field);
+  }
+  if(s.version>=34){
+    requireSave(integer(s.galacticSchoolLevel,5)&&(s.galacticSchoolLevel===0||s.commandSchoolLevel===5),'galacticSchoolLevel');
+    for(const unit of GALACTIC_OFFICERS)requireSave(integer(s[unit.field],Math.floor(MAX_SOLDIERS/unit.power)),unit.field);
   }
   if(s.version>=19){
     requireSave(s.personalLevels&&typeof s.personalLevels==='object'&&!Array.isArray(s.personalLevels),'personalLevels');

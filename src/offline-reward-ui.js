@@ -13,7 +13,7 @@ export const offlineRewardMarkup = () => `<dialog id="offline-reward-modal" aria
     <button type="button" data-offline-claim>받기<span data-offline-normal></span></button>
     <button type="button" data-offline-double>광고 보고 2배 받기<span>시청 완료 시 지급</span></button>
   </div>
-  <p class="offline-note">보유 골드 상한 1,000경 적용 · 닫아도 보상은 보관돼요.</p>
+  <p class="offline-note">보유 골드 상한 ${fmtGold(MAX_GOLD)} 적용 · 닫아도 보상은 보관돼요.</p>
   <p class="offline-message" data-offline-message role="status" aria-live="polite"></p>
 </dialog>`;
 

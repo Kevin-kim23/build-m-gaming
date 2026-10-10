@@ -1,10 +1,15 @@
 import { SCHOOLS } from './schools.js';
 import { commandSchoolBody } from './late-facility-art.js';
+import { galacticSchoolBody } from './galactic-school-art.js';
 const drawings=new Map();
 // Original pixel campus, cached per school/level and shared by its shop card.
 export function schoolIcon(id,level) {
   const key=`${id}:${level}`;
   if(drawings.has(key)) return drawings.get(key);
+  if(id==='galactic') {
+    const svg=`<svg class="school-art" viewBox="0 0 96 72" role="img" aria-label="은하 사관학교 Lv.${level} 건물" shape-rendering="crispEdges">${galacticSchoolBody(level)}</svg>`;
+    drawings.set(key,svg);return svg;
+  }
   if(id==='command') {
     const svg=`<svg class="school-art" viewBox="0 0 96 72" role="img" aria-label="지휘 사관학교 Lv.${level} 건물" shape-rendering="crispEdges">${commandSchoolBody(level)}</svg>`;
     drawings.set(key,svg);return svg;

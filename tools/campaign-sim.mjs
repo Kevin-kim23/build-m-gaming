@@ -12,7 +12,7 @@ export function referenceArmy(stage,{power=stage.recommendedPower,level=stage.re
   s.ncoSchoolLevel=1;
   s.personalLevels.divisionFlag=Math.max(1,level-10);
   const rank=rankForArmy(s);
-  for(const gear of Object.values(EQUIPMENT))if(rank>=RANKS.indexOf(gear.unlockRank))s.equipment[gear.id]={level:Math.min(level,rank<RANKS.indexOf('소장')?10:20),count:1,deployed:true};
+  for(const gear of Object.values(EQUIPMENT))if(rank>=RANKS.indexOf(gear.unlockRank))s.equipment[gear.id]={level:Math.min(level,rank<RANKS.indexOf('소장')?10:gear.maxLevel),count:1,deployed:true};
   return s;
 }
 

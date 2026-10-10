@@ -5,7 +5,9 @@ import { drawOverheadAircraft } from './aircraft-art.js';
 import { overheadEnhancement } from './enhancement-art.js';
 import { drawOverheadStrategic } from './strategic-art.js';
 import { drawOverheadLateEquipment } from './late-topdown-art.js';
-import { overheadGalacticDetails } from './galactic-command-art.js';
+import { battleHeadquartersSprite } from './battle-hq-art.js';
+import { GALACTIC_EQUIPMENT } from './galactic-equipment.js';
+import { drawOverheadGalacticEquipment } from './galactic-equipment-art.js';
 
 // 세로 레인 전장용 "위에서 본" 장비·기지 그림(위쪽을 보는 모습). 아군은 초록, 적은 붉은 갈색 팔레트.
 // 그림 교체 지점은 이 파일 하나입니다: 전투 화면은 unitSprite / baseSprite만 부릅니다.
@@ -59,6 +61,7 @@ function drawTrackedOrTowed(c, id, level, side) {
 function drawGear(id, level, side) {
   const canvas = artSurface(SPRITE_SIZE.width, SPRITE_SIZE.height), c = canvas.getContext('2d'), p = PAL[side];
   rect(c, 12, 30, 36, 31, '#22392c44');
+  if(GALACTIC_EQUIPMENT[id]){drawOverheadGalacticEquipment(c,level,p,id);overheadEnhancement(c,level);return canvas;}
   if (['carrier','flyingFortress','orbitalAssault'].includes(id)) { drawOverheadLateEquipment(c, level, p, id); overheadEnhancement(c, level); emblem(c, 25, 46, side); return canvas; }
   if (id === 'railgunTank' || id === 'icbm') { drawOverheadStrategic(c, level, p, id); overheadEnhancement(c, level); emblem(c, 25, 46, side); return canvas; }
   if (id === 'transport' || id === 'fighter') { drawOverheadAircraft(c, level, p, id); overheadEnhancement(c, level); return canvas; }
@@ -82,27 +85,5 @@ export function unitSprite(id, side, level = 0) {
   return sprite;
 }
 
-const TIERS = ['battalion', 'regiment', 'division', 'corps', 'fieldArmy', 'armyGroup', 'alliedArmy', 'grandAlliedArmy', 'supremeCommand', 'galacticCommand', 'galacticGroupCommand'];
-// 일반 기지(위에서 본 모습): 계급이 높을수록 크고 장식이 늘어난다.
-export function baseSprite(id, side) {
-  const key = `base:${side}:${id}`;
-  if (cache.has(key)) return cache.get(key);
-  const tier = Math.max(0, TIERS.indexOf(id)), w = 62 + tier * 10, h = 42 + tier * 5;
-  const canvas = artSurface(w + 18, h + 12), c = canvas.getContext('2d'), p = PAL[side], r = brush(c);
-  r(5, 6, w + 3, h + 2, '#26372d55'); r(2, 2, w, h, p.dark); r(5, 5, w - 6, h - 6, p.body);
-  r(5, 5, w - 6, 3, p.light); r(5, 7, 3, h - 8, p.light); r(12, 12, w - 23, h - 21, p.dark); r(14, 14, w - 27, h - 25, p.body);
-  for (let col = 0; col <= tier + 1; col++) { r(15 + col * 13, 15, 8, 6, p.light); r(16 + col * 13, 16, 6, 2, '#5a7675'); }
-  r(14, h - 13, 13, 6, p.light); r(16, h - 12, 9, 4, p.dark); emblem(c, w / 2 - 3, h / 2, side);
-  r(w + 7, 0, 2, 25, p.dark); r(w + 9, 1, 8, 7, p.flag);
-  for (let x = 8; x < w - 8; x += 8) { r(x, 8, 4, 1, p.light); r(x, h - 6, 4, 1, p.dark); }
-  for (let y = 15; y < h - 10; y += 7) { r(w - 10, y, 3, 2, p.light); r(w - 9, y + 1, 2, 1, p.dark); }
-  if (tier >= 7) { const metal = tier === 8 ? '#d8e8f1' : '#e4ce92'; for (const x of [5, w - 20]) { r(x, h / 2 - 5, 14, 19, p.dark); r(x + 2, h / 2 - 3, 10, 2, metal); } r(w / 2 - 15, h / 2 - 12, 30, 2, metal); }
-  if (id === 'galacticCommand') overheadGalacticDetails(r, w, h, p);
-  if (id === 'galacticGroupCommand') {
-    overheadGalacticDetails(r,w,h,p);
-    for(const x of [9,w-23])for(const y of [15,h-24]){r(x,y,12,12,p.dark);r(x+2,y+2,8,8,p.light);r(x+4,y+4,4,4,p.flag);}
-    for(let i=0;i<5;i++){r(w/2-17+i*8,h/2-3,2,7,p.mark);r(w/2-19+i*8,h/2-1,6,2,p.mark);}
-  }
-  cache.set(key, canvas);
-  return canvas;
-}
+// Every formation has its own overhead compound; the shared cache is in battle-hq-art.
+export const baseSprite = (id,side) => battleHeadquartersSprite(id,side);

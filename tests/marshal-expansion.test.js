@@ -5,7 +5,7 @@ import { parseSave } from '../src/save.js';
 import { serializeSave, MAX_GOLD } from '../src/money.js';
 import { recruit, perSecond, perTap } from '../src/game.js';
 import { RANKS, rankForArmy, promotionProgress } from '../src/ranks.js';
-import { FORMATIONS, groupArmy, ALLIED_ARMY_SIZE, GRAND_ALLIED_ARMY_SIZE, SUPREME_COMMAND_SIZE, GALACTIC_COMMAND_SIZE } from '../src/formations.js';
+import { FORMATIONS, groupArmy, ALLIED_ARMY_SIZE, GRAND_ALLIED_ARMY_SIZE, SUPREME_COMMAND_SIZE, GALACTIC_COMMAND_SIZE, GALACTIC_GRAND_ALLIED_ARMY_SIZE } from '../src/formations.js';
 import { armyPower } from '../src/units.js';
 import { schoolOffer } from '../src/schools.js';
 import { personalStatus } from '../src/personal-equipment.js';
@@ -35,7 +35,7 @@ test('new marshal boundaries consolidate four commands and promotion follows act
     assert.equal(createBattle(s,1,{equipment:['artillery']}).player.hq.id,id);
     s.sergeants=299;assert.equal(RANKS[rankForArmy(s)],'대령');
   }
-  assert.equal(MAX_SOLDIERS,GALACTIC_COMMAND_SIZE*16);
+  assert.equal(MAX_SOLDIERS,GALACTIC_GRAND_ALLIED_ARMY_SIZE*4);
 });
 
 test('version 20 keeps paid gear, exact money, troops, skills and campaign when rank names change',()=>{
@@ -66,7 +66,7 @@ test('renamed ranks retain the old ICBM, glaive and advanced academy unlock thre
 });
 
 test('marshal insignia keeps five, one, two and three stars without laurels and white stars for all three upper marshal ranks',()=>{
-  for(const invalid of ['5',0,11,NaN,Infinity,5.5])assert.throws(()=>supremeRankSymbol(invalid),RangeError);
+  for(const invalid of ['5',0,16,NaN,Infinity,5.5])assert.throws(()=>supremeRankSymbol(invalid),RangeError);
   for(const [tier,count] of [[5,5],[6,1],[7,2],[8,3],[9,4],[10,5]]){
     const svg=supremeRankSymbol(tier);
     assert.equal((svg.match(/data-rank-star/g)||[]).length,count);

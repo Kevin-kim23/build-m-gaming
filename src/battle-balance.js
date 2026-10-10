@@ -24,6 +24,11 @@ export const BATTLE_RULES = Object.freeze({
 export const STAGES = campaignStages;
 
 const weaponBase = Object.freeze({
+  plasmaTank: {damage:440,intervalMs:2200},
+  droneCarrier: {damage:600,intervalMs:3000},
+  siegeMech: {damage:960,intervalMs:3800},
+  stellarBomber: {damage:1350,intervalMs:3400},
+  novaCannon: {damage:3200,intervalMs:10000},
   carrier: { damage:220, intervalMs:3600 },
   flyingFortress: { damage:360, intervalMs:3000 },
   orbitalAssault: { damage:2000, intervalMs:10000 },
@@ -40,6 +45,11 @@ const weaponBase = Object.freeze({
 
 // 장비 특성: 분류·체력(전력 비례 기준)·이동 속도·사거리·마나 비용·재출격 대기. kind: unit(전진 전투) / heal(회복) / strike(즉시 타격)
 export const UNIT_TRAITS = Object.freeze({
+  plasmaTank: {cls:'armor',kind:'unit',hp:850,speed:58,range:260,cost:60,cooldownMs:12000},
+  droneCarrier: {cls:'air',kind:'unit',hp:800,speed:54,range:390,cost:65,cooldownMs:15000},
+  siegeMech: {cls:'firepower',kind:'unit',hp:1000,speed:36,range:430,cost:72,cooldownMs:18000},
+  stellarBomber: {cls:'air',kind:'unit',hp:900,speed:145,range:220,cost:80,cooldownMs:19000},
+  novaCannon: {cls:'firepower',kind:'strike',hp:1,speed:0,range:0,cost:100,cooldownMs:32000},
   artillery:      { cls: "firepower", kind: "unit",   hp: 100, speed: 48,  range: 300, cost: 18, cooldownMs: 3500 },
   tank:           { cls: "armor",     kind: "unit",   hp: 260, speed: 64,  range: 120, cost: 24, cooldownMs: 4500 },
   selfPropelled:  { cls: "firepower", kind: "unit",   hp: 150, speed: 45,  range: 340, cost: 30, cooldownMs: 6000 },
@@ -58,7 +68,7 @@ export const CLASS_NAMES = Object.freeze({ firepower: "화력", armor: "기갑",
 
 // 상성 삼각형: 공중 > 기갑 > 화력 > 공중. 유리 ×strong, 불리 ×weak(나라가 뒤로 갈수록 차이가 커진다).
 export const CLASS_BEATS = Object.freeze({ air: "armor", armor: "firepower", firepower: "air" });
-export const MATCHUP_BY_COUNTRY = Object.freeze([{ strong: 1.3, weak: 0.8 }, { strong: 1.4, weak: 0.7 }, { strong: 1.5, weak: 0.65 }, { strong: 1.6, weak: 0.6 }]);
+export const MATCHUP_BY_COUNTRY = Object.freeze([{ strong: 1.3, weak: 0.8 }, { strong: 1.4, weak: 0.7 }, { strong: 1.5, weak: 0.65 }, { strong: 1.6, weak: 0.6 }, {strong:1.65,weak:.58}, {strong:1.7,weak:.56}, {strong:1.75,weak:.54}, {strong:1.8,weak:.52}]);
 export const FORTRESS_SHIELD = 0.6; // 수도 요새 기지: 방어 분류 장비의 피해가 40% 줄어듦
 export const countryIndex = (stageId) => Math.floor((stageId - 1) / 20);
 export function classMatchup(attackerClass, targetClass, stageId) {
@@ -76,7 +86,12 @@ export const ENEMY_TYPES = Object.freeze([
 // Cache once: the combat loop never filters the catalog or allocates a new pool each frame.
 const enemyTypes=campaignStages.map(stage=>{
   const base=ENEMY_TYPES[(stage.id-1)%ENEMY_TYPES.length],rank=RANKS.indexOf(stage.recommendedRank);
-  const pool=base.pool.map((id,i)=>stage.id>=66&&i===2&&base.main==='air'?'flyingFortress':stage.id>=60&&i===2&&base.main==='air'?'carrier':stage.id>=46&&i===1&&base.main==='armor'?'railgunTank':id)
+  const galacticReplacement={tank:'plasmaTank',artillery:'siegeMech',selfPropelled:'siegeMech',helicopter:'droneCarrier',fighter:'stellarBomber'};
+  const pool=base.pool.map((id,i)=>{
+    const newId=stage.id>80?galacticReplacement[id]:null;
+    if(newId&&rank>=RANKS.indexOf(EQUIPMENT[newId].unlockRank))return newId;
+    return stage.id>=66&&i===2&&base.main==='air'?'flyingFortress':stage.id>=60&&i===2&&base.main==='air'?'carrier':stage.id>=46&&i===1&&base.main==='armor'?'railgunTank':id;
+  })
     .filter(id=>rank>=RANKS.indexOf(EQUIPMENT[id].unlockRank));
   if(stage.id<=5)return Object.freeze({id:'outpost',name:'전초 포병',main:'firepower',counter:'armor',intro:true,pool:Object.freeze(['artillery'])});
   const actual=pool.length?pool:['artillery'],main=UNIT_TRAITS[actual[0]].cls;
@@ -85,7 +100,7 @@ const enemyTypes=campaignStages.map(stage=>{
 });
 // Late player weapons are powerful rewards. Enemy versions retain their silhouette/HP,
 // but cannot destroy a power-sized HQ in one hit just because their base damage is larger.
-export const enemyWeaponModifier=id=>['railgunTank','carrier','flyingFortress'].includes(id)?20/weaponBase[id].damage:1;
+export const enemyWeaponModifier=id=>['railgunTank','carrier','flyingFortress','plasmaTank','droneCarrier','siegeMech','stellarBomber'].includes(id)?20/weaponBase[id].damage:1;
 export const stageEnemyType = stageId=>enemyTypes[stageId-1];
 export const isFortress = (stageId) => stageId % 20 === 0;
 // 수도 요새 기지는 이 유형을 잡는 정석 분류(counter)의 피해를 줄인다 → 부대는 정석으로, 기지는 다른 분류로 부수는 전략.

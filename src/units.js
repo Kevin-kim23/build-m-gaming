@@ -1,4 +1,6 @@
 import { COMMAND_OFFICERS } from './command-officers.js';
+import { GALACTIC_OFFICERS } from './galactic-officers.js';
+import { addMoney, multiplyMoney } from './money.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { SPECIALIST_UNITS, WARRANT_OFFICER } from './specialist-units.js';
 // Store real headcounts; derive equivalent strength everywhere from this catalog.
@@ -58,7 +60,7 @@ export const UNITS = Object.freeze({
     color: "#784b3f", width: 18, height: 27,
   }),
   warrantOfficer: WARRANT_OFFICER,
-  ...Object.fromEntries([...OFFICER_GRADES, ...ADVANCED_OFFICERS, ...COMMAND_OFFICERS].map(unit => [unit.id, unit])),
+  ...Object.fromEntries([...OFFICER_GRADES, ...ADVANCED_OFFICERS, ...COMMAND_OFFICERS, ...GALACTIC_OFFICERS].map(unit => [unit.id, unit])),
 });
 export const UNIT_LIST = Object.freeze(Object.values(UNITS));
 const SCHOOL_ACCESS = Object.freeze({
@@ -66,6 +68,7 @@ const SCHOOL_ACCESS = Object.freeze({
   officer:{field:'officerSchoolLevel',name:'사관학교',previous:'ncoSchoolLevel'},
   advanced:{field:'advancedSchoolLevel',name:'고급 사관학교',previous:'officerSchoolLevel'},
   command:{field:'commandSchoolLevel',name:'지휘 사관학교',previous:'advancedSchoolLevel'},
+  galactic:{field:'galacticSchoolLevel',name:'은하 사관학교',previous:'commandSchoolLevel'},
 });
 export function unitAccess(state, unit) {
   const school=SCHOOL_ACCESS[unit.school],level=state[school?.field]??0;
@@ -78,4 +81,4 @@ export function unitAccess(state, unit) {
 export const armyPower = (s) =>
   UNIT_LIST.reduce((n, u) => n + (s[u.field] ?? 0) * u.power, 0);
 export const troopIncome = (s, kind) =>
-  UNIT_LIST.reduce((n, u) => n + (s[u.field] ?? 0) * u[kind], 0);
+  UNIT_LIST.reduce((n, u) => addMoney(n, multiplyMoney(s[u.field] ?? 0, u[kind])), 0);

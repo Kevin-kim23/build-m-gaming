@@ -71,7 +71,7 @@ test("small-screen layouts stay inside the troop area, sorted and non-overlappin
   for (const f of FORMATIONS)
     for (const delta of [-1, 0, 1, 19])
       if (f.size + delta >= 0) totals.add(f.size + delta);
-  for (let n = 0; n <= MAX_SOLDIERS; n += 15953) totals.add(n);
+  for (let i = 0; i <= 2048; i++) totals.add(Math.floor(MAX_SOLDIERS*i/2048));
   const area = { x: 13, y: 34, width: 134, height: 60 };
   for (const n of totals) {
     const s = army(n),
@@ -109,7 +109,7 @@ test("small-screen layouts stay inside the troop area, sorted and non-overlappin
 test("large saved armies load without discarding progress and remain finite", () => {
   const s = { ...army(MAX_SOLDIERS - 10), sergeants: 1, gold: 99999999 };
   assert.deepEqual(parseSave(JSON.stringify(s)), { ...s,
-    earnedAchievements: ["squad", "platoon", "company", "battalion", "regiment", "division", "corps", "fieldArmy", "armyGroup", "alliedArmy", "grandAlliedArmy", "supremeCommand", "galacticCommand", "galacticGroupCommand"] });
+    earnedAchievements: FORMATIONS.filter(f=>f.id!=='soldier').slice().reverse().map(f=>f.id) });
   assert.equal(parseSave(JSON.stringify({ ...s, sergeants: 2 })), null);
   assert.ok(Number.isSafeInteger(perTap(s)));
   assert.ok(Number.isSafeInteger(perSecond(s)));

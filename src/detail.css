@@ -68,7 +68,8 @@
 }
 /* Rank / formation guide */
 .rank-guide .rank-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; margin-top: 8px; }
-.rank-guide .rank-step { flex: none; min-height: 0; }
+.rank-guide .rank-step { flex: none; min-width: 0; min-height: 0; text-align: center; }
+.rank-guide .rank-step small, .rank-guide .formation-guide-grid span { max-width: 100%; text-align: center; word-break: keep-all; }
 .rank-guide-title { margin: 14px 0 4px; font-size: 13px; color: #e0cf93; }
 .rank-guide .formation-guide-grid { margin-top: 8px; }
 .detail-head h2 small { display: inline; margin-left: 6px; font-size: 13px; letter-spacing: 0; color: #d6c18c; }

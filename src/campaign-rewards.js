@@ -1,11 +1,18 @@
 import { campaignStages } from './campaign.js';
 import { MAX_GOLD, subtractMoney, multiplyMoney, minMoney, scaleMoney } from './money.js';
+import {CONTINENT_STAGE_COUNT} from './campaign-constants.js';
 
 export const REGION_INCOME_PERCENT = 1;
 export const MAX_CONQUEST_REGIONS = campaignStages.length;
+export function regionIncomePercent(stageId){
+  if(!Number.isInteger(stageId)||stageId<1||stageId>MAX_CONQUEST_REGIONS)throw new RangeError('Unknown reward stage');
+  return stageId>CONTINENT_STAGE_COUNT?2:REGION_INCOME_PERCENT;
+}
 export function campaignBonusPercent(state) {
   const cleared = state.campaignCleared ?? 0;
-  return Number.isInteger(cleared) ? Math.max(0, Math.min(MAX_CONQUEST_REGIONS, cleared)) * REGION_INCOME_PERCENT : 0;
+  if(!Number.isInteger(cleared))return 0;
+  const count=Math.max(0,Math.min(MAX_CONQUEST_REGIONS,cleared));
+  return Math.min(CONTINENT_STAGE_COUNT,count)*REGION_INCOME_PERCENT+Math.max(0,count-CONTINENT_STAGE_COUNT)*2;
 }
 // Additive on the combined troop/deployed-equipment income; never compounds.
 export function withCampaignIncome(state, baseIncome) {

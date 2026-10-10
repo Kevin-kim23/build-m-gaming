@@ -1,3 +1,4 @@
+import { LEGACY_MAX_GOLD } from '../src/money.js';
 import { SAVE_VERSION } from '../src/state.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -72,7 +73,7 @@ test('glaive upgrades settle the old rate first and each paid step increases inc
   assert.equal(next.success,true);assert.ok(perSecond(s)>updated);assert.equal(s.gold,subtractMoney(gold,next.cost));
 });
 test('v19 adds empty military slots and Lv.1 glaive while preserving all paid gear and active skills',()=>{
-  const s=army();s.version=19;s.gold=MAX_GOLD-1n;
+  const s=army();s.version=19;s.gold=LEGACY_MAX_GOLD-1n;
   for(const id of Object.keys(s.personalLevels))s.personalLevels[id]=7;
   delete s.personalLevels.marshalGlaive;delete s.equipment.railgunTank;delete s.equipment.icbm;
   s.equipment.tank={level:20,count:1,deployed:true};s.swordActivatedAt=T-1000;s.swordDurationMs=90000;

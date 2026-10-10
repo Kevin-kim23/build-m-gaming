@@ -83,5 +83,6 @@ test('narrow fields keep the galaxy headquarters and its name instead of shrinki
   const compact=layoutFieldArmy({soldiers:f.size*3},{x:106,y:22,width:46,height:45});
   assert.equal(compact[0].id,'galacticCommand');
   assert.equal(compact[0].count,3);
-  assert.equal(compact[0].wrapLabel,true);
+  assert.equal(compact[0].label,true);
+  assert.ok(compact[0].boxWidth<=46,'renamed regiment label still fits its compact area');
 });
