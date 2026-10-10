@@ -234,7 +234,7 @@ test("all ten enhancements increase both damage and automatic attack speed", () 
       previous = current;
     }
   }
-  assert.throws(() => equipmentCombatStats("tank", 31), RangeError);
+  assert.throws(() => equipmentCombatStats("tank", 41), RangeError);
   const colonel = createBattle(army(5120), 3), general = createBattle(army(10240), 3);
   assert.equal(colonel.player.hq.hp * 2, general.player.hq.hp);
 });

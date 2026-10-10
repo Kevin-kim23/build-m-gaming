@@ -1,5 +1,5 @@
 // Future personal gear shares the same award, saved-level and enhancement rules.
-export const PERSONAL_MAX_LEVEL = 20;
+export const PERSONAL_MAX_LEVEL = 30;
 const item = value => Object.freeze({ level: 1, maxLevel: PERSONAL_MAX_LEVEL, introducedVersion:19, ...value });
 export const COMMAND_BATON = item({ id:'commandBaton', name:'지휘봉', icon:'baton', unlockRank:'중령', recruitAmount:100, baseUpgradeCost:50_000_000 });
 export const GENERAL_SWORD = item({ id:'generalSword', name:'장군검', icon:'sword', unlockRank:'준장', baseUpgradeCost:500_000_000,

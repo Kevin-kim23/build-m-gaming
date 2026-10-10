@@ -44,10 +44,10 @@ export function createHomeAutoTapPurchase(session,{showPurchase,allowTestGrant=A
   }
   return {buy,toggle:()=>busy?{ok:false,reason:'busy'}:session.change(toggleHomeAutoTap),get busy(){return busy;}};
 }
-export function createHomeAutoTapFeedback(node){
+export function createHomeAutoTapFeedback(node, label = '자동'){
   let animation=null;
   return {show(amount){
-    node.textContent=`자동 +${fmtGold(amount)} G`;
+    node.textContent=`${label} +${fmtGold(amount)} G`;
     animation?.cancel();
     animation=node.animate?.([{opacity:0},{opacity:.85,offset:.2},{opacity:0}],{duration:420});
   },clear(){animation?.cancel();animation=null;}};

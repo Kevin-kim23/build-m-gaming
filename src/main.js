@@ -72,6 +72,9 @@ const session = createGameSession({
   },
   locks: navigator.locks,
   onError: reportError,
+  onAutoTouchIncome: amount => {
+    if (lifecycle.canRun && homeAutoTapHomeVisible(document)) revolverFeedback.show(amount);
+  },
   onChange: (next, changed) => {
     state = next;
     rosterDirty ||= changed;
@@ -96,6 +99,7 @@ function drawHomeField() {
   const world=fieldNavigation.sync(state);
   drawScene(canvas,state,$('#field-labels'),world);
 }
+window.addEventListener('character-art-ready',()=>{if(session.active)drawHomeField();});
 const battleUI = createBattleUI(session, gameAudio);
 const accessUI=createAccessUI({onExit:()=>{
   if(Capacitor.isNativePlatform())App.exitApp().catch(error=>reportError('app.exit',error));
@@ -127,7 +131,7 @@ const opening = createOpeningScreen({onStart: async () => {
   }, onError: reportError});
 const lifecycle = createGameLifecycle({session, opening, onPause: () => {
   homeAutoRuntime.reset();
-  homeAutoFeedback.clear();
+  homeAutoFeedback.clear();revolverFeedback.clear();
   guideUI.suspend();
   fieldNavigation.clear();
   battleUI.suspend();
@@ -136,13 +140,14 @@ const lifecycle = createGameLifecycle({session, opening, onPause: () => {
   gameAudio.music.configure({active:false});
 }});
 const homeAutoFeedback=createHomeAutoTapFeedback($('#home-auto-feedback'));
+const revolverFeedback=createHomeAutoTapFeedback($('#revolver-feedback'), '리볼버!');
 const homeAutoRuntime=createHomeAutoTapRuntime(session,{
   canRun:()=>lifecycle.canRun && homeAutoTapHomeVisible(document),
   onIncome:amount=>homeAutoFeedback.show(amount),
 });
 // Reset at both edges of a modal/guide pause, including very brief opens between clock ticks.
 document.addEventListener('toggle',event=>{
-  if(event.target.matches('dialog, #guide-spotlight')){homeAutoRuntime.reset();homeAutoFeedback.clear();}
+  if(event.target.matches('dialog, #guide-spotlight')){homeAutoRuntime.reset();homeAutoFeedback.clear();revolverFeedback.clear();}
 },true);
 function update() {
   gameAudio.configure({enabled:state.sound,volume:state.sfxVolume,active:session.active && lifecycle.canRun});

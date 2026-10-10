@@ -27,6 +27,6 @@ test('open personal details track rank and levels received from another window w
     s.gold=50_000_000_000;ui.sync();assert.equal(button.disabled,false);
     session.active=false;ui.sync();assert.equal(button.disabled,true);
     assert.equal(renders,count,'gold and lock changes must update fields, not entire markup');
-    s.personalLevels={...s.personalLevels,generalSword:20};ui.sync();assert.match(html,/최대 레벨을 달성/);
+    s.personalLevels={...s.personalLevels,generalSword:30};ui.sync();assert.match(html,/최대 레벨을 달성/);
   }finally{global.document=previous;}
 });

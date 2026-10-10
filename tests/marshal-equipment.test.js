@@ -83,7 +83,7 @@ test('v19 adds empty military slots and Lv.1 glaive while preserving all paid ge
   assert.equal(next.personalLevels.marshalGlaive,1);assert.equal(next.equipment.icbm,null);assert.equal(next.equipment.railgunTank,null);
   for(const key of ['swordActivatedAt','swordDurationMs','autoTouchActivatedAt','autoTouchDurationMs','autoTouchTicks'])assert.equal(next[key],s[key]);
   assert.deepEqual(next.equipment.tank,s.equipment.tank);
-  for(const patch of [{personalLevels:{...next.personalLevels,marshalGlaive:0}},{equipment:{...next.equipment,icbm:undefined}},{equipment:{...next.equipment,railgunTank:{level:31,count:1,deployed:false}}}])
+  for(const patch of [{personalLevels:{...next.personalLevels,marshalGlaive:0}},{equipment:{...next.equipment,icbm:undefined}},{equipment:{...next.equipment,railgunTank:{level:41,count:1,deployed:false}}}])
     assert.equal(parseSave(serializeSave({...next,...patch}),T),null);
   s.equipment.icbm={level:20,count:1,deployed:false};s.personalLevels.marshalGlaive=10;
   assert.equal(parseSave(serializeSave(s),T).equipment.icbm,null);assert.equal(parseSave(serializeSave(s),T).personalLevels.marshalGlaive,1);

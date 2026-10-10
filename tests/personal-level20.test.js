@@ -18,10 +18,10 @@ const T=1800000000000;
 const army=()=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf('특전원수')]-3000,sergeants:300,
   ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,gold:MAX_GOLD});
 
-test('all eight items upgrade every paid step exactly once, without random outcomes, up to 20',()=>{
+test('all eight items upgrade every paid step exactly once, without random outcomes, up to 30',()=>{
   for(const id of Object.keys(PERSONAL_EQUIPMENT)) {
     const s=army();let previous=0;
-    for(let level=1;level<20;level++) {
+    for(let level=1;level<30;level++) {
       const step=personalUpgradeStep(id,level);
       assert.ok(step.cost>previous&&step.cost<MAX_GOLD);previous=step.cost;
       s.gold=step.cost;
@@ -36,7 +36,7 @@ test('all eight items upgrade every paid step exactly once, without random outco
     s.gold=subtractMoney(cost,1);const poor=structuredClone(s);
     assert.equal(enhancePersonalEquipment(s,T,id).reason,'gold');assert.deepEqual(s,poor);
     assert.equal(enhancePersonalEquipment(freshState(T),T,id).reason,'locked');
-    assert.throws(()=>personalUpgradeStep(id,20),RangeError);
+    assert.throws(()=>personalUpgradeStep(id,30),RangeError);
     assert.equal(personalUpgradeStep(id,9).cost,PERSONAL_EQUIPMENT[id].baseUpgradeCost*256);
     for(let level=11;level<20;level++)assert.equal(personalUpgradeStep(id,level).cost,scaleMoney(personalUpgradeStep(id,level-1).cost,8,5));
     const table=personalUpgradeTableMarkup(id).body;
@@ -60,10 +60,10 @@ test('v29 preserves earned levels, exact wallet, equipment and running windows; 
   restored.equipment.tank.level=30;restored.swordDurationMs=220000;restored.autoTouchDurationMs=250000;
   assert.deepEqual(parseSave(serializeSave(restored),T),restored);
   for(const key of Object.keys(restored.personalLevels)) {
-    const bad=structuredClone(restored);bad.personalLevels[key]=21;
+    const bad=structuredClone(restored);bad.personalLevels[key]=31;
     assert.equal(parseSave(serializeSave(bad),T),null,key);
   }
-  const badGear=structuredClone(restored);badGear.equipment.tank.level=31;
+  const badGear=structuredClone(restored);badGear.equipment.tank.level=41;
   assert.equal(parseSave(serializeSave(badGear),T),null);
   for(const patch of [{personalLevels:restored.personalLevels},{equipment:restored.equipment},
     {swordDurationMs:220000},{autoTouchDurationMs:250000}])assert.equal(parseSave(serializeLegacySave({...old,...patch}),T),null);

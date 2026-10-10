@@ -8,20 +8,20 @@ import { exact, MAX_GOLD, serializeSave } from '../src/money.js';
 import { parseSave } from '../src/save.js';
 import { RANK_DEFINITIONS } from '../src/ranks.js';
 
-test('galaxy gear unlocks one per rank, retains exact affordable upgrade prices through30',()=>{
+test('galaxy gear unlocks one per rank, retains exact affordable upgrade prices through40',()=>{
   assert.equal(Object.keys(GALACTIC_EQUIPMENT).length,5);
   for(const gear of Object.values(GALACTIC_EQUIPMENT)){
     const power=RANK_DEFINITIONS.find(r=>r.name===gear.unlockRank).required;
     const s={...freshState(),soldiers:power-3000,sergeants:300,gold:MAX_GOLD};
     assert.equal(equipmentPurchaseOffer(s,gear.id).canBuy,true);
     assert.equal(equipmentPurchaseOffer({...s,soldiers:s.soldiers-1},gear.id).reason,'locked');
-    for(let level=0;level<30;level++){
+    for(let level=0;level<40;level++){
       const cost=enhancementCost(level,gear.id);
       assert.ok(exact(cost)>0n&&exact(cost)<=MAX_GOLD);
       assert.equal(exact(cost)%10000n,0n);
-      assert.ok(Number.isSafeInteger(equipmentStats(level,gear.id).tap));
+      assert.ok(exact(equipmentStats(level,gear.id).tap)>0n);
     }
-    assert.equal(enhancementCost(30,gear.id),null);
+    assert.equal(enhancementCost(40,gear.id),null);
     s.equipment[gear.id]={level:30,count:100000,deployed:true};
     const expected=BigInt(equipmentStats(30,gear.id).tap)*100000n;
     assert.equal(exact(equipmentIncome(s).tap),expected>MAX_GOLD?MAX_GOLD:expected);

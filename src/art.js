@@ -1,4 +1,5 @@
 import { drawModernCommand } from './modern-command-art.js';
+import { characterSprite, characterIndex, characterArtRevision, drawCharacterPortrait } from './character-art.js';
 import { layoutFieldWorld } from './field-world.js';
 import { fieldTheme, concreteTerrain } from './field-theme.js';
 import { ownedSchools } from "./field-schools.js";
@@ -14,7 +15,7 @@ import { FORMATIONS } from "./formations.js";
 import { UNITS } from "./units.js";
 import { deployedEquipment } from "./equipment.js";
 import { drawEquipmentOnGround } from "./equipment-art.js";
-// Every sprite is original geometry. Static terrain and sprites are cached.
+// Generated character sprites and original building geometry are cached.
 const sprites = new Map();
 const scenes = new WeakMap();
 function r(c, x, y, w, h, color) {
@@ -238,6 +239,10 @@ function building(c, id) {
   }
 }
 function sprite(id) {
+  if (UNITS[id]) {
+    const character=characterSprite(characterIndex(id));
+    if (character) return character;
+  }
   if (sprites.has(id)) return sprites.get(id);
   const type = UNITS[id] ?? FORMATIONS.find((item) => item.id === id);
   if (!type) throw new Error(`Unknown formation sprite: ${id}`);
@@ -264,6 +269,7 @@ function sprite(id) {
   return canvas;
 }
 export function drawFormationPortrait(canvas, id) {
+  if (UNITS[id] && drawCharacterPortrait(canvas,characterIndex(id))) return;
   const c = canvas.getContext("2d"),
     asset = sprite(id);
   c.clearRect(0, 0, canvas.width, canvas.height);
@@ -298,7 +304,7 @@ export function drawScene(canvas, count = 0, labelLayer = null, layout = null) {
     theme + ":" + fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level + "/" + (d.count ?? 1)).join(":") + ":" + schools.map(s => s.id + s.level).join(":") + ":" + (army.facilities??[]).map(id=>id+(army.facilityLevels?.[id]??1)).join(":");
   const world=layout??layoutFieldWorld(army,canvas.clientWidth/2,canvas.clientHeight/2);
   const {width,height}=world;
-  key+=":"+world.viewportWidth;
+  key+=":"+world.viewportWidth+":"+characterArtRevision();
   let cached = scenes.get(canvas);
   if (
     cached &&
@@ -319,7 +325,9 @@ export function drawScene(canvas, count = 0, labelLayer = null, layout = null) {
   c.drawImage(cached.ground, 0, 0);
   const {army:armyItems,schools:schoolItems,equipment:equipmentItems,facilities}=world;
   for (const item of armyItems) {
-    c.drawImage(sprite(item.id), item.x, item.y, item.width, item.height);
+    const asset=sprite(item.id);
+    const w=UNITS[item.id] ? Math.min(item.width,item.height*asset.width/asset.height) : item.width;
+    c.drawImage(asset, item.x+(item.width-w)/2, item.y, w, item.height);
   }
   // Equipment is parked from the left along the bottom of the same terrain.
   for (const item of equipmentItems) {

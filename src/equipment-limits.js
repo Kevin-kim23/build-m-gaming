@@ -1,1 +1,1 @@
-export const MILITARY_MAX_LEVEL = 30;
+export const MILITARY_MAX_LEVEL = 40;

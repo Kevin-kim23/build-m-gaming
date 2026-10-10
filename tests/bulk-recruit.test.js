@@ -20,7 +20,7 @@ const expectedBatchCost = (owned, type = 'soldier') =>
 
 test("level one command baton is previewed at major and automatically owned from lieutenant colonel", async () => {
   const { COMMAND_BATON, commandBatonStatus } = await import("../src/personal-equipment.js");
-  assert.equal(COMMAND_BATON.unlockRank,'중령');assert.equal(COMMAND_BATON.maxLevel,20);assert.equal(COMMAND_BATON.recruitAmount,100);
+  assert.equal(COMMAND_BATON.unlockRank,'중령');assert.equal(COMMAND_BATON.maxLevel,30);assert.equal(COMMAND_BATON.recruitAmount,100);
   assert.deepEqual(commandBatonStatus(army(639)), { visible: false, owned: false, level: 0 });
   assert.deepEqual(commandBatonStatus(army(640)), { visible: true, owned: false, level: 0 });
   assert.deepEqual(commandBatonStatus(army(1279)), { visible: true, owned: false, level: 0 });

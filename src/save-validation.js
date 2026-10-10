@@ -86,12 +86,12 @@ export function validateSave(s) {
     s.campaignStars.every((stars, index) => integer(stars, 3) && (stars === 0 || index < s.campaignCleared)), 'campaignStars');
   if (s.version >= 16) {
     requireSave(s.autoTouchActivatedAt === null || integer(s.autoTouchActivatedAt, s.lastAccrual), 'autoTouchActivatedAt');
-    const personalMax=s.version<30?10:GENERAL_SWORD.maxLevel;
+    const personalMax=s.version<30?10:s.version<35?20:GENERAL_SWORD.maxLevel;
     const swordMax=s.version>=19?GENERAL_SWORD.durationMs+(personalMax-1)*GENERAL_SWORD.durationStepMs:80000;
     requireSave(integer(s.swordDurationMs,swordMax)&&s.swordDurationMs>=GENERAL_SWORD.durationMs&&
       (s.swordDurationMs-GENERAL_SWORD.durationMs)%GENERAL_SWORD.durationStepMs===0,'swordDurationMs');
     const autoDuration=s.version>=19?s.autoTouchDurationMs:AUTO_TOUCH.durationMs;
-    requireSave(integer(autoDuration,AUTO_TOUCH.durationMs+((s.version<30?10:GENERAL_REVOLVER.maxLevel)-1)*AUTO_TOUCH.durationStepMs)&&
+    requireSave(integer(autoDuration,AUTO_TOUCH.durationMs+((s.version<30?10:s.version<35?20:GENERAL_REVOLVER.maxLevel)-1)*AUTO_TOUCH.durationStepMs)&&
       autoDuration>=AUTO_TOUCH.durationMs&&(autoDuration-AUTO_TOUCH.durationMs)%AUTO_TOUCH.durationStepMs===0,'autoTouchDurationMs');
     requireSave(integer(s.autoTouchTicks,Math.floor(autoDuration/AUTO_TOUCH.intervalMs)) &&
       (s.autoTouchActivatedAt !== null || s.autoTouchTicks === 0), 'autoTouchTicks');
@@ -115,7 +115,7 @@ export function validateSave(s) {
   if(s.version>=19){
     requireSave(s.personalLevels&&typeof s.personalLevels==='object'&&!Array.isArray(s.personalLevels),'personalLevels');
     for(const item of Object.values(PERSONAL_EQUIPMENT).filter(item=>item.introducedVersion<=s.version))
-      requireSave(integer(s.personalLevels[item.id],s.version<30?10:item.maxLevel)&&s.personalLevels[item.id]>=1,`personalLevels.${item.id}`);
+      requireSave(integer(s.personalLevels[item.id],s.version<30?10:s.version<35?20:item.maxLevel)&&s.personalLevels[item.id]>=1,`personalLevels.${item.id}`);
   }
   return gold;
 }

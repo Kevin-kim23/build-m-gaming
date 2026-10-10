@@ -1,5 +1,5 @@
 .auto-tap-card{margin-top:12px}
-#home-auto-feedback{position:absolute;top:30%;right:14px;max-width:calc(100% - 28px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none;user-select:none;opacity:0;color:#ffe3a4;font-size:12px;font-weight:700;text-shadow:0 1px 3px #17221b;z-index:3}
+#home-auto-feedback, #revolver-feedback{position:absolute;top:30%;right:14px;max-width:calc(100% - 28px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none;user-select:none;opacity:0;color:#ffe3a4;font-size:12px;font-weight:700;text-shadow:0 1px 3px #17221b;z-index:3}
 #test-purchase-modal{width:min(340px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;padding:24px;border:1px solid #d4be81;border-radius:14px;background:#253c30;color:#f0ead7;text-align:center}
 #test-purchase-modal::backdrop{background:#09160ddd}
 #test-purchase-modal h2{margin:0 0 16px;font-size:20px}
@@ -9,3 +9,5 @@
 #test-purchase-modal [data-test-purchase-cancel]{background:#778b6d}
 .recruit-rank-badge{position:absolute;top:1px;left:1px;width:24px;height:24px;border:1px solid #7b866155;background:#15291dc9;border-radius:4px;pointer-events:none;overflow:hidden;z-index:1}
 .recruit-rank-badge .insignia{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.58);transform-origin:center;min-width:32px;max-width:none;height:32px;margin:0}
+
+#revolver-feedback{right:auto;left:14px;top:38%;max-width:calc(100% - 28px);color:#ffd0a4}

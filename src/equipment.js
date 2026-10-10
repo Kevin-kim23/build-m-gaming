@@ -1,5 +1,5 @@
 import { MILITARY_MAX_LEVEL } from './equipment-limits.js';
-import { multiplyMoney, addMoney, exact, compactMoney, minMoney, MAX_GOLD } from './money.js';
+import { multiplyMoney, addMoney, scaleMoney, exact, compactMoney, minMoney, MAX_GOLD } from './money.js';
 import { GALACTIC_EQUIPMENT } from './galactic-equipment.js';
 import { LATE_EQUIPMENT } from './late-equipment-catalog.js';
 import { rankForArmy, RANKS } from "./ranks.js";
@@ -82,7 +82,7 @@ export const EQUIPMENT = Object.freeze({
 export const MAX_DEPLOYED_EQUIPMENT = Object.keys(EQUIPMENT).length;
 export const REPEAT_EQUIPMENT_LEVEL = 10;
 export const equipmentLevelLimit = state => enhancementLimitForFlag(divisionFlagStatus(state).level);
-export const equipmentStage = (id,level) => level <= 10 ? (EQUIPMENT[id].stages ?? EQUIPMENT_STAGES)[level] : ['금장 보강','빛나는 장갑','지휘 문양','은빛 광채','황금 코어','청광 패널','정예 문장','별빛 장갑','영광의 광채','최종 지휘관 사양','홍금 외장','루비 코어','홍금 보강판','태양 문양','진홍 장갑','홍염 동력부','황금 방호판','홍금 지휘 문장','태양의 광채','최종 홍금 사양'][level-11];
+export const equipmentStage = (id,level) => level <= 10 ? (EQUIPMENT[id].stages ?? EQUIPMENT_STAGES)[level] : ['금장 보강','빛나는 장갑','지휘 문양','은빛 광채','황금 코어','청광 패널','정예 문장','별빛 장갑','영광의 광채','최종 지휘관 사양','홍금 외장','루비 코어','홍금 보강판','태양 문양','진홍 장갑','홍염 동력부','황금 방호판','홍금 지휘 문장','태양의 광채','최종 홍금 사양','성운 외장','자수정 코어','은하 방호판','성운 문양','백금 장갑','성운 동력부','성광 방호판','은하 지휘 문장','초신성 광채','최종 은하 사양'][level-11];
 // Income saturates at the wallet limit before large offline multiplications.
 export const MAX_EQUIPMENT_COUNT = 100_000;
 export const ARTILLERY = EQUIPMENT.artillery;
@@ -108,8 +108,8 @@ export function equipmentStats(level, id = "artillery") {
   if (!Number.isInteger(level) || level < 0 || level > d.maxLevel)
     throw new RangeError("Invalid enhancement level");
   return {
-    passive: d.passive + level * d.passiveStep + d.passive * (3 * level * level) / 100,
-    tap: d.tap + level * d.tapStep + d.tap * (3 * level * level) / 100,
+    passive: addMoney(addMoney(d.passive,multiplyMoney(d.passiveStep,level)),scaleMoney(d.passive,3*level*level,100)),
+    tap: addMoney(addMoney(d.tap,multiplyMoney(d.tapStep,level)),scaleMoney(d.tap,3*level*level,100)),
   };
 }
 export const emptyEquipment = () =>
@@ -143,6 +143,11 @@ export function enhancementCost(level, id = "artillery") {
   if (GALACTIC_EQUIPMENT[id]) {
     if(level===d.maxLevel)return null;
     const numerator=exact(d.cost)*118n**BigInt(level),denominator=4n*100n**BigInt(level)*10000n;
+    return compactMoney((numerator+denominator-1n)/denominator*10000n);
+  }
+  if(level>=30){
+    if(level===d.maxLevel)return null;
+    const numerator=exact(d.cost)*7n**BigInt(level),denominator=4n*5n**BigInt(level)*10000n;
     return compactMoney((numerator+denominator-1n)/denominator*10000n);
   }
   return level === d.maxLevel
@@ -204,7 +209,7 @@ export function validEquipment(value, legacy = false, includeHelicopter = true, 
         !Array.isArray(g) &&
         Number.isInteger(g.level) &&
         g.level >= 0 &&
-        g.level <= (includeAircraft ? (saveVersion<30?20:EQUIPMENT[id].maxLevel) : 10) &&
+        g.level <= (includeAircraft ? (saveVersion<30?20:saveVersion<35?30:EQUIPMENT[id].maxLevel) : 10) &&
         typeof g.deployed === "boolean" &&
         (!requireCount || (Number.isSafeInteger(g.count) && g.count >= 1 &&
           g.count <= MAX_EQUIPMENT_COUNT && (g.count === 1 || g.level >= REPEAT_EQUIPMENT_LEVEL)))

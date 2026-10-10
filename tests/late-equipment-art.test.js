@@ -32,13 +32,13 @@ test('every military type has bounded and distinct red-gold trim from21 through3
     }
   } finally {if(previous===undefined)delete globalThis.document;else globalThis.document=previous;}
 });
-test('late ship home artwork keeps distinct detailed silhouettes, 31 cached stages and right-facing prows',()=>{
+test('late ship home artwork keeps distinct detailed silhouettes, 41 cached stages and right-facing prows',()=>{
   const previous=globalThis.document;globalThis.document={createElement:canvas};
   try {
     const signatures=new Set();
     for(const id of IDS) {
       const stages=new Set();
-      for(let level=0;level<=30;level++) {
+      for(let level=0;level<=40;level++) {
         const target=canvas();assert.equal(drawEquipment(target,level,id),true);
         const [source,x,y,w,h]=target.draws.at(-1);
         assert.deepEqual([source.width,source.height],[330,186]);
@@ -55,7 +55,7 @@ test('late ship home artwork keeps distinct detailed silhouettes, 31 cached stag
           signatures.add(JSON.stringify(source.ops));
         }
       }
-      assert.equal(stages.size,31,'each upgrade changes the artwork');
+      assert.equal(stages.size,41,'each upgrade changes the artwork');
     }
     assert.equal(signatures.size,3);
   }finally{if(previous===undefined)delete globalThis.document;else globalThis.document=previous;}
@@ -65,7 +65,7 @@ test('late ship battle artwork fits every upgrade and keeps enemy colors separat
   try {
     for(const id of IDS)for(const side of ['player','enemy']) {
       const stages=new Set();
-      for(let level=0;level<=30;level++) {
+      for(let level=0;level<=40;level++) {
         const asset=unitSprite(id,side,level);
         assert.equal(unitSprite(id,side,level),asset);
         assert.equal(asset.width,SPRITE_SIZE.width*3);assert.equal(asset.height,SPRITE_SIZE.height*3);
@@ -76,7 +76,7 @@ test('late ship battle artwork fits every upgrade and keeps enemy colors separat
         assert.equal(colors.has(side==='enemy'?'#688768':'#bc8480'),false);
         stages.add(JSON.stringify(asset.ops));
       }
-      assert.equal(stages.size,31);
+      assert.equal(stages.size,41);
     }
   }finally{if(previous===undefined)delete globalThis.document;else globalThis.document=previous;}
 });

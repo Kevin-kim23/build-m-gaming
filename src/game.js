@@ -1,13 +1,13 @@
 import { facilityOffer, facilityUpgradeOffer, withFacilityIncome } from './facilities.js';
 import { isPotion, potionStatus, potionBonusMs, consumePotion, validPotionTime } from './potions.js';
 export { parseSave } from './save.js';
-import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMoney } from './money.js';
+import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMoney, scaleMoney } from './money.js';
 import { pacedRecruitCost } from './growth-balance.js';
 export { MAX_GOLD, serializeSave } from './money.js';
 import { rankForArmy } from "./ranks.js";
 import { UNITS, armyPower, troopIncome, unitAccess } from "./units.js";
 import { schoolOffer } from "./schools.js";
-import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration, withPersonalIncome, withPersonalEquipmentIncome } from "./personal-equipment.js";
+import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, bulkRecruitDiscountPercent, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration, withPersonalIncome, withPersonalEquipmentIncome } from "./personal-equipment.js";
 import { personalUpgradeOffer } from './personal-enhancement.js';
 import { settleAutoTouch } from './auto-touch.js';
 import { withCampaignIncome } from './campaign-rewards.js';
@@ -72,14 +72,14 @@ function batchRecruitCost(owned, type) {
     cached = { owned, cost };
     batchCosts.set(type, cached);
   }
-  // Keep sums above the wallet limit unaffordable, rather than discounting them.
+  // Keep the full exact sum, even above the wallet limit, before any batch discount.
   return cached.cost;
 }
 export function recruitOffer(s, type = "soldier", quantity = 1) {
   const unit = recruitUnit(type, quantity), bulk = quantity > 1;
   const power = armyPower(s),
     owned = s[unit.field] ?? 0,
-    cost = bulk ? batchRecruitCost(owned, type) : unitCost(owned, type);
+    cost = bulk ? scaleMoney(batchRecruitCost(owned,type),100-bulkRecruitDiscountPercent(s),100) : unitCost(owned, type);
   const baton = bulk ? bulkRecruitAccess(s, type) : null;
   const access = unitAccess(s, unit);
   const locked = !access.unlocked || (bulk && !baton.unlocked);
@@ -102,7 +102,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
     canBuy: reason === null,
   };
 }
-export function accrue(s, now = Date.now()) {
+export function accrue(s, now = Date.now(), onAutoTouchIncome) {
   const elapsed = Math.min(MAX_OFFLINE_MS, Math.max(0, Math.floor(now - s.lastAccrual)));
   if (!elapsed) return 0;
   // Split at the potion boundary, including capped offline time, without per-second loops.
@@ -115,6 +115,7 @@ export function accrue(s, now = Date.now()) {
   s.lastAccrual = now;
   const automatic = settleAutoTouch(s, now, baseTapIncome(s), MAX_GOLD);
   if (s.gold === MAX_GOLD) s.incomeRemainder = 0;
+  if (automatic > 0) onAutoTouchIncome?.(automatic, elapsed);
   return addMoney(actual,automatic);
 }
 export function tapGold(s, now = Date.now()) {
