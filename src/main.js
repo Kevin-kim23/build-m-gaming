@@ -108,6 +108,7 @@ const infoUI = createInfoPanel(session);
 const settingsUI = createSettingsUI(session, infoUI, gameAudio, () => guideUI.resume(), accessUI);
 const offlineUI = createOfflineRewardUI(session,{showAd:createOfflineNativeAd({
   isActive:()=>session.active,requireConsent:()=>accessUI.ensureAds(),
+  suspendAudio:()=>gameAudio.suspendForAd(),
 })});
 const openingBars = createOpeningSystemBars({native: Capacitor.isNativePlatform(), bars: SystemBars, onError: reportError});
 openingBars.sync();

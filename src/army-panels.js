@@ -43,7 +43,8 @@ export function createArmyPanels(session, audio, access) {
   const schools = Object.values(SCHOOLS);
   let schoolLevels = [];
   const state = () => session.state;
-  const potionController=createPotionController(session,{showAd:createPotionAd({isActive:()=>session.active,requireConsent:()=>access?.ensureAds()??null}),onChange:()=>{
+  const potionController=createPotionController(session,{showAd:createPotionAd({isActive:()=>session.active,requireConsent:()=>access?.ensureAds()??null,
+    suspendAudio:()=>audio.suspendForAd()}),onChange:()=>{
     if(dialog.open && activePanel==='shop' && category==='items')renderPotions(state(),dialog,{busy:potionController.busy,busyItem:potionController.busyItem,active:session.active});
   }});
   const homeAutoPurchase=createHomeAutoTapPurchase(session,{showPurchase:createAutoTapTestPurchase(),onChange:()=>{

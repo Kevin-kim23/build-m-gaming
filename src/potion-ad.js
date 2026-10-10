@@ -14,21 +14,24 @@ export async function prepareAdPrivacy(){
 }
 // A fullscreen Android ad pauses the session; wait for its save lock on return.
 function createRewardAd({native=()=>Capacitor.getPlatform()==='android',plugin=ads,
-  requireConsent=async()=>null,isActive=()=>true,delay=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}) {
+  requireConsent=async()=>null,isActive=()=>true,suspendAudio=async()=>()=>{},
+  delay=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}) {
   let busy=false;
   return async ({itemId})=>{
     if(!native()||busy||!(isPotion(itemId)||itemId==='offline-income'))return {status:'unavailable'};
     busy=true;
+    let restoreAudio;
     try {
       const record=await requireConsent();
       if(!adsAllowed(record))return {status:'cancelled'};
       const configured=await configureAdAccess(record,plugin,native);
       if(configured?.status!=='ready')return {status:'unavailable'};
+      restoreAudio=await suspendAudio();
       const result=await plugin.showRewarded({itemId});
       if(result?.status!=='rewarded')return {status:result?.status==='cancelled'?'cancelled':'unavailable'};
       for(let i=0;!isActive()&&i<100;i++)await delay(100);
       return {status:isActive()?'rewarded':'unavailable'};
-    } finally {busy=false;}
+    } finally {try {restoreAudio?.();} finally {busy=false;}}
   };
 }
 export function createPotionAd(options={}) {
