@@ -3,7 +3,6 @@ import { FORMATIONS } from './formations.js';
 import { RANK_DEFINITIONS, rankForArmy } from './ranks.js';
 import { drawFormationPortrait } from './art.js';
 import { openDetail } from './detail-popup.js';
-import { drawCharacterPortrait } from './character-art.js';
 
 // Guide labels only. Promotion thresholds, save values and other number labels
 // retain their full precision; e.g. 5,242,880 is displayed as 524만, never 525만.
@@ -24,7 +23,7 @@ function rankFormationLabel(rank) {
 }
 export function rankGuideMarkup(state, insignia) {
   const rank = rankForArmy(state);
-  const steps = RANK_DEFINITIONS.map((r, i) => `<div class="rank-step${i <= rank ? ' reached' : ''}${i === rank ? ' current' : ''}" data-rank="${i}">${insignia(i)}<canvas class="rank-character" data-character="${i}" width="96" height="120" role="img" aria-label="${r.name} 캐릭터"></canvas><b>${r.name}</b><small>${compactGuidePower(r.required)} 전력</small><em>${i >= 4 ? rankFormationLabel(r) : ''}</em></div>`).join('');
+  const steps = RANK_DEFINITIONS.map((r, i) => `<div class="rank-step${i <= rank ? ' reached' : ''}${i === rank ? ' current' : ''}" data-rank="${i}">${insignia(i)}<b>${r.name}</b><small>${compactGuidePower(r.required)} 전력</small><em>${i >= 4 ? rankFormationLabel(r) : ''}</em></div>`).join('');
   const formations = FORMATIONS.filter((f) => f.id !== 'soldier').slice().reverse()
     .map((f) => `<div><canvas data-formation="${f.id}" width="96" height="82" role="img" aria-label="${f.name} 건물 아이콘"></canvas><b>${f.name}</b><span>${compactGuidePower(f.size)} 전력</span></div>`).join('');
   return `<div class="rank-guide">
@@ -36,6 +35,5 @@ export function rankGuideMarkup(state, insignia) {
 export function openRankGuide(state, insignia) {
   const dialog = openDetail({ kicker: 'RANK', title: '계급과 편제', body: rankGuideMarkup(state, insignia) });
   dialog.querySelectorAll('[data-formation]').forEach((c) => drawFormationPortrait(c, c.dataset.formation));
-  dialog.querySelectorAll('[data-character]').forEach(c=>drawCharacterPortrait(c,Number(c.dataset.character)));
   dialog.querySelector('.rank-step.current')?.scrollIntoView?.({ block: 'center' });
 }
