@@ -66,7 +66,7 @@ test('player attack and healing upgrade rewards increase for players while enemy
   const stage=STAGES[79];let battle=createBattle(s,80,{equipment:['tank']});
   battle=until(battle,stage.spawnMs+3000); // 적이 출격할 때까지
   const enemy=battle.enemy.units[0];assert.ok(enemy);
-  assert.ok(Math.abs(enemy.damage-equipmentCombatStats(enemy.id,stage.recommendedLevel).damage*.55*.55)<1e-6);
+  assert.ok(Math.abs(enemy.damage-equipmentCombatStats(enemy.id,stage.recommendedLevel,undefined,1,true,false).damage*.55*.55)<1e-6);
 });
 test('personal cards have only detail buttons, while home skill controls remain',()=>{
   const s=army('준원수'),html=personalMarkup(s);

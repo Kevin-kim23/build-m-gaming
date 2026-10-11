@@ -43,14 +43,14 @@ export function normalizeLoadout(state, input = {}) {
   return { equipment: equipmentIds.filter((id) => wanted.includes(id) && !!state.equipment?.[id]).slice(0, battleSlots(state)) };
 }
 
-const scaleHp = (id, level, count, power, upgrades) => {
-  const stats = equipmentCombatStats(id, level, power, count, upgrades);
+const scaleHp = (id, level, count, power, upgrades, playerBonus) => {
+  const stats = equipmentCombatStats(id, level, power, count, upgrades, playerBonus);
   // 체력은 장비 종류와 강화 단계로 결정된다.
   return { stats, hp:stats.hp };
 };
 
 function makeUnit(battle, side, id, level, count, power, modifier = 1, upgrades = true, stack = 1, lane = 1) {
-  const trait = UNIT_TRAITS[id], scaled = scaleHp(id, level, count, power, upgrades), stats = scaled.stats, hp = scaled.hp * stack;
+  const trait = UNIT_TRAITS[id], scaled = scaleHp(id, level, count, power, upgrades, side === "player"), stats = scaled.stats, hp = scaled.hp * stack;
   modifier *= stack;
   const dir = side === "player" ? 1 : -1, startX = side === "player" ? 40 : BATTLE_RULES.laneLength - 40;
   return {
@@ -138,7 +138,7 @@ function spawnEnemy(b, stage) {
 
 function step(b, stage) {
   const dt = BATTLE_RULES.stepMs / 1000, now = b.elapsedMs, L = BATTLE_RULES.laneLength;
-  b.enemy.mana=Math.min(100,b.enemy.mana+BATTLE_RULES.manaPerSecond*dt);
+  b.enemy.mana=Math.min(100,b.enemy.mana+BATTLE_RULES.enemyManaPerSecond*dt);
   b.mana = Math.min(BATTLE_RULES.manaMax, b.mana + BATTLE_RULES.manaPerSecond * dt);
   if (now >= b.enemy.nextSpawnMs) spawnEnemy(b, stage);
   const damage = new Map(), heal = new Map();

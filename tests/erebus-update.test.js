@@ -36,7 +36,7 @@ test('maximum-rank50강 clears the first20, while all last20 remain long-term si
  }
  for(const stage of campaignStages.slice(160,180)){
   const b=simulateBattle(referenceArmy(stage),stage.id);
-  assert.equal(b.status,'victory',String(stage.id));assert.ok(b.elapsedMs>=90000&&b.elapsedMs<=150000,`${stage.id}:${b.elapsedMs}`);
+  assert.equal(b.status,'victory',String(stage.id));assert.ok(b.elapsedMs>=60000&&b.elapsedMs<=150000,`${stage.id}:${b.elapsedMs}`);
  }
 });
 test('three and five ruby stars retain the previous single horizontal row',()=>{

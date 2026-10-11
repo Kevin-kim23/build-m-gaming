@@ -31,6 +31,7 @@ export function medalSvg(id) {
     return svg;
   }
   const tier = definition.tier;
+  if(tier>=19){const svg=galacticFormationMedalSvg(tier-18).replaceAll("#69478e","#202027").replaceAll("#bb8253","#bd304c").replaceAll("#d5ae66","#b8c3d3").replaceAll("#ffe3a3","#f4f7ff").replaceAll("#493063","#101015").replaceAll("#8760ae","#793044").replaceAll("#edc488","#ff889a").replaceAll("#8d572f","#751c31");cache.set(id,svg);return svg;}
   if(tier>=14){const svg=galacticFormationMedalSvg(tier-13);cache.set(id,svg);return svg;}
   const [ribbon, stripe, metal, shine] = palettes[tier];
   const pixels = [];

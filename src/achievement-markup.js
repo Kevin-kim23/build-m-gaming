@@ -13,7 +13,7 @@ export function medalShelfMarkup() {
 
 export function achievementCardMarkup(state, definition, selectedId, hiddenIds = []) {
   const progress = achievementProgress(state, definition.id), earned = progress.earned;
-  const completed = earned ? progress.required : Math.min(progress.current, progress.required);
+  const completed = earned ? progress.required : (progress.current < progress.required ? progress.current : progress.required);
   return `<article class="achievement-card${earned ? " earned" : " locked"}${selectedId === definition.id ? " selected" : ""}" data-achievement="${definition.id}">
     <div class="achievement-medal">${medalSvg(definition.id)}</div>
     <div class="achievement-card-content"><div class="achievement-card-heading"><h3>${definition.title}</h3><span class="achievement-status">${earned ? "획득 완료" : "도전 중"}</span></div>

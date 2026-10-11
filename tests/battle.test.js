@@ -84,7 +84,7 @@ test('advancing turret fire leaves the input battle unchanged and reproducible',
   assert.notEqual(first.enemy.turret.nextShotMs,b.enemy.turret.nextShotMs);
 });
 
-test("mana: starts at 40, fills 8 per second up to 100, and a card needs enough mana and no cooldown", () => {
+test("mana: starts at 60, fills 10 per second up to 100, and a card needs enough mana and no cooldown", () => {
   let b = createBattle(army(), 1);
   assert.equal(b.mana, BATTLE_RULES.manaStart);
   assert.equal(deploy(b, "unknown"), b);
@@ -156,7 +156,7 @@ test("enemy sends its stage-type pool over time with stage stats", () => {
     assert.ok(b.enemy.units.length >= 2);
     assert.deepEqual(b.enemy.units.slice(0, 2).map((u) => u.id), [type.pool[0],type.pool[1%type.pool.length]]);
     const u = b.enemy.units[0];
-    assert.ok(Math.abs(u.damage - equipmentCombatStats(u.id, stage.recommendedLevel).damage * .55 * .55) < 1e-6);
+    assert.ok(Math.abs(u.damage - equipmentCombatStats(u.id, stage.recommendedLevel, undefined, 1, true, false).damage * .55 * .55) < 1e-6);
   }
 });
 

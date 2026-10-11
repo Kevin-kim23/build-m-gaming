@@ -15,7 +15,7 @@ test('every medal renders after the five formations and four nations expand the 
 });
 
 test('five galactic formation medals have distinct copper stars, purple enamel and correct renamed titles',()=>{
-  const newAwards=FORMATION_ACHIEVEMENTS.slice(-5),svgs=newAwards.map(a=>medalSvg(a.id));
+  const newAwards=FORMATION_ACHIEVEMENTS.filter(a=>a.id.startsWith("galactic")).slice(-5),svgs=newAwards.map(a=>medalSvg(a.id));
   assert.equal(newAwards.length,5);assert.equal(new Set(svgs.map(svg=>svg.replace(/#[\da-f]{6}/gi,'color'))).size,5);
   for(const [i,svg]of svgs.entries()){
     assert.equal((svg.match(/class="galactic-medal-star"/g)??[]).length,i+1);

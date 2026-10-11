@@ -11,8 +11,11 @@ export const BATTLE_RULES = Object.freeze({
   lanes: 3,                // 세로 레인 수(왼쪽·가운데·오른쪽). 아래 우리 기지에서 위 적 기지로 올라간다
   laneLength: 1000,        // 레인 길이(우리 기지 0 ~ 적 기지 1000)
   manaMax: 100,
-  manaStart: 40,
-  manaPerSecond: 8,
+  manaStart: 60,
+  manaPerSecond: 10,
+  enemyManaPerSecond: 8,
+  playerDamageMultiplier: 1.2,
+  playerHpMultiplier: 1.15,
   healPercent: 0.12,       // 수송기가 주기마다 주변 아군에게 회복하는 최대 체력 비율
   turretRange: 280,        // 기지 포탑 사거리·간격·세기(전력 기준 배수)·요새 배율
   turretIntervalMs: 2000,
@@ -116,7 +119,7 @@ export function combatScale(totalPower) {
   return totalPower / BATTALION_SIZE;
 }
 
-export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, count = 1, playerUpgrades = true) {
+export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, count = 1, playerUpgrades = true, playerBonus = true) {
   if (!Number.isSafeInteger(count) || count < 1 || count > MAX_EQUIPMENT_COUNT) throw new RangeError("Invalid equipment count");
   const type = EQUIPMENT[id];
   if (!type || !Number.isInteger(level) || level < 0 || level > type.maxLevel)
@@ -130,8 +133,8 @@ export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, cou
   const copies=playerUpgrades?1:count;
   return {
     growth,
-    hp:UNIT_TRAITS[id].hp*growth*copies*scale,
-    damage: copies * base.damage * growth * scale,
+    hp:UNIT_TRAITS[id].hp*growth*copies*scale*(playerBonus ? BATTLE_RULES.playerHpMultiplier : 1),
+    damage: copies * base.damage * growth * scale * (playerBonus ? BATTLE_RULES.playerDamageMultiplier : 1),
     ...(base.healing ? { healing:copies*base.healing*growth*scale } : {}),
     intervalMs: Math.max(
       BATTLE_RULES.stepMs,

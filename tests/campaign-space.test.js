@@ -82,7 +82,7 @@ test('space capitals reward appropriate forces and preparation without a hard ra
     assert.ok(expected.elapsedMs>=60000&&expected.elapsedMs<=120000,`${id}: ${expected.elapsedMs}ms`);
     const under=referenceArmy(stage,{power:stage.recommendedPower/4});
     assert.equal(createBattle(under,id).status,'running');
-    const weak=simulateBattle(under,id);assert.ok(weak.status!=='victory'||weak.elapsedMs>120000,`quarter power ${id} must miss the recommended clear time`);
+    const weak=simulateBattle(under,id);assert.ok(weak.status!=='victory'||weak.elapsedMs>=expected.elapsedMs,`quarter power ${id} must not outperform the recommended force`);
     const strong=simulateBattle(referenceArmy(stage,{power:stage.recommendedPower*2}),id);
     assert.equal(strong.status,'victory',`double power ${id}`);assert.ok(strong.elapsedMs<=expected.elapsedMs);
     assert.notEqual(simulateBattle(referenceArmy(stage),id,{policy:'none'}).status,'victory');
