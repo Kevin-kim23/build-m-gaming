@@ -1,8 +1,32 @@
-# 닉네임 운영 도구 · 준비안 · 2026-10-12
+# 닉네임 운영 도구 · 준비안 · 0.81.2 · 2026-10-12
 
 사용자는 **본인만 신고를 검토**하고, 조치는 **경고·강제 기본 닉네임 부여**로 정했다. 잘못된 신고는 기각하고 오조치는 복원할 수 있도록 준비한다. 이의제기는 기존 문의 이메일로 받으며, 처리·복원 기록은 완료 후 90일 보관한다.
 
 현재는 코드 준비 상태다. 실제 관리자 권한 설정, 배포, 관리자 로그인과 신고 처리는 수행하지 않았다.
+
+## 관리자 실행 계정 필수 설정 — 코드 준비만 완료
+
+**호출 계정**은 관리자 요청을 보낼 수 있는 신분이고, **실행 계정**은 요청을 받은 함수가 DB에 접근할 때 사용하는 신분이다. 0.81.2는 후자를 기본 실행 계정에 맡기지 않도록 MODERATION_RUNTIME_SERVICE_ACCOUNT 설정을 필수로 받는다. 계정을 생성하거나 IAM 권한을 주는 기능은 아니다.
+
+- 기본값 없는 일반 문자열 defineString을 MODERATION_HTTP_OPTIONS.serviceAccount에 연결한다. 값은 **전체 사용자 관리 서비스 계정 이메일**이어야 하며 단축 이름·기본 계정 표기·빈 값은 거부한다. 이름·이메일 자체는 비밀키가 아니지만 실제 이름은 사용자가 승인 후 프로젝트별로 생성하여 입력한다.
+- 사용자가 개발은 **server/.env.budae-kiugi-dev**, 운영은 **server/.env.budae-kiugi-prod**에 같은 프로젝트의 실행 계정 이메일을 입력한다. 호출 전용 계정과 별개인지, 실제로 존재하고 필요한 권한만 있는지는 별도로 확인해야 한다. 현재 이 실제 확인은 미완료다.
+- **tools/check-moderation-runtime.mjs**가 game 코드베이스의 predeploy에 연결되어 있다. 이 코드베이스의 **모든 Functions 배포**에 적용되며, GCLOUD_PROJECT가 위 두 프로젝트 중 하나이고 소스 기준 위치의 정확한 프로젝트 파일에 유효한 같은 프로젝트 이메일이 있는지 검사한다. 셸 환경변수·공용 .env·.env.local만으로는 대신할 수 없다.
+- 사전 검사는 값·파일 내용을 출력하지 않고 설정 파일도 변경하지 않는다. 계정 존재·IAM·호출 계정과의 분리는 검사하지 않는다. 런타임의 누락·형식 오류는 **DB 서비스 생성·접근 전 503 / moderation-runtime-unconfigured**로 차단한다.
+- demo 에뮬레이터도 매개변수를 읽으므로 사용자가 **server/.env.local**에 형식이 맞는 합성 이메일을 준비한다. 실제 서비스 계정 없이 로컬 검증할 수 있고 자동 테스트도 합성 이메일만 사용한다. 계정이나 IAM을 생성하지 않으며, 에뮬레이터 성공은 실제 IAM 확인 결과가 아니다.
+- 합성 설정을 적용해 시작한 에뮬레이터에서 tools/moderation-emulator-check.mjs를 실행한다. 무인증 요청은 **403이어야 통과**한다. 미설정 503은 설정 안내와 함께 실패하며, 인증 거부 성공으로 대신 인정하지 않는다.
+
+**나머지 8개 함수는 아직 실행 계정 미지정이다.** callable 6개와 예약 2개를 아래 네 그룹으로 분리하는 추천안은 사용자 미승인 상태다. 이번 관리자 설정 보완으로 함께 분리되었다고 보고하지 않는다.
+
+| 권장 그룹 | 함수 | 검토할 작업 권한 |
+| --- | --- | --- |
+| 일반 5개 | readProfile, createProfile, readCloudSave, saveCloudProgress, reportNickname | Firestore 읽기·생성·갱신, Auth 사용자 조회 |
+| 탈퇴 1개 | deleteGameAccount | Firestore 읽기·생성·갱신·검색·삭제, Auth 사용자 조회·삭제 |
+| 삭제 재시도 1개 | retryAccountDeletions | Firestore 읽기·생성·갱신·검색·삭제, Auth 사용자 삭제 |
+| 만료 정리 1개 | purgeExpiredServerRecords | Firestore 읽기·생성·갱신·검색·삭제, Auth 사용자 조회 |
+
+조회 함수도 호출 제한 기록을 생성·갱신하고 예약 함수도 잠금·진행 위치를 기록하므로, 이름만 보고 읽기 전용 또는 삭제 전용 권한으로 정하면 안 된다. 위 표는 코드에 필요한 작업의 후보이며 실제 IAM 역할·분리 구현은 별도 승인과 검증이 남았다. 전체 9개 함수의 현재 상태, 중단 조건과 환경별 절차는 [배포 실행 순서 초안](DEPLOY_RUNBOOK_DRAFT.md)을 따른다.
+
+공식 문서 확인(2026-10-12): [매개변수·환경 파일](https://firebase.google.com/docs/functions/config-env), [실행 서비스 계정 지정](https://firebase.google.com/docs/functions/manage-functions#set_a_service_account), [predeploy 검사](https://firebase.google.com/docs/cli#hooks). 이 문서는 배포·계정 생성·콘솔 변경 승인을 대신하지 않는다.
 
 ## 비공개 경로와 사용 순서
 
@@ -38,14 +62,14 @@ moderateNicknames는 onRequest 방식의 비공개 HTTP 함수이며, 사용자 
 1. 본인 Google 계정에 2단계 인증을 설정하고 보안키·패스키와 별도 복구 수단을 준비한다. 복구 코드, 비밀번호, 토큰은 채팅·Git·작업일지에 쓰지 않는다.
 2. 관리자 호출 전용 서비스 계정과 실제 DB에 접근하는 함수 실행 계정을 분리한다. 호출 계정에는 해당 비공개 Cloud Run 함수의 run.invoker 권한만, 본인 계정에는 그 호출 계정의 단기 토큰 발급 권한만 부여하는 안을 검토한다. 본인 외 임의의 Editor·Owner나 플레이어에게 관리 권한을 주지 않는다.
 3. 로컬에서는 승인 후 본인이 설정한 서비스 계정 대리 인증 방식의 ADC를 사용한다. 서비스 계정 JSON 비밀키는 다운로드하거나 저장소에 넣지 않는다. 함수 URL과 주체 설정은 비공개 환경에서 프로젝트별로 구분한다.
-4. MODERATION_ADMIN_AUDIENCE에는 정확한 비공개 함수 URL, MODERATION_ADMIN_SUBJECT에는 승인한 호출 계정의 Google 숫자 subject를 설정한다. 이메일이나 클라이언트가 보낸 admin:true 값으로 권한을 판단하지 않는다.
+4. MODERATION_ADMIN_AUDIENCE에는 정확한 비공개 함수 URL, MODERATION_ADMIN_SUBJECT에는 승인한 호출 계정의 Google 숫자 subject를 설정한다. MODERATION_RUNTIME_SERVICE_ACCOUNT는 이와 별개로 DB 접근에 사용할 실행 계정의 전체 이메일이다. 실행 계정 이메일이나 클라이언트가 보낸 admin:true 값으로 호출 권한을 판단하지 않는다. 숫자 subject·토큰·키·환경 파일 원문은 Git·문서·로그에 남기지 않는다.
 5. Cloud Run의 IAM 인증에는 X-Serverless-Authorization, 함수 내부의 서명 검증에는 Authorization 헤더를 사용한다. 두 헤더의 원문을 로그·오류·분석에 기록하지 않는다. 관리 도구도 토큰을 화면에 출력하지 않는다.
 6. 함수 실행 계정에는 필요한 Firestore 작업 권한만 검토하며, 이 관리자 함수에 Auth 계정 삭제 권한을 부여하지 않는다. Firestore 서버 IAM만으로 컬렉션별 접근을 완전히 분리할 수 없으므로 코드의 범위 검사와 IAM 변경 감사를 함께 유지한다. 클라이언트의 Firestore 직접 접근은 계속 거부한다.
 7. 계정 분실이나 침해가 발생하면 본인이 2단계 인증 복구 → 관리 호출 권한 회수·호출 계정 교체 → 변경 기록 확인 → 개발 환경에서 거부·성공 재검증 순서로 복구한다. 비공개 경로를 임시로 공개하거나 2단계 인증을 상시 해제하지 않는다.
 8. IAM·ADC·주체 설정을 실제로 적용하고 본인의 호출 성공과 다른 계정의 거부를 확인하기 전에는 운영 준비 완료로 표시하지 않는다. 이번 작업에서는 해당 설정을 변경하지 않았다.
 
-현재 비공개 HTTP 코드만으로 함수의 기본 실행 서비스 계정이 최소 권한 계정으로 자동 분리되지는 않는다. 별도 실행 계정 생성과 배포 옵션은 비용·권한 설정 승인안에 포함하고, 실제 IAM 적용 후 검증한다.
+관리자 함수의 serviceAccount 배포 옵션 연결은 0.81.2에 준비했다. 실제 계정 생성·최소 권한 부여·호출 계정과의 분리는 아직 미확인이다. 나머지 사용자·예약 8개의 분리안도 미승인·미완료이며, 비용·권한 변경 보고와 별도 승인 후 진행한다.
 
 참고: [Google 단기 ID 토큰](https://docs.cloud.google.com/docs/authentication/get-id-token), [Cloud Run 인증](https://docs.cloud.google.com/run/docs/authenticating/service-to-service), [서비스 계정 키의 대안](https://docs.cloud.google.com/iam/docs/best-practices-for-managing-service-account-keys).
 
-**정책 동기화 필요.** 문의 주소는 기존 앱의 주소를 재사용한다. 별도 이메일 전송이나 공개 게시를 수행하지 않았다.
+**0.81.2 실행 계정 설정 보완은 정책 영향 없음. 기존 신고·보관·관리 기능의 정책 동기화는 계속 미완료다.** 문의 주소는 기존 앱의 주소를 재사용한다. 별도 이메일 전송, 방침·약관 번호 변경, 공개 게시를 수행하지 않았다.

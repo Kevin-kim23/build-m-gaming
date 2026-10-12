@@ -1,6 +1,6 @@
 # 배포 실행 순서 초안 — 실행 금지
 
-작성·공식 문서 확인: **2026-10-12** / 대상 코드: **0.81.1** (승인된 기능·정책 기준은 0.81.0에서 유지)
+작성·공식 문서 확인: **2026-10-12** / 대상 코드: **0.81.2** (승인된 기능·정책 기준은 0.81.0에서 유지)
 
 **이 문서는 검토용 초안이다. 작성 과정에서 배포, 로그인, 결제, 예산, IAM, 콘솔 설정을 실행하지 않는다.** 단계별 비용·변경 범위를 사용자가 승인한 뒤에만 해당 단계를 시작한다. 개발 프로젝트 **budae-kiugi-dev**에서 모든 필수 확인을 PASS한 다음, **별도 운영 승인**을 받고 **budae-kiugi-prod**에서 같은 절차를 반복한다.
 
@@ -52,7 +52,7 @@
 1. 본인 Google 계정에 2단계 인증을 준비하고, 보안키·패스키 및 별도 복구 수단을 확인한다. 복구 코드와 인증 화면을 채팅이나 작업일지에 붙이지 않는다. [Google 2단계 인증](https://support.google.com/accounts/answer/185839)
 2. 같은 개발 프로젝트의 **IAM 및 관리자 → 서비스 계정 → 서비스 계정 만들기**에서 관리자 **호출 전용** 계정을 만든다. 계정 이름은 승인 시 사용자가 정한다. 프로젝트 전체 Editor·Owner·Firestore 권한을 호출 계정에 주지 않는다. **키 만들기·JSON 키 다운로드는 하지 않는다.** [서비스 계정 만들기](https://docs.cloud.google.com/iam/docs/service-accounts-create)
 3. 본인 사용자 계정에만 이 호출 계정의 **Service Account Token Creator** 권한을 부여한다. 권한 범위는 해당 서비스 계정 하나다. 호출 계정에는 배포된 관리자 함수의 Cloud Run 서비스에 대한 **Cloud Run Invoker**만 부여한다. 후자의 권한은 관리 함수가 만들어진 뒤 4단계에서 실제 리소스를 확인하고 설정한다. [대리 인증 권한](https://docs.cloud.google.com/docs/authentication/use-service-account-impersonation), [2세대 함수 호출 권한](https://docs.cloud.google.com/functions/docs/securing/authenticating)
-4. 관리자 함수의 **실행 계정**은 호출 계정과 분리한다. 실행 계정에는 필요한 Firestore 작업 권한만 검토하며 Auth 계정 삭제 권한을 주지 않는다. 현재 소스의 기본 실행 계정이 자동으로 최소 권한 계정으로 분리된다고 가정하지 않는다. 별도 실행 계정과 serviceAccount 배포 옵션을 승인안에 반영하고 검증해야 한다.
+4. **호출 계정**은 관리자 요청을 보낼 자격이고, **실행 계정**은 요청을 받은 함수가 DB에 접근할 때 쓰는 신분이다. 사용자 본인이 승인 후 호출 계정과 별개인 관리자 실행 계정을 만든다. 실행 계정에는 필요한 Firestore 작업 권한만 검토하며 Auth 계정 삭제 권한을 주지 않는다. 0.81.2 코드는 실행 계정 설정을 필수로 받지만, 계정을 만들거나 IAM 권한을 부여하지 않는다. 실제 계정의 존재·권한·호출 계정과의 분리는 아직 미확인이다.
 5. 호출·실행 계정, 배포 계정, Scheduler 호출 주체를 서로 혼동하지 않는다. allUsers나 allAuthenticatedUsers에 관리자 호출 권한을 주지 않는다.
 
 서비스 계정 대리 인증에 사용하는 **IAM Service Account Credentials API**도 해당 개발 프로젝트에서 사용 가능한지 확인한다. API 사용 설정이 추가로 필요하면 사용자 승인 후 본인이 적용한다. 인증 오류를 서비스 계정 키 다운로드로 우회하지 않는다. [단기 서비스 계정 인증 정보](https://docs.cloud.google.com/iam/docs/create-short-lived-credentials-direct)
@@ -62,6 +62,35 @@
 **중단:** 공유 계정 사용, 키 파일 필요, 프로젝트 전체 권한을 요구하는 우회, 최소 권한 실행 계정 미확인.
 
 **되돌림:** 사용자가 잘못 부여한 권한을 회수한다. 기본 계정의 기존 권한을 무작정 지워 다른 서비스에 영향을 주지 않는다. 침해 의심 시 호출 권한을 먼저 회수하고 관리자 경로를 공개하지 않는다.
+
+### 전체 함수 실행 계정 점검표 — 나머지 8개 분리안은 미승인
+
+아래는 **소스 기준 점검 결과**다. 관리자 1개의 필수 설정 코드만 준비했고, 사용자 callable 6개와 예약 2개에는 아직 serviceAccount를 지정하지 않았다. 8개를 네 그룹으로 나누는 안은 설명·검토 단계이며 사용자 승인을 받지 않았다. 이번 수정에서 이들의 코드를 바꾸거나 실제 권한을 설정하지 않는다.
+
+| 함수 | 종류·권장 그룹 | 0.81.2 코드 상태 | 실제 계정·IAM 확인 |
+| --- | --- | --- | --- |
+| moderateNicknames | 관리자 전용 | MODERATION_RUNTIME_SERVICE_ACCOUNT 필수 | 미확인 |
+| readProfile | callable · 일반 | 실행 계정 미지정 | 미확인 |
+| createProfile | callable · 일반 | 실행 계정 미지정 | 미확인 |
+| readCloudSave | callable · 일반 | 실행 계정 미지정 | 미확인 |
+| saveCloudProgress | callable · 일반 | 실행 계정 미지정 | 미확인 |
+| reportNickname | callable · 일반 | 실행 계정 미지정 | 미확인 |
+| deleteGameAccount | callable · 탈퇴 | 실행 계정 미지정 | 미확인 |
+| retryAccountDeletions | 예약 · 삭제 재시도 | 실행 계정 미지정 | 미확인 |
+| purgeExpiredServerRecords | 예약 · 만료 정리 | 실행 계정 미지정 | 미확인 |
+
+네 그룹으로 분리할 경우 검토할 작업 권한은 다음과 같다. 이는 **권한 설계 후보**이며, 실제 역할 생성·부여나 분리 승인이 아니다.
+
+| 권장 그룹 | 대상 수 | 코드에서 필요한 작업 |
+| --- | --- | --- |
+| 일반 | 5개 | Firestore 읽기·생성·갱신, Auth 사용자 조회 |
+| 탈퇴 | 1개 | Firestore 읽기·생성·갱신·검색·삭제, Auth 사용자 조회·삭제 |
+| 삭제 재시도 | 1개 | Firestore 읽기·생성·갱신·검색·삭제, Auth 사용자 삭제 |
+| 만료 정리 | 1개 | Firestore 읽기·생성·갱신·검색·삭제, Auth 사용자 조회 |
+
+프로필·저장 **조회도 호출 제한 기록을 생성·갱신**하므로 DB 읽기 권한만으로는 동작하지 않는다. **예약 함수도 중복 실행 방지 잠금과 진행 위치를 생성·갱신**하므로 검색·삭제 권한만으로는 부족하다. 관리자 함수는 신고·조치·이름·정리 정보에 필요한 Firestore 작업을 검토하되 Auth 삭제 권한을 주지 않는다. 실제 IAM 역할과 범위는 별도 승인 후 검증하며 넓은 기본 권한을 최소 권한으로 간주하지 않는다. [Firestore 서버 IAM](https://docs.cloud.google.com/firestore/native/docs/security/iam), [Auth의 IAM 권한](https://docs.cloud.google.com/identity-platform/docs/access-control)
+
+**미완료:** 나머지 8개 실행 계정 분리 결정·코드 반영·실제 IAM 검증. 미지정 상태의 배포를 최소 권한 확인 완료로 보고하지 않는다. 공식 문서도 함수별 serviceAccount 설정으로 실행 계정을 지정하도록 안내한다. [실행 서비스 계정 지정](https://firebase.google.com/docs/functions/manage-functions#set_a_service_account)
 
 ## 3. 관리자 설정값과 키 없는 로컬 인증 — 사용자 직접
 
@@ -73,11 +102,24 @@
 | --- | --- |
 | MODERATION_ADMIN_AUDIENCE | https://asia-northeast3-budae-kiugi-dev.cloudfunctions.net/moderateNicknames — 배포 후 실제 함수 주소와 완전히 일치하는지 확인. 임의 경로·쿼리·끝 슬래시 추가 금지 |
 | MODERATION_ADMIN_SUBJECT | 2단계에서 만든 **호출 전용 서비스 계정의 고유 숫자 ID(uniqueId)**. 본인 사용자 UID, 프로젝트 번호, OAuth client ID, 서비스 계정 이메일이 아님 |
+| MODERATION_RUNTIME_SERVICE_ACCOUNT | 사용자가 개발 프로젝트에 만든 **관리자 실행 전용 서비스 계정의 전체 이메일**. 끝부분은 @budae-kiugi-dev.iam.gserviceaccount.com이어야 하며, 호출 전용 계정과 별개인지 직접 확인 |
 | MODERATION_ADMIN_URL | 로컬 관리자 도구가 호출할 주소. 위 AUDIENCE와 정확히 같은 개발 함수 주소 |
 
 서비스 계정 상세의 고유 ID를 비공개 설정에 직접 입력하고, 실제 숫자는 이 문서·Git·작업일지·명령 출력에 남기지 않는다. 계정을 삭제하고 같은 이름으로 다시 만들면 고유 ID가 달라지므로 재등록·재검증한다. [서비스 계정 uniqueId](https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.serviceAccounts)
 
-서버는 defineString으로 AUDIENCE·SUBJECT를 읽으며 기본값은 빈 문자열이다. 따라서 설정을 생략한 채 배포 CLI가 반드시 질문할 것이라고 기대하지 않는다. 사용자 본인이 **server/.env.budae-kiugi-dev**에 두 값을 입력한다. 현재 저장소의 .env.* 제외 규칙이 적용되고 파일이 추적되지 않는지 내용 노출 없이 확인한다. 이 파일은 로컬 비공개 배포 설정이며 문서나 예시 파일에 복사하지 않는다. CLI가 읽은 환경과 실제 함수 환경이 일치하는지도 배포 뒤 확인한다. [Firebase 매개변수와 환경 파일](https://firebase.google.com/docs/functions/config-env)
+서버는 defineString으로 세 설정을 읽는다. AUDIENCE·SUBJECT의 기본값은 빈 문자열이므로 생략하면 관리자 호출이 거부된다. **MODERATION_RUNTIME_SERVICE_ACCOUNT에는 기본값이 없다.** 일반 문자열 매개변수를 MODERATION_HTTP_OPTIONS.serviceAccount에 연결하며, 전체 사용자 관리 서비스 계정 이메일 형식을 검증한다. 단축 이름, 기본 계정 표기, 빈 값은 허용하지 않는다. 계정 이름·이메일 자체는 비밀키가 아니지만 실제 이름은 사용자가 프로젝트별로 생성한 뒤 입력한다. 이름을 입력하는 것만으로 계정이나 권한이 생기지는 않는다. [Firebase 매개변수와 환경 파일](https://firebase.google.com/docs/functions/config-env)
+
+사용자 본인이 **server/.env.budae-kiugi-dev**에 서버의 세 값을 입력한다. 현재 저장소의 .env.* 제외 규칙이 적용되고 파일이 추적되지 않는지 내용 노출 없이 확인한다. 이 파일에는 숫자 주체 설정도 함께 들어가므로 파일 전체를 문서·예시·Git에 복사하지 않는다. CLI가 읽은 환경과 실제 함수 환경이 일치하는지도 배포 뒤 확인한다.
+
+### Functions 전체 배포의 사전 검사
+
+firebase.json의 game 코드베이스 predeploy는 **tools/check-moderation-runtime.mjs**를 실행한다. 관리자 함수만의 검사가 아니라 **이 코드베이스의 사용자·예약 함수를 배포할 때도 필요한 사전 조건**이다. CLI가 전달한 GCLOUD_PROJECT가 budae-kiugi-dev 또는 budae-kiugi-prod인지 확인하고, 검사 파일의 소스 위치를 기준으로 정확히 **server/.env.<프로젝트 ID>**를 읽는다. 그 파일에 같은 프로젝트의 유효한 전체 실행 계정 이메일이 있어야 한다. 셸 환경변수, 공용 .env, .env.local, 대화형 입력만으로 이 조건을 대신할 수 없다. Firebase CLI는 predeploy 실패 시 배포를 취소한다. [배포 전 검사와 프로젝트 환경변수](https://firebase.google.com/docs/cli#hooks)
+
+이 검사는 **값이나 설정 파일 내용을 출력하지 않고 파일도 변경하지 않는 로컬 검사**다. 형식·대상 프로젝트만 확인하므로 계정 존재, 실제 IAM 권한, 호출 계정과의 분리까지 확인했다고 보고하지 않는다. 런타임에서도 값이 없거나 형식이 잘못되면 **DB 서비스를 만들거나 접근하기 전에 503 / moderation-runtime-unconfigured로 차단**한다. 유효한 형식의 잘못된 계정·권한은 별도의 실제 검증 대상이다.
+
+demo 프로젝트 에뮬레이터도 기본값이 없는 매개변수를 읽으므로, 사용자가 로컬 **server/.env.local**에 형식을 만족하는 **합성 이메일**을 준비해야 한다. 이때 실제 서비스 계정을 만들 필요는 없으며, 합성값은 실서비스 배포용 값이 아니다. 자동 테스트도 합성 이메일만 사용하고 계정·IAM을 생성하지 않는다. 에뮬레이터의 설정 읽기나 테스트 PASS를 실제 계정 존재·권한의 증거로 쓰지 않는다. .env.local은 실제 배포의 프로젝트 파일 검사를 대체하지 못한다. [에뮬레이터 환경 파일](https://firebase.google.com/docs/functions/config-env#emulator_support)
+
+합성 설정을 적용해 에뮬레이터를 시작한 뒤 **tools/moderation-emulator-check.mjs**를 실행한다. 이 검사는 무인증 요청의 **403 거부를 필수로 확인**한다. 미설정으로 503이 나오면 설정 안내와 함께 실패하며, 이를 인증 검증 성공으로 인정하지 않는다. 설정을 보완한 뒤 다시 확인하고, 실제 Google 로그인·OIDC·IAM 통과 여부는 계속 별도로 검증한다.
 
 ### 로컬 ADC 준비
 
@@ -93,7 +135,7 @@ gcloud auth application-default login --impersonate-service-account=<호출 전�
 
 **PASS:** 환경·호출 계정·대리 인증 경로가 개발 프로젝트에 맞고 비공개 값이 저장소나 출력에 노출되지 않았다. 실제 관리자 성공 여부는 다음 단계에서 확인한다.
 
-**중단:** 기본값이 비어 있음, 잘못된 숫자 종류, 다른 프로젝트의 계정·URL·ADC, 로컬 인증 실패.
+**중단:** 필수 값 누락·잘못된 실행 계정 형식, 대상 프로젝트 파일 누락·불일치, 잘못된 숫자 종류, 다른 프로젝트의 계정·URL·ADC, 로컬 인증 실패. predeploy를 지우거나 기본 계정으로 대체하여 우회하지 않는다.
 
 **되돌림:** 로컬 인증을 정리하거나 올바른 개발용 설정으로 교체한 뒤 재검증한다. 실패를 이유로 주체·audience 검사를 제거하지 않는다.
 
@@ -103,9 +145,9 @@ gcloud auth application-default login --impersonate-service-account=<호출 전�
 
 1. Codex가 현재 커밋과 정확한 배포 대상·프로젝트·설정·명령을 먼저 보여준다. **Blaze 승인만으로 이 배포를 진행하지 않는다.** 승인 후 모든 명령에 budae-kiugi-dev를 명시하고 전체 무차별 배포를 피한다.
 2. Firestore 직접 접근 거부 규칙과 필요한 색인을 먼저 적용·확인한다. 색인의 READY 상태를 확인한다. 실제 자료가 이미 있으면 구형 신고 문서와 최소 중복 방지 정보 보강을 확인하기 전 만료 정리를 켜지 않는다.
-3. 사용자 callable 6개와 승인된 관리자 함수만 배포한다. Node 22·서울 리전·함수별 리소스·허용 앱 목록·관리자 실행 계정이 승인안과 같은지 확인한다. 예약 2개는 6단계에서 별도로 승인·배포한다.
+3. game 코드베이스의 실행 계정 사전 검사가 통과한 뒤, 사용자 callable 6개와 승인된 관리자 함수만 배포한다. Node 22·서울 리전·함수별 리소스·허용 앱 목록·관리자 실행 계정이 승인안과 같은지 확인한다. 앞의 전체 함수 점검표와 남은 실행 계정 분리 결정도 확인한다. 사전 검사 PASS만으로 이 권한 검증을 대신하지 않는다. 예약 2개는 6단계에서 별도로 승인·배포한다.
 4. 사용자 본인이 관리자 Cloud Run 서비스에서 호출 전용 계정에만 run.invoker를 설정한다. 실제 서비스 이름은 배포 결과로 확인하며 이름을 추측해 다른 서비스에 권한을 주지 않는다.
-5. 관리자 함수의 AUDIENCE·SUBJECT 설정을 확인한다. 일반 Firebase 플레이어 토큰과 무인증 요청은 거부되고, 본인의 대리 인증 호출은 성공해야 한다. 다른 주체, 잘못된 audience, 필수 설정 누락도 거부되어야 한다. 값이나 토큰 없이 성공·거부 결과만 기록한다.
+5. 관리자 함수의 AUDIENCE·SUBJECT와 실제 실행 계정을 확인한다. 일반 Firebase 플레이어 토큰과 무인증 요청은 거부되고, 본인의 대리 인증 호출은 성공해야 한다. 다른 주체, 잘못된 audience, 필수 설정 누락도 거부되어야 한다. 잘못된 실행 계정 설정의 503 차단은 합성 로컬 테스트로 먼저 검증하고 실제 환경을 일부러 고장 내지 않는다. 값이나 토큰 없이 성공·거부 결과만 기록한다.
 
 **PASS:** 사용자·관리자 진입점의 수와 종류, 규칙·색인, 승인된 실행 계정·권한·리소스가 일치하고 관리자 성공과 무권한 거부가 모두 확인되었다.
 
@@ -175,7 +217,7 @@ gcloud auth application-default login --impersonate-service-account=<호출 전�
 
 개발 결과가 모두 PASS한 뒤 사용자에게 운영 프로젝트 **budae-kiugi-prod**의 결제·예산 범위, 함수·관리자·예약·권한·App Check 변경안을 다시 확인받는다. 개발 승인을 운영 승인으로 재사용하지 않는다.
 
-승인 후 1~7단계를 운영의 별도 호출·실행 계정과 환경 파일에서 반복한다. 운영 환경 파일은 server/.env.budae-kiugi-prod이고, 관리자 URL·AUDIENCE의 프로젝트 부분도 budae-kiugi-prod다. SUBJECT는 운영의 별도 호출 계정 고유 ID를 사용자만 입력한다. 개발 ADC·주체·데이터를 그대로 복사하지 않는다.
+승인 후 1~7단계를 운영의 별도 호출·실행 계정과 환경 파일에서 반복한다. 운영 환경 파일은 server/.env.budae-kiugi-prod이고, 관리자 URL·AUDIENCE의 프로젝트 부분도 budae-kiugi-prod다. SUBJECT는 운영의 별도 호출 계정 고유 ID를 사용자만 입력한다. MODERATION_RUNTIME_SERVICE_ACCOUNT에는 사용자가 운영 프로젝트에 만든 별도 실행 계정의 전체 이메일을 입력하며 끝부분은 @budae-kiugi-prod.iam.gserviceaccount.com이어야 한다. 운영 대상의 사전 검사와 실제 IAM 검증을 각각 수행한다. 개발 ADC·주체·실행 계정 설정·데이터를 그대로 복사하지 않는다.
 
 최초 운영 확인에도 테스트 전용 계정과 합성 진행만 사용한다. 사용자 계정·관리자 인증, App Check, 두 Scheduler 작업, 테스트 계정 삭제가 모두 확인되기 전 일반 이용자로 확대하지 않는다.
 
@@ -192,4 +234,4 @@ gcloud auth application-default login --impersonate-service-account=<호출 전�
 | 개발 0~7 | 해당 단계 담당자 | 미승인 | 미확인 | 미실행 | 검증 후 비식별 요약만 기입 |
 | 운영 8 | 해당 단계 담당자 | 미승인 | 미확인 | 미실행 | 개발 PASS와 별도 승인 뒤 기입 |
 
-**문서 작성 시점의 결과:** 실제 변경·배포·인증·Scheduler 실행은 모두 미실시다. 이 초안에 실제 계정 식별자나 인증 자료는 넣지 않았다. 문서 작성 자체는 새 수집·정책 변경을 추가하지 않으며, 기존 0.81.0 신고·보관·관리 기능의 **정책 동기화는 별도로 필요**하다.
+**문서 작성 시점의 결과:** 관리자 실행 계정 필수화는 코드 준비까지만 완료했다. 실제 계정 생성·IAM·결제·콘솔 변경, 배포·인증·Scheduler 실행은 미실시이며 나머지 8개 실행 계정 분리도 미승인·미완료다. 이 초안에 실제 계정 식별자나 인증 자료는 넣지 않았다. **0.81.2의 실행 계정 설정 보완은 정책 영향 없음.** 기존 0.81.0 신고·보관·관리 기능의 **정책 동기화는 계속 미완료**이며 별도로 필요하다.
