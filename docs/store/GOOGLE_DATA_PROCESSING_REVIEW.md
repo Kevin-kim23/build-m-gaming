@@ -1,3 +1,9 @@
+# 0.79.0 출시 인증 SDK 포함 점검
+
+이전 0.77.1 AAB와 비교한 합성 Manifest에서 READ_GSERVICES 권한이 추가(9→10개)됐다. manifest merger 근거는 com.google.android.recaptcha:recaptcha:18.6.1 AndroidManifest.xml:9. 개발 의존성을 출시에도 연결하면서 포함된 항목이며 연락처/메일함 권한은 추가되지 않았다. 권한 존재만으로 실제 호출·수집을 단정하지 않으며 실기기 네트워크 검증은 미실시.
+
+Firebase Android 공식 데이터 공개 안내는 인증 SDK의 앱 ID·IP·사용자 에이전트(기기/OS/SDK 버전 포함), 인증 방식별 계정 정보, 선택한 보호 흐름에서의 reCAPTCHA 토큰 처리를 구분한다. 현재 앱은 Google 인증만 제공하고 전화번호/메일함 인증이나 별도 reCAPTCHA Enterprise 보호를 구성하지 않았다. 방침11의 인증·기기/보안 정보와 최종 Play 양식에 대조한다. https://firebase.google.com/docs/android/play-data-disclosure
+
 # Google 광고 처리 정보 확인
 
 2026-10-09 · 부대 키우기 0.72.3 · 공개 방침에 일괄 적용하기 전 근거 기록

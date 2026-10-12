@@ -1,6 +1,6 @@
 package com.dongramco.budaekiugi;
 import com.getcapacitor.BridgeActivity;
-// The production app has no development Firebase native plugin.
+import io.capawesome.capacitorjs.plugins.firebase.authentication.FirebaseAuthenticationPlugin;
 final class DevelopmentAccountPlugins {
-    static void register(BridgeActivity activity) {}
+    static void register(BridgeActivity activity) { activity.registerPlugin(FirebaseAuthenticationPlugin.class); }
 }

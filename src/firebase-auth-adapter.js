@@ -1,13 +1,13 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver,
   GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithCredential, signOut } from 'firebase/auth';
-import { DEVELOPMENT_FIREBASE } from './account-config.js';
+import { FIREBASE_CONFIG, FIREBASE_APP_NAME } from './firebase-environment.js';
 
 let adapter;
 export function createFirebaseAuthAdapter({native = false, nativePlugin} = {}) {
   if (adapter) return adapter;
-  const name = 'budae-account-development';
-  const app = getApps().find(value => value.name === name) ?? initializeApp(DEVELOPMENT_FIREBASE, name);
+  const name = FIREBASE_APP_NAME;
+  const app = getApps().find(value => value.name === name) ?? initializeApp(FIREBASE_CONFIG, name);
   const auth = initializeAuth(app, {persistence: [indexedDBLocalPersistence, browserLocalPersistence],
     ...(native ? {} : {popupRedirectResolver: browserPopupRedirectResolver})});
   auth.languageCode = 'ko';

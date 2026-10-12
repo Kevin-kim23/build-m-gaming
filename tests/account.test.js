@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createAccountController, accountErrorCode, accountErrorMessage} from '../src/account-controller.js';
 import {accountMarkup, accountDeleteMarkup} from '../src/account-view.js';
-import {accountTestingEnabled, DEVELOPMENT_FIREBASE} from '../src/account-config.js';
+import {accountEnabled, DEVELOPMENT_FIREBASE} from '../src/account-config.js';
 import {freshState} from '../src/state.js';
 import {serializeSave} from '../src/money.js';
 
@@ -93,11 +93,11 @@ test('stale initialization cannot subscribe after disposal', async () => {
   h.account.dispose(); resolve(); await pending;
   assert.equal(h.counts().subscriptions,0);
 });
-test('development auth never enables on production mode or production package', () => {
-  assert.equal(accountTestingEnabled('development'),true);
-  assert.equal(accountTestingEnabled('firebase-dev',true,'com.dongramco.budaekiugi.dev'),true);
-  assert.equal(accountTestingEnabled('production'),false);
-  assert.equal(accountTestingEnabled('firebase-dev',true,'com.dongramco.budaekiugi'),false);
+test('account builds reject a mismatched native package', () => {
+  assert.equal(accountEnabled('development'),true);
+  assert.equal(accountEnabled('firebase-dev',true,'com.dongramco.budaekiugi.dev'),true);
+  assert.equal(accountEnabled('production'),true);
+  assert.equal(accountEnabled('firebase-dev',true,'com.dongramco.budaekiugi'),false);
   assert.equal(DEVELOPMENT_FIREBASE.projectId,'budae-kiugi-dev');
 });
 test('account markup escapes provider text and honestly distinguishes login from saved progress', () => {
@@ -109,12 +109,12 @@ test('account markup escapes provider text and honestly distinguishes login from
   assert.match(accountDeleteMarkup().body,/Google 계정 자체/);
   assert.match(accountErrorMessage('auth/requires-recent-login'),/다시 로그인/);
 });
-test('Android native auth is debug-only and release refuses development web assets', () => {
+test('Android auth is registered in each variant and packaging rejects mixed environments', () => {
   const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
   assert.deepEqual(JSON.parse(read('capacitor.config.json')).includePlugins,['@capacitor/app']);
-  assert.match(read('android/app/build.gradle'),/debugImplementation project\(':capacitor-firebase-authentication'\)/);
-  assert.match(read('android/app/build.gradle'),/Development Firebase assets cannot be released/);
-  for(const variant of ['release','unsigned'])assert.doesNotMatch(read(`android/app/src/${variant}/java/com/dongramco/budaekiugi/DevelopmentAccountPlugins.java`),/FirebaseAuthenticationPlugin/);
+  assert.match(read('android/app/build.gradle'),/implementation project\(':capacitor-firebase-authentication'\)/);
+  assert.match(read('android/app/build.gradle'),/Firebase web\/native environment mismatch/);
+  for(const variant of ['release','unsigned'])assert.match(read(`android/app/src/${variant}/java/com/dongramco/budaekiugi/DevelopmentAccountPlugins.java`),/FirebaseAuthenticationPlugin/);
   const config=JSON.parse(read('android/app/src/debug/google-services.json'));
   assert.equal(config.client[0].client_info.android_client_info.package_name,'com.dongramco.budaekiugi.dev');
 });

@@ -68,7 +68,7 @@ export function createAccountController({loadAdapter, onError = () => {}}) {
     return Promise.resolve(operation).then(() => {
       publish({phase: 'ready', user: publicUser(adapter.currentUser()), message:
         action === 'signIn' ? '구글 로그인 완료 · 서버 기록은 닉네임·서버 기록 화면에서 확인해 주세요.'
-          : action === 'deleteAccount' ? '개발 서버 계정과 기록을 삭제했어요. 이 기기의 게임 기록은 유지돼요.'
+          : action === 'deleteAccount' ? '서버 계정과 기록을 삭제했어요. 이 기기의 게임 기록은 유지돼요.'
             : '로그아웃했어요. 이 기기의 게임 기록은 유지돼요.'});
       return true;
     }, error => {

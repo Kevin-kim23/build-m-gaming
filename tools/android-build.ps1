@@ -100,7 +100,8 @@ try {
     }
     Push-Location $projectRoot
     try {
-        & npm.cmd run android:sync
+        if ($Mode -eq 'Debug') { & npm.cmd run audio:verify; if ($LASTEXITCODE -ne 0) { throw 'Audio verification failed.' }; & npm.cmd run android:sync:firebase }
+        else { & npm.cmd run android:sync }
         if ($LASTEXITCODE -ne 0) { throw 'Web build / native sync failed.' }
         Push-Location (Join-Path $projectRoot 'android')
         try {

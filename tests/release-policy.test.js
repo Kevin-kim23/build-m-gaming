@@ -16,12 +16,15 @@ for (const mode of ['production', 'firebase-dev', 'development']) {
     for(const text of [privacy,terms])assert.match(text,/샘플/);
     assert.match(privacy,/AdMob/); assert.match(privacy,/외부 통신/);
     if(mode==='production') {
-      assert.doesNotMatch(code,/Firebase Authentication|선택형 Google 로그인|개발용 로그인 계정 삭제/);
+      assert.match(privacy,/Firebase Authentication|선택형 Google 로그인/);
+      assert.doesNotMatch(privacy,/개발용 게임 계정|일반 배포본에는 이 로그인 테스트/);
       assert.doesNotMatch(terms,/개발용 빌드|개발 모드/);
-      assert.match(privacy,/회원가입·로그인 없이/);
+      assert.match(privacy,/로그인 없이 기본 게임/);
+      assert.match(privacy,/서버 저장을 직접 선택한 경우에만/);
+      assert.match(terms,/충돌하는 기록의 골드·병력은 합산하지/);
     } else {
       assert.match(privacy,/Firebase Authentication/);assert.match(privacy,/미국/);
-      assert.match(privacy,/개발 서버 계정·기록 삭제/);assert.match(privacy,/180일/);
+      assert.match(privacy,/서버 계정·기록 삭제/);assert.match(privacy,/180일/);
       assert.match(privacy,/최초 연결 검토 기록/);assert.match(privacy,/직접 선택해야/);
       assert.match(terms,/로그인만으로 기기 기록을 자동 업로드하거나 바꾸지/);
       assert.match(terms,/충돌하는 기록의 골드·병력은 합산하지/);

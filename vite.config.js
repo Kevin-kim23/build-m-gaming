@@ -5,8 +5,14 @@ import { defineConfig } from 'vite';
 const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 export default defineConfig(({mode}) => ({
   define: { __APP_VERSION__: JSON.stringify(version) },
-  plugins: mode === 'firebase-dev' ? [{
-    name: 'mark-firebase-development-build',
-    generateBundle() { this.emitFile({type: 'asset', fileName: 'firebase-development-build.json', source: '{"developmentOnly":true}'}); },
-  }] : [],
+  plugins: [{
+    name: 'mark-firebase-environment',
+    generateBundle() {
+      const development = mode === 'development' || mode === 'firebase-dev';
+      if (!development && mode !== 'production') throw new Error('Unsupported Firebase build mode: ' + mode);
+      const environment = development ? 'development' : 'production';
+      this.emitFile({type:'asset', fileName:'firebase-' + environment + '-build.json',
+        source:JSON.stringify({environment, projectId:development ? 'budae-kiugi-dev' : 'budae-kiugi-prod', version})});
+    },
+  }],
 }));

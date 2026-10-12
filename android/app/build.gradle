@@ -61,7 +61,7 @@ repositories {
 }
 
 dependencies {
-    debugImplementation project(':capacitor-firebase-authentication')
+    implementation project(':capacitor-firebase-authentication')
     implementation "com.google.android.gms:play-services-ads:25.5.0"
     implementation "com.google.android.ump:user-messaging-platform:4.0.0"
     implementation fileTree(include: ['*.jar'], dir: 'libs')
@@ -78,23 +78,36 @@ dependencies {
 apply from: 'capacitor.build.gradle'
 apply from: 'notices.gradle'
 
-// Public dev config stays out of the release resources and APK.
-// Applying google-services globally would require a production config as well.
-// Generate only the resources needed by the development login SDK.
-def firebaseDevConfig = new JsonSlurper().parse(file('src/debug/google-services.json'))
-def firebaseDevClient = firebaseDevConfig.client.find { it.client_info.android_client_info.package_name == 'com.dongramco.budaekiugi.dev' }
-def firebaseDevWebClient = firebaseDevClient.oauth_client.find { it.client_type == 3 }
-android.buildTypes.debug.resValue 'string', 'google_app_id', firebaseDevClient.client_info.mobilesdk_app_id
-android.buildTypes.debug.resValue 'string', 'google_api_key', firebaseDevClient.api_key[0].current_key
-android.buildTypes.debug.resValue 'string', 'project_id', firebaseDevConfig.project_info.project_id
-android.buildTypes.debug.resValue 'string', 'default_web_client_id', firebaseDevWebClient.client_id
+// Keep public Firebase resources scoped to each Android variant.
+['debug': 'development', 'release': 'production', 'unsigned': 'production'].each { variant, environment ->
+    def config = new JsonSlurper().parse(file(environment == 'development' ? 'src/debug/google-services.json' : 'src/release/google-services.json'))
+    def expectedPackage = environment == 'development' ? 'com.dongramco.budaekiugi.dev' : 'com.dongramco.budaekiugi'
+    def expectedProject = environment == 'development' ? 'budae-kiugi-dev' : 'budae-kiugi-prod'
+    def client = config.client.find { it.client_info.android_client_info.package_name == expectedPackage }
+    if (!client || config.project_info.project_id != expectedProject) throw new GradleException('Firebase native configuration mismatch: ' + variant)
+    def webClient = client.oauth_client.find { it.client_type == 3 }
+    if (!webClient) throw new GradleException('Firebase web OAuth client missing: ' + variant)
+    android.buildTypes.getByName(variant).resValue 'string', 'google_app_id', client.client_info.mobilesdk_app_id
+    android.buildTypes.getByName(variant).resValue 'string', 'google_api_key', client.api_key[0].current_key
+    android.buildTypes.getByName(variant).resValue 'string', 'project_id', config.project_info.project_id
+    android.buildTypes.getByName(variant).resValue 'string', 'default_web_client_id', webClient.client_id
+}
 
-// Refuse accidental release packaging of a Firebase development web build.
+// Reject stale/mixed web assets before any native variant can be packaged.
 tasks.configureEach { task ->
-    if (task.name in ['preReleaseBuild', 'preUnsignedBuild']) {
+    def environments = ['preDebugBuild': 'development', 'preReleaseBuild': 'production', 'preUnsignedBuild': 'production']
+    if (environments.containsKey(task.name)) {
         task.doFirst {
-            if (file('src/main/assets/public/firebase-development-build.json').exists()) {
-                throw new GradleException('Development Firebase assets cannot be released. Run npm run android:sync for a production build.')
+            def environment = environments[task.name]
+            def marker = file('src/main/assets/public/firebase-' + environment + '-build.json')
+            def opposite = environment == 'production' ? 'development' : 'production'
+            if (!marker.exists() || file('src/main/assets/public/firebase-' + opposite + '-build.json').exists()) {
+                throw new GradleException('Firebase web/native environment mismatch. Sync the matching build first.')
+            }
+            def config = new JsonSlurper().parse(marker)
+            def expectedProject = environment == 'development' ? 'budae-kiugi-dev' : 'budae-kiugi-prod'
+            if (config.projectId != expectedProject || config.environment != environment || config.version != appVersion) {
+                throw new GradleException('Firebase build marker mismatch: ' + environment)
             }
         }
     }
