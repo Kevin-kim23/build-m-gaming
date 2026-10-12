@@ -88,6 +88,7 @@ try {
     const beforeReport=await data(`nicknameReports/${firstId}`),beforeProfile=await data(`profiles/${target}`);
     const response=await fetch(FUNCTIONS+'moderateNicknames',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({operation:'list'}),redirect:'error',signal:AbortSignal.timeout(30_000)});
+    if(response.status===503)console.error('Demo emulator runtime is unconfigured. Set a synthetic MODERATION_RUNTIME_SERVICE_ACCOUNT for the demo emulator; 503 does not prove caller authentication rejection.');
     assert.equal(response.status,403);
     assert.deepEqual(await data(`nicknameReports/${firstId}`),beforeReport);
     assert.deepEqual(await data(`profiles/${target}`),beforeProfile);

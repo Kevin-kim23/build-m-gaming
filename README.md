@@ -190,3 +190,18 @@ npm run android:release
 - 수정 전 깨끗한 clone에서 전체880개 중2실패(서버 의존성 없음), 의존성만 추가한 전체895개 중1실패(game/save.js 없음)를 재현했습니다. 순서만 바꾼3회 재검사에서는 같은2개 실패가 유지됐습니다.
 - 수정본을 새로 Git clone하여 Node22에서 루트 npm ci→npm test897/897 통과, 같은 폴더에서 Node24 반복897/897 통과를 확인했습니다. 일반·개발 웹 빌드 및 새 clone의 Node22 웹 빌드도 통과했습니다. 재현 절차는 검증결과0.81.1에 있습니다.
 - 배포·결제·콘솔·AAB 변경 없음. 게임 동작·저장38·테스트광고·방침11·약관8 유지. 이번 변경은 정책 영향 없음이며 기존 공개 정책 동기화 미완료는 유지합니다.
+
+## 0.81.2 관리자 실행 계정 필수 설정
+
+- 관리자 함수의 실행 계정을 일반 문자열 MODERATION_RUNTIME_SERVICE_ACCOUNT로 명시합니다. 기본 계정으로 대체하지 않으며, 올바른 전체 이메일이 없으면 배포 사전 검사와 관리자 요청 처리를 중단합니다.
+- 배포 파일의 프로젝트 일치와 실제 SDK 옵션·미설정 요청 거부를 검사합니다. 예약2개와 사용자6개는 점검·분리 권장안만 남겼으며 변경하지 않습니다.
+- 집중13개 통과. 전체·빌드·PowerShell 새 clone 검증은 진행 중이며 검증결과에 최종 결과를 기록합니다. 배포·결제·콘솔·실제 IAM 확인은 하지 않았습니다.
+- 새 폴더를 만들 수 있는 위치에서 Node22와 Git이 준비돼 있으면 다음3줄로 최초 설치를 확인할 수 있습니다. 같은 이름의 폴더가 이미 있다면 새 이름으로 세 줄 모두 맞추며 기존 폴더를 지우지 않습니다. npm.cmd는 PowerShell의 npm.ps1 실행 정책에 의존하지 않습니다. 실행 계정이나 실제 계정 로그인 없이 로컬 테스트만 합니다.
+
+```powershell
+git clone --branch feat/firebase-server-test --single-branch https://github.com/Kevin-kim23/build-m-gaming.git build-m-gaming-check
+npm.cmd --prefix .\build-m-gaming-check ci
+npm.cmd --prefix .\build-m-gaming-check test
+```
+
+- 방침11·약관8·기존 저장/migration·큰 금액·테스트 광고 유지. 정책 영향 없음. 기존 공개 정책 동기화는 별도 미완료입니다.
