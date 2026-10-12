@@ -13,7 +13,7 @@ import {freshState,SAVE_KEY} from '/src/state.js';import {parseSave} from '/src/
 const records=new Map(),local=new Map([[SAVE_KEY,serializeSave({...freshState(Date.now()),gold:10n**27n,soldiers:10})]]);
 const tx=async operation=>operation({get:async p=>records.get(p),set:(p,v)=>records.set(p,v),delete:p=>records.delete(p)});
 const profiles=createProfileService({transact:tx}),cloud=createCloudService({transact:tx,validate:raw=>{const state=parseSave(raw);return {raw:serializeSave(state),power:String(armyPower(state))};}});
-const session=createGameSession({storage:{getItem:k=>local.get(k)??null,setItem:(k,v)=>local.set(k,v)},setTimer:()=>1,clearTimer:()=>{}});session.start();
+const session=createGameSession({storage:{getItem:k=>local.get(k)??null,setItem:(k,v)=>local.set(k,v),removeItem:k=>local.delete(k)},setTimer:()=>1,clearTimer:()=>{}});session.start();
 const state={phase:'ready',user:{uid:'synthetic-local-only',email:'qa@example.invalid'},message:''};
 const account={subscribe:fn=>{fn(state);return ()=>{};}};
 createCloudUI({account,session,call:async(name,data)=>{

@@ -7,11 +7,29 @@ export const NICKNAME_POLICY_DRAFT = Object.freeze({
   sexual: ['강간','성폭행','포르노','섹스','야동'],
 });
 
+// Exact, reviewed English words whose innocent substrings caused false positives.
+// Exempt only this fragment inside a whole ASCII-letter token, never the nickname
+// or another prohibited term. Keep underscores until after token recognition so
+// an inserted separator cannot manufacture an exception (e.g. bad_minton).
+const EMBEDDED_FRAGMENT_EXCEPTIONS = Object.freeze({
+  admin: Object.freeze(['badminton']),
+  cunt: Object.freeze(['scunthorpe']),
+});
+
+function includesProhibitedFragment(normalized, fragment) {
+  const exceptions=EMBEDDED_FRAGMENT_EXCEPTIONS[fragment];
+  const comparable=exceptions
+    ?normalized.replace(/[a-z]+/g,word=>exceptions.includes(word)?word.replaceAll(fragment,'.'):word)
+    :normalized;
+  return comparable.replaceAll('_','').includes(fragment);
+}
+
 export function nicknamePolicyViolation(value) {
-  const compact=value.normalize('NFKC').toLocaleLowerCase('en-US').replaceAll('_','');
-  if(NICKNAME_POLICY_DRAFT.impersonation.some(word=>compact.includes(word))||/^gm\d*$/.test(compact))return 'reserved-nickname';
+  const normalized=value.normalize('NFKC').toLocaleLowerCase('en-US');
+  const compact=normalized.replaceAll('_','');
+  if(NICKNAME_POLICY_DRAFT.impersonation.some(word=>includesProhibitedFragment(normalized,word))||/^gm\d*$/.test(compact))return 'reserved-nickname';
   for(const category of ['abuse','hate','sexual']){
-    if(NICKNAME_POLICY_DRAFT[category].some(word=>compact.includes(word)))return 'prohibited-nickname';
+    if(NICKNAME_POLICY_DRAFT[category].some(word=>includesProhibitedFragment(normalized,word)))return 'prohibited-nickname';
   }
   // Korean domestic phone-number forms. NFKC also folds full-width digits.
   // The structural nickname rule already excludes email separators and URLs.

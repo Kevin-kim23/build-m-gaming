@@ -1,5 +1,6 @@
 import {requireUid,ServiceError} from './profile-service.js';
 import {SECURITY_POLICY} from './security-policy.js';
+import {clearMaintenanceCursorReferences} from './deletion-maintenance.js';
 
 // Sliding windows are shared by all devices/functions through one UID document.
 export function createRateLimiter({transact,now=Date.now,policy=SECURITY_POLICY}) {
@@ -23,6 +24,7 @@ export function createRateLimitPurger({transact,now=Date.now}) {
   return uid=>transact(async tx=>{
     const path=`rateLimits/${uid}`,record=await tx.get(path);
     if(!record||!Number.isFinite(record.expiresAt)||record.expiresAt>now())return false;
+    await clearMaintenanceCursorReferences(tx,[{collection:'rateLimits',id:uid}]);
     tx.delete(path);return true;
   });
 }

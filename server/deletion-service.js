@@ -1,5 +1,6 @@
 import {requireUid,ServiceError} from './profile-service.js';
 import {SECURITY_POLICY} from './security-policy.js';
+import {clearMaintenanceCursorReferences} from './deletion-maintenance.js';
 
 export function createDeletionService({transact,deleteAuth,deleteRelated=async()=>{},now=Date.now}) {
   return async uid=>{
@@ -26,7 +27,9 @@ export function createDeletionService({transact,deleteAuth,deleteRelated=async()
       const record=await tx.get(`deletions/${uid}`);
       if(record?.status==='completed')return;
       const completedAt=now();
+      await clearMaintenanceCursorReferences(tx,[{collection:'rateLimits',id:uid},{collection:'reportDaily',id:uid}]);
       tx.delete(`rateLimits/${uid}`);
+      tx.delete(`reportDaily/${uid}`);
       tx.set(`deletions/${uid}`,{...record,status:'completed',completedAt,
         expiresAt:completedAt+SECURITY_POLICY.deletionRetentionMs});
     });

@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,existsSync} from 'node:fs';
 import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+import {build} from 'vite';
 import {licenseListMarkup,licenseDetailMarkup} from '../src/license-panel.js';
 import {infoPanelMarkup} from '../src/info-panel.js';
 const read = path => readFileSync(new URL('../'+path,import.meta.url),'utf8').replace(/\r\n/g,'\n');
@@ -30,10 +32,26 @@ test('notices include actual native and JS runtime, embedded SDK copyrights, not
   assert.ok(notices.entries.some(e=>e.name.includes('SDK 포함')));
   assert.match(notices.entries.find(e=>e.name.includes('play-services-ads:')).license,/Android Software Development Kit License/);
   assert.ok(!notices.entries.some(e=>/^(vite|chokidar|connect)(\s|:|$)/i.test(e.name)));
-  assert.equal(read('THIRD_PARTY_NOTICES.txt'),read('public/THIRD_PARTY_NOTICES.txt'));
-  for(const [id,text] of Object.entries(notices.texts))assert.ok(read('THIRD_PARTY_NOTICES.txt').includes(id+' ==========\n'+text));
+  assert.equal(existsSync(new URL('../public/THIRD_PARTY_NOTICES.txt',import.meta.url)),false,
+    'The app retains complete offline notices in its JSON chunk, without a second public TXT copy');
+  const repositoryText=read('THIRD_PARTY_NOTICES.txt');
+  for(const [id,text] of Object.entries(notices.texts))assert.ok(repositoryText.includes(id+' ==========\n'+text));
   const inventory=JSON.parse(read('docs/licenses/runtime-inventory.json'));
   for(const row of inventory)assert.ok(notices.entries.some(e=>e.name===row.coordinate));
+});
+
+test('production license chunk preserves every complete notice for offline display',async()=>{
+  const result=await build({configFile:false,logLevel:'silent',mode:'production',
+    build:{write:false,minify:true,lib:{entry:fileURLToPath(new URL('../docs/licenses/runtime-notices.json',import.meta.url)),formats:['es']}}});
+  const output=(Array.isArray(result)?result:[result]).flatMap(item=>item.output);
+  const chunk=output.find(item=>item.type==='chunk'&&item.isEntry);
+  assert.ok(chunk,'License data must be packaged in a local JavaScript chunk');
+  assert.deepEqual(chunk.imports,[],'Offline notices must not require an external module');
+  const bundled=(await import('data:text/javascript;base64,'+Buffer.from(chunk.code).toString('base64'))).default;
+  assert.deepEqual(bundled,notices,'Minification must preserve names, license labels, and complete text');
+  const escape=value=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  for(const [index,entry] of bundled.entries.entries())
+    assert.ok(licenseDetailMarkup(bundled,index).body.includes(escape(entry.textIds.map(id=>bundled.texts[id]).join('\n\n'))),entry.name);
 });
 
 test('repackaged protobuf retains the exact reviewed copyright, BSD conditions, and disclaimer',()=>{

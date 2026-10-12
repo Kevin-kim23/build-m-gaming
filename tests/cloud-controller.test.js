@@ -52,3 +52,18 @@ test('security and nickname rejections give specific safe messages and never cla
     assert.equal(cloudErrorMessage({message},null),null);
   }
 });
+test('restore storage failure directs the user to individual backup cleanup while retaining the remote record',async()=>{
+  const remote={revision:1,raw:'synthetic serialized save'};
+  for(const limit of [false,true]){
+    const cloud=createCloudController({
+      call:async name=>name==='readProfile'?{nickname:'테스트계정'}:remote,
+      restore:()=>{if(limit)throw Error('restore-backup-limit');return false;},
+    });
+    cloud.setUser({uid:'synthetic-test-account'});assert.equal(await cloud.refresh(),true);
+    assert.equal(await cloud.restore('synthetic-test-account'),false);
+    assert.match(cloud.state.message,limit?/보관 상한/:/기기 저장 공간/);
+    assert.match(cloud.state.message,/백업.*직접 삭제/);
+    assert.doesNotMatch(cloud.state.message,/서버에 저장할 수/);
+    assert.deepEqual(cloud.state.cloud,remote);
+  }
+});

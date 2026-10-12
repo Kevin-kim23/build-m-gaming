@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "reportDedup",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "targetUid", "order": "ASCENDING"},
+        {"fieldPath": "nicknameRevision", "order": "ASCENDING"}
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

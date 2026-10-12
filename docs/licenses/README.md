@@ -1,6 +1,6 @@
 # 배포 라이선스 고지
 
-설정 → 게임 정보 → 오픈소스 라이선스에서 인터넷 없이 볼 수 있습니다. `runtime-notices.json`을 앱 코드에 번들하며, 동일한 원문을 루트와 public의 THIRD_PARTY_NOTICES.txt에도 보관합니다. 별도 로컬 청크를 메뉴를 열 때만 읽으며, 목록과 원문을 나눠 긴 고지 전체를 한 번에 화면에 그리지 않습니다.
+설정 → 게임 정보 → 오픈소스 라이선스에서 인터넷 없이 볼 수 있습니다. `runtime-notices.json` 전체를 앱 코드의 별도 로컬 청크에 한 번 번들하며, 동일한 원문을 저장소 루트의 `THIRD_PARTY_NOTICES.txt`에도 보관합니다. 저장소의 TXT는 앱의 public 자산에 복제하지 않습니다. 메뉴를 열 때만 로컬 청크를 읽으며, 목록과 원문을 나눠 긴 고지 전체를 한 번에 화면에 그리지 않습니다.
 
 수동 화면 확인: `npx vite --config tools/license-qa.config.mjs` → http://127.0.0.1:4197/__licenses. 메모리 전용 세션으로 실제 게임 저장을 바꾸지 않습니다.
 
@@ -32,6 +32,14 @@ npm run build
 - Firebase JS의 실제 런타임 `@firebase/app-check 0.13.1`, `@firebase/functions 0.14.0`를 추가했습니다. `*-interop-types`는 타입 선언만 제공하므로 런타임 목록에서 제외합니다. 최종 합산 고지는 231개 항목·54개 고유 원문·109개 AAR/JAR이며, 종전 217개 항목·52개 고유 원문의 원문은 모두 유지됩니다.
 - `androidx.datastore:datastore-preferences-external-protobuf:1.1.7`의 POM은 BSD-3-Clause를 선언하지만 JAR에는 LICENSE/NOTICE가 없습니다. [DataStore 1.1.7 릴리스](https://developer.android.com/jetpack/androidx/releases/datastore#1.1.7)에 연결된 커밋 `420da5f291449f11801e378c6789a328a06ec6cb`의 [재패키징 설정](https://android.googlesource.com/platform/frameworks/support/+/420da5f291449f11801e378c6789a328a06ec6cb/datastore/datastore-preferences-external-protobuf/build.gradle)과 [버전 목록](https://android.googlesource.com/platform/frameworks/support/+/420da5f291449f11801e378c6789a328a06ec6cb/gradle/libs.versions.toml)에서 `protobuf-javalite 4.28.2`를 재패키징함을 확인했습니다. Protocol Buffers의 [v28.2 Java POM](https://github.com/protocolbuffers/protobuf/blob/v28.2/java/pom.xml)도 Java 버전 4.28.2와 BSD-3-Clause를 명시합니다.
 - 해당 버전의 [공식 LICENSE 원문](https://github.com/protocolbuffers/protobuf/blob/v28.2/LICENSE)을 `protobuf-4.28.2-LICENSE.txt`에 보존했습니다. SHA-256은 `6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d`입니다. Google의 저작권, 재배포 조건 세 가지, 면책 및 생성 코드 안내를 모두 보존합니다. 생성기는 이 좌표·버전·라이선스 이름에만 이 원문을 연결하고 해시를 검사합니다. 다른 BSD 패키지나 새 버전은 별도 검토 전 계속 실패합니다. 같은 원문은 기존 SDK 포함 고지에도 있어 원문 자체는 중복 저장하지 않습니다.
-- 오프라인 화면/번들에서 App Check와 Functions 항목, 정확한 protobuf 원문, 전체 원문 해시 및 루트/public 파일 일치를 테스트합니다. 라이선스 고지 생성은 App Check 등록·인증 성공·운영 배포를 확인한 작업이 아닙니다.
+- 오프라인 화면/번들에서 App Check와 Functions 항목, 정확한 protobuf 원문, 전체 원문 해시 및 루트 TXT/앱 JSON 내용 일치를 테스트합니다. 라이선스 고지 생성은 App Check 등록·인증 성공·운영 배포를 확인한 작업이 아닙니다.
+
+## 2026-10-12 앱 고지 중복 제거 검토
+
+- 변경 전 웹 빌드에는 `public/THIRD_PARTY_NOTICES.txt` 4,034,419바이트와 JSON 기반 로컬 청크 4,130,581바이트가 함께 들어갔습니다. TXT 복사본만 제거하고 231개 항목·54개 고유 원문을 가진 JSON과 루트 TXT는 그대로 유지합니다. 압축 전 고지 자산 합계는 8,165,000바이트에서 4,130,581바이트로 줄어듭니다. 이는 웹 자산 비교이며 AAB 설치·다운로드 크기 감소량은 아직 측정하지 않았습니다.
+- 이 변경은 저작권자, 라이선스 이름, 원문, NOTICE, 면책, 이용조건 링크를 줄이거나 다른 라이선스로 바꾸지 않습니다. 원문의 SHA-256 검사, 루트 TXT 포함 여부 검사, 프로덕션으로 컴파일한 로컬 청크와 원본 JSON의 완전 일치 검사, 각 항목의 전체 원문 화면 출력 검사를 유지합니다. 중복 TXT가 public 자산에 다시 들어오면 회귀 테스트가 실패합니다.
+- [Apache-2.0 제4조](https://www.apache.org/licenses/LICENSE-2.0)는 라이선스 사본 제공과 관련 고지 보존을 요구하며, NOTICE의 읽을 수 있는 사본은 앱의 일반 고지 화면에 표시할 수 있습니다. [MIT](https://opensource.org/license/mit)는 저작권·허가문 포함을 요구하고, [BSD-3-Clause](https://opensource.org/license/bsd-3-clause)는 바이너리와 제공되는 자료에 저작권·조건·면책을 보존하도록 합니다. 모든 내용과 오프라인 고지 화면을 그대로 포함하는 이번 배치 변경은 이 조건을 유지하도록 설계했습니다.
+- [Google의 공식 고지 안내](https://developers.google.com/android/guides/opensource)도 앱이 쓰는 오픈소스 고지를 표시하는 개발자의 책임과 목록→개별 원문 화면 방식을 설명합니다. 공급자별 고지 원문과 Google SDK 별도 조건은 기존 수집 결과 그대로 남겨 두었습니다. 모든 의존성의 권리 문제를 새로 법률 검토했거나 향후 최종 AAB의 표시를 확인했다는 의미는 아닙니다. 의존성 버전이 바뀌거나 최종 앱을 만들 때는 기존 재생성·번들 검사를 다시 해야 합니다.
+- 저장 정보·네트워크·SDK·안드로이드 권한 변화 없음. 라이선스 표시 접근 경로도 동일합니다. 정책 영향 없음.
 
 공식 근거: [Google 라이브러리 고지 안내](https://developers.google.com/android/guides/opensource), [Android SDK 이용조건](https://developer.android.com/studio/terms.html). 이 생성기는 SDK 또는 실행 시 네트워크 기능을 추가하지 않습니다.

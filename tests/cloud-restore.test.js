@@ -4,11 +4,11 @@ import {createGameSession} from '../src/session.js';
 import {SAVE_KEY,freshState} from '../src/state.js';
 import {serializeSave} from '../src/money.js';
 import {parseSave} from '../src/save.js';
-import {RESTORE_BACKUPS_KEY,LEGACY_RESTORE_BACKUP_KEY} from '../src/restore-backups.js';
+import {RESTORE_BACKUPS_KEY,LEGACY_RESTORE_BACKUP_KEY,RESTORE_BACKUP_LIMIT} from '../src/restore-backups.js';
 const T=1800000000000;
 function setup(){
   const values=new Map([[SAVE_KEY,serializeSave({...freshState(T),gold:55})]]);let fail=false;
-  const storage={getItem:k=>values.get(k)??null,setItem:(k,v)=>{if(fail===true||fail===k)throw Error('quota');values.set(k,v);}};
+  const storage={getItem:k=>values.get(k)??null,setItem:(k,v)=>{if(fail===true||fail===k)throw Error('quota');values.set(k,v);},removeItem:k=>{if(fail===true||fail===k)throw Error('blocked');values.delete(k);}};
   const reports=[];
   const session=createGameSession({storage,now:()=>T,setTimer:()=>1,clearTimer:()=>{},onError:(area,error)=>reports.push([area,error.message])});session.start();
   return {session,values,reports,fail:(key=true)=>{fail=key;}};
@@ -108,4 +108,28 @@ test('local backup restore also refuses to proceed if its safety backup cannot b
   h.fail(RESTORE_BACKUPS_KEY);
   assert.equal(h.session.restoreLocalBackup(first.id),false);
   assert.equal(h.session.state.gold,100);assert.deepEqual(h.values,before);
+});
+test('full backup list blocks cloud and local restore without changing progress and explicit deletion frees a slot',()=>{
+  const h=setup();
+  for(let i=0;i<RESTORE_BACKUP_LIMIT;i++)assert.equal(h.session.restoreCloud(serializeSave({...freshState(T),gold:100+i})),true);
+  const before=new Map(h.values),selected=h.session.listRestoreBackups()[0];
+  assert.equal(h.session.restoreCloud(serializeSave({...freshState(T),gold:999})),false);
+  assert.equal(h.session.restoreBackupIssue,'limit');assert.equal(h.session.saveNotice,null);
+  assert.equal(h.session.restoreLocalBackup(selected.id),false);
+  assert.equal(h.session.restoreBackupIssue,'limit');assert.deepEqual(h.values,before);
+  assert.equal(h.session.state.gold,109);
+  assert.equal(h.session.deleteRestoreBackup(h.session.listRestoreBackups()[1]),true);
+  assert.equal(h.values.get(SAVE_KEY),before.get(SAVE_KEY));
+  assert.equal(h.session.restoreLocalBackup(selected.id),true);
+  assert.equal(h.session.restoreBackupIssue,null);assert.equal(h.session.state.gold,55);
+  assert.equal(h.session.listRestoreBackups().length,RESTORE_BACKUP_LIMIT);
+});
+test('failed or inactive deletion never changes live progress or its safety backups',()=>{
+  const h=setup();h.session.restoreCloud(serializeSave({...freshState(T),gold:10n**27n}));
+  const selected=h.session.listRestoreBackups()[0],before=new Map(h.values);
+  h.fail(RESTORE_BACKUPS_KEY);assert.equal(h.session.deleteRestoreBackup(selected),false);
+  assert.deepEqual(h.values,before);assert.equal(h.session.state.gold,10n**27n);
+  assert.equal(h.reports.at(-1)[0],'save.restore-backup-delete');
+  h.fail(false);h.session.pause();assert.equal(h.session.deleteRestoreBackup(selected),false);
+  assert.deepEqual(h.values,before);
 });

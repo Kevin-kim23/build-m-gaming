@@ -61,7 +61,11 @@ test('the app still matches what the privacy policy promises', () => {
   assert.match(policy,/닉네임, 선택한 사유, 접수 시각과 처리 상태/);
   assert.match(policy,/완료 후 90일/);assert.match(policy,/미완료 기록은 재처리에 필요한 동안/);
   assert.match(policy,/최근 60초 동안 조회 30회/);assert.match(policy,/변경 요청 10회/);
-  assert.match(policy,/기존 복구 기록을 자동으로 덮어쓰거나 개수만으로 지우지/);
+  assert.match(policy,/보관 상한은 10개/);
+  assert.match(policy,/기존에 10개보다 많이 보관된 기록도 자동으로 지우거나 덮어쓰지/);
+  assert.match(policy,/백업 삭제는 현재 진행 중인 저장을 지우지/);
+  assert.match(policy,/신고 원문과 운영자의 처리·복원 기록은 처리 완료 후 90일/);
+  assert.match(policy,/신고자·대상 연결값, 닉네임 변경번호와 이름의 해시값은 닉네임 변경 또는 계정 탈퇴까지/);
   assert.match(policy,/서버 계정 삭제만으로는 지워지지/);
   assert.doesNotMatch(policy,/개발용 게임 계정|일반 배포본에는 이 로그인 테스트/);
   const manifest = read('android/app/src/main/AndroidManifest.xml');

@@ -11,6 +11,8 @@ import {createNicknameReportService} from './report-service.js';
 import {createRateLimiter,createRequestGuard} from './request-security.js';
 import {TRUSTED_APP_IDS} from './security-policy.js';
 import {isLocalEmulator} from './runtime-environment.js';
+import {createScheduledMaintenance} from './scheduled-maintenance.js';
+export {moderateNicknames} from './moderation-runtime.js';
 
 const app=initializeApp();
 setGlobalOptions({region:'asia-northeast3',maxInstances:2});
@@ -52,3 +54,5 @@ export const deleteGameAccount=callable('write',(uid,data,token)=>{
   if(!Number.isFinite(token.auth_time)||Date.now()/1000-token.auth_time>300)throw new ServiceError('recent-login-required');
   return deleteAccount(uid);
 });
+// Source preparation only. These triggers are not deployed during stage 2 prep.
+export const {retryAccountDeletions,purgeExpiredServerRecords}=createScheduledMaintenance();

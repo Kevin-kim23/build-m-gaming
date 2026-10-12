@@ -18,7 +18,9 @@ for (const mode of ['production', 'firebase-dev', 'development']) {
     assert.match(privacy,/App Check/);assert.match(privacy,/Play Integrity/);
     assert.match(privacy,/완료 후 90일/);assert.match(privacy,/미완료 기록은 재처리에 필요한 동안/);
     assert.match(privacy,/신고자 또는 대상인 신고/);assert.match(privacy,/자동 제재하지/);
-    assert.match(privacy,/보관 기간은 운영 제공 전에 확정/);
+    assert.match(privacy,/한국 시간 하루 5건/);
+    assert.match(privacy,/닉네임 변경 또는 계정 탈퇴까지 보관/);
+    assert.match(privacy,/비공개 도구/);assert.match(privacy,/기본 닉네임으로 변경/);
     if(mode==='production') {
       assert.match(privacy,/Firebase Authentication|선택형 Google 로그인/);
       assert.doesNotMatch(privacy,/개발용 게임 계정|일반 배포본에는 이 로그인 테스트/);

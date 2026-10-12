@@ -4,8 +4,12 @@ export function cloudErrorMessage(error,fallback='서버에 연결하지 못했�
     'reserved-nickname':'운영자를 사칭할 수 있는 이름은 사용할 수 없어요.',
     'prohibited-nickname':'사용할 수 없는 표현이 포함된 닉네임이에요. 다른 이름을 입력해 주세요.',
     'nickname-change-unavailable':'닉네임 변경은 아직 제공하지 않아요.',
+    'report-daily-limit':'오늘 접수할 수 있는 신고 5건을 모두 사용했어요. 한국 시간 자정 이후 다시 신고할 수 있어요.',
+    'report-limit-unavailable':'신고 한도를 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.',
     'save-conflict':'다른 기기에서 서버 기록이 바뀌었어요. 다시 불러와 비교해 주세요.',
     'invalid-save':'현재 기록을 서버에 저장할 수 없어요. 기존 기록은 유지돼요.',
+    'local-restore-failed':'기기 기록을 바꾸지 못했어요. 백업 공간이 부족하면 ‘이 기기의 복원 전 백업’에서 필요 없는 백업만 직접 삭제하거나 기기 저장 공간을 확보한 뒤 다시 시도해 주세요. 현재 기록은 유지돼요. 앱 데이터를 지우지 마세요.',
+    'restore-backup-limit':'복원 전 백업이 보관 상한에 도달해 불러오기를 중단했어요. ‘이 기기의 복원 전 백업’에서 필요 없는 백업을 직접 삭제한 뒤 다시 시도해 주세요. 현재 기록과 기존 백업은 유지돼요.',
     'profile-required':'닉네임을 먼저 등록해 주세요.',
     'account-deleting':'계정 삭제가 진행 중이에요.',
     'deletion-pending':'삭제 요청을 접수했지만 아직 완료되지 않았어요. 실패한 처리를 다시 시도하며, 기기 기록은 유지돼요.',
@@ -69,7 +73,7 @@ export function createCloudController({call, localSave, restore, requestId=()=>c
       const latest=await call('readCloudSave');
       if(!current())return {};
       if(!latest||latest.revision!==state.cloud.revision)throw Error('save-conflict');
-      if(!restore(latest.raw))throw Error('invalid-save');
+      if(!restore(latest.raw))throw Error('local-restore-failed');
       pendingWrite=null;
       return {cloud:latest,message:'서버 기록을 불러왔어요. 이전 기기 기록은 복구용으로 보관했어요.'};
     }),

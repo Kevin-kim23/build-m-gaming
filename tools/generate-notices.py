@@ -130,6 +130,7 @@ folder.mkdir(parents=True, exist_ok=True)
 full = '부대 키우기 · Third-party notices\n배포 앱의 런타임 라이브러리 및 SDK 포함 고지. 개발 도구 제외.\n\n'
 full += '\n'.join(e['name'] + '\n' + e['license'] + '\n원문: ' + ', '.join(e['textIds']) + '\n' for e in entries)
 full += '\n'.join('\n========== ' + key + ' ==========\n' + text for key, text in texts.items())
-for path in ('THIRD_PARTY_NOTICES.txt', 'public/THIRD_PARTY_NOTICES.txt'):
-    (ROOT / path).write_text(full, encoding='utf-8')
+# Keep a readable repository copy. The app already packages the complete JSON
+# through info-ui.js; a public TXT would copy every notice into the app twice.
+(ROOT / 'THIRD_PARTY_NOTICES.txt').write_text(full, encoding='utf-8')
 print(f'{len(entries)} entries, {len(texts)} distinct license texts, {len(inventory)} runtime artifacts')

@@ -9,6 +9,26 @@ function fixture(){const records=new Map();let clock=1000;const transact=async o
   records.clear();for(const [p,v]of draft)records.set(p,v);return result;};
   return {records,transact,now:()=>clock,advance:ms=>{clock+=ms;}};
 }
+
+test('account deletion clears account identifiers from maintenance counter cursors',async()=>{
+  const f=fixture();
+  for(const collection of ['rateLimits','reportDaily'])f.records.set(`${collection}/test-a`,{expiresAt:500});
+  for(const job of ['deletion-retry','expired-records'])f.records.set(`maintenanceRuns/${job}`,{
+    leaseToken:'keep-lease',cursors:{
+      rateLimits:{id:'test-a',expiresAt:500,updatedAt:900},
+      reportDaily:{id:'test-a',expiresAt:500,updatedAt:900},
+      nicknameReports:{id:'unrelated',expiresAt:500,updatedAt:900},
+    },
+  });
+  await createDeletionService({...f,deleteAuth:async()=>{}})('test-a');
+  for(const job of ['deletion-retry','expired-records']){
+    const record=f.records.get(`maintenanceRuns/${job}`);
+    assert.equal(record.cursors.rateLimits?.id,undefined);
+    assert.equal(record.cursors.reportDaily?.id,undefined);
+    assert.equal(record.cursors.nicknameReports.id,'unrelated');
+    assert.equal(record.leaseToken,'keep-lease');
+  }
+});
 test('repeated deletion cannot extend the completed record retention deadline',async()=>{
   const f=fixture();const remove=createDeletionService({...f,deleteAuth:async()=>{}});
   await remove('test-a');const completedAt=f.records.get('deletions/test-a').completedAt;

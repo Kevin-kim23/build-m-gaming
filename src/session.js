@@ -3,7 +3,7 @@ import { SAVE_KEY, LEGACY_KEY, freshState, SAVE_VERSION } from './state.js';
 import { accrue, tapGold } from './game.js';
 import { inspectSave } from './save.js';
 import { prepareOfflineReward, claimOfflineReward } from './offline-reward.js';
-import {appendRestoreBackup, readRestoreBackups} from './restore-backups.js';
+import {appendRestoreBackup, readRestoreBackups, matchesRestoreBackup, deleteRestoreBackup as removeRestoreBackup} from './restore-backups.js';
 
 export const SAVE_DELAY = 2000;
 export const RECOVERY_KEY = SAVE_KEY + '-recovery';
@@ -17,6 +17,7 @@ export function createGameSession({ storage, locks, now = Date.now,
   let dirty = false, timer = null, committed = null, release = null;
   let controller = null, generation = 0;
   let saveIssue = null, pendingRecovery = null;
+  let restoreBackupIssue = null;
   let claiming = false;
   const reportedIssues = new Map();
   const notify = (roster = false) => { if (!claiming) onChange(state, roster); };
@@ -230,6 +231,7 @@ export function createGameSession({ storage, locks, now = Date.now,
   }
   load();
   function restoreRecord(raw, source) {
+    restoreBackupIssue=null;
     if(!active||invalid)return false;
     const latest=inspect(raw,source).state;
     if(!latest||!flush(true))return false;
@@ -240,7 +242,11 @@ export function createGameSession({ storage, locks, now = Date.now,
     try {
       appendRestoreBackup(storage,previous,now(),source);
       storage.setItem(SAVE_KEY,next);
-    } catch(error){failure('save.'+source+'-restore',error);notify();return false;}
+    } catch(error){
+      if(error.message==='restore-backup-limit')restoreBackupIssue='limit';
+      else {restoreBackupIssue='storage';failure('save.'+source+'-restore',error);}
+      notify();return false;
+    }
     state=latest;committed=next;dirty=false;storageError=false;
     notify(true);return true;
   }
@@ -248,10 +254,19 @@ export function createGameSession({ storage, locks, now = Date.now,
     try { return readRestoreBackups(storage); }
     catch(error){failure('save.restore-backup-list',error);return null;}
   }
-  function restoreLocalBackup(id) {
+  function restoreLocalBackup(selection) {
+    restoreBackupIssue=null;
     if(!active||invalid)return false;
-    const selected=listRestoreBackups()?.find(entry=>entry.id===id);
+    // Legacy callers may select a current ID directly. The UI supplies the full
+    // snapshot shown in its confirmation, preventing ID reuse from changing it.
+    const selected=listRestoreBackups()?.find(entry=>typeof selection==='string'
+      ?entry.id===selection:matchesRestoreBackup(entry,selection));
     return selected?restoreRecord(selected.raw,'local-backup'):false;
+  }
+  function deleteRestoreBackup(selected) {
+    if(!active||invalid)return false;
+    try { return removeRestoreBackup(storage,selected); }
+    catch(error){failure('save.restore-backup-delete',error);notify();return false;}
   }
   const restoreCloud=raw=>restoreRecord(raw,'cloud');
   return {
@@ -259,6 +274,7 @@ export function createGameSession({ storage, locks, now = Date.now,
     // Unknown/unreadable saves must not opt the player into startup sound.
     get hasSavedProgress() { return committed !== null || invalid; },
     get active() { return active && !invalid; },
+    get restoreBackupIssue() { return restoreBackupIssue; },
     get saveNotice() {
       if (storageError) return { kind: invalid ? 'blocked' : 'warning', canRetry: invalid,
         title: '저장 공간을 확인해 주세요',
@@ -279,6 +295,6 @@ export function createGameSession({ storage, locks, now = Date.now,
       return locks ? '자동 저장 · 2초 간격' : '자동 저장 · 한 창에서 플레이';
     },
     start, pause, tap, change, tick, flush, receive, retryLoad, claimOffline,restoreCloud,
-    listRestoreBackups,restoreLocalBackup,
+    listRestoreBackups,restoreLocalBackup,deleteRestoreBackup,
   };
 }
