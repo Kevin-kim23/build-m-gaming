@@ -1,12 +1,14 @@
 {
   "name": "budae-kiugi",
-  "version": "0.81.0",
+  "version": "0.81.1",
   "private": true,
   "type": "module",
   "scripts": {
+    "postinstall": "node tools/install-server-dependencies.mjs",
     "dev": "vite --host 127.0.0.1 --port 4173 --strictPort",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    "pretest": "node tools/prepare-server.mjs",
     "test": "node --test tests/*.test.js",
     "audio:verify": "node tools/verify-audio.mjs",
     "build:release": "npm run audio:verify && npm run build",
