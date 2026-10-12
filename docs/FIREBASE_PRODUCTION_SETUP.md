@@ -30,7 +30,7 @@ SHA-256 4A:B7:40:02:07:04:4F:61:CA:B7:45:06:EA:8F:CA:95:50:DE:93:59:F5:42:AB:2B:
 - 서버 닉네임/저장/삭제와 클라이언트 연결은 코드·로컬 검증 완료이며 Functions는 미배포. 랭킹 및 운영 보호 조치도 남아 있다.
 - Functions 운영 배포에는 Blaze가 필요하다. 비용 조건/결제 연결을 확정한 뒤 진행한다. 서비스 계정 키를 생성하거나 Git에 저장하지 않는다.
 - 사용자가 이번 실제 폰 검증은 생략하도록 명시했다. 폰 로그인은 미확인으로 남기고 다시 연결을 요청하지 않는다.
-- 0.78.0 전체 테스트 751개, 일반/개발 웹 빌드, 합성 데이터 브라우저 및 에뮬레이터 검사 통과. 이전 0.77.1에서 이 PC 키로 서명한 개발 Android assembleDebug 통과; 0.78.0 Android 빌드는 미검증. SDK 경로 환경 변수 지정 후 빌드 성공. 기존 라이선스 청크/Gradle 경고 유지. 이는 운영 연결/실기기/배포 검증이 아니다.
+- 최신 0.79.0 전체 테스트 756개·일반/개발 웹 빌드·개발 APK·서명 release AAB/APK·lint·bundletool 구조 검사 통과. 합성 데이터 브라우저 검사와 앞선 0.78.0 에뮬레이터 검사 완료. lint 오류0·경고17. 실제 Google 계정 로그인·운영 서버 저장·실기기·배포는 미검증이다.
 - 정책 동기화 필요: 최종 처리 항목·삭제 동작 확정 후 앱 방침/스토어 문서/공개 Google Docs/Play 데이터 보안을 함께 맞춘다.
 
 공식 근거: https://firebase.google.com/docs/projects/dev-workflows/general-best-practices 및 https://firebase.google.com/docs/functions/get-started
