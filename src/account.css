@@ -7,3 +7,4 @@
 .account-panel details { margin-top: 16px; font-size: 13px; }
 .account-panel summary { cursor: pointer; min-height: 36px; }
 .account-panel [role="status"] { min-height: 1.5em; color: #e8cd84; }
+.account-panel input { display:block; box-sizing:border-box; width:100%; min-height:48px; margin-top:8px; padding:10px; font:inherit; color:#f0eddc; background:#263428; border:1px solid #8d9c7d; border-radius:8px; }

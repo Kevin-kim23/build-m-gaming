@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver,
-  GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithCredential, signOut, deleteUser } from 'firebase/auth';
+  GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithCredential, signOut } from 'firebase/auth';
 import { DEVELOPMENT_FIREBASE } from './account-config.js';
 
 let adapter;
@@ -15,7 +15,17 @@ export function createFirebaseAuthAdapter({native = false, nativePlugin} = {}) {
   provider.setCustomParameters({prompt: 'select_account'});
   const pluginReady = native ? (nativePlugin ? Promise.resolve(nativePlugin)
     : import('@capacitor-firebase/authentication').then(module => module.FirebaseAuthentication)) : null;
+  let functionsModule;
+  async function call(name,data={}) {
+    const uid=auth.currentUser?.uid;
+    if(!uid)throw Object.assign(new Error('sign-in-required'),{code:'auth/requires-recent-login'});
+    functionsModule??=import('firebase/functions');
+    const {getFunctions,httpsCallable}=await functionsModule;
+    if(auth.currentUser?.uid!==uid)throw new Error('account-changed');
+    return (await httpsCallable(getFunctions(app,'asia-northeast3'),name)(data)).data;
+  }
   adapter = {
+    call,
     ready: async () => { await pluginReady; await auth.authStateReady(); },
     currentUser: () => auth.currentUser,
     subscribe: listener => onAuthStateChanged(auth, listener),
@@ -28,7 +38,7 @@ export function createFirebaseAuthAdapter({native = false, nativePlugin} = {}) {
     } : () => signInWithPopup(auth, provider),
     // With skipNativeAuth, Firebase JS is the sole persistent login session.
     signOut: async () => { await signOut(auth); if (native) await (await pluginReady).signOut(); },
-    deleteAccount: async () => { if (auth.currentUser) await deleteUser(auth.currentUser);
+    deleteAccount: async () => { if (auth.currentUser) {await call('deleteGameAccount');await signOut(auth);}
       if (native) await (await pluginReady).signOut(); },
   };
   return adapter;

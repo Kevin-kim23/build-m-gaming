@@ -21,8 +21,10 @@ for (const mode of ['production', 'firebase-dev', 'development']) {
       assert.match(privacy,/회원가입·로그인 없이/);
     } else {
       assert.match(privacy,/Firebase Authentication/);assert.match(privacy,/미국/);
-      assert.match(privacy,/개발용 로그인 계정 삭제/);assert.match(privacy,/180일/);
-      assert.match(terms,/로그인 계정과 이 기기 기록은 아직 연결되지/);
+      assert.match(privacy,/개발 서버 계정·기록 삭제/);assert.match(privacy,/180일/);
+      assert.match(privacy,/최초 연결 검토 기록/);assert.match(privacy,/직접 선택해야/);
+      assert.match(terms,/로그인만으로 기기 기록을 자동 업로드하거나 바꾸지/);
+      assert.match(terms,/충돌하는 기록의 골드·병력은 합산하지/);
     }
   });
 }

@@ -6,15 +6,18 @@ import { accountTestingEnabled } from './account-config.js';
 import { accountMarkup, accountDeleteMarkup } from './account-view.js';
 import { reportError } from './diagnostics.js';
 import './account.css';
+import {createCloudUI} from './cloud-ui.js';
 
-export async function createAccountUI() {
+export async function createAccountUI(session) {
   const native = Capacitor.isNativePlatform();
   const appId = native ? (await App.getInfo()).id : '';
   if (!accountTestingEnabled(import.meta.env.MODE, native, appId)) return null;
+  let backend;
   const account = createAccountController({onError: reportError, loadAdapter: async () => {
     const {createFirebaseAuthAdapter} = await import('./firebase-auth-adapter.js');
-    return createFirebaseAuthAdapter({native});
+    backend=createFirebaseAuthAdapter({native});return backend;
   }});
+  createCloudUI({account,session,call:(name,data)=>backend.call(name,data)});
   let deletionUid = null;
   function show() { openDetail(accountMarkup(account.state)); void account.initialize(); }
   account.subscribe(state => {

@@ -1,6 +1,7 @@
 // Authentication is deliberately independent of the local army save. No game state is accepted here.
 const CANCELLED = new Set(['auth/popup-closed-by-user', 'auth/cancelled-popup-request', 'auth/cancelled']);
 export function accountErrorCode(error) {
+  if(error?.code==='functions/failed-precondition'&&error?.message==='recent-login-required')return 'auth/requires-recent-login';
   if (/cancel(?:l)?ed|12501/i.test(error?.message ?? '')) return 'auth/cancelled';
   return typeof error?.code === 'string' && /^auth\/[a-z0-9-]+$/.test(error.code)
     ? error.code : 'auth/unknown';
@@ -66,8 +67,8 @@ export function createAccountController({loadAdapter, onError = () => {}}) {
     try { operation = adapter[action](); } catch (error) { operation = Promise.reject(error); }
     return Promise.resolve(operation).then(() => {
       publish({phase: 'ready', user: publicUser(adapter.currentUser()), message:
-        action === 'signIn' ? '구글 로그인 완료 · 게임 기록은 아직 이 기기에만 저장돼요.'
-          : action === 'deleteAccount' ? '개발용 로그인 계정을 삭제했어요. 이 기기의 게임 기록은 유지돼요.'
+        action === 'signIn' ? '구글 로그인 완료 · 서버 기록은 닉네임·서버 기록 화면에서 확인해 주세요.'
+          : action === 'deleteAccount' ? '개발 서버 계정과 기록을 삭제했어요. 이 기기의 게임 기록은 유지돼요.'
             : '로그아웃했어요. 이 기기의 게임 기록은 유지돼요.'});
       return true;
     }, error => {

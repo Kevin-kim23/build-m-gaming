@@ -103,7 +103,9 @@ test('development auth never enables on production mode or production package', 
 test('account markup escapes provider text and honestly distinguishes login from saved progress', () => {
   const view=accountMarkup({phase:'ready',user:{email:'<img src=x onerror=alert(1)>'},message:'<script>bad</script>'});
   assert.doesNotMatch(view.body,/<img|<script/);
-  assert.match(view.body,/서버 저장.*아직 지원하지/);
+  assert.match(view.body,/로그인만으로 게임 기록이 서버에 저장되지는/);
+  assert.match(view.body,/data-detail-action="cloud-show"/);
+  assert.match(accountDeleteMarkup().body,/닉네임·게임 저장·최초 연결 기록/);
   assert.match(accountDeleteMarkup().body,/Google 계정 자체/);
   assert.match(accountErrorMessage('auth/requires-recent-login'),/다시 로그인/);
 });

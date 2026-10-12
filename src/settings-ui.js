@@ -34,7 +34,7 @@ export function createSettingsUI(session, infoUI, audio, resumeGuide=()=>{}, acc
   onDetailAction(async action => {
     if (action === 'settings-account' && accountAvailable) {
       try {
-        accountUI ??= import('./account-ui.js').then(module => module.createAccountUI());
+        accountUI ??= import('./account-ui.js').then(module => module.createAccountUI(session));
         const ui = await accountUI;
         if (ui) ui.show();
         else openDetail({title: '개발용 계정 연결', body: '<p>개발 APK에서만 사용할 수 있어요.</p>'});

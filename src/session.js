@@ -228,6 +228,21 @@ export function createGameSession({ storage, locks, now = Date.now,
     return saved ? result : {ok:false,reason:'save'};
   }
   load();
+  function restoreCloud(raw) {
+    if(!active||invalid)return false;
+    const latest=inspect(raw,'cloud').state;
+    if(!latest||!flush(true))return false;
+    const previous=serializeSave(state);
+    prepareOfflineReward(latest,now());
+    latest.revision=Math.max(latest.revision,state.revision)+1;
+    const next=serializeSave(latest);
+    try {
+      storage.setItem(SAVE_KEY+'-before-cloud-restore',previous);
+      storage.setItem(SAVE_KEY,next);
+    } catch(error){failure('save.cloud-restore',error);notify();return false;}
+    state=latest;committed=next;dirty=false;storageError=false;
+    notify(true);return true;
+  }
   return {
     get state() { return state; },
     // Unknown/unreadable saves must not opt the player into startup sound.
@@ -252,6 +267,6 @@ export function createGameSession({ storage, locks, now = Date.now,
       if (recovered) return '보조 저장 복구 완료';
       return locks ? '자동 저장 · 2초 간격' : '자동 저장 · 한 창에서 플레이';
     },
-    start, pause, tap, change, tick, flush, receive, retryLoad, claimOffline,
+    start, pause, tap, change, tick, flush, receive, retryLoad, claimOffline,restoreCloud,
   };
 }
