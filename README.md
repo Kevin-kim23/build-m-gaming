@@ -132,6 +132,8 @@ npm run android:release
 
 ## 0.77 개발용 Firebase 구글 로그인
 
+다른 PC에서 이어할 때 먼저 [서버·출시 인수인계](docs/SERVER_RELEASE_HANDOFF_2026-10-12.md)와 [정책 수정 목록](docs/store/ACCOUNT_POLICY_TODO.md)을 읽으세요. 완료/미완료·오늘 AAB·기록 보존·서명키·비용·실제 검증 기준을 함께 정리했습니다. 이 인수인계 추가는 게임 기능이나 버전을 바꾸지 않습니다.
+
 서버 테스트 브랜치의 개발 웹/별도 Android debug 앱에서 Google 계정 연결을 시험합니다. 로그인·로그아웃·인증 계정 삭제는 기존 게임 저장과 분리했습니다. 닉네임·클라우드 저장·복원·랭킹·결제는 후속 단계입니다. Firebase JS 12.19.0 / Capawesome Firebase Authentication 8.5.2(Apache-2.0), Android Firebase Auth 및 Google 인증 SDK를 개발용에만 사용하며 Analytics/Crashlytics는 추가하지 않았습니다.
 
 집에서 이어하기·검증 명령·정책 범위: [Firebase 개발 안내](docs/FIREBASE_DEVELOPMENT.md). 검증 결과는 검증결과.md의 0.77 항목 참조. 실제 폰과 Play 서명 로그인은 별도 확인이 필요합니다.
