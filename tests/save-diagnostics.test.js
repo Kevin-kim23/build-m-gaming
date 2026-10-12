@@ -20,7 +20,7 @@ test('missing saves are normal, but empty or malformed records have a safe diagn
 test('save diagnostics distinguish versions, fields, amounts and cross-field constraints', () => {
   const cases = [
     [{ version: 99 }, 'unsupported-version', 'version'],
-    [{ gold: '10000000000000000001' }, 'invalid-field', 'gold'],
+    [{ gold: (MAX_GOLD+1n).toString() }, 'invalid-field', 'gold'],
     [{ gold: Number.MAX_SAFE_INTEGER + 1 }, 'invalid-field', 'gold'],
     [{ taps: -1 }, 'invalid-field', 'taps'],
     [{ sound: 'yes' }, 'invalid-field', 'sound'],

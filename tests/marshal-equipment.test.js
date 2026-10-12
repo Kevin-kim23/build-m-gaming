@@ -1,3 +1,4 @@
+import { LEGACY_MAX_GOLD } from '../src/money.js';
 import { SAVE_VERSION } from '../src/state.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -63,16 +64,16 @@ test('glaive combines with conquest and equipment; 8-hour income, cap and reload
   const before=loaded.gold;accrue(loaded,T);assert.equal(loaded.gold,before);
   loaded.gold=MAX_GOLD-1n;accrue(loaded,loaded.lastAccrual+1000);assert.equal(loaded.gold,MAX_GOLD);
 });
-test('glaive upgrade settles the old rate first, and a failed roll never changes income',()=>{
+test('glaive upgrades settle the old rate first and each paid step increases income',()=>{
   const s=army(),old=perSecond(s);s.gold=1_000_000_000_000;
   const result=enhancePersonalEquipment(s,T+1000,'marshalGlaive',()=>0);
   assert.equal(s.gold,subtractMoney(1_000_000_000_000+old,result.cost));
   const updated=perSecond(s),gold=s.gold;
-  const fail=enhancePersonalEquipment(s,T+1000,'marshalGlaive',()=>9999);
-  assert.equal(fail.success,false);assert.equal(perSecond(s),updated);assert.equal(s.gold,subtractMoney(gold,fail.cost));
+  const next=enhancePersonalEquipment(s,T+1000,'marshalGlaive');
+  assert.equal(next.success,true);assert.ok(perSecond(s)>updated);assert.equal(s.gold,subtractMoney(gold,next.cost));
 });
 test('v19 adds empty military slots and Lv.1 glaive while preserving all paid gear and active skills',()=>{
-  const s=army();s.version=19;s.gold=MAX_GOLD-1n;
+  const s=army();s.version=19;s.gold=LEGACY_MAX_GOLD-1n;
   for(const id of Object.keys(s.personalLevels))s.personalLevels[id]=7;
   delete s.personalLevels.marshalGlaive;delete s.equipment.railgunTank;delete s.equipment.icbm;
   s.equipment.tank={level:20,count:1,deployed:true};s.swordActivatedAt=T-1000;s.swordDurationMs=90000;
@@ -82,7 +83,7 @@ test('v19 adds empty military slots and Lv.1 glaive while preserving all paid ge
   assert.equal(next.personalLevels.marshalGlaive,1);assert.equal(next.equipment.icbm,null);assert.equal(next.equipment.railgunTank,null);
   for(const key of ['swordActivatedAt','swordDurationMs','autoTouchActivatedAt','autoTouchDurationMs','autoTouchTicks'])assert.equal(next[key],s[key]);
   assert.deepEqual(next.equipment.tank,s.equipment.tank);
-  for(const patch of [{personalLevels:{...next.personalLevels,marshalGlaive:0}},{equipment:{...next.equipment,icbm:undefined}},{equipment:{...next.equipment,railgunTank:{level:21,count:1,deployed:false}}}])
+  for(const patch of [{personalLevels:{...next.personalLevels,marshalGlaive:0}},{equipment:{...next.equipment,icbm:undefined}},{equipment:{...next.equipment,railgunTank:{level:51,count:1,deployed:false}}}])
     assert.equal(parseSave(serializeSave({...next,...patch}),T),null);
   s.equipment.icbm={level:20,count:1,deployed:false};s.personalLevels.marshalGlaive=10;
   assert.equal(parseSave(serializeSave(s),T).equipment.icbm,null);assert.equal(parseSave(serializeSave(s),T).personalLevels.marshalGlaive,1);

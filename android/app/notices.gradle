@@ -1,0 +1,22 @@
+// Export only the resolved release runtime (not Gradle/npm build or test tools).
+tasks.register('exportNoticeDependencies') {
+    doLast {
+        def artifacts = configurations.releaseRuntimeClasspath.incoming.artifactView { componentFilter { it instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier } }.artifacts.artifacts
+        def rows = artifacts.collect { a ->
+            def id = a.id.componentIdentifier
+            def pom = null
+            if (id.group != rootProject.name && !a.id.componentIdentifier.toString().startsWith('project ')) {
+                def dep = dependencies.create("${id.group}:${id.module}:${id.version}@pom")
+                def config = configurations.detachedConfiguration(dep)
+                config.transitive = false
+                pom = config.singleFile.absolutePath
+            }
+            [group:id.group, name:id.module, version:id.version, artifact:a.file.absolutePath, pom:pom]
+        }.sort { a, b -> "${a.group}:${a.name}" <=> "${b.group}:${b.name}" }
+        def out = layout.buildDirectory.file('notices/dependencies.json').get().asFile
+        out.parentFile.mkdirs()
+        out.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(rows))
+        println "Runtime notice inventory: ${rows.size()} artifacts"
+    }
+}
+

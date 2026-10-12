@@ -21,7 +21,7 @@ export function glaiveIcon(value=1) {
   r(102,85,13,5,gold);r(105,89,9,9,'#9d2d38');r(109,97,2,42,'#7b2834');
   for(let i=0;i<7;i++){r(108+i,109,1,39-(i%3)*4,i%2?'#d95d4d':'#a5363d');}
   r(86,235,16,4,gold);r(89,239,10,2,light);
-  for(let i=1;i<level;i++){
+  for(let i=1;i<Math.min(level,10);i++){
     const y=123+i*10;r(87,y,16,4,dark);r(88,y,14,2,gold);r(89,y,3,1,light);
     r(93,y-3,5,5,jade);r(94,y-3,2,2,'#efffe2');
   }
@@ -29,7 +29,7 @@ export function glaiveIcon(value=1) {
   if(level>=5){r(91,35,7,26,dark);r(92,36,5,22,gold);r(92,35,5,2,light);}
   if(level>=7){r(84,86,22,3,light);r(101,99,2,124,'#b0eee0');}
   if(level>=9){r(86,227,20,3,light);r(83,58,3,28,gold);r(84,58,1,25,light);}
-  if(level===10){r(105,75,4,7,'#dcffdf');r(103,77,8,2,light);r(100,51,2,22,light);}
+  if(level>=10){r(105,75,4,7,'#dcffdf');r(103,77,8,2,light);r(100,51,2,22,light);}
   const svg=`<svg class="command-baton-art glaive-art" viewBox="0 0 192 256" role="img" aria-label="언월도 정밀 픽셀 그림" shape-rendering="crispEdges">${personalLustre('glaive',level)}${p.join('')}</svg>`;
   cache.set(level,svg);return svg;
 }

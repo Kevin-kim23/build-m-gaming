@@ -1,0 +1,1321 @@
+{
+  "version": "0.65.0",
+  "model": "권장 전력, 해당 계급 해금 장비 종류별 1문, 권장 강화, 기본 덱, 0.5초마다 가까운 적 레인 방어",
+  "results": [
+    {
+      "id": 1,
+      "rank": "대위",
+      "power": 320,
+      "level": 0,
+      "status": "victory",
+      "seconds": 70.25,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery"
+      ]
+    },
+    {
+      "id": 2,
+      "rank": "대위",
+      "power": 368,
+      "level": 0,
+      "status": "victory",
+      "seconds": 76.7,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery"
+      ]
+    },
+    {
+      "id": 3,
+      "rank": "대위",
+      "power": 422,
+      "level": 0,
+      "status": "victory",
+      "seconds": 79.65,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery"
+      ]
+    },
+    {
+      "id": 4,
+      "rank": "대위",
+      "power": 485,
+      "level": 1,
+      "status": "victory",
+      "seconds": 75.3,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery"
+      ]
+    },
+    {
+      "id": 5,
+      "rank": "대위",
+      "power": 557,
+      "level": 1,
+      "status": "victory",
+      "seconds": 77,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery"
+      ]
+    },
+    {
+      "id": 6,
+      "rank": "소령",
+      "power": 640,
+      "level": 2,
+      "status": "victory",
+      "seconds": 52.25,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank"
+      ]
+    },
+    {
+      "id": 7,
+      "rank": "소령",
+      "power": 718,
+      "level": 2,
+      "status": "victory",
+      "seconds": 76.25,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank"
+      ]
+    },
+    {
+      "id": 8,
+      "rank": "소령",
+      "power": 806,
+      "level": 2,
+      "status": "victory",
+      "seconds": 61.65,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank"
+      ]
+    },
+    {
+      "id": 9,
+      "rank": "소령",
+      "power": 905,
+      "level": 3,
+      "status": "victory",
+      "seconds": 53.4,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank"
+      ]
+    },
+    {
+      "id": 10,
+      "rank": "소령",
+      "power": 1016,
+      "level": 3,
+      "status": "victory",
+      "seconds": 77.85,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank"
+      ]
+    },
+    {
+      "id": 11,
+      "rank": "소령",
+      "power": 1140,
+      "level": 3,
+      "status": "victory",
+      "seconds": 61.55,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank"
+      ]
+    },
+    {
+      "id": 12,
+      "rank": "중령",
+      "power": 1280,
+      "level": 4,
+      "status": "victory",
+      "seconds": 54.1,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank",
+        "selfPropelled"
+      ]
+    },
+    {
+      "id": 13,
+      "rank": "중령",
+      "power": 1522,
+      "level": 4,
+      "status": "victory",
+      "seconds": 68.3,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank",
+        "selfPropelled"
+      ]
+    },
+    {
+      "id": 14,
+      "rank": "중령",
+      "power": 1810,
+      "level": 4,
+      "status": "victory",
+      "seconds": 60.45,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank",
+        "selfPropelled"
+      ]
+    },
+    {
+      "id": 15,
+      "rank": "중령",
+      "power": 2153,
+      "level": 4,
+      "status": "victory",
+      "seconds": 56.75,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank",
+        "selfPropelled"
+      ]
+    },
+    {
+      "id": 16,
+      "rank": "중령",
+      "power": 2560,
+      "level": 5,
+      "status": "victory",
+      "seconds": 66.2,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank",
+        "selfPropelled"
+      ]
+    },
+    {
+      "id": 17,
+      "rank": "중령",
+      "power": 3044,
+      "level": 5,
+      "status": "victory",
+      "seconds": 59.6,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank",
+        "selfPropelled"
+      ]
+    },
+    {
+      "id": 18,
+      "rank": "중령",
+      "power": 3620,
+      "level": 5,
+      "status": "victory",
+      "seconds": 56.35,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank",
+        "selfPropelled"
+      ]
+    },
+    {
+      "id": 19,
+      "rank": "중령",
+      "power": 4305,
+      "level": 5,
+      "status": "victory",
+      "seconds": 75.05,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "tank",
+        "selfPropelled"
+      ]
+    },
+    {
+      "id": 20,
+      "rank": "대령",
+      "power": 5120,
+      "level": 6,
+      "status": "victory",
+      "seconds": 90.05,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter"
+      ]
+    },
+    {
+      "id": 21,
+      "rank": "대령",
+      "power": 5747,
+      "level": 6,
+      "status": "victory",
+      "seconds": 60.1,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "selfPropelled",
+        "helicopter"
+      ]
+    },
+    {
+      "id": 22,
+      "rank": "대령",
+      "power": 6451,
+      "level": 6,
+      "status": "victory",
+      "seconds": 76.55,
+      "hp": 97,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter"
+      ]
+    },
+    {
+      "id": 23,
+      "rank": "대령",
+      "power": 7241,
+      "level": 6,
+      "status": "victory",
+      "seconds": 65.55,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter"
+      ]
+    },
+    {
+      "id": 24,
+      "rank": "대령",
+      "power": 8127,
+      "level": 6,
+      "status": "victory",
+      "seconds": 62.7,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "selfPropelled",
+        "helicopter"
+      ]
+    },
+    {
+      "id": 25,
+      "rank": "대령",
+      "power": 9123,
+      "level": 6,
+      "status": "victory",
+      "seconds": 76.75,
+      "hp": 97,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter"
+      ]
+    },
+    {
+      "id": 26,
+      "rank": "준장",
+      "power": 10240,
+      "level": 7,
+      "status": "victory",
+      "seconds": 61.35,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 27,
+      "rank": "준장",
+      "power": 11494,
+      "level": 7,
+      "status": "victory",
+      "seconds": 62.25,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 28,
+      "rank": "준장",
+      "power": 12902,
+      "level": 7,
+      "status": "victory",
+      "seconds": 76.55,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 29,
+      "rank": "준장",
+      "power": 14482,
+      "level": 7,
+      "status": "victory",
+      "seconds": 64.7,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 30,
+      "rank": "준장",
+      "power": 16255,
+      "level": 7,
+      "status": "victory",
+      "seconds": 65.3,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 31,
+      "rank": "준장",
+      "power": 18246,
+      "level": 7,
+      "status": "victory",
+      "seconds": 83.4,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 32,
+      "rank": "소장",
+      "power": 20480,
+      "level": 8,
+      "status": "victory",
+      "seconds": 64.8,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 33,
+      "rank": "소장",
+      "power": 24355,
+      "level": 8,
+      "status": "victory",
+      "seconds": 65.75,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 34,
+      "rank": "소장",
+      "power": 28963,
+      "level": 8,
+      "status": "victory",
+      "seconds": 84.6,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 35,
+      "rank": "소장",
+      "power": 34443,
+      "level": 8,
+      "status": "victory",
+      "seconds": 68.05,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 36,
+      "rank": "소장",
+      "power": 40960,
+      "level": 9,
+      "status": "victory",
+      "seconds": 65.4,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 37,
+      "rank": "소장",
+      "power": 48710,
+      "level": 9,
+      "status": "victory",
+      "seconds": 79.25,
+      "hp": 99,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 38,
+      "rank": "소장",
+      "power": 57926,
+      "level": 9,
+      "status": "victory",
+      "seconds": 67.3,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 39,
+      "rank": "소장",
+      "power": 68886,
+      "level": 9,
+      "status": "victory",
+      "seconds": 68,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher"
+      ]
+    },
+    {
+      "id": 40,
+      "rank": "중장",
+      "power": 81920,
+      "level": 10,
+      "status": "victory",
+      "seconds": 102.15,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter"
+      ]
+    },
+    {
+      "id": 41,
+      "rank": "중장",
+      "power": 103213,
+      "level": 10,
+      "status": "victory",
+      "seconds": 68.05,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter"
+      ]
+    },
+    {
+      "id": 42,
+      "rank": "중장",
+      "power": 130040,
+      "level": 10,
+      "status": "victory",
+      "seconds": 71.15,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter"
+      ]
+    },
+    {
+      "id": 43,
+      "rank": "중장",
+      "power": 163840,
+      "level": 11,
+      "status": "victory",
+      "seconds": 80.8,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter"
+      ]
+    },
+    {
+      "id": 44,
+      "rank": "중장",
+      "power": 206425,
+      "level": 11,
+      "status": "victory",
+      "seconds": 69.15,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter"
+      ]
+    },
+    {
+      "id": 45,
+      "rank": "중장",
+      "power": 260080,
+      "level": 11,
+      "status": "victory",
+      "seconds": 72.7,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter"
+      ]
+    },
+    {
+      "id": 46,
+      "rank": "대장",
+      "power": 327680,
+      "level": 12,
+      "status": "victory",
+      "seconds": 82.05,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank"
+      ]
+    },
+    {
+      "id": 47,
+      "rank": "대장",
+      "power": 412851,
+      "level": 12,
+      "status": "victory",
+      "seconds": 70.55,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank"
+      ]
+    },
+    {
+      "id": 48,
+      "rank": "대장",
+      "power": 520160,
+      "level": 12,
+      "status": "victory",
+      "seconds": 78.7,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank"
+      ]
+    },
+    {
+      "id": 49,
+      "rank": "대장",
+      "power": 655360,
+      "level": 13,
+      "status": "victory",
+      "seconds": 88.7,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank"
+      ]
+    },
+    {
+      "id": 50,
+      "rank": "대장",
+      "power": 825702,
+      "level": 13,
+      "status": "victory",
+      "seconds": 75.3,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank"
+      ]
+    },
+    {
+      "id": 51,
+      "rank": "대장",
+      "power": 1040319,
+      "level": 13,
+      "status": "victory",
+      "seconds": 79.95,
+      "hp": 85,
+      "enemyHp": 0,
+      "deck": [
+        "artillery",
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank"
+      ]
+    },
+    {
+      "id": 52,
+      "rank": "준원수",
+      "power": 1310720,
+      "level": 14,
+      "status": "victory",
+      "seconds": 73.35,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm"
+      ]
+    },
+    {
+      "id": 53,
+      "rank": "준원수",
+      "power": 1558718,
+      "level": 14,
+      "status": "victory",
+      "seconds": 76.95,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm"
+      ]
+    },
+    {
+      "id": 54,
+      "rank": "준원수",
+      "power": 1853638,
+      "level": 14,
+      "status": "victory",
+      "seconds": 86.45,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm"
+      ]
+    },
+    {
+      "id": 55,
+      "rank": "준원수",
+      "power": 2204359,
+      "level": 14,
+      "status": "victory",
+      "seconds": 68.65,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm"
+      ]
+    },
+    {
+      "id": 56,
+      "rank": "준원수",
+      "power": 2621440,
+      "level": 14,
+      "status": "victory",
+      "seconds": 78.3,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm"
+      ]
+    },
+    {
+      "id": 57,
+      "rank": "준원수",
+      "power": 3117435,
+      "level": 14,
+      "status": "victory",
+      "seconds": 88.9,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "selfPropelled",
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm"
+      ]
+    },
+    {
+      "id": 58,
+      "rank": "준원수",
+      "power": 3707276,
+      "level": 14,
+      "status": "victory",
+      "seconds": 70.3,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm"
+      ]
+    },
+    {
+      "id": 59,
+      "rank": "준원수",
+      "power": 4408719,
+      "level": 14,
+      "status": "victory",
+      "seconds": 82.8,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "selfPropelled",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm"
+      ]
+    },
+    {
+      "id": 60,
+      "rank": "소원수",
+      "power": 5242880,
+      "level": 15,
+      "status": "victory",
+      "seconds": 122.3,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier"
+      ]
+    },
+    {
+      "id": 61,
+      "rank": "소원수",
+      "power": 6605615,
+      "level": 15,
+      "status": "victory",
+      "seconds": 89.95,
+      "hp": 93,
+      "enemyHp": 0,
+      "deck": [
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier"
+      ]
+    },
+    {
+      "id": 62,
+      "rank": "소원수",
+      "power": 8322553,
+      "level": 15,
+      "status": "victory",
+      "seconds": 76.65,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier"
+      ]
+    },
+    {
+      "id": 63,
+      "rank": "소원수",
+      "power": 10485760,
+      "level": 15,
+      "status": "victory",
+      "seconds": 87.65,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "selfPropelled",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier"
+      ]
+    },
+    {
+      "id": 64,
+      "rank": "소원수",
+      "power": 13211230,
+      "level": 15,
+      "status": "victory",
+      "seconds": 75.3,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "helicopter",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier"
+      ]
+    },
+    {
+      "id": 65,
+      "rank": "소원수",
+      "power": 16645106,
+      "level": 15,
+      "status": "victory",
+      "seconds": 88.85,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "tank",
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier"
+      ]
+    },
+    {
+      "id": 66,
+      "rank": "중원수",
+      "power": 20971520,
+      "level": 16,
+      "status": "victory",
+      "seconds": 60.4,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress"
+      ]
+    },
+    {
+      "id": 67,
+      "rank": "중원수",
+      "power": 26422459,
+      "level": 16,
+      "status": "victory",
+      "seconds": 62.9,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "helicopter",
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress"
+      ]
+    },
+    {
+      "id": 68,
+      "rank": "중원수",
+      "power": 33290213,
+      "level": 16,
+      "status": "victory",
+      "seconds": 67.5,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress"
+      ]
+    },
+    {
+      "id": 69,
+      "rank": "중원수",
+      "power": 41943040,
+      "level": 17,
+      "status": "victory",
+      "seconds": 68,
+      "hp": 96,
+      "enemyHp": 0,
+      "deck": [
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress"
+      ]
+    },
+    {
+      "id": 70,
+      "rank": "중원수",
+      "power": 52844919,
+      "level": 17,
+      "status": "victory",
+      "seconds": 71.3,
+      "hp": 92,
+      "enemyHp": 0,
+      "deck": [
+        "helicopter",
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress"
+      ]
+    },
+    {
+      "id": 71,
+      "rank": "중원수",
+      "power": 66580426,
+      "level": 17,
+      "status": "victory",
+      "seconds": 78.3,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "rocketLauncher",
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress"
+      ]
+    },
+    {
+      "id": 72,
+      "rank": "대원수",
+      "power": 83886080,
+      "level": 18,
+      "status": "victory",
+      "seconds": 55.65,
+      "hp": 95,
+      "enemyHp": 0,
+      "deck": [
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress",
+        "orbitalAssault"
+      ]
+    },
+    {
+      "id": 73,
+      "rank": "대원수",
+      "power": 99757923,
+      "level": 18,
+      "status": "victory",
+      "seconds": 58.8,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress",
+        "orbitalAssault"
+      ]
+    },
+    {
+      "id": 74,
+      "rank": "대원수",
+      "power": 118632832,
+      "level": 18,
+      "status": "victory",
+      "seconds": 61.05,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress",
+        "orbitalAssault"
+      ]
+    },
+    {
+      "id": 75,
+      "rank": "대원수",
+      "power": 141079008,
+      "level": 18,
+      "status": "victory",
+      "seconds": 67.8,
+      "hp": 90,
+      "enemyHp": 0,
+      "deck": [
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress",
+        "orbitalAssault"
+      ]
+    },
+    {
+      "id": 76,
+      "rank": "대원수",
+      "power": 167772160,
+      "level": 19,
+      "status": "victory",
+      "seconds": 63.1,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress",
+        "orbitalAssault"
+      ]
+    },
+    {
+      "id": 77,
+      "rank": "대원수",
+      "power": 199515846,
+      "level": 19,
+      "status": "victory",
+      "seconds": 66.4,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress",
+        "orbitalAssault"
+      ]
+    },
+    {
+      "id": 78,
+      "rank": "대원수",
+      "power": 237265664,
+      "level": 19,
+      "status": "victory",
+      "seconds": 70.95,
+      "hp": 89,
+      "enemyHp": 0,
+      "deck": [
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress",
+        "orbitalAssault"
+      ]
+    },
+    {
+      "id": 79,
+      "rank": "대원수",
+      "power": 282158016,
+      "level": 19,
+      "status": "victory",
+      "seconds": 71.8,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress",
+        "orbitalAssault"
+      ]
+    },
+    {
+      "id": 80,
+      "rank": "특전원수",
+      "power": 335544320,
+      "level": 20,
+      "status": "victory",
+      "seconds": 100,
+      "hp": 100,
+      "enemyHp": 0,
+      "deck": [
+        "fighter",
+        "railgunTank",
+        "icbm",
+        "carrier",
+        "flyingFortress",
+        "orbitalAssault"
+      ]
+    }
+  ]
+}

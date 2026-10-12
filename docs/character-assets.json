@@ -1,0 +1,26 @@
+{
+  "created": "2026-10-10",
+  "tool": "Codex built-in image_gen",
+  "assets": [
+    {
+      "path": "public/characters/ranks-1.png",
+      "sha256": "35cc6e80c6f4ed77514c24200080b58fae6eb0409c6804f8f933cb11ff2d61ae"
+    },
+    {
+      "path": "public/characters/ranks-2.png",
+      "sha256": "d30d74de453460293394d7bf04ad5a6ddc06cb43907e9f88b0d68e95565cd1c3"
+    },
+    {
+      "path": "public/characters/ranks-3.png",
+      "sha256": "649885c05bd18835586ef72aa1879a481c1cc19eee2a1be42bc07c7e91a611c9"
+    },
+    {
+      "path": "public/characters/ranks-4.png",
+      "sha256": "f9eb1665dc9dc29ff83db442907836b0c9a4dbb9e4186a855bfc389346fee16a"
+    },
+    {
+      "path": "public/characters/ranks-5.png",
+      "sha256": "c8b7c3088f7a6e66604d2693bad921a1009c86ec8886ff66c36d66d6a7c91ab1"
+    }
+  ]
+}

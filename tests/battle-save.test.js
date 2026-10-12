@@ -1,3 +1,5 @@
+import { emptyEquipment as equipmentDefaults } from '../src/equipment.js';
+import { CAMPAIGN_STAGE_COUNT } from '../src/campaign-constants.js';
 import { emptyPersonalLevels } from '../src/personal-catalog.js';
 import { SAVE_VERSION } from '../src/state.js';
 import { test } from 'node:test';
@@ -12,7 +14,7 @@ test('legacy version six saves gain empty battle progress without losing assets'
   delete old.battleCleared;
   assert.equal(freshState(T).version, SAVE_VERSION);
   assert.equal(freshState(T).battleCleared, 0);
-  assert.deepEqual(parseSave(JSON.stringify(old)), {...old, version:SAVE_VERSION,offlineReward:null,campaignStars:Array(80).fill(0),personalLevels:emptyPersonalLevels(),autoTouchDurationMs:60000, ncoSchoolLevel: 2, battleCleared: 0, equipment: {...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])), helicopter: null, rocketLauncher: null, transport: null, fighter: null, railgunTank: null, icbm: null, carrier:null, flyingFortress:null, orbitalAssault:null},
+  assert.deepEqual(parseSave(JSON.stringify(old)), {...old, version:SAVE_VERSION,offlineReward:null,campaignStars:Array(CAMPAIGN_STAGE_COUNT).fill(0),personalLevels:emptyPersonalLevels(),autoTouchDurationMs:60000, ncoSchoolLevel: 2, battleCleared: 0, equipment: {...equipmentDefaults(),...Object.fromEntries(Object.entries(old.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])), helicopter: null, rocketLauncher: null, transport: null, fighter: null, railgunTank: null, icbm: null, carrier:null, flyingFortress:null, orbitalAssault:null},
     earnedAchievements: ['squad', 'platoon', 'company', 'battalion']});
 });
 test('all ten cleared stages survive saving and corrupt battle progress is rejected', () => {

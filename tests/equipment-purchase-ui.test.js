@@ -13,9 +13,22 @@ function panel() {
   const nodes=new Map();
   return {querySelector(selector){if(!nodes.has(selector))nodes.set(selector,element());return nodes.get(selector);},querySelectorAll(){return [];}};
 }
+
+test('only military50 shows final completion; military20 still explains the flag limit',()=>{
+  const previous=globalThis.document;globalThis.document={createElement:element};
+  try {
+    const s={...freshState(T),soldiers:50000,sergeants:300},root=panel();
+    for(const level of [20,30,40,50]) {
+      s.personalLevels.divisionFlag=level-10;s.equipment.tank={level,count:1,deployed:true};
+      renderEquipmentPanel(s,root,'tank');
+      assert.equal(root.querySelector('#enhance-equipment').disabled,true);
+      assert.equal(root.querySelector('#enhance-equipment').textContent,level===50?'최대 강화 완료':'사단기를 강화하면 한도가 늘어납니다');
+    }
+  } finally {if(previous===undefined)delete globalThis.document;else globalThis.document=previous;}
+});
 test('military equipment is purchased and managed in its own tab, never in shop categories',()=>{
   const s={...freshState(T),soldiers:240};
-  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','schools','facilities']);
+  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','schools','facilities','items']);
   for(const c of SHOP_CATEGORIES)assert.doesNotMatch(shopMarkup(s,'',()=>'',c.id),/data-buy-equipment/);
   assert.match(equipmentPanelMarkup(s,'artillery'),/data-buy-equipment="artillery"/);
   assert.doesNotMatch(equipmentPanelMarkup(s,'artillery'),/equipment-to-shop|상점에서/);

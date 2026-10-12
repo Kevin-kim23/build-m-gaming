@@ -1,8 +1,8 @@
 import { artSurface, brush, ART_SCALE } from './pixel-detail.js';
 import { unitSprite, baseSprite, SPRITE_SIZE } from './unit-sprites.js';
-import { fortressSprite } from './fortress-art.js';
+import { drawWeaponShot, weaponRecoil, drawHeadquartersDestruction, drawSupportPulse } from './weapon-fx.js';
 import { BATTLE_RULES } from './battle-balance.js';
-import { drawOrbitalStrike } from './orbital-strike-art.js';
+
 
 // 세로 레인 전장 그림(위에서 본 모습): 위쪽이 적 기지, 아래쪽이 우리 기지, 레인 3개가 위아래로 뻗는다.
 // 정적인 배경·기지는 한 번 그려 캐시하고, 움직이는 것(장비·효과·체력 막대)만 매 프레임 그린다.
@@ -15,6 +15,10 @@ export const laneY = (pos) => Y_FRONT - (pos / BATTLE_RULES.laneLength) * (Y_FRO
 const scenes = new Map();
 
 const THEMES = Object.freeze({
+  elysia: {ground:'#15263d',alt:'#223e59',road:'#39495e',edge:'#8abaca',tuft:'#80d5e0',deco:'#264358'},
+  varkion: {ground:'#2b1838',alt:'#46254c',road:'#53485c',edge:'#b996bf',tuft:'#dda4ed',deco:'#543357'},
+  seraphis: {ground:'#112f39',alt:'#205058',road:'#395e65',edge:'#82c4bc',tuft:'#a5fff0',deco:'#38616b'},
+  noctaris: {ground:'#20152f',alt:'#352146',road:'#51445f',edge:'#c3aa79',tuft:'#d9b6ff',deco:'#4c355f'},
   serdin: { ground: '#6f9a4f', alt: '#7fae5a', road: '#b3a679', edge: '#8e8458', tuft: '#8dbb62', deco: '#4d7a3a' },
   veloc: { ground: '#a2704a', alt: '#b4835a', road: '#cdae78', edge: '#9a7b4e', tuft: '#b8814f', deco: '#7a4f33' },
   istra: { ground: '#6b9a82', alt: '#7aae94', road: '#b9b5a2', edge: '#8f8b7a', tuft: '#86bea0', deco: '#4f7a8a' },
@@ -46,10 +50,12 @@ function drawScaled(c, image, cx, cy, width) {
   c.drawImage(image, Math.round(cx - w / 2), Math.round(cy - h / 2), Math.round(w), Math.round(h));
 }
 function drawBases(c, view) {
-  const e = view.enemy;
-  if (e.fortress) drawScaled(c, fortressSprite(e.fortress), W / 2, 56, 232);
-  else { const eb = baseSprite(e.hq.id, 'enemy'); drawScaled(c, eb, W / 2, 56, Math.min(210, eb.width / ART_SCALE * 1.6)); }
-  const pb = baseSprite(view.player.hq.id, 'player'); drawScaled(c, pb, W / 2, H - 52, Math.min(210, pb.width / ART_SCALE * 1.6));
+  for(const [side,army,y] of [['enemy',view.enemy,56],['player',view.player,H-52]]) {
+    if(view.destruction?.side===side&&view.destruction.age>180)continue;
+    const art=baseSprite(army.hq.id,side);
+    drawScaled(c,art,W/2,y,Math.min(220,104*art.width/art.height,art.width/ART_SCALE*1.2));
+    if(side==='enemy'&&army.fortress){c.strokeStyle='#d7b579';c.lineWidth=2;c.strokeRect(68,7,224,96);}
+  }
 }
 
 // 기지 위 연기·불꽃: 체력이 반 이하면 연기, 1/4 이하면 불꽃이 올라온다(경과 시간으로 움직여 상태 저장이 필요 없음).
@@ -92,21 +98,9 @@ function drawFx(c, view) {
     c.save();
     const lx = LANE_CENTERS[f.lane ?? 1];
     if (f.kind === 'shot') {
-      c.globalAlpha = Math.max(0, 1 - age / 500);
-      const y0 = laneY(f.from), y1 = f.to >= 1000 ? 94 : f.to <= 0 ? H - 78 : laneY(f.to), t = Math.min(1, age / 220);
-      const y = y0 + (y1 - y0) * t, trail = (y1 - y0) * 0.14, big = f.id === 'turret' || f.id === 'selfPropelled' || f.id === 'artillery' || f.id === 'rocketLauncher';
-      if (age < 110) { c.fillStyle = '#fff6c8'; c.fillRect(Math.round(lx) - 4, Math.round(y0) - 4 + Math.sign(y1 - y0) * 8, 8, 6); c.fillStyle = '#ffb347'; c.fillRect(Math.round(lx) - 2, Math.round(y0) - 8 + Math.sign(y1 - y0) * 8, 4, 4); } // 포구 불꽃
-      c.strokeStyle = f.side === 'player' ? '#ffe9a8' : '#ffc4a8'; c.lineWidth = big ? 2.4 : 1.6;
-      c.beginPath(); c.moveTo(lx, y - trail); c.lineTo(lx, y); c.stroke();
-      if (age > 170) burst(c, lx, y1, age - 170, 330, ['#fff4cd', '#ffcf6a', '#ff8a3a'], big ? 7 : 5, big ? 14 : 9);   // 명중 불꽃
-    } else if (f.kind === 'strike' && f.id === 'orbitalAssault') {
-      drawOrbitalStrike(c,age,W,H,f.side);
+      drawWeaponShot(c,f,age,lx,laneY(f.from),f.to>=1000?56:f.to<=0?H-52:laneY(f.to));
     } else if (f.kind === 'strike') {
-      c.globalAlpha = Math.max(0, 1 - age / 600);
-      const t = Math.min(1, age / 320), y = H - 80 - (H - 190) * t;
-      c.fillStyle = '#ffd9a0'; c.fillRect(W / 2 - 3, Math.round(y) - 6, 6, 12); c.fillStyle = '#ff9c5a'; c.fillRect(W / 2 - 2, Math.round(y) + 6, 4, 10);
-      for (let i = 0; i < 8; i++) { c.fillStyle = i % 2 ? '#ffb347' : '#8a8a8a'; c.fillRect(W / 2 - 3 + Math.sin(i + age / 90) * 5, Math.round(y) + 16 + i * 7, 5, 5); }
-      if (age > 300) { burst(c, W / 2, 84, age - 300, 300, ['#fff1c5', '#ff9c5a', '#ffd36a', '#7a6a60'], 16, 38); c.fillStyle = '#fff1c5'; c.fillRect(W / 2 - 22, 66, 44, 36); }
+      drawWeaponShot(c,f,age,W/2,f.side==='enemy'?56:H-52,f.side==='enemy'?H-52:56);
     } else if (f.kind === 'death') {
       const y = laneY(f.from);
       c.globalAlpha = Math.max(0, 1 - age / 600);
@@ -138,14 +132,17 @@ export function drawLane(canvas, view) {
   const units = [...view.player.units, ...view.enemy.units].sort((a, b) => b.x * b.dir - a.x * a.dir || a.uid - b.uid);
   for (const u of units) {
     const air = u.cls === 'air', born = Math.min(1, (view.elapsed - (u.bornMs ?? 0)) / 300), grow = 0.55 + 0.45 * born, w = SPRITE_SIZE.width * 0.62 * grow, h = SPRITE_SIZE.height * 0.62 * grow;   // 출격하면 작게 시작해 커진다
-    const cx = LANE_CENTERS[u.lane] + ((u.uid % 3) - 1) * 13, cy = laneY(u.x) + (air ? Math.sin(view.elapsed / 180 + u.uid) * 2 - 6 : 0);
+    const recoil=weaponRecoil(u.id,view.elapsed-u.lastShotMs);
+    const cx = LANE_CENTERS[u.lane] + ((u.uid % 3) - 1) * 13, cy = laneY(u.x) + recoil*u.dir + (air ? Math.sin(view.elapsed / 180 + u.uid) * 2 - 6 : 0);
     c.save(); c.translate(Math.round(cx), Math.round(cy));
     if (u.side === 'enemy') c.rotate(Math.PI);
     c.drawImage(unitSprite(u.id, u.side, u.level), Math.round(-w / 2), Math.round(-h / 2), Math.round(w), Math.round(h));
     c.restore();
+    if(u.kind==='heal'&&u.lastShotMs>=0)drawSupportPulse(c,view.elapsed-u.lastShotMs,cx,cy+5);
     const bar = 22, frac = Math.max(0, Math.min(1, u.hp / u.maxHp)), by = Math.round(cy - h / 2 - 5);
     c.fillStyle = '#10181499'; c.fillRect(Math.round(cx - bar / 2), by, bar, 3);
     c.fillStyle = frac > 0.5 ? '#9be08f' : frac > 0.25 ? '#e8d27a' : '#e8998a'; c.fillRect(Math.round(cx - bar / 2), by, Math.round(bar * frac), 3);
   }
   drawFx(c, view);
+  if(view.destruction)drawHeadquartersDestruction(c,view.destruction.age,W/2,view.destruction.side==='enemy'?56:H-52,view.destruction.reduced);
 }

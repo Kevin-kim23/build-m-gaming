@@ -1,4 +1,11 @@
+import { createHomeAutoTapPurchase, renderHomeAutoTap } from './home-auto-tap-ui.js';
+import { createAutoTapTestPurchase } from './test-purchase.js';
 import { createPersonalAwardUI } from './personal-awards.js';
+import { renderPotions } from './potion-panels.js';
+import { POTIONS } from './potions.js';
+import { createPotionController } from './potion-controller.js';
+import { createPotionAd } from './potion-ad.js';
+import './potions.css';
 import './personal-awards.css';
 import { buildFacility, upgradeFacility } from './game.js';
 import { facilityOffer, facilityLevel } from './facilities.js';
@@ -27,7 +34,7 @@ import './shop.css';
 import './schools.css';
 
 // One controller owns the shared shop/equipment dialog and its event listener.
-export function createArmyPanels(session, audio) {
+export function createArmyPanels(session, audio, access) {
   const dialog = document.querySelector('#modal');
   const $ = selector => dialog.querySelector(selector);
   let activePanel = 'shop', category = 'recruit', activeEquipment = 'artillery';
@@ -36,6 +43,13 @@ export function createArmyPanels(session, audio) {
   const schools = Object.values(SCHOOLS);
   let schoolLevels = [];
   const state = () => session.state;
+  const potionController=createPotionController(session,{showAd:createPotionAd({isActive:()=>session.active,requireConsent:()=>access?.ensureAds()??null,
+    suspendAudio:()=>audio.suspendForAd()}),onChange:()=>{
+    if(dialog.open && activePanel==='shop' && category==='items')renderPotions(state(),dialog,{busy:potionController.busy,busyItem:potionController.busyItem,active:session.active});
+  }});
+  const homeAutoPurchase=createHomeAutoTapPurchase(session,{showPurchase:createAutoTapTestPurchase(),onChange:()=>{
+    if(dialog.open && activePanel==='shop' && category==='items')renderHomeAutoTap(state(),dialog,{busy:homeAutoPurchase.busy,active:session.active});
+  }});
   const personalUI=createPersonalUpgradeUI(session,audio);
   const personalAwards=createPersonalAwardUI({canShow:()=>session.active});
   let equipmentLevels=null,catalogBaton=-1;
@@ -54,14 +68,15 @@ export function createArmyPanels(session, audio) {
     const s = state(), rank = rankForArmy(s);
     if (catalogRank !== rank || catalogBaton!==commandBatonStatus(s).level || schools.some((school,i)=>schoolLevels[i] !== (s[school.field]??0))) { openShop(); return; }
     text('#shop-gold', fmtGold(s.gold));
-    // First-five-minutes guide: say what to do and pulse the matching control.
+    // Shared lesson text; the spotlight owns highlighting the exact live control.
     const guide = currentGuide(s);
     text('#shop-guide', guide ? guide.text : '');
-    const pulse = (selector, on) => $(selector)?.classList.toggle('guide-pulse', on);
-    pulse('[data-shop-category="schools"]', !!guide?.pulse && guide.target === 'school');
-    pulse('[data-unit="soldier"] [data-buy]', category === 'recruit' && !!guide?.pulse && guide.target === 'shop');
     if (category === 'schools') renderSchools(s, dialog);
     if (category === 'facilities') renderFacilities(s, dialog);
+    if (category === 'items') {
+      renderPotions(s,dialog,{busy:potionController.busy,busyItem:potionController.busyItem,active:session.active});
+      renderHomeAutoTap(s,dialog,{busy:homeAutoPurchase.busy,active:session.active});
+    }
     if (category !== 'recruit') return;
     for (const unit of Object.values(UNITS)) {
       const card = $(`[data-unit="${unit.id}"]`);
@@ -202,7 +217,7 @@ export function createArmyPanels(session, audio) {
     if (result?.ok && dialog.open && activePanel === 'equipment' && activeEquipment === id)
       text('#equipment-message', EQUIPMENT[id].name + (result.deployed ? ' 배치 완료!' : ' 보관 완료! 강화는 유지됩니다.'));
   }
-  dialog.addEventListener('click', event => {
+  dialog.addEventListener('click', async event => {
     if (event.target === dialog) {
       const box = dialog.getBoundingClientRect();
       if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom)
@@ -215,6 +230,22 @@ export function createArmyPanels(session, audio) {
     else if (button.dataset.panel) button.dataset.panel === 'shop' ? openShop() : openEquipment();
     else if (button.dataset.shopCategory) { openShop(button.dataset.shopCategory); $(`[data-shop-category="${category}"]`)?.focus({preventScroll:true}); }
     else if (button.dataset.equipmentCategory) openEquipment(activeEquipment, button.dataset.equipmentCategory);
+    else if(button.hasAttribute('data-buy-home-auto')||button.hasAttribute('data-toggle-home-auto')){
+      const buying=button.hasAttribute('data-buy-home-auto');
+      const result=buying?await homeAutoPurchase.buy():homeAutoPurchase.toggle();
+      if(result?.ok)audio.ui(buying?'purchase':'equip',state().sound);
+      if(dialog.open && activePanel==='shop' && category==='items')text('#shop-message',result?.ok
+        ? buying?'자동터치 영구 보유! 홈으로 돌아가면 작동해요.':result.enabled?'자동터치를 켰어요.':'자동터치를 껐어요.'
+        : result?.reason==='cancelled'?'유료결제 테스트를 취소했어요.':'자동터치 설정을 완료하지 못했어요.');
+    }
+    else if(button.dataset.potionAd || button.dataset.potionUse){
+      const id=button.dataset.potionAd??button.dataset.potionUse;
+      const result=button.dataset.potionAd?await potionController.watch(id):potionController.use(id);
+      if(result.ok)audio.ui(button.dataset.potionAd?'purchase':'equip',state().sound);
+      if(dialog.open && activePanel==='shop' && category==='items')text('#shop-message',result.ok
+        ? `${POTIONS[id].name} ${button.dataset.potionAd?'1개 획득!':`${POTIONS[id].durationLabel} 사용!`}`
+        : result.reason==='cancelled'?'광고 시청을 완료하지 않았어요.':result.reason==='unavailable'?'광고를 불러올 수 없어요. Android 앱과 인터넷 연결을 확인해 주세요.':result.reason==='empty'?'보유한 물약이 없어요.':'지급·사용을 완료하지 못했어요. 다시 확인해 주세요.');
+    }
     else if (button.hasAttribute('data-use-revolver')) {
       const result = session.change(s => activateAutoTouch(s));
       if (result?.ok) audio.ui('revolver',state().sound);

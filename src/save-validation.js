@@ -1,3 +1,9 @@
+import {CONSTELLATION_OFFICERS} from './constellation-officers.js';
+import { COMMAND_OFFICERS } from './command-officers.js';
+import { GALACTIC_OFFICERS } from './galactic-officers.js';
+import { CONTINENT_STAGE_COUNT } from './campaign-constants.js';
+import { validHomeAutoTap } from './home-auto-tap-rules.js';
+import { validPotions } from './potions.js';
 import { validFacilities, validFacilityLevels } from './facility-catalog.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { NEW_RECRUITS } from './specialist-units.js';
@@ -10,7 +16,7 @@ import { PERSONAL_EQUIPMENT, GENERAL_SWORD, GENERAL_REVOLVER } from './personal-
 import { validAchievementIds } from './achievements.js';
 import { validEquipment } from './equipment.js';
 import { FIELD_THEMES } from './field-theme.js';
-import { MAX_SOLDIERS, SAVE_VERSION, CAMPAIGN_STAGE_COUNT } from './state.js';
+import { MAX_SOLDIERS, MAX_ARMY_POWER, SAVE_VERSION, CAMPAIGN_STAGE_COUNT } from './state.js';
 import { MAX_OFFLINE_MS, OFFLINE_POPUP_MS } from './offline-rules.js';
 
 // Only fixed codes and known field names leave the parser, never stored values or JSON snippets.
@@ -29,7 +35,14 @@ export function validateSave(s) {
   if (!s || typeof s !== 'object' || Array.isArray(s)) throw new SaveValidationError('invalid-record');
   if (!Number.isInteger(s.version) || s.version < 2 || s.version > SAVE_VERSION)
     throw new SaveValidationError('unsupported-version', 'version');
+  if(s.version>=37){
+    requireSave(integer(s.constellationSchoolLevel,5)&&(s.constellationSchoolLevel===0||s.galacticSchoolLevel===5),'constellationSchoolLevel');
+    for(const u of CONSTELLATION_OFFICERS)requireSave(integer(s[u.field],Number(MAX_ARMY_POWER/u.power)),u.field);
+    requireSave(integer(s.replayRewardDay,2000000),'replayRewardDay');requireSave(integer(s.replayRewardCount,10),'replayRewardCount');
+  }
   requireSave(typeof s.sound === 'boolean', 'sound');
+  if(s.version>=33)requireSave(validHomeAutoTap(s.homeAutoTap),'homeAutoTap');
+  if(s.version>=32)requireSave(validPotions(s.potions),'potions');
   if (s.version >= 29) for (const key of ['sfxVolume', 'musicVolume'])
     requireSave(typeof s[key] === 'number' && Number.isFinite(s[key]) && s[key] >= 0 && s[key] <= 1, key);
   if (s.version === 2) {
@@ -73,17 +86,18 @@ export function validateSave(s) {
   if (s.version >= 12) requireSave(typeof s.fieldTheme === 'string' && Object.hasOwn(FIELD_THEMES, s.fieldTheme), 'fieldTheme');
   if (s.version >= 14) for (const unit of NEW_OFFICER_GRADES)
     requireSave(integer(s[unit.field], Math.floor(MAX_SOLDIERS / unit.power)), unit.field);
-  if (s.version >= 15) requireSave(integer(s.campaignCleared, STAGES.length), 'campaignCleared');
+  if (s.version >= 15) requireSave(integer(s.campaignCleared, s.version<34?CONTINENT_STAGE_COUNT:s.version<38?160:STAGES.length), 'campaignCleared');
   // 별 기록(형식22~): 길이 80, 각 0~3, 아직 점령하지 않은 지역은 0
-  if (s.version >= 22) requireSave(Array.isArray(s.campaignStars) && s.campaignStars.length === CAMPAIGN_STAGE_COUNT &&
+  if (s.version >= 22) requireSave(Array.isArray(s.campaignStars) && s.campaignStars.length === (s.version<34?CONTINENT_STAGE_COUNT:s.version<38?160:CAMPAIGN_STAGE_COUNT) &&
     s.campaignStars.every((stars, index) => integer(stars, 3) && (stars === 0 || index < s.campaignCleared)), 'campaignStars');
   if (s.version >= 16) {
     requireSave(s.autoTouchActivatedAt === null || integer(s.autoTouchActivatedAt, s.lastAccrual), 'autoTouchActivatedAt');
-    const swordMax=s.version>=19?GENERAL_SWORD.durationMs+(GENERAL_SWORD.maxLevel-1)*GENERAL_SWORD.durationStepMs:80000;
+    const personalMax=s.version<30?10:s.version<35?20:GENERAL_SWORD.maxLevel;
+    const swordMax=s.version>=19?GENERAL_SWORD.durationMs+(personalMax-1)*GENERAL_SWORD.durationStepMs:80000;
     requireSave(integer(s.swordDurationMs,swordMax)&&s.swordDurationMs>=GENERAL_SWORD.durationMs&&
       (s.swordDurationMs-GENERAL_SWORD.durationMs)%GENERAL_SWORD.durationStepMs===0,'swordDurationMs');
     const autoDuration=s.version>=19?s.autoTouchDurationMs:AUTO_TOUCH.durationMs;
-    requireSave(integer(autoDuration,AUTO_TOUCH.durationMs+(GENERAL_REVOLVER.maxLevel-1)*AUTO_TOUCH.durationStepMs)&&
+    requireSave(integer(autoDuration,AUTO_TOUCH.durationMs+((s.version<30?10:s.version<35?20:GENERAL_REVOLVER.maxLevel)-1)*AUTO_TOUCH.durationStepMs)&&
       autoDuration>=AUTO_TOUCH.durationMs&&(autoDuration-AUTO_TOUCH.durationMs)%AUTO_TOUCH.durationStepMs===0,'autoTouchDurationMs');
     requireSave(integer(s.autoTouchTicks,Math.floor(autoDuration/AUTO_TOUCH.intervalMs)) &&
       (s.autoTouchActivatedAt !== null || s.autoTouchTicks === 0), 'autoTouchTicks');
@@ -94,10 +108,20 @@ export function validateSave(s) {
     for (const unit of ADVANCED_OFFICERS)
       requireSave(integer(s[unit.field], Math.floor(MAX_SOLDIERS / unit.power)), unit.field);
   }
+  if (s.version >= 31) {
+    requireSave(integer(s.commandSchoolLevel, COMMAND_OFFICERS.length) &&
+      (s.commandSchoolLevel === 0 || s.advancedSchoolLevel === 5), 'commandSchoolLevel');
+    for (const unit of COMMAND_OFFICERS)
+      requireSave(integer(s[unit.field], Math.floor(MAX_SOLDIERS / unit.power)), unit.field);
+  }
+  if(s.version>=34){
+    requireSave(integer(s.galacticSchoolLevel,5)&&(s.galacticSchoolLevel===0||s.commandSchoolLevel===5),'galacticSchoolLevel');
+    for(const unit of GALACTIC_OFFICERS)requireSave(integer(s[unit.field],(s.version>=38?Number(MAX_ARMY_POWER/BigInt(unit.power)):Math.floor(MAX_SOLDIERS/unit.power))),unit.field);
+  }
   if(s.version>=19){
     requireSave(s.personalLevels&&typeof s.personalLevels==='object'&&!Array.isArray(s.personalLevels),'personalLevels');
     for(const item of Object.values(PERSONAL_EQUIPMENT).filter(item=>item.introducedVersion<=s.version))
-      requireSave(integer(s.personalLevels[item.id],item.maxLevel)&&s.personalLevels[item.id]>=1,`personalLevels.${item.id}`);
+      requireSave(integer(s.personalLevels[item.id],s.version<30?10:s.version<35?20:s.version<36?30:item.maxLevel)&&s.personalLevels[item.id]>=1,`personalLevels.${item.id}`);
   }
   return gold;
 }

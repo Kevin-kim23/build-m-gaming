@@ -1,3 +1,5 @@
+import { CONSTELLATION_FORMATIONS } from './constellation-formations.js';
+import {CONSTELLATION_OFFICERS,CONSTELLATION_NAMES,CONSTELLATION_POWERS} from './constellation-officers.js';
 import { fmt } from "./format.js";
 import {
   SQUAD_SIZE,
@@ -7,7 +9,9 @@ import {
   DIVISION_SIZE,
   CORPS_SIZE,
   FIELD_ARMY_SIZE, ARMY_GROUP_SIZE, ALLIED_ARMY_SIZE,
-  GRAND_ALLIED_ARMY_SIZE, SUPREME_COMMAND_SIZE, GALACTIC_COMMAND_SIZE,
+  GRAND_ALLIED_ARMY_SIZE, SUPREME_COMMAND_SIZE, GALACTIC_COMMAND_SIZE, GALACTIC_GROUP_COMMAND_SIZE,
+  GALACTIC_CORPS_SIZE, GALACTIC_FIELD_ARMY_SIZE, GALACTIC_ARMY_GROUP_SIZE,
+  GALACTIC_ALLIED_ARMY_SIZE, GALACTIC_GRAND_ALLIED_ARMY_SIZE,
 } from "./formations.js";
 import { armyPower } from "./units.js";
 export const GENERAL_MIN_SOLDIERS = 5_000;
@@ -153,7 +157,14 @@ export const RANK_DEFINITIONS = Object.freeze([
   { name: '소원수', required: ALLIED_ARMY_SIZE, condition: '4개 집단군 · 연합군 1개', kind: 'general', marks: 6 },
   { name: '중원수', required: GRAND_ALLIED_ARMY_SIZE, condition: '4개 연합군 · 대연합군 1개', kind: 'general', marks: 7 },
   { name: '대원수', required: SUPREME_COMMAND_SIZE, condition: '4개 대연합군 · 총군사령부 1개', kind: 'general', marks: 8 },
-  { name: '특전원수', required: GALACTIC_COMMAND_SIZE, condition: '4개 총군사령부 · 은하사령부 1개', kind: 'general', marks: 9 },
+  { name: '특전원수', required: GALACTIC_COMMAND_SIZE, condition: '4개 총군사령부 · 은하연대 1개', kind: 'general', marks: 9 },
+  { name: '부사령관', required: GALACTIC_GROUP_COMMAND_SIZE, condition: '4개 은하연대 · 은하 사단 1개', kind: 'general', marks: 10 },
+  { name: '은하 준장', required: GALACTIC_CORPS_SIZE, condition: '8개 은하 사단 · 은하 군단 1개', kind: 'general', marks: 11 },
+  { name: '은하 소장', required: GALACTIC_FIELD_ARMY_SIZE, condition: '8개 은하 군단 · 은하 야전군 1개', kind: 'general', marks: 12 },
+  { name: '은하 중장', required: GALACTIC_ARMY_GROUP_SIZE, condition: '8개 은하 야전군 · 은하 집단군 1개', kind: 'general', marks: 13 },
+  { name: '은하 대장', required: GALACTIC_ALLIED_ARMY_SIZE, condition: '8개 은하 집단군 · 은하 연합군 1개', kind: 'general', marks: 14 },
+  { name: '은하 원수', required: GALACTIC_GRAND_ALLIED_ARMY_SIZE, condition: '8개 은하 연합군 · 은하 대연합군 1개', kind: 'general', marks: 15 },
+  ...CONSTELLATION_NAMES.map((name,i)=>({name,required:CONSTELLATION_POWERS[i],condition:`이전 계급 기준 전력의 16배 · ${CONSTELLATION_FORMATIONS[i].name} 1개`,kind:'general',marks:16+i})),
 ]);
 export const RANKS = RANK_DEFINITIONS.map((r) => r.name);
 export const RANK_REQUIREMENTS = RANK_DEFINITIONS.map((r) => r.required);
@@ -192,7 +203,7 @@ export function promotionProgress(s) {
       (generalGate ? ` · 일반병 ${fmt(s.soldiers ?? 0)} / ${fmt(GENERAL_MIN_SOLDIERS)}명 · 하사 ${fmt(s.sergeants ?? 0)} / ${GENERAL_MIN_SERGEANTS}명` : ""),
     ratio: Math.min(
       1,
-      power / next.required,
+      Number(power) / Number(next.required),
       gated ? (s.sergeants ?? 0) / 40 : 1,
       generalGate ? (s.soldiers ?? 0) / GENERAL_MIN_SOLDIERS : 1,
       generalGate ? (s.sergeants ?? 0) / GENERAL_MIN_SERGEANTS : 1,

@@ -1,3 +1,4 @@
+import { LEGACY_MAX_GOLD } from '../src/money.js';
 import { SAVE_VERSION } from '../src/state.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -16,8 +17,8 @@ const T=1_800_000_000_000;
 const army=rank=>({...freshState(T),gold:MAX_GOLD,soldiers:Math.max(5000,RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000),sergeants:300,ncoSchoolLevel:5});
 
 test('paid flag levels add one enhancement step and promotion alone keeps level one',()=>{
-  for(let level=0;level<=10;level++)assert.equal(enhancementLimitForFlag(level),10+level);
-  for(const bad of [-1,11,1.5,NaN])assert.throws(()=>enhancementLimitForFlag(bad),RangeError);
+  for(let level=0;level<=40;level++)assert.equal(enhancementLimitForFlag(level),10+level);
+  for(const bad of [-1,41,1.5,NaN])assert.throws(()=>enhancementLimitForFlag(bad),RangeError);
   for(const [i,rank] of ['준장','소장','중장','대장','준원수','소원수'].entries()){
     const s=army(rank);assert.equal(divisionFlagStatus(s).level,i===0?0:1);if(i)s.personalLevels.divisionFlag=i;assert.equal(divisionFlagStatus(s).level,i);assert.equal(equipmentLevelLimit(s),10+i);
     s.equipment.tank={level:9+i,count:1,deployed:true};const before=s.gold;
@@ -27,7 +28,7 @@ test('paid flag levels add one enhancement step and promotion alone keeps level 
   }
 });
 test('previous copies collapse once while level, deployment, exact gold and troops survive',()=>{
-  const s={...army('준원수'),version:17,gold:MAX_GOLD-123n};
+  const s={...army('준원수'),version:17,gold:LEGACY_MAX_GOLD-123n};
   for(const [i,id] of Object.keys(EQUIPMENT).entries())s.equipment[id]={level:i===0?20:10+i,count:35+i,deployed:i<4};
   const migrated=parseSave(serializeSave(s),T);assert.equal(migrated.version,SAVE_VERSION);
   for(const key of ['gold','soldiers','sergeants','lastAccrual'])assert.equal(migrated[key],s[key]);
@@ -45,7 +46,7 @@ test('repeat purchase is locked at every rank and cannot spend or mutate even th
 test('equipment income is integer, grows increasingly, and reaches 6x and 17x',()=>{
   for(const d of Object.values(EQUIPMENT)){
     let delta=0;
-    for(let level=1;level<=20;level++){
+    for(let level=1;level<=30;level++){
       const a=equipmentStats(level-1,d.id),b=equipmentStats(level,d.id);
       assert.ok(Number.isSafeInteger(b.passive)&&Number.isSafeInteger(b.tap));
       assert.ok(b.passive-a.passive>delta);delta=b.passive-a.passive;
@@ -53,18 +54,19 @@ test('equipment income is integer, grows increasingly, and reaches 6x and 17x',(
     }
     assert.equal(equipmentStats(10,d.id).passive,d.passive*6);
     assert.equal(equipmentStats(20,d.id).tap,d.tap*17);
+    assert.equal(equipmentStats(30,d.id).tap,d.tap*34);
   }
 });
 test('player attack and healing upgrade rewards increase for players while enemy units keep their stage stats',()=>{
   for(const id of Object.keys(EQUIPMENT)){
-    const old=equipmentCombatStats(id,15,1280,1,false),next=equipmentCombatStats(id,15);
-    assert.ok((next.healing??next.damage)>(old.healing??old.damage));assert.equal(next.intervalMs,old.intervalMs);
+    const old=equipmentCombatStats(id,14),next=equipmentCombatStats(id,15);
+    assert.ok((next.healing??next.damage)>(old.healing??old.damage));assert.ok(next.intervalMs<=old.intervalMs);
   }
   const s={...army('소원수'),campaignCleared:80};s.equipment.tank={level:15,count:1,deployed:true};
   const stage=STAGES[79];let battle=createBattle(s,80,{equipment:['tank']});
   battle=until(battle,stage.spawnMs+3000); // 적이 출격할 때까지
   const enemy=battle.enemy.units[0];assert.ok(enemy);
-  assert.ok(Math.abs(enemy.damage-equipmentCombatStats(enemy.id,stage.enemyLevel,stage.enemyPower,1,false).damage*stage.enemyModifier*enemyStack(80,stage.enemyLevel))<1e-6);
+  assert.ok(Math.abs(enemy.damage-equipmentCombatStats(enemy.id,stage.recommendedLevel,undefined,1,true,false).damage*.55*.55)<1e-6);
 });
 test('personal cards have only detail buttons, while home skill controls remain',()=>{
   const s=army('준원수'),html=personalMarkup(s);

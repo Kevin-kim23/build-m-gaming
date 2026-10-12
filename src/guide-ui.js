@@ -1,42 +1,33 @@
-import { guideStep } from './guide.js';
+import { createGuideFlow } from './guide.js';
+import { createGuideSpotlight } from './guide-spotlight.js';
 import { reportError } from './diagnostics.js';
 import './guide.css';
 
-// The guide step itself is derived from the game state (see guide.js). Only "turn the guide off"
-// is remembered, as a per-device display preference outside the save, written when pressed.
-const OFF_KEY = 'budae-kiugi-ui-guide-off';
-function readOff() {
-  try { return localStorage.getItem(OFF_KEY) === '1'; } catch (error) { reportError('guide.readOff', error); return false; }
+const OFF_KEY='budae-kiugi-ui-guide-off';
+let off=false,selected=null;
+try { off=localStorage.getItem(OFF_KEY)==='1'; } catch(error) {reportError('guide.readOff',error);}
+function setOff(value){
+  off=value;
+  try {localStorage.setItem(OFF_KEY,value?'1':'0');} catch(error){reportError('guide.saveOff',error);}
 }
-function writeOff() {
-  try { localStorage.setItem(OFF_KEY, '1'); } catch (error) { reportError('guide.saveOff', error); }
-}
-let off = readOff();
-
-// Shared with the shop so it can highlight the same target.
-export const currentGuide = (state) => (off ? null : guideStep(state));
-
-// Updates the DOM only when the shown step (or its text) changes, never on every tick.
+export const currentGuide=()=>off?null:selected;
 export function createGuideUI() {
-  const box = document.querySelector('#coach'), text = document.querySelector('#coach-text');
-  const shop = document.querySelector('#open-shop');
-  const equipment = document.querySelector('#open-equipment');
-  let shown = null, lastState = null;
-  function sync(state) {
-    lastState = state;
-    const step = currentGuide(state);
-    const key = step ? `${step.id}|${step.text}|${step.pulse}` : '';
-    if (key === shown) return;
-    shown = key;
-    box.hidden = !step;
-    if (step) text.textContent = step.text;
-    shop.classList.toggle('guide-pulse', !!step?.pulse && step.target !== 'equipment');
-    equipment.classList.toggle('guide-pulse', !!step?.pulse && step.target === 'equipment');
+  const box=document.querySelector('#coach'),text=document.querySelector('#coach-text');
+  const flow=createGuideFlow();let state=null,active=false;
+  const spotlight=createGuideSpotlight({onLater:()=>{
+    if(selected)flow.defer(selected.id);
+    sync(state,active);
+  }});
+  function sync(next,canRun=true){
+    state=next;active=canRun;
+    selected=off||!state?null:flow.next(state);
+    box.hidden=!selected;
+    if(selected&&text.textContent!==selected.text)text.textContent=selected.text;
+    spotlight.sync(selected,canRun&&!off&&!flow.paused);
   }
-  document.querySelector('#coach-off').addEventListener('click', () => {
-    off = true;
-    writeOff();
-    if (lastState) sync(lastState);
-  });
-  return { sync };
+  document.querySelector('#coach-off').addEventListener('click',()=>{setOff(true);sync(state,active);});
+  return {sync,suspend:()=>spotlight.sync(selected,false),
+    resume(){setOff(false);flow.resume();sync(state,active);},
+    destroy:spotlight.destroy,
+  };
 }

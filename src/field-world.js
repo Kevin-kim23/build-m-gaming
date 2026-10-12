@@ -2,8 +2,9 @@ import {ownedFacilities} from './facilities.js';
 import {deployedEquipment} from './equipment.js';
 import {ownedSchools} from './field-schools.js';
 import {layoutFieldArmy} from './field-layout.js';
+import {GALACTIC_CORPS_SIZE} from './formation-sizes.js';
 
-const MARGIN=10, TOP=34, BOTTOM=14, GAP=4, BAND_GAP=7, MIN_LABEL_WIDTH=40, MAX_BAND_ROWS=3;
+const MARGIN=10, TOP=34, BOTTOM=14, GAP=4, BAND_GAP=7, MIN_LABEL_WIDTH=40;
 const SUPPORT_SCALES=[1,.9,.8,.7];
 export const FIELD_GROWTH_STEP=8; // 16 CSS px, never a separate page.
 const SUPPORT = {
@@ -11,14 +12,14 @@ const SUPPORT = {
   facilities:{width:44,ratio:72/96,label:16},
   equipment:{width:48,ratio:35/66,label:16},
 };
-function band(items,kind,width,scale) {
+function band(items,kind,width,scale,maxRows=Infinity) {
   if(!items.length)return {items:[],height:0};
   const rule=SUPPORT[kind],density=items.length>=8?.8:items.length>=4?.9:1;
   const w=Math.round(rule.width*density*scale),h=Math.round(w*rule.ratio);
   const boxWidth=Math.max(MIN_LABEL_WIDTH,w),boxHeight=h+rule.label;
   const columns=Math.max(1,Math.floor((width-2*MARGIN+GAP)/(boxWidth+GAP)));
   const rows=Math.ceil(items.length/columns);
-  if(rows>MAX_BAND_ROWS)return null;
+  if(rows>maxRows)return null;
   return {height:rows*boxHeight+(rows-1)*GAP,
     items:items.map((item,i)=>({...item,kind,width:w,height:h,boxWidth,boxHeight,
       x:MARGIN+(i%columns)*(boxWidth+GAP),y:Math.floor(i/columns)*(boxHeight+GAP)}))};
@@ -31,27 +32,33 @@ export function layoutFieldWorld(state,viewportWidth,height) {
   const dense=catalogs.facilities.length>=8||catalogs.equipment.length>=8;
   height=Math.max(height,dense?320:kinds.length===3?240:kinds.length===2?180:kinds.length?130:60);
   const naturalArmy=layoutFieldArmy(state,{x:0,y:0,width:Math.max(90,viewportWidth-20),height:10000});
-  const armyReserve=naturalArmy.length?Math.max(45,Math.min(100,Math.max(...naturalArmy.map(i=>i.height+(i.label?10:0))))):0;
+  let armyReserve=naturalArmy.length?Math.max(45,Math.min(100,Math.max(...naturalArmy.map(i=>i.height+(i.label?10:0))))):0;
   height=Math.max(height,TOP+BOTTOM+armyReserve);
-  // More gear should fill a third row before pushing other categories off-screen.
+  // Keep the horizontal footprint within 1.5 screens. Further growth adds vertical rows.
   // Reserve just enough vertical space at a compact width, keeping readable labels and the large HQ.
-  const maxCount=Math.max(0,...Object.values(catalogs).map(items=>items.length));
-  const rowWidth=2*MARGIN-GAP+Math.ceil(maxCount/MAX_BAND_ROWS)*(MIN_LABEL_WIDTH+GAP);
-  const requiredSteps=Math.max(0,Math.ceil((rowWidth-viewportWidth)/FIELD_GROWTH_STEP));
   const preferredSteps=Math.floor(viewportWidth*.5/FIELD_GROWTH_STEP);
-  const rowBound=viewportWidth+Math.max(requiredSteps,preferredSteps)*FIELD_GROWTH_STEP;
+  const rowBound=viewportWidth+preferredSteps*FIELD_GROWTH_STEP;
+  // Eight-way galactic grouping can leave seven subordinate commands. Reserve
+  // whole compact rows at full sprite size before support bands consume height.
+  const preserveArmySize=(naturalArmy[0]?.size??0)>=GALACTIC_CORPS_SIZE;
+  if(preserveArmySize){
+    const rows=layoutFieldArmy(state,{x:0,y:0,width:rowBound-2*MARGIN,height:10000},{compactOnly:true,preserveSize:true});
+    armyReserve=Math.max(armyReserve,...rows.map(item=>item.y+item.boxHeight));
+  }
+  const maxColumns=Math.max(1,Math.floor((rowBound-2*MARGIN+GAP)/(MIN_LABEL_WIDTH+GAP)));
+  const rowLimits=Object.fromEntries(kinds.map(kind=>[kind,Math.max(3,Math.ceil(catalogs[kind].length/maxColumns))]));
   const minimumScale=SUPPORT_SCALES.at(-1);
   const minimumSupport=kinds.reduce((sum,kind)=>sum+band(catalogs[kind],kind,rowBound,minimumScale).height+BAND_GAP,0);
   height=Math.max(height,TOP+BOTTOM+armyReserve+minimumSupport);
-  for(let width=viewportWidth;width<=rowBound+FIELD_GROWTH_STEP;width+=FIELD_GROWTH_STEP) {
+  for(let width=viewportWidth;width<=rowBound;width+=FIELD_GROWTH_STEP) {
     // Prefer the largest support icons that fit this width; only then extend the same ground.
     for(const scale of SUPPORT_SCALES) {
-      const bands=kinds.map(kind=>({kind,...band(catalogs[kind],kind,width,scale)}));
+      const bands=kinds.map(kind=>({kind,...band(catalogs[kind],kind,width,scale,rowLimits[kind])}));
       if(bands.some(b=>!b.items))continue;
       const supportHeight=bands.reduce((n,b)=>n+b.height,0)+bands.length*BAND_GAP;
       const armyHeight=height-TOP-BOTTOM-supportHeight;
       if(armyHeight<armyReserve)continue;
-      const army=layoutFieldArmy(state,{x:MARGIN,y:TOP,width:width-2*MARGIN,height:armyHeight});
+      const army=layoutFieldArmy(state,{x:MARGIN,y:TOP,width:width-2*MARGIN,height:armyHeight},{preserveSize:preserveArmySize});
       if(naturalArmy.length&&!army.length)continue;
       const world={width,height,viewportWidth,army,schools:[],facilities:[],equipment:[]};
       let bottom=height-BOTTOM;

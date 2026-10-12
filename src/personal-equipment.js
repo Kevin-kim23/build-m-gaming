@@ -1,6 +1,8 @@
+import {CONSTELLATION_OFFICERS} from './constellation-officers.js';
 import { catalogVisible, rankForArmy, RANKS } from './ranks.js';
 import { PERSONAL_EQUIPMENT, COMMAND_BATON, GENERAL_SWORD, DIVISION_FLAG, GENERAL_REVOLVER, MARSHAL_GLAIVE, ADMIRALS_COMPASS, STRATEGIC_TABLET, SUPREME_SEAL, personalIncomePercent, AUTO_TOUCH } from './personal-catalog.js';
 import { scaleMoney } from './money.js';
+import { GALACTIC_OFFICERS } from './galactic-officers.js';
 export { PERSONAL_EQUIPMENT, COMMAND_BATON, GENERAL_SWORD, DIVISION_FLAG, GENERAL_REVOLVER, MARSHAL_GLAIVE, ADMIRALS_COMPASS, STRATEGIC_TABLET, SUPREME_SEAL, personalIncomePercent, AUTO_TOUCH } from './personal-catalog.js';
 
 // Rank grants the item only; enhancement is persisted independently from promotions.
@@ -34,7 +36,7 @@ export function withPersonalIncome(state,income,kind='passive') {
   const specific=kind==='tap'?personalIncomeBonus(state,ADMIRALS_COMPASS.id,rank):glaiveBonusPercent(state,rank);
   return applyBonus(applyBonus(income,specific),personalIncomeBonus(state,SUPREME_SEAL.id,rank));
 }
-export const FLAG_ENHANCEMENT_LIMITS = Object.freeze(Array.from({length:11},(_,level)=>10+level));
+export const FLAG_ENHANCEMENT_LIMITS = Object.freeze(Array.from({length:DIVISION_FLAG.maxLevel+1},(_,level)=>10+level));
 export function enhancementLimitForFlag(level) {
   if(!Number.isInteger(level)||level<0||level>DIVISION_FLAG.maxLevel)throw new RangeError('Invalid flag level');
   return FLAG_ENHANCEMENT_LIMITS[level];
@@ -50,6 +52,10 @@ export function autoTouchStatus(state,now=Date.now()) {
 }
 export const BULK_RECRUIT = Object.freeze(Object.fromEntries([
   'soldier','sergeant','staffSergeant','masterSergeant','sergeantMajor','lieutenant','firstLieutenant','captain','major','lieutenantColonel',
+  'colonel','brigadierGeneral','majorGeneral','lieutenantGeneral','general',
+  'juniorMarshal','minorMarshal','middleMarshal','grandMarshal','specialMarshal',
+  ...GALACTIC_OFFICERS.map(unit=>unit.id),
+  ...CONSTELLATION_OFFICERS.map(unit=>unit.id),
 ].map((id,i)=>[id,Object.freeze({level:i+1})])));
 export function bulkRecruitAccess(state,type) {
   const rule=BULK_RECRUIT[type];
@@ -57,6 +63,7 @@ export function bulkRecruitAccess(state,type) {
   const baton=commandBatonStatus(state);
   return {visible:baton.level>=rule.level,unlocked:baton.level>=rule.level,requirement:`지휘봉 Lv.${rule.level} 필요`};
 }
+export const bulkRecruitDiscountPercent = state=>0;
 // Active windows snapshot their start-time level, so enhancement cannot extend a running skill.
 export function swordSkillStatus(state,now=Date.now()) {
   const owned=generalSwordStatus(state).owned,at=state.swordActivatedAt??null;

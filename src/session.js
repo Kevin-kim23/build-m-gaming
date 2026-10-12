@@ -10,7 +10,7 @@ export const RECOVERY_KEY = SAVE_KEY + '-recovery';
 // access storage; handoff flushes synchronously before releasing ownership.
 export function createGameSession({ storage, locks, now = Date.now,
   setTimer = setTimeout, clearTimer = clearTimeout,
-  onChange = () => {}, onError = () => {} }) {
+  onChange = () => {}, onError = () => {}, onAutoTouchIncome = () => {} }) {
   let state = freshState(now()), active = false, wanted = false;
   let invalid = false, storageError = false, recovered = false;
   let dirty = false, timer = null, committed = null, release = null;
@@ -85,7 +85,13 @@ export function createGameSession({ storage, locks, now = Date.now,
   function settle() {
     if (invalid) return;
     const before = state.lastAccrual;
-    accrue(state, now());
+    accrue(state, now(), (amount, elapsed) => {
+      // Do not animate offline catch-up; only report gold actually credited.
+      if (active && elapsed <= 1500 && !claiming) {
+        try { onAutoTouchIncome(amount); }
+        catch (error) { onError('revolver.feedback', error); }
+      }
+    });
     if (state.lastAccrual !== before) dirty = true;
   }
   function flush(backup = false) {
@@ -167,6 +173,7 @@ export function createGameSession({ storage, locks, now = Date.now,
   }
   function tap() {
     if (!active || invalid) return 0;
+    settle();
     const earned = tapGold(state, now());
     schedule();
     notify();

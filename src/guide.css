@@ -1,4 +1,4 @@
-/* First-five-minutes guide: one slim message above the dock buttons and a pulse on the next target. */
+/* Goals stay in the small coach; affordable first actions use a real-button spotlight. */
 .coach { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; padding: 6px 6px 6px 10px; background: #38442f; border: 1px solid #8f9264; border-radius: 8px; }
 .coach[hidden] { display: none; }
 .coach p { flex: 1; min-width: 0; margin: 0; color: #f1ecc8; font-size: 12px; line-height: 1.45; word-break: keep-all; }
@@ -13,3 +13,13 @@
 @media (prefers-reduced-motion: reduce) {
   .guide-pulse { animation: none; box-shadow: 0 0 0 3px #f2d58a; }
 }
+#guide-spotlight { margin:0; padding:0; border:0; inset:0; width:100vw; height:100dvh; max-width:none; max-height:none; overflow:visible; background:transparent; color:#f7f0dc; pointer-events:none; --guide-safe-top:var(--safe-area-inset-top,env(safe-area-inset-top,0px)); --guide-safe-bottom:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)); }
+#guide-spotlight::backdrop { background:transparent; pointer-events:none; }
+.guide-shade { position:fixed; pointer-events:auto; background:#060b11a8; backdrop-filter:grayscale(1); -webkit-backdrop-filter:grayscale(1); touch-action:none; }
+.guide-ring { position:fixed; border:2px solid #ffe6a0; border-radius:10px; box-sizing:border-box; animation:guide-pulse 1.6s ease-in-out infinite; pointer-events:none; }
+.guide-dialogue { position:fixed; left:max(12px,var(--safe-area-inset-left,env(safe-area-inset-left,0px))); right:max(12px,var(--safe-area-inset-right,env(safe-area-inset-right,0px))); width:auto; max-width:360px; margin:0 auto; box-sizing:border-box; padding:14px 16px 10px; border:1px solid #dbbc6c; border-radius:14px; background:#1e2c23; box-shadow:0 8px 30px #0008; pointer-events:auto; overflow:auto; }
+.guide-dialogue small { color:#dbc887; font-size:11px; }
+.guide-dialogue h2 { margin:4px 0 8px; font-size:17px; color:#fff4ce; }
+.guide-dialogue p { margin:0; font-size:14px; line-height:1.6; word-break:keep-all; }
+.guide-dialogue button { display:block; min-height:44px; margin:8px 0 0 auto; padding:6px 12px; border:1px solid #81917a; border-radius:8px; background:#344536; color:#eee8d7; font-size:12px; }
+@media (prefers-reduced-motion: reduce) { .guide-ring {animation:none;} }

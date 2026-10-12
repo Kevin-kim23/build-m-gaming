@@ -1,4 +1,4 @@
-import { subtractMoney } from './money.js';
+import { subtractMoney, multiplyMoney } from './money.js';
 import { fmt, fmtGold, fmtGoldCost } from './format.js';
 import {
   EQUIPMENT, equipmentOf, equipmentCount, equipmentStats,
@@ -6,13 +6,13 @@ import {
 } from './equipment.js';
 import { drawEquipment } from './equipment-art.js';
 
-export const equipmentRole = (id) => id === 'transport' ? '보급 지원 · 전투 중 아군 본부 회복'
+export const equipmentRole = (id) => EQUIPMENT[id]?.role ?? (id === 'transport' ? '보급 지원 · 전투 중 아군 본부 회복'
   : id === 'railgunTank' ? '레일건 사격 · 빠른 직선 자동 공격'
   : id === 'icbm' ? '대형 미사일 · 긴 대기 후 강한 자동 공격'
   : id === 'carrier' ? '함재기 지원 · 느린 전진과 긴 사거리의 자동 공격'
   : id === 'flyingFortress' ? '공중 중포격 · 튼튼한 기체로 지속 자동 공격'
   : id === 'orbitalAssault' ? '궤도 에너지 타격 · 출격 시 적 본부 직격'
-  : id === 'fighter' ? '항공 타격 · 적 본부 자동 공격' : '화력 지원 · 적 본부 자동 공격';
+  : id === 'fighter' ? '항공 타격 · 적 본부 자동 공격' : '화력 지원 · 적 본부 자동 공격');
 
 // One wide row per item. Everything else (role, limits, exact numbers) is in the detail popup.
 function equipmentTile(d) {
@@ -46,8 +46,8 @@ export function renderEquipmentStore(s, root) {
     const offer = equipmentPurchaseOffer(s, id), gun = equipmentOf(s, id), count = equipmentCount(s, id);
     const stats = equipmentStats(gun?.level ?? 0, id), q = (selector) => card.querySelector(selector);
     set(q('[data-gear-count]'), gun ? `[${fmt(count)}문]` : '');
-    set(q('[data-gear-passive]'), fmtGold(stats.passive * (count || 1)));
-    set(q('[data-gear-tap]'), fmtGold(stats.tap * (count || 1)));
+    set(q('[data-gear-passive]'), fmtGold(multiplyMoney(stats.passive,count || 1)));
+    set(q('[data-gear-tap]'), fmtGold(multiplyMoney(stats.tap,count || 1)));
     q('[data-gear-price]').hidden = !!gun;
     const buy = q('[data-buy-equipment]'), manage = q('[data-manage-equipment]'), more = q('[data-buy-additional]');
     buy.hidden = !!gun; buy.disabled = !offer.canBuy;

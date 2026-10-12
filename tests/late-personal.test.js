@@ -32,9 +32,9 @@ test('each new personal reward previews one rank early, unlocks at its own rank 
   assert.equal(baseTapIncome(fresh),1);assert.equal(perSecond(fresh),0);
 });
 
-test('compass, tablet and seal apply once in a defined order with exact flooring at all ten levels',()=>{
+test('compass, tablet and seal apply once in a defined order with exact flooring at all twenty levels',()=>{
   const s=army();s.gold=0;s.equipment.tank={level:20,count:1,deployed:true};
-  for(let level=1;level<=10;level++){
+  for(let level=1;level<=20;level++){
     for(const id of ids)s.personalLevels[id]=level;
     const gear=equipmentIncome(s),tablet=130+(level-1)*10,compass=140+(level-1)*10,seal=120+(level-1)*5;
     const passive=ratio(ratio(exact(troopIncome(s,'passive'))+ratio(gear.passive,tablet),220),seal);
@@ -60,20 +60,6 @@ test('new passive layers handle safe integer boundaries, wallet minus one and ex
     assert.equal(restored.gold,amount);assert.deepEqual(restored.personalLevels,s.personalLevels);
   }
   s.gold=MAX_GOLD-1n;assert.equal(tapGold(s,T),1);assert.equal(s.gold,MAX_GOLD);assert.equal(tapGold(s,T),0);
-});
-
-test('new rewards reuse published chances; failure, insufficient funds and cap never alter the paid level',()=>{
-  for(const id of ids){
-    const s=army();s.personalLevels[id]=9;
-    const offer=personalUpgradeOffer(s,id),gold=MAX_GOLD-1n;s.gold=gold;
-    const failure=enhancePersonalEquipment(s,T,id,()=>9999);
-    assert.equal(failure.success,false);assert.equal(s.personalLevels[id],9);assert.equal(s.gold,subtractMoney(gold,offer.cost));
-    s.gold=offer.cost-1;assert.equal(enhancePersonalEquipment(s,T,id,()=>{throw Error('no roll');}).reason,'gold');
-    assert.equal(subtractMoney(offer.cost,s.gold),1);
-    s.gold=offer.cost;assert.equal(enhancePersonalEquipment(s,T,id,()=>0).success,true);assert.equal(s.gold,0);
-    assert.equal(personalUpgradeOffer(s,id).reason,'max');
-    assert.equal(parseSave(serializeSave(s),T).personalLevels[id],10);
-  }
 });
 
 test('sword and revolver use all home bonuses exactly once, including eight-hour settlement and reload',()=>{

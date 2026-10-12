@@ -5,7 +5,7 @@ import { COUNTRIES } from "./campaign.js";
 export const FORMATION_ACHIEVEMENTS = Object.freeze(
   FORMATIONS.filter(f => f.id !== "soldier").slice().reverse().map((formation, tier) => Object.freeze({
     id: formation.id,
-    title: {fieldArmy:'야전군사령관',armyGroup:'집단군 사령관',alliedArmy:'연합군 사령관',grandAlliedArmy:'대연합군 사령관',supremeCommand:'총군사령관',galacticCommand:'은하사령관'}[formation.id] ?? `${formation.name}장`,
+    title: {constellationFieldArmy:'은하단 야전군사령관',constellationArmyGroup:'은하단 집단군 사령관',fieldArmy:'야전군사령관',armyGroup:'집단군 사령관',alliedArmy:'연합군 사령관',grandAlliedArmy:'대연합군 사령관',supremeCommand:'총군사령관',galacticCommand:'은하 연대장',galacticGroupCommand:'은하 사단장',galacticCorps:'은하 군단장',galacticFieldArmy:'은하 야전군사령관',galacticArmyGroup:'은하 집단군 사령관',galacticAlliedArmy:'은하 연합군 사령관',galacticGrandAlliedArmy:'은하 대연합군 사령관'}[formation.id] ?? `${formation.name}장`,
     formationName: formation.name,
     category: 'formation',
     required: formation.size,
@@ -50,11 +50,11 @@ export function achievementProgress(state, id) {
   const achievement = ACHIEVEMENTS.find(a => a.id === id);
   if (!achievement) throw new RangeError("Unknown achievement");
   const earned = state.earnedAchievements?.includes(id) ?? false;
-  const current = Math.min(measuredProgress(state, achievement), achievement.required);
+  const current = measuredProgress(state,achievement)<achievement.required?measuredProgress(state,achievement):achievement.required;
   return {
     earned,
     current,
     required: achievement.required,
-    ratio: earned ? 1 : current / achievement.required,
+    ratio: earned ? 1 : Number(current) / Number(achievement.required),
   };
 }

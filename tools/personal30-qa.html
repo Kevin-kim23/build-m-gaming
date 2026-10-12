@@ -1,0 +1,36 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>개인 장비30·픽셀 캐릭터 검증</title>
+<style>body{overflow:auto!important}#qa{margin:12px auto;max-width:500px;padding:12px;background:#28382d;color:white}#qa button{padding:10px;margin:4px}#portraits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}#portraits article{text-align:center;background:#314737;border:1px solid #817148;border-radius:8px;padding:6px}#portraits canvas{width:90px;height:114px;max-width:100%;image-rendering:pixelated}#app{height:700px;position:relative}#qa-result{white-space:pre-wrap}</style>
+<div id="app"></div><section id="qa"><p>메모리 전용 검증 · 실제 저장을 읽거나 쓰지 않습니다.</p><button id="cooldown">장군검 종료 570초</button><button id="ready">쿨타임 완료</button><button id="skills">스킬 사용</button><button id="gallery">캐릭터 전체 보기</button><p id="qa-result"></p><div id="portraits"></div></section>
+<script type="module">
+import {openRankGuide} from '/src/rank-guide.js';
+import '/src/style.css';import '/src/hud.css';import '/src/detail.css';import '/src/home-auto-tap.css';import '/src/field-world.css';
+import {freshState,activateSword,activateAutoTouch} from '/src/game.js';
+import {homeMarkup,insignia} from '/src/home-view.js';
+import {drawFormationPortrait,drawScene} from '/src/art.js';
+import {drawCharacterPortrait,characterArtRevision} from '/src/character-art.js';
+import {RANKS} from '/src/ranks.js';
+import {syncSwordControls,syncRevolverControls} from '/src/sword-controls.js';
+import {createHomeAutoTapFeedback} from '/src/home-auto-tap-ui.js';
+const T=1800000000000,s={...freshState(T),soldiers:10000,sergeants:300,galacticBrigadiers:8,galacticMarshals:1};
+document.querySelector('#app').innerHTML=homeMarkup(s);
+const root=document.querySelector('#app'),result=document.querySelector('#qa-result');
+root.querySelector('.field-tools').hidden=false;root.querySelector('.intro-copy').hidden=true;
+root.querySelector('#rank-name').textContent='은하 준장';root.querySelector('.rank-mark').innerHTML=insignia(25);
+document.querySelector('#open-ranks').onclick=()=>openRankGuide(s,insignia);
+let timer=null,start=Date.now();
+const feedback=createHomeAutoTapFeedback(document.querySelector('#revolver-feedback'),'리볼버!');
+const sync=t=>{syncSwordControls(root,s,true,t);syncRevolverControls(root,s,true,t);};
+document.querySelector('#cooldown').onclick=()=>{clearInterval(timer);s.swordActivatedAt=T;s.swordDurationMs=30000;sync(T+30000);result.textContent='장군검 대기 570초 · 효과 링 숨김';};
+document.querySelector('#ready').onclick=()=>{clearInterval(timer);sync(T+1800000);result.textContent='재사용 가능 · 시간 숨김';};
+document.querySelector('#skills').onclick=()=>{clearInterval(timer);s.swordActivatedAt=s.autoTouchActivatedAt=null;activateSword(s,T);activateAutoTouch(s,T);start=Date.now();sync(T);timer=setInterval(()=>{sync(T+Date.now()-start);feedback.show(123456789);},300);};
+const panel=document.querySelector('#portraits');
+for(const [i,name] of RANKS.entries()){
+ const card=document.createElement('article');card.innerHTML=`${insignia(i)}<canvas width="144" height="180" aria-label="${name} 캐릭터"></canvas><p>${name}</p>`;
+ panel.append(card);drawCharacterPortrait(card.querySelector('canvas'),i);
+}
+document.querySelector('#gallery').onclick=()=>panel.scrollIntoView({block:'start'});
+window.addEventListener('character-art-ready',()=>{result.textContent=`캐릭터 시트 ${characterArtRevision()}/5 로드`;drawScene(document.querySelector('#field'),s);});
+window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
+sync(T);drawScene(document.querySelector('#field'),s);
+document.querySelector('#cooldown').click();
+</script></html>

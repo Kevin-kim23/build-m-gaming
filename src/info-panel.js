@@ -21,6 +21,7 @@ export function infoPanelMarkup({ version, platform, status, saveVersion, entrie
       <h3 class="info-title">안내</h3>
       <p class="fiction-notice">${escapeHtml(FICTION_NOTICE)}</p>
       <button type="button" class="detail-link" data-detail-action="open-privacy">개인정보처리방침 보기</button>
+      <button type="button" class="detail-link" data-detail-action="open-licenses">오픈소스 라이선스</button>
       <p>오류 기록과 문의용 정보에는 게임 저장 내용(골드·병력 등)이 들어 있지 않습니다. 이 기기 밖으로 자동 전송되지 않습니다.</p>`,
   };
 }

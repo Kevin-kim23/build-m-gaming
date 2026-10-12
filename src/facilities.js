@@ -31,7 +31,7 @@ export function facilityStats(id,level=1) {
 // Fixed catalog, 19 prices each. Exact rational geometric growth, rounded up to 1,000 G.
 const prices = new Map(FACILITIES.map(f=>[f.id,Object.freeze(Array.from({length:MAX_FACILITY_LEVEL-1},(_,index)=>{
   const divisor=2n**BigInt(index+1)*1000n;
-  const numerator=BigInt(f.cost)*3n*5n**BigInt(index);
+  const numerator=BigInt(f.cost)*3n*BigInt(f.upgradeNumerator??5)**BigInt(index);
   return compactMoney((numerator+divisor-1n)/divisor*1000n);
 }))]));
 export function facilityUpgradeCost(id,level) {

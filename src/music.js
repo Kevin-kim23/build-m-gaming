@@ -14,7 +14,7 @@ export function createMusicPlayer({ createAudio = () => {
   return element;
 }, onError = reportError } = {}) {
   let media, scene = null, active = false, volume = 0.45, pending = false, blocked = false;
-  let generation = 0, failed = false;
+  let generation = 0, failed = false, suspensions = 0;
   const positions = new Map();
   const indices = { title: 0, home: 0, battle: 0 };
   function ensure() {
@@ -22,7 +22,7 @@ export function createMusicPlayer({ createAudio = () => {
     media = createAudio();
     media.preload = 'metadata';
     media.addEventListener('ended', () => {
-      if (!scene || !active) return;
+      if (!scene || !active || suspensions) return;
       indices[scene] = (indices[scene] + 1) % MUSIC_TRACKS[scene].length;
       positions.delete(scene);
       load(); play();
@@ -45,7 +45,7 @@ export function createMusicPlayer({ createAudio = () => {
     node.currentTime = positions.get(scene) ?? 0;
   }
   function play() {
-    if (!scene || !active || volume === 0 || pending || blocked || failed) return;
+    if (!scene || !active || suspensions || volume === 0 || pending || blocked || failed) return;
     const node = ensure();
     node.volume = volume;
     if (!node.paused) return;
@@ -64,6 +64,16 @@ export function createMusicPlayer({ createAudio = () => {
     } catch (error) { rejected(error); }
   }
   return {
+    // Independent of app visibility: native ads can leave the WebView active.
+    suspend() {
+      suspensions++; halt();
+      let released = false;
+      return () => {
+        if (released) return;
+        released = true; suspensions--;
+        play();
+      };
+    },
     configure(settings) {
       if ('scene' in settings && settings.scene !== scene) {
         if (scene && media) positions.set(scene, media.currentTime);
@@ -73,7 +83,7 @@ export function createMusicPlayer({ createAudio = () => {
       if ('volume' in settings) volume = Math.max(0, Math.min(1, Number(settings.volume) || 0));
       if ('active' in settings) active = !!settings.active;
       if (media) media.volume = volume;
-      if (!active || !scene || volume === 0) halt(); else play();
+      if (!active || !scene || suspensions || volume === 0) halt(); else play();
     },
     unlock() { blocked = false; play(); },
     get scene() { return scene; },

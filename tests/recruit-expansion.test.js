@@ -1,3 +1,4 @@
+import { serializeLegacySave } from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, MAX_SOLDIERS, SAVE_VERSION } from '../src/state.js';
@@ -39,7 +40,7 @@ test('version 23 saves migrate without changing money, existing troops, equipmen
     offlineReward:{id:T,durationMs:3600000,amount:9007199254740993n}};
   old.equipment.artillery={count:1,level:10,deployed:true};
   for(const u of NEW_RECRUITS) delete old[u.field];
-  const {state:s,issue}=inspectSave(serializeSave(old),T);
+  const {state:s,issue}=inspectSave(serializeLegacySave(old),T);
   assert.equal(issue,null);assert.equal(s.version,SAVE_VERSION);
   for(const key of ['gold','soldiers','sergeants','ncoSchoolLevel','equipment','offlineReward'])assert.deepEqual(s[key],old[key]);
   for(const u of NEW_RECRUITS)assert.equal(s[u.field],0);

@@ -25,8 +25,8 @@ export function syncSwordControls(root, state, writable, now = Date.now()) {
         ring.setAttribute('stroke-dashoffset', String(-100 * (1 - skill.activeMs / skill.durationMs)));
       }
       if (timer) {
-        timer.hidden = !skill.active;
-        const remaining = `${Math.ceil(skill.activeMs / 1000)}초`;
+        timer.hidden = !skill.active && skill.remainingMs === 0;
+        const remaining = skill.active ? `${Math.ceil(skill.activeMs / 1000)}초` : `${Math.ceil(skill.remainingMs / 1000)}초`;
         if (timer.textContent !== remaining) timer.textContent = remaining;
       }
       button.setAttribute('aria-label', skill.active ? `장군검 사용 중 · ${Math.ceil(skill.activeMs / 1000)}초 남음` : skill.remainingMs > 0 ? '장군검 재사용 대기 ' + time(skill.remainingMs) : '장군검 사용');

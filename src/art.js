@@ -1,3 +1,5 @@
+import { drawModernCommand } from './modern-command-art.js';
+import { characterSprite, characterIndex, characterArtRevision, drawCharacterPortrait } from './character-art.js';
 import { layoutFieldWorld } from './field-world.js';
 import { fieldTheme, concreteTerrain } from './field-theme.js';
 import { ownedSchools } from "./field-schools.js";
@@ -13,7 +15,7 @@ import { FORMATIONS } from "./formations.js";
 import { UNITS } from "./units.js";
 import { deployedEquipment } from "./equipment.js";
 import { drawEquipmentOnGround } from "./equipment-art.js";
-// Every sprite is original geometry. Static terrain and sprites are cached.
+// Generated character sprites and original building geometry are cached.
 const sprites = new Map();
 const scenes = new WeakMap();
 function r(c, x, y, w, h, color) {
@@ -151,6 +153,7 @@ function door(c, x, y) {
 }
 function building(c, id) {
   const type = FORMATIONS.find(f => f.id === id);
+  if (drawModernCommand(c, id, type.width, type.height)) return;
   if (drawHighCommand(c, id, type.width, type.height)) return;
   const headquarters = ["regiment", "division", "corps", "fieldArmy", "armyGroup", "alliedArmy"].indexOf(
     id,
@@ -236,6 +239,10 @@ function building(c, id) {
   }
 }
 function sprite(id) {
+  if (UNITS[id]) {
+    const character=characterSprite(characterIndex(id));
+    if (character) return character;
+  }
   if (sprites.has(id)) return sprites.get(id);
   const type = UNITS[id] ?? FORMATIONS.find((item) => item.id === id);
   if (!type) throw new Error(`Unknown formation sprite: ${id}`);
@@ -249,19 +256,20 @@ function sprite(id) {
       r(c, 3, 2, 13, 4, u.color);
       r(c, 12, 3, 2, 2, "#e7d293");
       r(c, 7, 12, 6, 7, "#354d4a");
-      if(u.school==='officer'||u.school==='advanced') {
+      if(['officer','advanced','command'].includes(u.school)||u.insigniaKind==='galactic') {
         r(c,9,12,2,1,"#eef0d1");r(c,8,13,4,2,"#eef0d1");r(c,9,15,2,1,"#eef0d1");
         r(c,3,10,3,2,"#eef0d1");r(c,13,10,3,2,"#eef0d1");
       } else for(let i=0;i<u.schoolLevel;i++)r(c,7,12+i*2,5,1,"#e7c679");
     }
   } else building(c, id);
   if (UNITS[id]) uniformDetails(c,id);
-  if (['officer','advanced'].includes(UNITS[id]?.school)) officerDetails(c,UNITS[id]);
+  if (['officer','advanced','command'].includes(UNITS[id]?.school)||UNITS[id]?.insigniaKind==='galactic') officerDetails(c,UNITS[id]);
   if (UNITS[id]?.role || id==='warrantOfficer') specialistDetails(c,UNITS[id]);
   sprites.set(id, canvas);
   return canvas;
 }
 export function drawFormationPortrait(canvas, id) {
+  if (UNITS[id] && drawCharacterPortrait(canvas,characterIndex(id))) return;
   const c = canvas.getContext("2d"),
     asset = sprite(id);
   c.clearRect(0, 0, canvas.width, canvas.height);
@@ -296,7 +304,7 @@ export function drawScene(canvas, count = 0, labelLayer = null, layout = null) {
     theme + ":" + fieldSummary(army) + ":" + deployed.map((d) => d.id + d.level + "/" + (d.count ?? 1)).join(":") + ":" + schools.map(s => s.id + s.level).join(":") + ":" + (army.facilities??[]).map(id=>id+(army.facilityLevels?.[id]??1)).join(":");
   const world=layout??layoutFieldWorld(army,canvas.clientWidth/2,canvas.clientHeight/2);
   const {width,height}=world;
-  key+=":"+world.viewportWidth;
+  key+=":"+world.viewportWidth+":"+characterArtRevision();
   let cached = scenes.get(canvas);
   if (
     cached &&
@@ -317,7 +325,9 @@ export function drawScene(canvas, count = 0, labelLayer = null, layout = null) {
   c.drawImage(cached.ground, 0, 0);
   const {army:armyItems,schools:schoolItems,equipment:equipmentItems,facilities}=world;
   for (const item of armyItems) {
-    c.drawImage(sprite(item.id), item.x, item.y, item.width, item.height);
+    const asset=sprite(item.id);
+    const w=UNITS[item.id] ? Math.min(item.width,item.height*asset.width/asset.height) : item.width;
+    c.drawImage(asset, item.x+(item.width-w)/2, item.y, w, item.height);
   }
   // Equipment is parked from the left along the bottom of the same terrain.
   for (const item of equipmentItems) {

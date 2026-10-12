@@ -1,5 +1,5 @@
 import { personalIcon } from './personal-art.js';
-import { generalRankBadge, marshalRankBadge } from './rank-frame.js';
+import { generalRankBadge, marshalRankBadge, galacticRankBadge, rankBadgeInstance } from './rank-frame.js';
 import { RANK_DEFINITIONS } from "./ranks.js";
 import { APP_VERSION } from "./version.js";
 import { medalShelfMarkup } from "./achievement-markup.js";
@@ -22,6 +22,7 @@ function headerMarkup(state) {
     </div>
     ${goldMarkup()}
     <button id="sound" aria-label="설정" title="설정"><span aria-hidden="true" style="font-size:24px">⚙</span></button>
+    ${incomeMarkup()}
     </header>`;
 }
 
@@ -32,19 +33,18 @@ function goldMarkup() {
     </strong>
     <span class="gold-unit">G</span>
     </div>
-    <p class="income-line">
-    <span>초당 <b id="passive-rate">
-    </b><small id="campaign-income-bonus" hidden></small>
-    </span>
-    <span>터치 <b id="tap-rate">
-    </b>
-    </span>
-    </p>
+    </div>`;
+}
+
+function incomeMarkup() {
+  return `<div class="income-lines" aria-label="골드 수입과 증가 효과" title="표시된 골드에 효과가 이미 포함되어 있습니다. 시설·점령·개인장비는 순차 적용되며, 장비 수입 효과는 배치한 군사 장비에만 적용됩니다.">
+    <div class="income-line"><span class="income-rate">초당 <b id="passive-rate"></b></span><small id="passive-effects" class="income-effects" hidden></small><small id="passive-potion-effect" class="income-skill" hidden></small></div>
+    <div class="income-line"><span class="income-rate">터치 <b id="tap-rate"></b></span><small id="tap-effects" class="income-effects" hidden></small><small id="tap-sword-effect" class="income-skill" hidden></small><small id="tap-potion-effect" class="income-skill" hidden></small></div>
     </div>`;
 }
 
 function fieldMarkup() {
-  return `<section class="field-region" aria-label="좌우로 넘기는 연병장"><div id="field-viewport"><button id="tap-zone" aria-label="화면 터치해서 골드 획득">
+  return `<section class="field-region" aria-label="상하좌우로 둘러보는 연병장"><div id="field-viewport"><button id="tap-zone" aria-label="화면 터치해서 골드 획득">
     <canvas id="field" aria-hidden="true">
     </canvas>
     <span id="field-labels" aria-hidden="true"></span>
@@ -65,7 +65,7 @@ function fieldMarkup() {
     </span>
     <span class="pixel-corner bottom-right">
     </span>
-    </button></div><span id="field-scroll-hint" class="field-scroll-hint" hidden>↔ 좌우로 밀어서 둘러보기</span></section>`;
+    </button></div><span id="home-auto-feedback" aria-hidden="true"></span><span id="revolver-feedback" aria-hidden="true"></span><span id="field-scroll-hint" class="field-scroll-hint" hidden>↔ 좌우로 밀어서 둘러보기</span></section>`;
 }
 
 function dockMarkup() {
@@ -123,9 +123,11 @@ export function homeMarkup(state) {
 export function insignia(index) {
   const r = RANK_DEFINITIONS[index];
   if (r.kind === 'general' && r.marks <= 5)
-    return `<span class="insignia general framed-rank">${generalRankBadge(r.marks)}</span>`;
+    return `<span class="insignia general framed-rank">${rankBadgeInstance(generalRankBadge(r.marks))}</span>`;
+  if (r.kind === 'general' && r.marks >= 11)
+    return `<span class="insignia general framed-rank">${rankBadgeInstance(galacticRankBadge(r.marks))}</span>`;
   if (r.kind === 'general' && r.marks >= 6)
-    return `<span class="insignia general framed-rank">${marshalRankBadge(r.marks)}</span>`;
+    return `<span class="insignia general framed-rank">${rankBadgeInstance(marshalRankBadge(r.marks))}</span>`;
   return (
     '<span class="insignia ' +
     r.kind +

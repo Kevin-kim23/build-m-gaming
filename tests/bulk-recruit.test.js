@@ -1,3 +1,4 @@
+import { CAMPAIGN_STAGE_COUNT } from '../src/campaign-constants.js';
 import { emptyPersonalLevels } from '../src/personal-catalog.js';
 import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
@@ -19,7 +20,7 @@ const expectedBatchCost = (owned, type = 'soldier') =>
 
 test("level one command baton is previewed at major and automatically owned from lieutenant colonel", async () => {
   const { COMMAND_BATON, commandBatonStatus } = await import("../src/personal-equipment.js");
-  assert.equal(COMMAND_BATON.unlockRank,'중령');assert.equal(COMMAND_BATON.maxLevel,10);assert.equal(COMMAND_BATON.recruitAmount,100);
+  assert.equal(COMMAND_BATON.unlockRank,'중령');assert.equal(COMMAND_BATON.maxLevel,30);assert.equal(COMMAND_BATON.recruitAmount,100);
   assert.deepEqual(commandBatonStatus(army(639)), { visible: false, owned: false, level: 0 });
   assert.deepEqual(commandBatonStatus(army(640)), { visible: true, owned: false, level: 0 });
   assert.deepEqual(commandBatonStatus(army(1279)), { visible: true, owned: false, level: 0 });
@@ -138,7 +139,7 @@ test("existing version seven saves restore their derived baton without a separat
   const { commandBatonStatus } = await import("../src/personal-equipment.js");
   const original = { ...army(), version: 7, battleCleared: 2, taps: 1234, gold: 987654321 };
   const restored = parseSave(serializeSave(original), T);
-  assert.deepEqual(restored, { ...original, version:SAVE_VERSION,offlineReward:null,campaignStars:Array(80).fill(0),personalLevels:emptyPersonalLevels(),autoTouchDurationMs:60000, ncoSchoolLevel: 2,
+  assert.deepEqual(restored, { ...original, version:SAVE_VERSION,offlineReward:null,campaignStars:Array(CAMPAIGN_STAGE_COUNT).fill(0),personalLevels:emptyPersonalLevels(),autoTouchDurationMs:60000, ncoSchoolLevel: 2,
     earnedAchievements: ["squad", "platoon", "company", "battalion"] });
   assert.equal(restored.version, SAVE_VERSION);
   assert.equal(commandBatonStatus(restored).owned, true);

@@ -46,20 +46,20 @@ test('from sergeant rank the guide points to the NCO school until one is built',
   const step = guideStep(s);
   assert.equal(step.id, 'school');
   assert.equal(step.target, 'school');
-  assert.ok(step.text.includes('30,000G') || step.text.includes(SCHOOLS.nco.costs[0].toLocaleString('ko-KR') + 'G'));
+  assert.match(step.text,/60만 골드/);
   assert.equal(step.pulse, false);
   assert.equal(guideStep({ ...s, gold: SCHOOLS.nco.costs[0] }).pulse, true);
   assert.notEqual(guideStep({ ...s, ncoSchoolLevel: 1 })?.id, 'school');
 });
 
-test('a revealed but unowned equipment is introduced once, then the guide ends', () => {
-  const base = army(400, { ncoSchoolLevel: 1 });
+test('equipment purchase advances to its first enhancement, not another purchase', () => {
+  const base = army(400, { ncoSchoolLevel: 2,sergeants:1,facilities:['kitchen'],facilityLevels:{kitchen:2} });
   assert.equal(guideStep(base)?.id, 'equipment');
-  assert.equal(guideStep({ ...base, equipment: { ...base.equipment, artillery: { level: 0, deployed: true, count: 1 } } }), null);
+  assert.equal(guideStep({ ...base, equipment: { ...base.equipment, artillery: { level: 0, deployed: true, count: 1 } } }).id, 'equipment-upgrade');
 });
 
 test('established saves see no guide at all', () => {
-  const late = fresh({ soldiers: 20000, sergeants: 300, ncoSchoolLevel: 5, officerSchoolLevel: 2, gold: 1e12 });
+  const late = fresh({ soldiers: 20000, sergeants: 300, ncoSchoolLevel: 5, officerSchoolLevel: 2, gold: 1e12,facilities:['gym'],facilityLevels:{gym:2} });
   late.equipment.artillery = { level: 5, deployed: true, count: 1 };
   assert.equal(guideStep(late), null);
 });

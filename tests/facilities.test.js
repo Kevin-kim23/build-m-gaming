@@ -1,3 +1,5 @@
+import { LEGACY_MAX_GOLD } from '../src/money.js';
+import { serializeLegacySave } from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState,buildFacility,perSecond,perTap,baseTapIncome,accrue,tapGold,activateSword,activateAutoTouch,buyEquipment} from '../src/game.js';
@@ -13,9 +15,9 @@ import {EQUIPMENT,deployedEquipment} from '../src/equipment.js';
 const T=1800000000000;
 const army=rank=>{const s=freshState(T),power=RANK_REQUIREMENTS[RANKS.indexOf(rank)];s.sergeants=power>=10240?300:power>=640?40:0;s.soldiers=power-s.sergeants*10;s.gold=MAX_GOLD;return s;};
 
-test('ten facilities unlock in order from master sergeant; actual promotion gates are enforced',()=>{
-  assert.equal(FACILITIES.length,10);
-  assert.deepEqual(FACILITIES.map(f=>f.rank),RANKS.slice(RANKS.indexOf('상사'),RANKS.indexOf('준장')+1));
+test('nineteen facilities unlock in order from master sergeant; actual promotion gates are enforced',()=>{
+  assert.equal(FACILITIES.length,19);
+  assert.deepEqual(FACILITIES.map(f=>f.rank),RANKS.slice(RANKS.indexOf('상사'),RANKS.indexOf('부사령관')+1));
   for(const f of FACILITIES){
     const s=army(RANKS[RANKS.indexOf(f.rank)-1]);
     assert.equal(facilityOffer(s,f.id).visible,true);assert.equal(facilityOffer(s,f.id).locked,true);
@@ -42,19 +44,19 @@ test('construction is exact at wallet boundaries, rejects unknown IDs, settles o
   assert.throws(()=>buildFacility(s,T+1000,'__proto__'),RangeError);
   assert.equal(s.lastAccrual,T);
   assert.equal(buildFacility(s,T+1000,f.id).ok,true);assert.equal(s.gold,60);
-  accrue(s,T+2000);assert.equal(s.gold,121); // old 60/s then floor(60*1.03)=61/s
+  accrue(s,T+2000);assert.equal(s.gold,123); // old 60/s then floor(60*1.05)=63/s
 });
 
 test('bonuses add per income type, cache by ownership and use exact integer arithmetic',()=>{
   const s=army('대원수'),base=perSecond(s),tap=perTap(s,T);
   s.facilities=FACILITIES.map(f=>f.id);
-  assert.deepEqual(facilityBonus(s),{passive:25,tap:20});
+  assert.deepEqual(facilityBonus(s),{passive:150,tap:129});
   assert.equal(facilityBonus(s),facilityBonus(s));
-  assert.equal(perTap(s,T),Math.floor(tap*1.2));
+  assert.equal(perTap(s,T),Math.floor(tap*2.29));
   assert.ok(perSecond(s)>base);
   for(const value of [Number.MAX_SAFE_INTEGER,9007199254740993n,MAX_GOLD-1n])
-    assert.equal(exact(withFacilityIncome(s,value,'tap')),exact(value)*120n/100n);
-  s.facilities=['kitchen'];assert.deepEqual(facilityBonus(s),{passive:3,tap:0});
+    assert.equal(exact(withFacilityIncome(s,value,'tap')),exact(value)*229n/100n);
+  s.facilities=['kitchen'];assert.deepEqual(facilityBonus(s),{passive:5,tap:0});
 });
 
 test('sword and automatic touch use facility bonuses exactly once; cap remains exact',()=>{
@@ -78,13 +80,13 @@ test('offline facility income caps at eight hours, survives reload and claims on
 });
 
 test('version24 assets migrate without losing equipment or pending reward; malformed facilities report diagnostics',()=>{
-  const old=army('대원수');old.version=24;delete old.facilities;
+  const old=army('대원수');old.version=24;old.gold=LEGACY_MAX_GOLD;delete old.facilities;
   old.offlineReward={id:T,durationMs:3600000,amount:9007199254740993n};
   for(const item of Object.values(EQUIPMENT)){
     if((item.introducedVersion??0)<=24)old.equipment[item.id]={level:10,count:1,deployed:item.id==='tank'};
     else delete old.equipment[item.id];
   }
-  const next=parseSave(serializeSave(old),T);
+  const next=parseSave(serializeLegacySave(old),T);
   assert.equal(next.version,SAVE_VERSION);assert.deepEqual(next.facilities,[]);
   for(const key of ['gold','soldiers','sergeants','offlineReward'])assert.deepEqual(next[key],old[key]);
   for(const item of Object.values(EQUIPMENT))assert.deepEqual(next.equipment[item.id],(item.introducedVersion??0)<=24?old.equipment[item.id]:null);
@@ -95,7 +97,7 @@ test('version24 assets migrate without losing equipment or pending reward; malfo
 });
 
 test('all home equipment can coexist while previously stored equipment stays stored after migration',()=>{
-  const s=army('대원수');for(const id of Object.keys(EQUIPMENT))assert.equal(buyEquipment(s,T,id).deployed,true);
+  const s=army('은하 원수');s.gold=MAX_GOLD;for(const id of Object.keys(EQUIPMENT))assert.equal(buyEquipment(s,T,id).deployed,true);
   assert.equal(deployedEquipment(s).length,Object.keys(EQUIPMENT).length);assert.deepEqual(parseSave(serializeSave(s),T).equipment,s.equipment);
 });
 
@@ -112,6 +114,6 @@ test('shop shows all facilities; buttons track affordability and ownership',()=>
 });
 
 test('facility sprites are original cached distinct geometry without embedded external resources',()=>{
-  const drawings=FACILITIES.map(f=>facilityIcon(f.id));assert.equal(new Set(drawings).size,10);
+  const drawings=FACILITIES.map(f=>facilityIcon(f.id));assert.equal(new Set(drawings).size,19);
   for(const f of FACILITIES){assert.equal(facilityIcon(f.id),facilityIcon(f.id));assert.match(facilityIcon(f.id),/viewBox="0 0 96 72"/);assert.doesNotMatch(facilityIcon(f.id),/href=|<image|script/);}
 });

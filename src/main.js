@@ -1,4 +1,8 @@
-import { campaignBonusPercent } from "./campaign-rewards.js";
+import { createHomeAutoTapRuntime, homeAutoTapHomeVisible } from './home-auto-tap.js';
+import { createHomeAutoTapFeedback } from './home-auto-tap-ui.js';
+import './home-auto-tap.css';
+import { createIncomeHud } from './income-hud.js';
+import { potionStatus } from './potions.js';
 import { autoTouchStatus } from "./personal-equipment.js";
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
@@ -9,14 +13,16 @@ import { createOpeningSystemBars } from './opening-system-bars.js';
 import { App } from "@capacitor/app";
 import { createBackHandler } from "./back-button.js";
 import { createOpeningScreen } from './opening.js';
+import {createAccessUI} from './access-ui.js';
 import { createGameLifecycle } from './game-lifecycle.js';
 import { showToast } from "./toast.js";
 import { FACILITIES, facilityOffer, facilityUpgradeOffer } from './facilities.js';
-import { schoolOffer } from "./schools.js";
+import { SCHOOLS, schoolOffer } from "./schools.js";
 import { fmtGold } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
 import { createGameSession } from "./session.js";
 import { createOfflineRewardUI } from './offline-reward-ui.js';
+import { createOfflineNativeAd } from './potion-ad.js';
 import './offline-reward.css';
 import { createBattleUI } from "./battle-ui.js";
 import { createAchievementUI } from "./achievement-ui.js";
@@ -58,7 +64,7 @@ import {
 } from "./equipment.js";
 installErrorReporting();
 const $ = (s) => document.querySelector(s);
-let state, rosterDirty = true;
+let state, rosterDirty = true, passiveBoost = -1;
 const session = createGameSession({
   storage: {
     getItem: (key) => localStorage.getItem(key),
@@ -66,6 +72,9 @@ const session = createGameSession({
   },
   locks: navigator.locks,
   onError: reportError,
+  onAutoTouchIncome: amount => {
+    if (lifecycle.canRun && homeAutoTapHomeVisible(document)) revolverFeedback.show(amount);
+  },
   onChange: (next, changed) => {
     state = next;
     rosterDirty ||= changed;
@@ -81,6 +90,7 @@ function setText(selector, value) {
   if (node.textContent !== text) node.textContent = text;
 }
 $("#app").innerHTML = homeMarkup(state);
+const incomeHud=createIncomeHud(document);
 const zone = $("#tap-zone"),
   canvas = $("#field");
 const fieldNavigation=createFieldNavigation({viewport:$('#field-viewport'),zone,
@@ -89,17 +99,29 @@ function drawHomeField() {
   const world=fieldNavigation.sync(state);
   drawScene(canvas,state,$('#field-labels'),world);
 }
+window.addEventListener('character-art-ready',()=>{if(session.active)drawHomeField();});
 const battleUI = createBattleUI(session, gameAudio);
-const armyPanels = createArmyPanels(session, gameAudio);
+const accessUI=createAccessUI({onExit:()=>{
+  if(Capacitor.isNativePlatform())App.exitApp().catch(error=>reportError('app.exit',error));
+  else showToast('이 창을 닫으면 종료됩니다. 동의 전에는 게임이 시작되지 않습니다.');
+}});
+const armyPanels = createArmyPanels(session, gameAudio, accessUI);
 const achievementUI = createAchievementUI(session, gameAudio);
 const guideUI = createGuideUI();
 const infoUI = createInfoPanel(session);
-const settingsUI = createSettingsUI(session, infoUI, gameAudio);
-const offlineUI = createOfflineRewardUI(session);
+const settingsUI = createSettingsUI(session, infoUI, gameAudio, () => guideUI.resume(), accessUI);
+const offlineUI = createOfflineRewardUI(session,{showAd:createOfflineNativeAd({
+  isActive:()=>session.active,requireConsent:()=>accessUI.ensureAds(),
+  suspendAudio:()=>gameAudio.suspendForAd(),
+})});
 const openingBars = createOpeningSystemBars({native: Capacitor.isNativePlatform(), bars: SystemBars, onError: reportError});
 openingBars.sync();
-const opening = createOpeningScreen({onStart: () => {
+const opening = createOpeningScreen({onStart: async () => {
   openingBars.finish();
+  $('#app').inert=true;
+  try {if(!await accessUI.ensureStart())return;}
+  catch(error){reportError('access.start',error);showToast('시작 안내를 열지 못했습니다. 앱을 다시 실행해 주세요.');return;}
+  $('#app').inert=false;
   gameAudio.setMusicScene('home');
   lifecycle.start();
   if (!document.querySelector('dialog[open]')) zone.focus({preventScroll:true});
@@ -108,12 +130,25 @@ const opening = createOpeningScreen({onStart: () => {
     if (stage !== 'complete') gameAudio.music.configure({scene: stage === 'title' ? 'title' : null, active, volume: session.saveNotice ? 0 : state.musicVolume});
   }, onError: reportError});
 const lifecycle = createGameLifecycle({session, opening, onPause: () => {
+  homeAutoRuntime.reset();
+  homeAutoFeedback.clear();revolverFeedback.clear();
+  guideUI.suspend();
   fieldNavigation.clear();
   battleUI.suspend();
   hidePromotion();
   gameAudio.stop();
   gameAudio.music.configure({active:false});
 }});
+const homeAutoFeedback=createHomeAutoTapFeedback($('#home-auto-feedback'));
+const revolverFeedback=createHomeAutoTapFeedback($('#revolver-feedback'), '리볼버!');
+const homeAutoRuntime=createHomeAutoTapRuntime(session,{
+  canRun:()=>lifecycle.canRun && homeAutoTapHomeVisible(document),
+  onIncome:amount=>homeAutoFeedback.show(amount),
+});
+// Reset at both edges of a modal/guide pause, including very brief opens between clock ticks.
+document.addEventListener('toggle',event=>{
+  if(event.target.matches('dialog, #guide-spotlight')){homeAutoRuntime.reset();homeAutoFeedback.clear();revolverFeedback.clear();}
+},true);
 function update() {
   gameAudio.configure({enabled:state.sound,volume:state.sfxVolume,active:session.active && lifecycle.canRun});
   if (lifecycle.started) gameAudio.music.configure({volume:state.musicVolume,active:session.active && lifecycle.canRun});
@@ -125,16 +160,14 @@ function update() {
   $("#gold").classList.toggle("large-balance", state.gold >= 1_000_000);
   if (rosterDirty) {
     rosterDirty = false;
+    passiveBoost = -1;
     achievementUI.sync();
     const deployed = deployedEquipment(state);
     setText("#rank-name", RANKS[r]);
     $(".rank-mark").innerHTML = insignia(r);
     setText("#formation-summary", fieldSummary(state));
     $("#formation-summary").hidden = power === 0;
-    setText("#passive-rate", "+" + fmtGold(perSecond(state)) + " G");
-    const conquestBonus = campaignBonusPercent(state);
-    setText("#campaign-income-bonus", `점령 +${conquestBonus}%`);
-    $("#campaign-income-bonus").hidden = !conquestBonus;
+    incomeHud.refresh(state);
     zone.classList.toggle("has-recruits", power > 0 || ownedSchools(state).length > 0);
     zone.classList.toggle("has-equipment", deployed.length > 0);
     zone.classList.toggle("has-multiple-equipment", deployed.length > 1);
@@ -150,16 +183,22 @@ function update() {
     drawHomeField();
   }
   $('.field-tools').hidden = r < GENERAL_RANK;
+  const nextPassiveBoost=potionStatus(state,'blue').multiplier;
+  if(nextPassiveBoost!==passiveBoost){
+    passiveBoost=nextPassiveBoost;
+    setText("#passive-rate", "+" + fmtGold(perSecond(state)) + " G");
+  }
   const tap = perTap(state);
   setText("#tap-rate", "+" + fmtGold(tap) + " G");
+  incomeHud.syncSword(state);
+  incomeHud.syncPotions(state);
   setText("#tap-hint-rate", "한 번에 +" + fmtGold(tap) + " G");
   zone.setAttribute("aria-label", "화면 터치해서 골드 " + tap + " 획득");
   syncSwordControls(document.querySelector('.field-tools'), state, session.active);
   syncRevolverControls(document.querySelector('.field-tools'), state, session.active);
-  if (lifecycle.started) guideUI.sync(state);
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
-    ["nco","officer","advanced"].some(id=>schoolOffer(state,id).canBuy) ||
+    Object.keys(SCHOOLS).some(id=>schoolOffer(state,id).canBuy) ||
     FACILITIES.some(f=>facilityOffer(state,f.id).canBuy || facilityUpgradeOffer(state,f.id).canUpgrade)
   );
   setText("#save-status", session.status);
@@ -168,8 +207,9 @@ function update() {
   $("#sound").disabled = !session.active;
   const access = battleAccess(state);
   $("#open-battle").hidden = !access.visible;
-  setText('#battle-lock-label', access.unlocked ? '' : '🔒 중령 해금');
+  setText('#battle-lock-label', access.unlocked ? '' : `🔒 ${access.reason==='rank'?'대위 해금':'장비 필요'}`);
   battleUI.sync();
+  if (lifecycle.started) guideUI.sync(state, session.active && lifecycle.canRun);
   armyPanels.sync();
   if (lifecycle.started) {
     offlineUI.sync();
@@ -233,12 +273,14 @@ const resizeObserver = new ResizeObserver(() => {
   pendingResize = requestAnimationFrame(() => drawHomeField());
 });
 resizeObserver.observe($("#field-viewport"));
-// One clock; automatic payouts use elapsed 300 ms boundaries, not timer counts.
+// One clock: revolver uses 300ms, permanent home taps 500ms; both settle elapsed time.
 let lastTick = 0;
 setInterval(() => {
+  const automaticGold=homeAutoRuntime.tick();
   if (!lifecycle.canRun) return;
   const now = Date.now(), delay = autoTouchStatus(state, now).active ? 300 : 1000;
-  if (now - lastTick >= delay) { lastTick = now; session.tick(); }
+  // A paid auto pulse already settled income and updated the HUD on this turn.
+  if (now - lastTick >= delay) { lastTick = now; if(!automaticGold)session.tick(); }
 }, 100);
 update();
 lifecycle.syncVisibility();

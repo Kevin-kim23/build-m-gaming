@@ -26,14 +26,16 @@ test('clock erases clockwise from twelve and counts the actual remaining seconds
   const html=homeMarkup(s);
   assert.match(html,/stroke-dasharray="100 100" transform="rotate\(-90 24 24\)"/);
 });
-test('expiration hides the clock, reload resumes elapsed time, and disabled sessions cannot reactivate',()=>{
+test('expiration retains a visible cooldown, reload resumes time, and disabled sessions cannot reactivate',()=>{
   const s=general(),c=controls();activateSword(s,T);
   const restored=parseSave(JSON.stringify(s),T+17000);
   syncSwordControls(c.root,restored,false,T+17000);
   assert.equal(c.timer.textContent,'13초');assert.equal(c.button.disabled,true);
   syncSwordControls(c.root,restored,true,T+30000);
-  assert.equal(c.timer.hidden,true);assert.equal(c.ring.ownerSVGElement.hidden,true);assert.equal(c.button.disabled,true);
+  assert.equal(c.timer.hidden,false);assert.equal(c.timer.textContent,'570초');assert.equal(c.ring.ownerSVGElement.hidden,true);assert.equal(c.button.disabled,true);
   assert.match(c.button.attributes['aria-label'],/9:30/);
+  syncSwordControls(c.root,restored,true,T+599001);
+  assert.equal(c.timer.hidden,false);assert.equal(c.timer.textContent,'1초');
   syncSwordControls(c.root,restored,true,T+600000);assert.equal(c.button.disabled,false);
   assert.equal(c.timer.hidden,true);assert.equal(c.draws(),1);
 });

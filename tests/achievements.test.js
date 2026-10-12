@@ -1,3 +1,5 @@
+import {CONSTELLATION_OFFICERS} from "../src/constellation-officers.js";
+import { emptyEquipment as equipmentDefaults } from '../src/equipment.js';
 import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
 import { test } from "node:test";
@@ -6,14 +8,14 @@ import { FORMATIONS } from "../src/formations.js";
 import { freshState, recruit, recruitOffer, parseSave, perSecond, perTap, MAX_GOLD, SAVE_KEY } from "../src/game.js";
 
 const T = 1800000000000;
-const ids = ["squad", "platoon", "company", "battalion", "regiment", "division", "corps", "fieldArmy", "armyGroup", "alliedArmy", "grandAlliedArmy", "supremeCommand", "galacticCommand"];
-const state = (power) => ({ ...freshState(T), soldiers: power, gold:100_000_000_000_000 });
+const ids = ["squad", "platoon", "company", "battalion", "regiment", "division", "corps", "fieldArmy", "armyGroup", "alliedArmy", "grandAlliedArmy", "supremeCommand", "galacticCommand", "galacticGroupCommand", "galacticCorps", "galacticFieldArmy", "galacticArmyGroup", "galacticAlliedArmy", "galacticGrandAlliedArmy", "constellationRegiment", "constellationDivision", "constellationCorps", "constellationFieldArmy", "constellationArmyGroup"];
+const state = (power) => {const s={...freshState(T),gold:100_000_000_000_000};let rest=BigInt(power);for(const u of [...CONSTELLATION_OFFICERS].reverse()){s[u.field]=Number(rest/u.power);rest%=u.power;}s.soldiers=Number(rest);return s;};
 const rules = () => import("../src/achievements.js");
 
-test("achievement definitions reuse all thirteen formation thresholds in ascending order", async () => {
+test("achievement definitions reuse all twenty-four formation thresholds in ascending order", async () => {
   const { FORMATION_ACHIEVEMENTS: ACHIEVEMENTS } = await rules();
   assert.deepEqual(ACHIEVEMENTS.map(a => a.id), ids);
-  assert.deepEqual(ACHIEVEMENTS.map(a => a.title), ["분대장", "소대장", "중대장", "대대장", "연대장", "사단장", "군단장", "야전군사령관", "집단군 사령관", "연합군 사령관", "대연합군 사령관", "총군사령관", "은하사령관"]);
+  assert.deepEqual(ACHIEVEMENTS.map(a => a.title), ["분대장", "소대장", "중대장", "대대장", "연대장", "사단장", "군단장", "야전군사령관", "집단군 사령관", "연합군 사령관", "대연합군 사령관", "총군사령관", "은하 연대장", "은하 사단장", "은하 군단장", "은하 야전군사령관", "은하 집단군 사령관", "은하 연합군 사령관", "은하 대연합군 사령관", "은하단 연대장", "은하단 사단장", "은하단 군단장", "은하단 야전군사령관", "은하단 집단군 사령관"]);
   ACHIEVEMENTS.forEach((a, tier) => {
     const formation = FORMATIONS.find(f => f.id === a.id);
     assert.equal(a.required, formation.size);
@@ -25,7 +27,7 @@ test("achievement definitions reuse all thirteen formation thresholds in ascendi
 test("each medal is awarded exactly at its formation boundary with no duplicate grants", async () => {
   const { FORMATION_ACHIEVEMENTS: ACHIEVEMENTS, reconcileAchievements } = await rules();
   for (const [index, a] of ACHIEVEMENTS.entries()) {
-    const s = state(a.required - 1);
+    const s = state(BigInt(a.required) - 1n);
     assert.deepEqual(reconcileAchievements(s), ids.slice(0, index));
     assert.deepEqual(s.earnedAchievements, ids.slice(0, index));
     s.soldiers++;
@@ -81,7 +83,7 @@ test("consolidated armies receive lower medals and earned records survive later 
   const { reconcileAchievements, achievementProgress } = await rules();
   const s = state(FORMATIONS[0].size);
   assert.deepEqual(reconcileAchievements(s), ids);
-  s.soldiers = 0;
+  s.soldiers = 0; for(const u of CONSTELLATION_OFFICERS)s[u.field]=0;
   assert.deepEqual(reconcileAchievements(s), []);
   assert.deepEqual(s.earnedAchievements, ids);
   assert.deepEqual(achievementProgress(s, "fieldArmy"), { earned: true, current: 0, required: 327680, ratio: 1 });
@@ -108,7 +110,7 @@ test("old version seven assets migrate intact and receive currently earned medal
   const { version: oldVersion, ...oldAssets } = old;
   assert.equal(oldVersion, 7);
   assert.equal(version, SAVE_VERSION);
-  assert.deepEqual(assets, {...oldAssets,ncoSchoolLevel:2,equipment:{...Object.fromEntries(Object.entries(oldAssets.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),helicopter:null,rocketLauncher:null,transport:null,fighter:null,railgunTank:null,icbm:null,carrier:null,flyingFortress:null,orbitalAssault:null}});
+  assert.deepEqual(assets, {...oldAssets,ncoSchoolLevel:2,equipment:{...equipmentDefaults(),...Object.fromEntries(Object.entries(oldAssets.equipment).map(([id, gear]) => [id, gear ? {...gear, count: 1} : null])),helicopter:null,rocketLauncher:null,transport:null,fighter:null,railgunTank:null,icbm:null,carrier:null,flyingFortress:null,orbitalAssault:null}});
   assert.deepEqual(earnedAchievements, ids.slice(0, 4));
   assert.equal(SAVE_KEY, "budae-kiugi-recruits-v3");
 });
