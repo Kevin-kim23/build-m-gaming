@@ -43,8 +43,9 @@ test('the app still matches what the privacy policy promises', () => {
   const policy=privacyPolicyMarkdown();
   assert.match(policy,/AdMob/);assert.match(policy,/IP 주소/);assert.match(policy,/식별자/);assert.match(policy,/외부 통신/);
   assert.doesNotMatch(policy,/외부로 데이터를 보내지 않습니다|수집 자체가 없습니다/);
-  assert.match(policy,/Firebase Authentication/); assert.match(policy,/미국/); assert.match(policy,/개발용 로그인 계정 삭제/);
-  assert.match(policy,/클라우드 저장.*아직 제공하지/);
+  assert.doesNotMatch(policy,/Firebase Authentication|개발용 로그인|Google 로그인 테스트/);
+  assert.match(policy,/회원가입·로그인 없이/);
+  assert.match(policy,/운영자의 서버로 전송하지 않습니다/);
   const manifest = read('android/app/src/main/AndroidManifest.xml');
   const permissions = [...manifest.matchAll(/uses-permission android:name="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(permissions, ['android.permission.INTERNET']);
