@@ -1,0 +1,9 @@
+.account-panel { overflow-wrap: anywhere; }
+.account-summary { padding: 12px; border: 1px solid #647456; border-radius: 10px; background: #263428; }
+.account-summary strong { display: inline-block; margin-top: 6px; }
+.account-actions { display: grid; gap: 10px; margin: 16px 0; }
+.account-actions button { min-height: 48px; padding: 12px; border: 1px solid #8d9c7d; border-radius: 8px; background: #344332; color: #f0eddc; }
+.account-actions button:disabled { opacity: .5; }
+.account-panel details { margin-top: 16px; font-size: 13px; }
+.account-panel summary { cursor: pointer; min-height: 36px; }
+.account-panel [role="status"] { min-height: 1.5em; color: #e8cd84; }

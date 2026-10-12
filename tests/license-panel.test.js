@@ -25,7 +25,7 @@ test('info leads to offline license list; every entry opens retained upstream te
 });
 
 test('notices include actual native and JS runtime, embedded SDK copyrights, not Vite tools',()=>{
-  for(const fragment of ['play-services-ads:25.5.0','user-messaging-platform:4.0.0','androidx.appcompat','@capacitor/core','@capacitor/android','@capacitor/app'])
+  for(const fragment of ['play-services-ads:25.5.0','user-messaging-platform:4.0.0','androidx.appcompat','@capacitor/core','@capacitor/android','@capacitor/app','firebase-auth:','firebase 12.19.0','@capacitor-firebase/authentication 8.5.2'])
     assert.ok(notices.entries.some(e=>e.name.includes(fragment)),fragment);
   assert.ok(notices.entries.some(e=>e.name.includes('SDK 포함')));
   assert.match(notices.entries.find(e=>e.name.includes('play-services-ads:')).license,/Android Software Development Kit License/);

@@ -4,14 +4,17 @@ import './settings.css';
 import {showAdPrivacyOptions} from './potion-ad.js';
 import {reportError} from './diagnostics.js';
 
-export function settingsMarkup(state) {
+export function settingsMarkup(state, accountAvailable = false) {
   const slider = (key, title, value) => `<label class="volume-setting" for="${key}"><span>${title}</span><output id="${key}-value" for="${key}">${Math.round(value * 100)}%</output><input id="${key}" data-volume="${key}" type="range" min="0" max="100" step="1" value="${Math.round(value * 100)}"></label>`;
-  return { kicker: '부대 키우기', title: '설정', body: `<section class="sound-settings" aria-label="소리 설정">${slider('sfxVolume', '효과음', state.sfxVolume)}${slider('musicVolume', '배경음', state.musicVolume)}<p>0%로 낮추면 소리가 꺼집니다.</p></section><div class="settings-links"><button data-detail-action="settings-guide">남은 가이드 다시 보기 <span>›</span></button><button data-detail-action="settings-info">게임 정보 <span>›</span></button><button data-detail-action="settings-privacy">개인정보처리방침 <span>›</span></button><button data-detail-action="settings-terms">서비스 이용약관 <span>›</span></button><button data-detail-action="settings-ad-choice">광고 이용 선택 · 동의 철회 <span>›</span></button><button data-detail-action="settings-ad-privacy">Google 광고 개인정보 설정 <span>›</span></button><p data-ad-privacy-status role="status"></p></div>` };
+  return { kicker: '부대 키우기', title: '설정', body: `<section class="sound-settings" aria-label="소리 설정">${slider('sfxVolume', '효과음', state.sfxVolume)}${slider('musicVolume', '배경음', state.musicVolume)}<p>0%로 낮추면 소리가 꺼집니다.</p></section><div class="settings-links">${accountAvailable ? '<button data-detail-action="settings-account">구글 계정 연결 · 개발 테스트 <span>›</span></button>' : ''}<button data-detail-action="settings-guide">남은 가이드 다시 보기 <span>›</span></button><button data-detail-action="settings-info">게임 정보 <span>›</span></button><button data-detail-action="settings-privacy">개인정보처리방침 <span>›</span></button><button data-detail-action="settings-terms">서비스 이용약관 <span>›</span></button><button data-detail-action="settings-ad-choice">광고 이용 선택 · 동의 철회 <span>›</span></button><button data-detail-action="settings-ad-privacy">Google 광고 개인정보 설정 <span>›</span></button><p data-ad-privacy-status role="status"></p></div>` };
 }
 
 export function createSettingsUI(session, infoUI, audio, resumeGuide=()=>{}, access) {
+  // Literal build flags let Vite remove the entire auth import from production.
+  const accountAvailable = import.meta.env.DEV || import.meta.env.MODE === 'firebase-dev';
+  let accountUI;
   function show() {
-    const dialog = openDetail(settingsMarkup(session.state));
+    const dialog = openDetail(settingsMarkup(session.state, accountAvailable));
     dialog.querySelectorAll('[data-volume]').forEach(input => {
       input.addEventListener('input', () => {
         const key = input.dataset.volume;
@@ -29,6 +32,14 @@ export function createSettingsUI(session, infoUI, audio, resumeGuide=()=>{}, acc
     });
   }
   onDetailAction(async action => {
+    if (action === 'settings-account' && accountAvailable) {
+      try {
+        accountUI ??= import('./account-ui.js').then(module => module.createAccountUI());
+        const ui = await accountUI;
+        if (ui) ui.show();
+        else openDetail({title: '개발용 계정 연결', body: '<p>개발 APK에서만 사용할 수 있어요.</p>'});
+      } catch (error) { accountUI = null; reportError('account.ui', new Error('계정 화면을 열지 못했습니다.')); }
+    }
     if(action==='settings-terms')access?.showTerms();
     if(action==='settings-ad-choice')await access?.chooseAds();
     if(action === 'settings-ad-privacy') {

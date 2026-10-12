@@ -1,4 +1,5 @@
-"""Run Gradle :app:exportNoticeDependencies first. Uses only resolved release artifacts.
+"""Run Gradle :app:exportNoticeDependencies -PnoticeVariant=all first.
+The combined inventory preserves both release and development runtime versions.
 No npm/Gradle development tools are distributed in this inventory.
 """
 import hashlib
@@ -61,12 +62,18 @@ with zipfile.ZipFile(rows[0]['artifact']) as z:
 native = {}
 for row in rows:
     coord = f"{row['group']}:{row['name']}:{row['version']}"
-    declared = licenses(row['pom'])
+    # This original POM omits its license. The JSR-330 authors retain it in source.
+    # https://github.com/javax-inject/javax-inject/blob/master/src/javax/inject/Inject.java
+    declared = [('Apache License, Version 2.0', 'https://www.apache.org/licenses/LICENSE-2.0')]
+    if coord != 'javax.inject:javax.inject:1':
+        declared = licenses(row['pom'])
     keys = scan_zip(row['artifact'], coord)
+    if coord == 'javax.inject:javax.inject:1':
+        keys.append(add_text('Copyright (C) 2009 The JSR-330 Expert Group\nLicensed under the Apache License, Version 2.0.\nhttps://github.com/javax-inject/javax-inject/blob/master/src/javax/inject/Inject.java'))
     for name, url in declared:
         if 'Apache' in name:
             keys.append(apache)
-        elif name == 'Android Software Development Kit License':
+        elif name in ('Android Software Development Kit License', 'Play Core Software Development Kit Terms of Service', 'Play Integrity API Terms of Service'):
             keys.append(add_text(f'{name}\n{url}\n\nGoogle SDK 이용조건은 위 공식 주소에서 확인할 수 있습니다. 이 SDK 자체를 Apache-2.0 오픈소스로 표시하지 않습니다. SDK에 포함된 오픈소스 고지는 별도 항목에 원문으로 제공합니다.'))
         elif 'MIT' in name and keys:
             pass
@@ -82,6 +89,18 @@ for package in ('core', 'android', 'app'):
     pkg = json.loads((folder / 'package.json').read_text())
     license_file = next(p for p in folder.iterdir() if p.name.lower() in ('license', 'license.md', 'license.txt'))
     entries.append({'name': f"@capacitor/{package} {pkg['version']}", 'license': 'MIT', 'textIds': [add_text(license_file.read_text())]})
+
+# JavaScript modules imported by the optional development authentication chunk.
+for package in ('firebase', '@firebase/app', '@firebase/auth', '@firebase/component', '@firebase/logger', '@firebase/util', '@capacitor-firebase/authentication', 'idb', 'tslib'):
+    folder = ROOT / 'node_modules' / package
+    pkg = json.loads((folder / 'package.json').read_text())
+    license_files = [p for p in folder.iterdir() if p.is_file() and p.name.lower() in ('license', 'license.md', 'license.txt', 'license.apache', 'license.bsd', 'license-notice.md', 'notice', 'notice.txt', 'copyrightnotice.txt')]
+    if not license_files and (package == 'firebase' or package.startswith('@firebase/')):
+        # npm omits the monorepo license; retain the exact published revision's upstream file.
+        license_files = [ROOT / 'docs/licenses/firebase-js-LICENSE.txt']
+    if not license_files:
+        raise ValueError(f'Missing npm license: {package}')
+    entries.append({'name': f"{package} {pkg['version']} (개발 로그인)", 'license': pkg['license'], 'textIds': [add_text(p.read_text(encoding='utf-8')) for p in license_files]})
 
 for (name, key), owners in sorted(embedded.items()):
     entries.append({'name': name + ' (SDK 포함)', 'license': '포함 SDK: ' + ', '.join(sorted(owners)), 'textIds': [key]})

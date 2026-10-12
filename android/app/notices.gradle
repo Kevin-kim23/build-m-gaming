@@ -1,7 +1,11 @@
-// Export only the resolved release runtime (not Gradle/npm build or test tools).
+// Export the resolved runtime of the selected variant, excluding build/test tools.
 tasks.register('exportNoticeDependencies') {
     doLast {
-        def artifacts = configurations.releaseRuntimeClasspath.incoming.artifactView { componentFilter { it instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier } }.artifacts.artifacts
+        def variant = project.findProperty('noticeVariant') ?: 'release'
+        def variants = variant == 'all' ? ['release', 'debug'] : [variant]
+        def artifacts = variants.collectMany { name ->
+            configurations.getByName("${name}RuntimeClasspath").incoming.artifactView { componentFilter { it instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier } }.artifacts.artifacts.toList()
+        }.unique { a -> "${a.id.componentIdentifier}:${a.file.name}" }
         def rows = artifacts.collect { a ->
             def id = a.id.componentIdentifier
             def pom = null

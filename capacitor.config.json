@@ -7,6 +7,15 @@
     "SystemBars": {
       "hidden": true,
       "initialViewportFitValueHint": "cover"
+    },
+    "FirebaseAuthentication": {
+      "skipNativeAuth": true,
+      "providers": [
+        "google.com"
+      ]
     }
-  }
+  },
+  "includePlugins": [
+    "@capacitor/app"
+  ]
 }

@@ -128,3 +128,12 @@ npm run android:release
 
 ### 전투 밸런스 분석 (문서와 도구만, 코드 변경 없음)
 [docs/balance/BALANCE_ANALYSIS_2026-10-12.md](docs/balance/BALANCE_ANALYSIS_2026-10-12.md)에 전투·보상·장비 분석을, [tools/balance-lab](tools/balance-lab/README.md)에 재현 도구를 추가했습니다. 게임 규칙과 저장은 그대로이며 방향은 설문으로 정합니다.
+
+
+## 0.77 개발용 Firebase 구글 로그인
+
+서버 테스트 브랜치의 개발 웹/별도 Android debug 앱에서 Google 계정 연결을 시험합니다. 로그인·로그아웃·인증 계정 삭제는 기존 게임 저장과 분리했습니다. 닉네임·클라우드 저장·복원·랭킹·결제는 후속 단계입니다. Firebase JS 12.19.0 / Capawesome Firebase Authentication 8.5.2(Apache-2.0), Android Firebase Auth 및 Google 인증 SDK를 개발용에만 사용하며 Analytics/Crashlytics는 추가하지 않았습니다.
+
+집에서 이어하기·검증 명령·정책 범위: [Firebase 개발 안내](docs/FIREBASE_DEVELOPMENT.md). 검증 결과는 검증결과.md의 0.77 항목 참조. 실제 폰과 Play 서명 로그인은 별도 확인이 필요합니다.
+
+검증: 전체733개 테스트, 일반/개발 웹 빌드, Android debug 빌드 및 unsigned Java 컴파일 통과. Chrome 실제 Google 로그인·새 창 유지·320px 화면 확인. 계정 삭제 확인 후 다른 계정으로 바뀌면 삭제를 거부합니다. 로그인 공개 배포 전 공개 방침·Play Console 동기화와 외부 삭제 요청 페이지가 필요합니다.

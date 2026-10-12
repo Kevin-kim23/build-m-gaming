@@ -1,3 +1,13 @@
+# 현재 작업 0.77.0 · Firebase 개발 로그인
+
+- 브랜치 feat/firebase-server-test. main 병합 없이 집 PC에서 같은 브랜치를 checkout/pull해 이어서 작업한다.
+- Firebase 프로젝트 budae-kiugi-dev(Spark), Google 로그인, Firestore Standard 서울/deny-all. 웹/Android 개발 앱과 현 PC SHA-1/SHA-256 등록.
+- 설정 → 구글 계정 연결(개발 모드): 실제 Google 인증/상태 복원/로그아웃/개발 인증 계정 삭제. 게임 기록은 읽거나 업로드/변경하지 않는다.
+- 웹 npm run dev:firebase (4196), 분리 검증 npx vite --config tools/account-qa.config.mjs (4214/__account). Android npm run android:sync:firebase 후 assembleDebug. 정식 release에는 로그인과 네이티브 SDK를 넣지 않는다.
+- 닉네임 → 저장/충돌 → 삭제/운영 → 09시 전력 랭킹 순서로 이어간다. 로그인 성공은 클라우드 저장 완료가 아니다. 테스터 정상 기록 유지/개발 만렙 기록 랭킹 제외는 다음 단계 필수.
+- 방침8·약관5. 공개 방침/Console/국외 이전/외부 삭제 URL은 배포 전 동기화 필요. 상세 docs/FIREBASE_DEVELOPMENT.md.
+- 전체733개 테스트·일반/개발 웹·Android debug 빌드 통과. Chrome 실제 로그인 및 새 창 유지 확인. 실제 폰 인증/출시 서명/서버 게임 저장은 미확인·미구현 범위를 구분한다. 두 Android 변형의 라이선스 고지는 `-PnoticeVariant=all`로 함께 생성한다.
+
 # 현재 작업 0.76.1
 
 > **마지막까지 기억:** 개인정보·권한·SDK·광고·결제·외부 자산·콘텐츠 등급이 바뀌면 앱 방침·docs와 구글 독스 방침·Play Console을 모두 최신화합니다. 자세한 내용은 AGENTS.md "정책·개인정보 동기화".

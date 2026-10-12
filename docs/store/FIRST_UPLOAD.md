@@ -1,3 +1,9 @@
+# 0.77.0 개발 계정 연결 · 2026-10-12
+
+서버 테스트 브랜치의 Firebase 로그인은 개발용이다. 운영 AAB로 업로드하지 않는다. debug는 com.dongramco.budaekiugi.dev. 일반 release/unsigned 빌드는 Firebase 개발 웹 자산이 섞이면 차단한다. 정식 로그인 배포 전 운영 Firebase 프로젝트·Play 앱 서명 지문·삭제 URL·공개 방침·데이터 보안·실폰 로그인/계정전환 검증 필요.
+
+자세한 상태·재현·집 PC 작업: [Firebase 개발 안내](../FIREBASE_DEVELOPMENT.md).
+
 > 2026-10-09 현재 코드0.72.3 / 방침 개정6. 이 문서의 최초 업로드 절차와0.62·0.70 파일명/신고 기록은 과거 참고입니다. 앱을 새로 만들지 마세요. 실제 공개 문서·Console·앱 배포 상태는 [동기화 상태](POLICY_SYNC_STATUS.md)를 확인하세요. 현재 release는 운영 광고 ID, debug는 샘플 ID이며 실제 결제는 없습니다.
 > 공개 방침은 이미 Google 문서로 운영 중입니다. 기존 URL은 [보고서](26.10.09%20첫%20광고%20게시%20구글%20보고서.md)를 확인하고 임의로 Pages 주소로 바꾸지 마세요.
 

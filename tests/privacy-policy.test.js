@@ -36,13 +36,15 @@ test('the public HTML contains the complete in-app policy without a stale duplic
 // Keep the SDK allowlist and the disclosure together. New SDKs require another review.
 test('the app still matches what the privacy policy promises', () => {
   const pkg = JSON.parse(read('package.json'));
-  assert.deepEqual(Object.keys(pkg.dependencies ?? {}).sort(), ['@capacitor/android', '@capacitor/app', '@capacitor/core']);
+  assert.deepEqual(Object.keys(pkg.dependencies ?? {}).sort(), ['@capacitor-firebase/authentication', '@capacitor/android', '@capacitor/app', '@capacitor/core', 'firebase']);
   const gradle=read('android/app/build.gradle');
   const googleSdks=[...gradle.matchAll(/implementation "(com.google.[^"]+)"/g)].map(m=>m[1]);
   assert.deepEqual(googleSdks,['com.google.android.gms:play-services-ads:25.5.0','com.google.android.ump:user-messaging-platform:4.0.0']);
   const policy=privacyPolicyMarkdown();
   assert.match(policy,/AdMob/);assert.match(policy,/IP 주소/);assert.match(policy,/식별자/);assert.match(policy,/외부 통신/);
   assert.doesNotMatch(policy,/외부로 데이터를 보내지 않습니다|수집 자체가 없습니다/);
+  assert.match(policy,/Firebase Authentication/); assert.match(policy,/미국/); assert.match(policy,/개발용 로그인 계정 삭제/);
+  assert.match(policy,/클라우드 저장.*아직 제공하지/);
   const manifest = read('android/app/src/main/AndroidManifest.xml');
   const permissions = [...manifest.matchAll(/uses-permission android:name="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(permissions, ['android.permission.INTERNET']);

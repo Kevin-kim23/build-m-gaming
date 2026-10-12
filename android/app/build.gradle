@@ -14,7 +14,7 @@ android {
     compileSdk = rootProject.ext.compileSdkVersion
     // Closed-test build: both release and debug use Google sample inventory.
     // Restore publisher IDs and revalidate before production launch (docs/store/LIVE_ADS_072.md).
-    buildFeatures { resValues true }
+    buildFeatures { resValues true; buildConfig true }
     defaultConfig {
         applicationId "com.dongramco.budaekiugi"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -61,6 +61,7 @@ repositories {
 }
 
 dependencies {
+    debugImplementation project(':capacitor-firebase-authentication')
     implementation "com.google.android.gms:play-services-ads:25.5.0"
     implementation "com.google.android.ump:user-messaging-platform:4.0.0"
     implementation fileTree(include: ['*.jar'], dir: 'libs')
@@ -77,11 +78,24 @@ dependencies {
 apply from: 'capacitor.build.gradle'
 apply from: 'notices.gradle'
 
-try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
+// Public dev config stays out of the release resources and APK.
+// Applying google-services globally would require a production config as well.
+// Generate only the resources needed by the development login SDK.
+def firebaseDevConfig = new JsonSlurper().parse(file('src/debug/google-services.json'))
+def firebaseDevClient = firebaseDevConfig.client.find { it.client_info.android_client_info.package_name == 'com.dongramco.budaekiugi.dev' }
+def firebaseDevWebClient = firebaseDevClient.oauth_client.find { it.client_type == 3 }
+android.buildTypes.debug.resValue 'string', 'google_app_id', firebaseDevClient.client_info.mobilesdk_app_id
+android.buildTypes.debug.resValue 'string', 'google_api_key', firebaseDevClient.api_key[0].current_key
+android.buildTypes.debug.resValue 'string', 'project_id', firebaseDevConfig.project_info.project_id
+android.buildTypes.debug.resValue 'string', 'default_web_client_id', firebaseDevWebClient.client_id
+
+// Refuse accidental release packaging of a Firebase development web build.
+tasks.configureEach { task ->
+    if (task.name in ['preReleaseBuild', 'preUnsignedBuild']) {
+        task.doFirst {
+            if (file('src/main/assets/public/firebase-development-build.json').exists()) {
+                throw new GradleException('Development Firebase assets cannot be released. Run npm run android:sync for a production build.')
+            }
+        }
     }
-} catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
 }

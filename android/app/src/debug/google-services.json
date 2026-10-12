@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "96394423737",
+    "project_id": "budae-kiugi-dev",
+    "storage_bucket": "budae-kiugi-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:96394423737:android:854aaaf4efc2920b71da68",
+        "android_client_info": {
+          "package_name": "com.dongramco.budaekiugi.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "96394423737-g5cq0hk3smlcf3odij19sljsugjmhhha.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dongramco.budaekiugi.dev",
+            "certificate_hash": "7e276bcfbde8968ac400b37427bb0198d46cf6fc"
+          }
+        },
+        {
+          "client_id": "96394423737-pdonsg04bs6qg0fnlmtipudgp5grkv5n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD993Bw7HtvdFoXGMd5htiDJlxyiwzHm1I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "96394423737-pdonsg04bs6qg0fnlmtipudgp5grkv5n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
