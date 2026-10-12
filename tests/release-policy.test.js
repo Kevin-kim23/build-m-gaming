@@ -15,6 +15,10 @@ for (const mode of ['production', 'firebase-dev', 'development']) {
     const privacy=policy.privacyPolicyMarkdown(), terms=policy.serviceTermsMarkdown();
     for(const text of [privacy,terms])assert.match(text,/샘플/);
     assert.match(privacy,/AdMob/); assert.match(privacy,/외부 통신/);
+    assert.match(privacy,/App Check/);assert.match(privacy,/Play Integrity/);
+    assert.match(privacy,/완료 후 90일/);assert.match(privacy,/미완료 기록은 재처리에 필요한 동안/);
+    assert.match(privacy,/신고자 또는 대상인 신고/);assert.match(privacy,/자동 제재하지/);
+    assert.match(privacy,/보관 기간은 운영 제공 전에 확정/);
     if(mode==='production') {
       assert.match(privacy,/Firebase Authentication|선택형 Google 로그인/);
       assert.doesNotMatch(privacy,/개발용 게임 계정|일반 배포본에는 이 로그인 테스트/);

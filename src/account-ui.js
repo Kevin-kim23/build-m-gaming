@@ -8,6 +8,7 @@ import { reportError } from './diagnostics.js';
 import './account.css';
 import {DEVELOPMENT_POLICY} from './policy-mode.js';
 import {createCloudUI} from './cloud-ui.js';
+import {createNicknameReportUI} from './nickname-report-ui.js';
 
 export async function createAccountUI(session) {
   const native = Capacitor.isNativePlatform();
@@ -19,10 +20,11 @@ export async function createAccountUI(session) {
     backend=createFirebaseAuthAdapter({native});return backend;
   }});
   createCloudUI({account,session,call:(name,data)=>backend.call(name,data)});
+  createNicknameReportUI({account,call:(name,data)=>backend.call(name,data)});
   let deletionUid = null;
-  function show() { openDetail(accountMarkup(account.state, DEVELOPMENT_POLICY)); void account.initialize(); }
+  function show() { openDetail(accountMarkup(account.state, DEVELOPMENT_POLICY, !!session)); void account.initialize(); }
   account.subscribe(state => {
-    if (document.querySelector('#detail-modal[open] [data-account-panel]')) openDetail(accountMarkup(state, DEVELOPMENT_POLICY));
+    if (document.querySelector('#detail-modal[open] [data-account-panel]')) openDetail(accountMarkup(state, DEVELOPMENT_POLICY, !!session));
   });
   onDetailAction(action => {
     if (action === 'account-show') show();

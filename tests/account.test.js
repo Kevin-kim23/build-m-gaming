@@ -109,6 +109,71 @@ test('account markup escapes provider text and honestly distinguishes login from
   assert.match(accountDeleteMarkup().body,/Google 계정 자체/);
   assert.match(accountErrorMessage('auth/requires-recent-login'),/다시 로그인/);
 });
+test('local backup access stays available when signed out or the auth SDK fails, but is absent without a game session',()=>{
+  for(const phase of ['idle','loading','ready','busy','error']){
+    const state={phase,user:null,message:''};
+    const body=accountMarkup(state,false,true).body;
+    assert.match(body,/<button[^>]*data-detail-action="local-backups-show"[^>]*>/);
+    assert.doesNotMatch(body,/<button[^>]*data-detail-action="local-backups-show"[^>]*disabled/);
+    assert.doesNotMatch(accountMarkup(state,false,false).body,/local-backups-show/);
+  }
+});
+test('nickname reporting is offered only to a signed-in account and waits for auth operations',()=>{
+  assert.doesNotMatch(accountMarkup({phase:'ready',user:null}).body,/nickname-report-show/);
+  assert.match(accountMarkup({phase:'ready',user:{email:'player@example.invalid'}}).body,/<button[^>]*nickname-report-show"\s*>/);
+  assert.match(accountMarkup({phase:'busy',user:{email:'player@example.invalid'}}).body,/<button[^>]*nickname-report-show"\s+disabled>/);
+});
+test('account deletion explains associated reports, retry state and the separate 90-day completion record',()=>{
+  for(const development of [false,true]){
+    const body=accountDeleteMarkup(development).body;
+    assert.match(body,/신고자 또는 대상인 닉네임 신고/);
+    assert.match(body,/실패한 처리를 재시도/);
+    assert.match(body,/완료 후[\s\S]*최소 기록을 90일 보관/);
+    assert.match(body,/기기의 복원 전 백업 보관과 별개/);
+    assert.match(body,/기기의 골드·병력·복원 전 백업은 삭제하지/);
+  }
+});
+test('server recent-login rejection during deletion asks for reauthentication and keeps the signed-in account',async()=>{
+  const h=harness({deleteAccount:async()=>{throw {code:'functions/unauthenticated',message:'recent-login-required'};}});
+  await h.account.initialize();h.setUser({uid:'test'});
+  assert.equal(await h.account.deleteAccount('test'),false);
+  assert.equal(h.account.state.user.uid,'test');assert.equal(h.account.state.phase,'ready');
+  assert.match(h.account.state.message,/다시 로그인/);
+  assert.equal(h.errors[0][1].message,'auth/requires-recent-login');
+});
+test('server deletion and security failures are mapped only for known code-message pairs',async()=>{
+  for(const [message,code,expected] of [
+    ['deletion-pending','functions/unavailable',/아직 완료되지 않았어요/],
+    ['rate-limit','functions/resource-exhausted',/요청이 많아요/],
+    ['app-check-required','functions/permission-denied',/정상 앱인지/],
+    ['app-check-unavailable','functions/failed-precondition',/앱 확인 서비스/],
+    ['account-unavailable','functions/unauthenticated',/현재 계정으로/],
+    ['security-unavailable','functions/unavailable',/보안 확인/],
+  ]){
+    const h=harness({deleteAccount:async()=>{throw {code,message,details:{token:'private-token',email:'private@example.invalid'}};}});
+    await h.account.initialize();h.setUser({uid:'test'});
+    assert.equal(await h.account.deleteAccount('test'),false);
+    assert.equal(h.account.state.user.uid,'test');assert.match(h.account.state.message,expected);
+    assert.equal(h.errors[0][1].message,`server/${message}`);
+    assert.doesNotMatch(h.account.state.message,/private/);
+    assert.equal(accountErrorCode({code:'functions/internal',message}),'auth/unknown');
+  }
+  assert.equal(accountErrorCode({code:'functions/unavailable',message:'private-token-private@example.invalid'}),'auth/unknown');
+  assert.equal(accountErrorCode({code:'functions/unavailable',message:'__proto__'}),'auth/unknown');
+});
+test('a late deletion result never claims success for an account selected while it was pending',async()=>{
+  for(const failed of [false,true]){
+    let finish;
+    const h=harness({deleteAccount:()=>new Promise((resolve,reject)=>{finish=failed?reject:resolve;})});
+    await h.account.initialize();h.setUser({uid:'original'});
+    const pending=h.account.deleteAccount('original');h.setUser({uid:'new-account'});
+    finish(failed?{code:'functions/unavailable',message:'deletion-pending'}:undefined);
+    assert.equal(await pending,false);
+    assert.equal(h.account.state.user.uid,'new-account');assert.equal(h.account.state.phase,'ready');
+    assert.match(h.account.state.message,/계정이 달라졌어요/);
+    assert.doesNotMatch(h.account.state.message,/삭제했어요|삭제 요청을 접수/);
+  }
+});
 test('Android auth is registered in each variant and packaging rejects mixed environments', () => {
   const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
   assert.deepEqual(JSON.parse(read('capacitor.config.json')).includePlugins,['@capacitor/app']);

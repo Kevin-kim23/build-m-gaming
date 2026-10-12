@@ -3,6 +3,7 @@ import { SAVE_KEY, LEGACY_KEY, freshState, SAVE_VERSION } from './state.js';
 import { accrue, tapGold } from './game.js';
 import { inspectSave } from './save.js';
 import { prepareOfflineReward, claimOfflineReward } from './offline-reward.js';
+import {appendRestoreBackup, readRestoreBackups} from './restore-backups.js';
 
 export const SAVE_DELAY = 2000;
 export const RECOVERY_KEY = SAVE_KEY + '-recovery';
@@ -228,21 +229,31 @@ export function createGameSession({ storage, locks, now = Date.now,
     return saved ? result : {ok:false,reason:'save'};
   }
   load();
-  function restoreCloud(raw) {
+  function restoreRecord(raw, source) {
     if(!active||invalid)return false;
-    const latest=inspect(raw,'cloud').state;
+    const latest=inspect(raw,source).state;
     if(!latest||!flush(true))return false;
     const previous=serializeSave(state);
     prepareOfflineReward(latest,now());
     latest.revision=Math.max(latest.revision,state.revision)+1;
     const next=serializeSave(latest);
     try {
-      storage.setItem(SAVE_KEY+'-before-cloud-restore',previous);
+      appendRestoreBackup(storage,previous,now(),source);
       storage.setItem(SAVE_KEY,next);
-    } catch(error){failure('save.cloud-restore',error);notify();return false;}
+    } catch(error){failure('save.'+source+'-restore',error);notify();return false;}
     state=latest;committed=next;dirty=false;storageError=false;
     notify(true);return true;
   }
+  function listRestoreBackups() {
+    try { return readRestoreBackups(storage); }
+    catch(error){failure('save.restore-backup-list',error);return null;}
+  }
+  function restoreLocalBackup(id) {
+    if(!active||invalid)return false;
+    const selected=listRestoreBackups()?.find(entry=>entry.id===id);
+    return selected?restoreRecord(selected.raw,'local-backup'):false;
+  }
+  const restoreCloud=raw=>restoreRecord(raw,'cloud');
   return {
     get state() { return state; },
     // Unknown/unreadable saves must not opt the player into startup sound.
@@ -268,5 +279,6 @@ export function createGameSession({ storage, locks, now = Date.now,
       return locks ? '자동 저장 · 2초 간격' : '자동 저장 · 한 창에서 플레이';
     },
     start, pause, tap, change, tick, flush, receive, retryLoad, claimOffline,restoreCloud,
+    listRestoreBackups,restoreLocalBackup,
   };
 }

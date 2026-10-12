@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createCloudController} from '../src/cloud-controller.js';
+import {createCloudController,cloudErrorMessage} from '../src/cloud-controller.js';
 import {cloudMarkup} from '../src/cloud-ui.js';
 
 test('refresh stops before a second request when the account changes',async()=>{
@@ -32,4 +32,23 @@ test('cloud markup escapes nicknames and distinguishes manual server save from l
   const markup=cloudMarkup({phase:'ready',profile:{nickname:'<script>bad</script>'},cloud:null,message:''});
   assert.doesNotMatch(markup.body,/<script>/);assert.match(markup.body,/자동 합산하지/);
   assert.match(markup.body,/검토·승인/);assert.match(markup.body,/변경은 아직 제공하지/);
+});
+test('security and nickname rejections give specific safe messages and never claim success',async()=>{
+  for(const [message,expected] of [
+    ['prohibited-nickname',/사용할 수 없는 표현/],['rate-limit',/요청이 많아요/],
+    ['app-check-required',/정상 앱인지 확인하지 못해/],['app-check-unavailable',/앱 확인 서비스/],
+    ['account-unavailable',/현재 계정으로 서버를 이용할 수 없어요/],['security-unavailable',/서버의 보안 확인/],
+  ]){
+    const cloud=createCloudController({call:async()=>{throw {message,details:{token:'private-token',email:'private@example.invalid'}};}});
+    cloud.setUser({uid:'test'});
+    assert.equal(await cloud.createProfile('테스터12'),false);
+    assert.equal(cloud.state.phase,'ready');assert.equal(cloud.state.profile,null);
+    assert.match(cloud.state.message,expected);assert.doesNotMatch(cloud.state.message,/private/);
+  }
+  assert.match(cloudErrorMessage({code:'functions/resource-exhausted',message:'private-token'}),/요청이 많아요/);
+  for(const message of ['__proto__','constructor','private-token']){
+    assert.equal(typeof cloudErrorMessage({message}),'string');
+    assert.doesNotMatch(cloudErrorMessage({message}),/private-token|\[object Object\]/);
+    assert.equal(cloudErrorMessage({message},null),null);
+  }
 });

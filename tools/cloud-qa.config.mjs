@@ -7,6 +7,7 @@ const page=`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="vie
 import '/src/detail.css';import '/src/account.css';
 import {openDetail,onDetailAction} from '/src/detail-popup.js';
 import {accountMarkup} from '/src/account-view.js';import {createCloudUI} from '/src/cloud-ui.js';
+import {createNicknameReportUI} from '/src/nickname-report-ui.js';
 import {createGameSession} from '/src/session.js';import {createProfileService} from '/server/profile-service.js';import {createCloudService} from '/server/cloud-service.js';
 import {freshState,SAVE_KEY} from '/src/state.js';import {parseSave} from '/src/save.js';import {serializeSave} from '/src/money.js';import {armyPower} from '/src/units.js';
 const records=new Map(),local=new Map([[SAVE_KEY,serializeSave({...freshState(Date.now()),gold:10n**27n,soldiers:10})]]);
@@ -19,7 +20,8 @@ createCloudUI({account,session,call:async(name,data)=>{
  if(name==='readProfile')return profiles.read(state.user.uid);if(name==='createProfile')return profiles.create(state.user.uid,data.nickname);
  if(name==='readCloudSave')return cloud.read(state.user.uid);if(name==='saveCloudProgress')return cloud.save(state.user.uid,data);throw Error('unsupported-qa-action');
 }});
-const show=()=>openDetail(accountMarkup(state));document.querySelector('#open').onclick=show;
+createNicknameReportUI({account,call:async name=>{if(name==='reportNickname')return {submitted:true};throw Error('unsupported-qa-action');}});
+const show=()=>openDetail(accountMarkup(state,false,true));document.querySelector('#open').onclick=show;
 onDetailAction(action=>{if(action==='account-show')show();});show();
 </script></html>`;
 export default {root,server:{host:'127.0.0.1',port:4215,strictPort:true},plugins:[{name:'cloud-memory-qa',configureServer(server){server.middlewares.use((req,res,next)=>{if(req.url!=='/__cloud')return next();res.setHeader('Content-Type','text/html; charset=utf-8');res.end(page);});}}]};

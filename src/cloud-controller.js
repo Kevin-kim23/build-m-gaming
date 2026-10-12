@@ -1,14 +1,27 @@
-export function cloudErrorMessage(error) {
-  return ({'nickname-taken':'이미 사용 중인 닉네임이에요. 다른 이름을 입력해 주세요.',
+export function cloudErrorMessage(error,fallback='서버에 연결하지 못했어요. 인터넷 연결과 서버 준비 상태를 확인하고 다시 시도해 주세요. 기기 기록은 유지돼요.') {
+  const messages={'nickname-taken':'이미 사용 중인 닉네임이에요. 다른 이름을 입력해 주세요.',
     'invalid-nickname':'닉네임은 글자·숫자·밑줄로 2~12자까지 입력해 주세요.',
     'reserved-nickname':'운영자를 사칭할 수 있는 이름은 사용할 수 없어요.',
+    'prohibited-nickname':'사용할 수 없는 표현이 포함된 닉네임이에요. 다른 이름을 입력해 주세요.',
     'nickname-change-unavailable':'닉네임 변경은 아직 제공하지 않아요.',
     'save-conflict':'다른 기기에서 서버 기록이 바뀌었어요. 다시 불러와 비교해 주세요.',
     'invalid-save':'현재 기록을 서버에 저장할 수 없어요. 기존 기록은 유지돼요.',
     'profile-required':'닉네임을 먼저 등록해 주세요.',
     'account-deleting':'계정 삭제가 진행 중이에요.',
-    'recent-login-required':'계정 삭제 전에 로그아웃 후 다시 로그인해 주세요.'})[error?.message]
-      ?? '서버에 연결하지 못했어요. 인터넷 연결과 서버 준비 상태를 확인하고 다시 시도해 주세요. 기기 기록은 유지돼요.';
+    'deletion-pending':'삭제 요청을 접수했지만 아직 완료되지 않았어요. 실패한 처리를 다시 시도하며, 기기 기록은 유지돼요.',
+    'rate-limit':'요청이 많아요. 잠시 뒤 다시 시도해 주세요. 기기 기록은 유지돼요.',
+    'rate-limit-exceeded':'요청이 많아요. 잠시 뒤 다시 시도해 주세요. 기기 기록은 유지돼요.',
+    'app-check-required':'정상 앱인지 확인하지 못해 요청을 처리하지 않았어요. Google Play에서 설치한 최신 앱인지 확인해 주세요. 기기 기록은 유지돼요.',
+    'app-check-unavailable':'앱 확인 서비스에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요. 기기 기록은 유지돼요.',
+    'account-unavailable':'현재 계정으로 서버를 이용할 수 없어요. 다시 로그인해도 계속되면 문의해 주세요. 기기 기록은 유지돼요.',
+    'security-unavailable':'서버의 보안 확인을 완료하지 못했어요. 잠시 뒤 다시 시도해 주세요. 기기 기록은 유지돼요.',
+    'account-changed':'로그인 계정이 달라졌어요. 현재 계정을 확인한 뒤 다시 시도해 주세요.',
+    'sign-in-required':'로그인한 뒤 다시 시도해 주세요.',
+    'recent-login-required':'로그아웃 후 다시 로그인한 뒤 요청해 주세요.'};
+  const message=error?.message;
+  if(Object.hasOwn(messages,message))return messages[message];
+  if(error?.code==='functions/resource-exhausted')return messages['rate-limit'];
+  return fallback;
 }
 // The server derives UID from its verified auth token. No caller-selected UID is sent.
 export function createCloudController({call, localSave, restore, requestId=()=>crypto.randomUUID(),onChange=()=>{}}) {

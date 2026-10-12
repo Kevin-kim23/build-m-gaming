@@ -1,17 +1,24 @@
 // No provider name/email/photo is copied into a public game profile.
+import {nicknamePolicyViolation} from './nickname-policy.js';
 export class ServiceError extends Error {
   constructor(code) { super(code); this.code = code; }
 }
 export function requireUid(uid) {
   if(typeof uid !== 'string' || !uid || uid.length > 128 || uid.includes('/'))throw new ServiceError('unauthenticated');
 }
-export function normalizeNickname(value) {
+// Lookup deliberately permits an existing prohibited name so it can be reported.
+export function normalizeNicknameForLookup(value) {
   if(typeof value !== 'string')throw new ServiceError('invalid-nickname');
   const display=value.normalize('NFKC').trim();
   if(!/^[\p{L}\p{N}_]{2,12}$/u.test(display))throw new ServiceError('invalid-nickname');
   const key=display.toLocaleLowerCase('en-US');
-  if(/운영자|관리자|동람코|admin|moderator|gamemaster|dongramco/i.test(key))throw new ServiceError('reserved-nickname');
   return {display,key};
+}
+export function normalizeNickname(value) {
+  const identity=normalizeNicknameForLookup(value);
+  const violation=nicknamePolicyViolation(identity.key);
+  if(violation)throw new ServiceError(violation);
+  return identity;
 }
 export function createProfileService({transact, now=Date.now}) {
   return {

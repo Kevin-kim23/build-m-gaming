@@ -11,6 +11,15 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
 NS = {'m': 'http://maven.apache.org/POM/4.0.0'}
+# This exact AndroidX release repackages protobuf-javalite 4.28.2 but its JAR
+# omits the BSD copyright/conditions. Preserve the reviewed upstream text.
+# Provenance: docs/licenses/README.md. A new artifact version needs a new review.
+REVIEWED_NATIVE_LICENSES = {
+    ('androidx.datastore:datastore-preferences-external-protobuf:1.1.7', 'BSD-3-Clause'): (
+        'docs/licenses/protobuf-4.28.2-LICENSE.txt',
+        '6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d',
+    ),
+}
 rows = json.loads((ROOT / 'android/app/build/notices/dependencies.json').read_text())
 texts, entries, inventory = {}, [], []
 
@@ -71,7 +80,14 @@ for row in rows:
     if coord == 'javax.inject:javax.inject:1':
         keys.append(add_text('Copyright (C) 2009 The JSR-330 Expert Group\nLicensed under the Apache License, Version 2.0.\nhttps://github.com/javax-inject/javax-inject/blob/master/src/javax/inject/Inject.java'))
     for name, url in declared:
-        if 'Apache' in name:
+        reviewed = REVIEWED_NATIVE_LICENSES.get((coord, name))
+        if reviewed:
+            path, expected_hash = reviewed
+            key = add_text((ROOT / path).read_text(encoding='utf-8'))
+            if key != expected_hash:
+                raise ValueError(f'Reviewed license text changed: {coord}')
+            keys.append(key)
+        elif 'Apache' in name:
             keys.append(apache)
         elif name in ('Android Software Development Kit License', 'Play Core Software Development Kit Terms of Service', 'Play Integrity API Terms of Service'):
             keys.append(add_text(f'{name}\n{url}\n\nGoogle SDK 이용조건은 위 공식 주소에서 확인할 수 있습니다. 이 SDK 자체를 Apache-2.0 오픈소스로 표시하지 않습니다. SDK에 포함된 오픈소스 고지는 별도 항목에 원문으로 제공합니다.'))
@@ -90,8 +106,9 @@ for package in ('core', 'android', 'app'):
     license_file = next(p for p in folder.iterdir() if p.name.lower() in ('license', 'license.md', 'license.txt'))
     entries.append({'name': f"@capacitor/{package} {pkg['version']}", 'license': 'MIT', 'textIds': [add_text(license_file.read_text())]})
 
-# JavaScript modules imported by the optional development authentication chunk.
-for package in ('firebase', '@firebase/app', '@firebase/auth', '@firebase/component', '@firebase/logger', '@firebase/util', '@capacitor-firebase/authentication', 'idb', 'tslib'):
+# Runtime modules used by sign-in, App Check, and callable cloud functions.
+# The Firebase *-interop-types packages contain declarations, not runtime JS.
+for package in ('firebase', '@firebase/app', '@firebase/auth', '@firebase/app-check', '@firebase/functions', '@firebase/component', '@firebase/logger', '@firebase/util', '@capacitor-firebase/authentication', 'idb', 'tslib'):
     folder = ROOT / 'node_modules' / package
     pkg = json.loads((folder / 'package.json').read_text())
     license_files = [p for p in folder.iterdir() if p.is_file() and p.name.lower() in ('license', 'license.md', 'license.txt', 'license.apache', 'license.bsd', 'license-notice.md', 'notice', 'notice.txt', 'copyrightnotice.txt')]
@@ -100,7 +117,7 @@ for package in ('firebase', '@firebase/app', '@firebase/auth', '@firebase/compon
         license_files = [ROOT / 'docs/licenses/firebase-js-LICENSE.txt']
     if not license_files:
         raise ValueError(f'Missing npm license: {package}')
-    entries.append({'name': f"{package} {pkg['version']} (개발 로그인)", 'license': pkg['license'], 'textIds': [add_text(p.read_text(encoding='utf-8')) for p in license_files]})
+    entries.append({'name': f"{package} {pkg['version']} (로그인·앱 검증·클라우드)", 'license': pkg['license'], 'textIds': [add_text(p.read_text(encoding='utf-8')) for p in license_files]})
 
 for (name, key), owners in sorted(embedded.items()):
     entries.append({'name': name + ' (SDK 포함)', 'license': '포함 SDK: ' + ', '.join(sorted(owners)), 'textIds': [key]})

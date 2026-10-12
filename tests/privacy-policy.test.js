@@ -38,8 +38,15 @@ test('the app still matches what the privacy policy promises', () => {
   const pkg = JSON.parse(read('package.json'));
   assert.deepEqual(Object.keys(pkg.dependencies ?? {}).sort(), ['@capacitor-firebase/authentication', '@capacitor/android', '@capacitor/app', '@capacitor/core', 'firebase']);
   const gradle=read('android/app/build.gradle');
-  const googleSdks=[...gradle.matchAll(/implementation "(com.google.[^"]+)"/g)].map(m=>m[1]);
-  assert.deepEqual(googleSdks,['com.google.android.gms:play-services-ads:25.5.0','com.google.android.ump:user-messaging-platform:4.0.0']);
+  const googleSdks=[...gradle.matchAll(/\b(?:implementation|debugImplementation|releaseImplementation|unsignedImplementation)\s+["'](com\.google\.[^"']+)["']/g)].map(m=>m[1]);
+  assert.deepEqual(googleSdks,[
+    'com.google.firebase:firebase-appcheck:20.0.0',
+    'com.google.firebase:firebase-appcheck-debug:20.0.0',
+    'com.google.firebase:firebase-appcheck-playintegrity:20.0.0',
+    'com.google.firebase:firebase-appcheck-playintegrity:20.0.0',
+    'com.google.android.gms:play-services-ads:25.5.0',
+    'com.google.android.ump:user-messaging-platform:4.0.0',
+  ]);
   const policy=privacyPolicyMarkdown();
   assert.match(policy,/AdMob/);assert.match(policy,/IP 주소/);assert.match(policy,/식별자/);assert.match(policy,/외부 통신/);
   assert.doesNotMatch(policy,/외부로 데이터를 보내지 않습니다|수집 자체가 없습니다/);
@@ -48,6 +55,14 @@ test('the app still matches what the privacy policy promises', () => {
   assert.match(policy,/서버 저장을 직접 선택한 경우에만/);
   assert.match(policy,/서버 계정·기록 삭제/);
   assert.match(policy,/Firestore·Cloud Functions/);
+  assert.match(policy,/Firebase App Check/);assert.match(policy,/Google Play Integrity/);
+  assert.match(policy,/증명 자료/);assert.match(policy,/확인 토큰/);
+  assert.match(policy,/신고자와 대상의 계정 식별자/);
+  assert.match(policy,/닉네임, 선택한 사유, 접수 시각과 처리 상태/);
+  assert.match(policy,/완료 후 90일/);assert.match(policy,/미완료 기록은 재처리에 필요한 동안/);
+  assert.match(policy,/최근 60초 동안 조회 30회/);assert.match(policy,/변경 요청 10회/);
+  assert.match(policy,/기존 복구 기록을 자동으로 덮어쓰거나 개수만으로 지우지/);
+  assert.match(policy,/서버 계정 삭제만으로는 지워지지/);
   assert.doesNotMatch(policy,/개발용 게임 계정|일반 배포본에는 이 로그인 테스트/);
   const manifest = read('android/app/src/main/AndroidManifest.xml');
   const permissions = [...manifest.matchAll(/uses-permission android:name="([^"]+)"/g)].map((m) => m[1]);

@@ -25,7 +25,7 @@ test('info leads to offline license list; every entry opens retained upstream te
 });
 
 test('notices include actual native and JS runtime, embedded SDK copyrights, not Vite tools',()=>{
-  for(const fragment of ['play-services-ads:25.5.0','user-messaging-platform:4.0.0','androidx.appcompat','@capacitor/core','@capacitor/android','@capacitor/app','firebase-auth:','firebase 12.19.0','@capacitor-firebase/authentication 8.5.2'])
+  for(const fragment of ['play-services-ads:25.5.0','user-messaging-platform:4.0.0','androidx.appcompat','@capacitor/core','@capacitor/android','@capacitor/app','firebase-auth:','firebase 12.19.0','@capacitor-firebase/authentication 8.5.2','firebase-appcheck:20.0.0','firebase-appcheck-debug:20.0.0','firebase-appcheck-playintegrity:20.0.0','play:integrity:1.4.0','@firebase/app-check ','@firebase/functions '])
     assert.ok(notices.entries.some(e=>e.name.includes(fragment)),fragment);
   assert.ok(notices.entries.some(e=>e.name.includes('SDK 포함')));
   assert.match(notices.entries.find(e=>e.name.includes('play-services-ads:')).license,/Android Software Development Kit License/);
@@ -34,4 +34,18 @@ test('notices include actual native and JS runtime, embedded SDK copyrights, not
   for(const [id,text] of Object.entries(notices.texts))assert.ok(read('THIRD_PARTY_NOTICES.txt').includes(id+' ==========\n'+text));
   const inventory=JSON.parse(read('docs/licenses/runtime-inventory.json'));
   for(const row of inventory)assert.ok(notices.entries.some(e=>e.name===row.coordinate));
+});
+
+test('repackaged protobuf retains the exact reviewed copyright, BSD conditions, and disclaimer',()=>{
+  const upstream=read('docs/licenses/protobuf-4.28.2-LICENSE.txt');
+  const id=createHash('sha256').update(upstream).digest('hex');
+  assert.equal(id,'6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d');
+  const entry=notices.entries.find(e=>e.name==='androidx.datastore:datastore-preferences-external-protobuf:1.1.7');
+  assert.equal(entry?.license,'BSD-3-Clause');
+  assert.ok(entry.textIds.includes(id));
+  assert.equal(notices.texts[id],upstream);
+  assert.match(upstream,/Copyright 2008 Google Inc\./);
+  assert.match(upstream,/Redistributions in binary form must reproduce/);
+  assert.match(upstream,/Neither the name of Google Inc\./);
+  assert.match(upstream,/THIS SOFTWARE IS PROVIDED/);
 });
