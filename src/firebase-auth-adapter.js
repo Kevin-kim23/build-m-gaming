@@ -4,6 +4,7 @@ import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, bro
 import { FIREBASE_CONFIG, FIREBASE_APP_NAME } from './firebase-environment.js';
 import { createFirebaseAppCheck } from './firebase-app-check.js';
 import {createAccountDeletion} from './account-deletion-operation.js';
+import {loadNativeAuthentication} from './native-account-plugins.js';
 
 let adapter;
 export function createFirebaseAuthAdapter({native = false, nativePlugin} = {}) {
@@ -16,8 +17,7 @@ export function createFirebaseAuthAdapter({native = false, nativePlugin} = {}) {
   auth.languageCode = 'ko';
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({prompt: 'select_account'});
-  const pluginReady = native ? (nativePlugin ? Promise.resolve(nativePlugin)
-    : import('@capacitor-firebase/authentication').then(module => module.FirebaseAuthentication)) : null;
+  const pluginReady = native ? loadNativeAuthentication(nativePlugin) : null;
   let functionsModule;
   async function call(name,data={}) {
     const uid=auth.currentUser?.uid;

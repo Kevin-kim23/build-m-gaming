@@ -1,14 +1,11 @@
+import {loadNativeAppCheck} from './native-account-plugins.js';
 const unavailable=()=>Object.assign(new Error('app-check-unavailable'),{code:'functions/failed-precondition'});
 const development=mode=>mode==='development'||mode==='firebase-dev';
-const loadNative=async()=>{
-  const {registerPlugin}=await import('@capacitor/core');
-  return registerPlugin('GameAppCheck');
-};
 
 // Auth and local saves do not depend on attestation. Only server calls await this guard.
 // Dependencies can be injected by isolated tests; runtime never falls back to a fake token.
 export function createFirebaseAppCheck({app,native=false,mode=import.meta.env?.MODE,
-  loadSDK=()=>import('firebase/app-check'),loadPlugin=loadNative,now=Date.now}={}) {
+  loadSDK=()=>import('firebase/app-check'),loadPlugin=loadNativeAppCheck,now=Date.now}={}) {
   let initialization;
   async function initialize() {
     if(!native||!(mode==='production'||development(mode)))throw unavailable();
