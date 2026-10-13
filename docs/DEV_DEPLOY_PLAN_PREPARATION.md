@@ -83,3 +83,19 @@ compute GET와 정확한 Scheduler 작업 GET은 **이번 도출로 확인한 �
 다음 사용자 행동 하나: 이 계획의 **요청 범위와 미확인 항목을 검토**한다. 현재 답변은 배포 요청이 아니며, 필요한 비공개 값 준비 및 최종 승인은 별도 단계다.
 
 정책 영향 없음. 방침11·약관8 유지. 공개 방침/Play 양식의 기존 출시 전 동기화 과제는 여전히 남아 있다.
+
+## 편집자 축소·Pub/Sub/Eventarc 읽기 검토 · 2026-10-13
+
+설정 변경 없이 소스와 공식 문서를 읽었다. server/index.js: 사용자 callable6개 공통 guard는 Auth getUser를 호출하며 탈퇴는 deleteUser를 호출한다. server/database.js: Firestore 트랜잭션/문서 읽기·쓰기·삭제·쿼리. server/maintenance-runtime.js: 삭제 재시도 deleteUser, 만료 정리도 getUser로 Auth 계정 존재 확인. 따라서 정리 함수가 Auth 권한을 전혀 쓰지 않는다고 가정하면 안 된다.
+
+권장 초안(적용 미승인): 개발 공유 실행 계정에 필요한 Firestore 데이터 접근과 Auth 사용자 조회/삭제만 부여하는 별도 맞춤 역할을 검토한다. 후보는 datastore.databases.get, datastore.entities.get/list/create/update/delete, firebaseauth.users.get/delete다. 정확한 SDK 보조 권한·리소스 범위와 실제 동작은 아직 검증하지 않았으므로 최소권한 검증 완료라고 표시하지 않는다. roles/datastore.user는 편리하지만 더 많은 조회 권한을 포함하고, roles/firebaseauth.admin은 사용자 생성·설정 변경 등 불필요한 권한도 포함하여 최소 대체안으로 단정하지 않는다. 관리자 전용 역할에는 Auth 권한을 추가하지 않는다. 개발8개가 같은 계정을 쓰면 Auth 삭제 권한도 공유되므로 함수별 격리는 보장되지 않는다. 운영 담당별 분리는 기존 별도 승인 조건을 유지한다.
+
+Editor를 먼저 제거하면 안 되는 추가 이유: deployment-template.json의 buildConfig에는 빌드 serviceAccount가 명시되지 않는다. Cloud Functions API 빌드는 프로젝트의 기본 빌드 계정을 사용하고 Compute 계정이 그 역할을 겸할 수 있다. IAM 화면의 Legacy Cloud Build 계정 존재만으로 실제 선택 계정을 확정할 수 없다. 공식 Cloud Functions 빌드 안내에는 이 API 경로에서 Compute 빌드 계정 권한 대안으로 roles/cloudbuild.builds.builder가 제시된다. Cloud Run API source deploy의 roles/run.builder 안내와 혼동하지 않는다. 이번에는 어떤 빌드 역할도 부여하지 않는다.
+
+순서: 실제 기본 빌드 계정 읽기 확인 → 맞춤 실행 권한과 필요한 빌드 권한/분리 여부 제안 → 사용자 별도 승인 → 필요한 역할 부여·검증 후 Editor 제거. 실제 IAM 변경 승인 전 실행하지 않으며, 잘못된 축소 복구는 승인된 이전 역할 연결 복원으로 다루고 계정 삭제·Owner 추가로 대체하지 않는다. 역할 변경만으로 모든 조건을 검증할 수 없고 테스트 계정 실동작 확인도 후속 필요하다.
+
+Pub/Sub/Eventarc: 이번9개 생성 템플릿에는 eventTrigger가 없고 예약2개는 httpTarget이다. 따라서 코드 기능 자체의 이벤트 전달을 위해 두 서비스 에이전트를 새로 만들 근거는 확인되지 않았다. 단, 설치된 firebase-tools15.33.0 lib/deploy/functions/prepare.js:661~672는 gcfv2가 있으면 두 API 준비·generateServiceIdentity를 공통 수행한다. gcp/serviceusage.js:25~28의 POST /v1beta1/projects/{project-number}/services/{service}:generateServiceIdentity는 쓰기 요청이며 현재 제한 계획에 없다. 표준 firebase deploy로 몰래 대체하거나 요청을 허용하지 않는다. 기존 제한 실행기는 이 사전 절차를 실행하지 않으며 실제 Cloud Functions API가 요구할 프로젝트 사전 조건 충족은 미확인이다. 두 계정이 사진에 없다는 이유만으로 생성하지 않는다. API 활성화 여부·필요성·생성 권한을 분리 확인하고 필요하면 범위를 명시해 별도 승인한다. 실패 위치/성공은 실제 검증 전 단정하지 않는다.
+
+공식 근거(2026-10-13): https://docs.cloud.google.com/firestore/native/docs/security/iam ; https://docs.cloud.google.com/iam/docs/roles-permissions/firebaseauth ; https://docs.cloud.google.com/functions/docs/building ; https://docs.cloud.google.com/build/docs/cloud-build-service-account-updates ; https://firebase.google.com/docs/functions/schedule-functions . 설치 CLI 소스는 직접 확인, 클라우드 현황은 사용자 제공 화면 범위만 확인, 기본 빌드 계정·두 에이전트 실존·축소 후 동작은 미확인이다.
+
+다음 사용자 행동 하나: 개발 Cloud Build 설정 화면 열기만 요청. API 사용/역할 저장/빌드 실행은 누르지 않는다. 화면이 예상과 다르면 추측하지 않고 안내를 멈춘다. 은행 업무 직원과 프로그램을 포장하는 제작 담당자가 같은 신분증을 쓰는지 확인하는 단계. 클라우드 API 호출·설정 변경·배포 없음. 문서만 변경, 버전·방침11·약관8 유지, 테스트·빌드 재실행 없음. 정책 영향 없음.
