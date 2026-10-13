@@ -2,6 +2,7 @@
 const {isDeepStrictEqual:equal} = require('node:util');
 const {PROJECT,REGION,FUNCTIONS,USER_FUNCTIONS,SCHEDULES}=require('./constants.cjs');
 const {ADMIN_ACCOUNTS,accountEmail}=require('./admin-read.cjs');
+const {createInventoryPolicy}=require('./inventory-policy.cjs');
 const CF='https://cloudfunctions.googleapis.com';
 const parent='projects/'+PROJECT+'/locations/'+REGION;
 const denied=()=>Object.assign(new Error('GUARD_REQUEST_DENIED'),{code:'GUARD_REQUEST_DENIED'});
@@ -32,6 +33,7 @@ function createPolicy({mode='projects',plan}={}) {
   const uploads=new Set();
   const operations=new Set();
   let stopped=false;
+  const inventory=mode==='inventory'?createInventoryPolicy():null;
   function reject(){stopped=true;throw denied();}
   function decision(request) {
     if(stopped)throw denied();
@@ -43,6 +45,7 @@ function createPolicy({mode='projects',plan}={}) {
     let body;
     try{body=jsonBody(request.body);}catch{return reject();}
     if(method==='GET'&&body!==undefined)return reject();
+    try {if(inventory?.inspect(request))return 'inventory-read';}catch{return reject();}
     if(origin==='https://firebase.googleapis.com'&&method==='GET') {
       if(path==='/v1beta1/projects' && queryOnly(u,['pageSize','pageToken']) &&
         /^(?:[1-9]\d{0,2}|1000)$/.test(u.searchParams.get('pageSize')||'') &&
@@ -63,7 +66,7 @@ function createPolicy({mode='projects',plan}={}) {
       if(origin===CF&&path==='/v1/projects/'+PROJECT+'/locations/-/functions'&&!u.search)return 'functions-v1-list';
       if(origin===CF&&path==='/v2/projects/'+PROJECT+'/locations/-/functions'&&
         queryOnly(u,['filter','pageToken'])&&u.searchParams.get('filter')==='environment="GEN_2"')return 'functions-v2-list';
-      if(origin==='https://run.googleapis.com'&&path==='/v1/projects/'+PROJECT+'/locations'&&!u.search)return 'run-locations';
+      if(mode==='deploy'&&origin==='https://run.googleapis.com'&&path==='/v1/projects/'+PROJECT+'/locations'&&!u.search)return 'run-locations';
     }
     if(mode!=='deploy'||!frozenPlan||frozenPlan.project!==PROJECT||frozenPlan.region!==REGION)return reject();
     if(method==='GET'&&operations.has(request.url)&&!u.search)return 'operation-poll';
@@ -114,6 +117,8 @@ function createPolicy({mode='projects',plan}={}) {
     return reject();
   }
   function observe(request,response) {
+    if(stopped)return reject();
+    try {if(inventory?.observe(request,response))return;}catch{return reject();}
     // Only a successful response to our authorized request may mint a dynamic capability.
     const kind=decision(request);
     if(!response||response.status<200||response.status>=300)return reject();
@@ -133,9 +138,14 @@ function createPolicy({mode='projects',plan}={}) {
   }
   async function dispatch(request,send) {
     const kind=decision(request);
+    begin(request);
     try { const response=await send(request); observe(request,response);return {kind,response}; }
     catch { stopped=true;throw Object.assign(new Error('GUARD_TRANSPORT_STOPPED'),{code:'GUARD_TRANSPORT_STOPPED'}); }
   }
-  return Object.freeze({assert:decision,observe,dispatch,stop:()=>{stopped=true;},isStopped:()=>stopped});
+  function begin(request) {
+    decision(request);
+    try {inventory?.begin(request);}catch{return reject();}
+  }
+  return Object.freeze({assert:decision,begin,observe,dispatch,stop:()=>{stopped=true;},isStopped:()=>stopped});
 }
 module.exports={createPolicy,parseTarget};

@@ -56,6 +56,7 @@ function installNetworkGuard({policy,onBlocked=()=>{},transport=globalThis.fetch
     const allowed=['method','headers','body','signal','duplex','redirect'];
     if(Object.keys(init).some(k=>!allowed.includes(k))||init.method!==request.method||
       !isDeepStrictEqual(init.body,request.wireBody))return block();
+    policy.begin?.(request); // Consume the exact page capability once, before any transport.
     return grant.run({host:url.hostname},async()=>{
       let response;
       try { response=await transport(request.url,{...init,redirect:'error',

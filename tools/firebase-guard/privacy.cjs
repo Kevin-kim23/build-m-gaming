@@ -2,6 +2,7 @@
 // Raw text is never an authorization or success signal. Only callers holding emit
 // can produce one of these fixed, non-personal events.
 const EVENTS=new Set(['admin-account-ok','guard-ready','projects-list-ok','inventory-ok','not-logged-in','login-waiting','login-completed','login-failed','request-blocked','file-write-blocked','child-blocked','warning-stopped','node-mismatch','sdk-warning','command-failed','configuration-invalid','source-mismatch']);
+for(const event of ['inventory-stage-start','inventory-stage-ok','inventory-stage-failed','inventory-unexpected'])EVENTS.add(event);
 function createOutput(write) {
   return Object.freeze({
     discard(_chunk,_encoding,callback) {
@@ -12,6 +13,18 @@ function createOutput(write) {
     emit(event,details={}) {
       if(!EVENTS.has(event))throw new Error('GUARD_INVALID_EVENT');
       const output={event};
+      if(event.startsWith('inventory-stage-')||event==='inventory-unexpected') {
+        if(!['run','scheduler','database','indexes'].includes(details.kind))throw new Error('GUARD_INVALID_EVENT');
+        output.kind=details.kind;
+        if(event==='inventory-stage-ok'||event==='inventory-unexpected') {
+          if(!Number.isSafeInteger(details.count)||details.count<0||details.count>100000)throw new Error('GUARD_INVALID_EVENT');
+          output.count=details.count;
+        }
+        if(event==='inventory-stage-ok') {
+          if(!Number.isSafeInteger(details.regions)||details.regions<1||details.regions>1000)throw new Error('GUARD_INVALID_EVENT');
+          output.regions=details.regions;
+        }
+      }
       if(event==='admin-account-ok') {
         if(!['moderation-caller','moderation-runtime'].includes(details.account)||
           typeof details.exists!=='boolean'||typeof details.disabled!=='boolean')throw new Error('GUARD_INVALID_EVENT');

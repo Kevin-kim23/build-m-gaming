@@ -16,7 +16,7 @@ process.on('warning',()=>{policy?.stop();output.emit('warning-stopped');process.
 async function main() {
   const [cliDir,command,...extra]=process.argv.slice(2);
   if(process.versions.node.split('.')[0]!=='22'){output.emit('node-mismatch');process.exitCode=1;return;}
-  if(!cliDir||extra.length||!['projects:list','functions:list','admin-accounts:get'].includes(command)){output.emit('configuration-invalid');process.exitCode=1;return;}
+  if(!cliDir||extra.length||!['projects:list','functions:list','admin-accounts:get','inventory:remaining'].includes(command)){output.emit('configuration-invalid');process.exitCode=1;return;}
   // Only absolute external CLI package directories; no user tokens/keys/ADC/proxies.
   if(!path.isAbsolute(cliDir)||cliDir.startsWith(path.resolve(__dirname,'../..')+path.sep)||
     ['FIREBASE_TOKEN','GOOGLE_APPLICATION_CREDENTIALS','HTTP_PROXY','HTTPS_PROXY','ALL_PROXY','http_proxy','https_proxy','all_proxy','NODE_OPTIONS'].some(k=>process.env[k])) {
@@ -42,6 +42,12 @@ async function main() {
     output.emit('projects-list-ok',{count:projects.length,devVisible:projects.some(p=>p.projectId===PROJECT)});
   } else {
     auth.setActiveAccount({},account);
+    if(command==='inventory:remaining') {
+      const {readInventory,cliInventoryGet}=require('./inventory-read.cjs');
+      await readInventory(cliInventoryGet(lib),output,require('../../firestore.indexes.json'));
+      if(policy.isStopped())throw new Error('GUARD_STOPPED');
+      return;
+    }
     if(command==='admin-accounts:get') {
       await require('./admin-read.cjs').readAdminAccounts(lib,output);
       if(policy.isStopped())throw new Error('GUARD_STOPPED');

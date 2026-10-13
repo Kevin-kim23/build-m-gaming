@@ -42,7 +42,7 @@ test('guard documented dev inventory routes pass only in inventory mode',async()
   for(const url of [`https://firebase.googleapis.com/v1beta1/projects/${PROJECT}`,
     `https://cloudfunctions.googleapis.com/v1/projects/${PROJECT}/locations/-/functions`,
     `https://cloudfunctions.googleapis.com/v2/projects/${PROJECT}/locations/-/functions?filter=environment%3D%22GEN_2%22`,
-    `https://run.googleapis.com/v1/projects/${PROJECT}/locations`]) {
+    `https://run.googleapis.com/v1/projects/${PROJECT}/locations?pageSize=100`]) {
     assert.ok(createPolicy({mode:'inventory'}).assert({url,method:'GET'}));await blocked({url,method:'GET'});
   }
 });
