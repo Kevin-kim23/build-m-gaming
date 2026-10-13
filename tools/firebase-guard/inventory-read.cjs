@@ -15,22 +15,23 @@ function matchIndex(index,definition) {
     equal(index.fields,expectedFields(definition.fields))&&
     (index.apiScope===undefined||index.apiScope===(definition.apiScope||'ANY_API'));
 }
-async function readInventory(get,output,definition) {
+async function readInventory(get,output,definition,diagnostic) {
   let stage='run';
   const emit=(event,details={})=>output.emit(event,{kind:stage,...details});
-  const unexpected=count=>{emit('inventory-unexpected',{count});throw new Error('GUARD_UNEXPECTED_RESOURCE');};
+  const invalid=check=>{diagnostic?.validation(check);throw new Error('GUARD_INVENTORY_VALIDATION');};
+  const unexpected=count=>{emit('inventory-unexpected',{count});invalid('unexpected-resource');};
   async function pages(host,path,field,onPage=()=>{}) {
     let token,steps=0;const values=[],seen=new Set();
     do {
-      if(++steps>1000)throw new Error('GUARD_PAGE_LIMIT');
+      if(++steps>1000)invalid('pagination');
       const query={pageSize:'100'};if(token)query.pageToken=token;
       const body=await get(host,path,query);
-      if(!body||typeof body!=='object'||Array.isArray(body)||body.unreachable?.length)throw new Error('GUARD_INCOMPLETE');
-      const list=body[field]??[];if(!Array.isArray(list))throw new Error('GUARD_RESPONSE');
+      if(!body||typeof body!=='object'||Array.isArray(body)||body.unreachable?.length)invalid('response-shape');
+      const list=body[field]??[];if(!Array.isArray(list))invalid('response-shape');
       onPage(list);values.push(...list);
       token=body.nextPageToken;
-      if(token!==undefined&&typeof token!=='string')throw new Error('GUARD_PAGE');
-      if(token){if(seen.has(token))throw new Error('GUARD_PAGE');seen.add(token);}
+      if(token!==undefined&&typeof token!=='string')invalid('pagination');
+      if(token){if(seen.has(token))invalid('pagination');seen.add(token);}
     } while(token);
     return values;
   }
@@ -46,27 +47,28 @@ async function readInventory(get,output,definition) {
           list=>{if(list.length)unexpected(list.length);});
         checked++;
       }
-      if(!checked)throw new Error('GUARD_NO_REGIONS');
+      if(!checked)invalid('region-count');
       emit('inventory-stage-ok',{count:0,regions:checked});
     }
     stage='database';emit('inventory-stage-start');
     const db=await get('firestore.googleapis.com','/v1/'+database);
-    if(db?.name!==database||db.locationId!==REGION)throw new Error('GUARD_DB_MISMATCH');
+    if(db?.name!==database||db.locationId!==REGION)invalid('database-location');
     emit('inventory-stage-ok',{count:1,regions:1});
     stage='indexes';emit('inventory-stage-start');
-    if(!Array.isArray(definition?.indexes)||!definition.indexes.length)throw new Error('GUARD_INDEX_DEFINITION');
+    if(!Array.isArray(definition?.indexes)||!definition.indexes.length)invalid('index-definition');
     const matched=new Set();
     const indexes=await pages('firestore.googleapis.com','/v1/'+database+'/collectionGroups/-/indexes','indexes',list=>{
       for(const index of list) {
         const match=definition.indexes.findIndex(item=>matchIndex(index,item));
         if(match<0||matched.has(match))unexpected(1);
         matched.add(match);
-        if(index.state!=='READY')throw new Error('GUARD_INDEX_NOT_READY');
+        if(index.state!=='READY')invalid('index-ready');
       }
     });
-    if(matched.size!==definition.indexes.length)throw new Error('GUARD_INDEX_MISSING');
+    if(matched.size!==definition.indexes.length)invalid('index-missing');
     emit('inventory-stage-ok',{count:indexes.length,regions:1});
   } catch {
+    diagnostic?.fallback();
     emit('inventory-stage-failed');throw new Error('GUARD_INVENTORY_FAILED');
   }
 }

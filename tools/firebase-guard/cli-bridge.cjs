@@ -32,7 +32,7 @@ function requestFromClient(client,options,api) {
     options.body===undefined||typeof options.body==='string'||request.uploadStream?options.body:JSON.stringify(options.body);
   return request;
 }
-function installCliBridge(cliDir,policy,network,output) {
+function installCliBridge(cliDir,policy,network,output,diagnostic) {
   const req=createRequire(path.join(cliDir,'package.json'));
   const lib=(file)=>req('./lib/'+file);
   const loggerModule=lib('logger');
@@ -53,14 +53,14 @@ function installCliBridge(cliDir,policy,network,output) {
   client.prototype.request=async function(options) {
     let request;
     try {request=requestFromClient(this,options,api);policy.assert(request);}
-    catch {policy.stop();throw new Error('GUARD_REQUEST_DENIED');}
+    catch {diagnostic?.blocked(true,'request-policy');policy.stop();throw new Error('GUARD_REQUEST_DENIED');}
     // A warning/error/request denial is a stop condition, not an automatic retry.
     const guarded={...options,retries:0,retryCodes:[],redirect:'error'};
     try {
       const response=await network.run(request,()=>original.call(this,guarded));
       policy.observe(request,response);
       return response;
-    } catch {policy.stop();throw new Error('GUARD_CLI_REQUEST_FAILED');}
+    } catch {diagnostic?.fallback();policy.stop();throw new Error('GUARD_CLI_REQUEST_FAILED');}
   };
   return {lib,config};
 }

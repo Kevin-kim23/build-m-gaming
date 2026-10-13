@@ -9,6 +9,7 @@ const {installCliBridge}=require('./cli-bridge.cjs');
 const {checkSource}=require('./source-check.cjs');
 const {PROJECT}=require('./constants.cjs');
 const output=installOutput();
+const diagnostic=process.argv[3]==='inventory:remaining'?require('./diagnostics.cjs').createDiagnostics(output):undefined;
 let policy;
 process.on('uncaughtException',()=>{policy?.stop();output.emit('command-failed');process.exitCode=1;});
 process.on('unhandledRejection',()=>{policy?.stop();output.emit('command-failed');process.exitCode=1;});
@@ -23,10 +24,10 @@ async function main() {
     output.emit('configuration-invalid');process.exitCode=1;return;
   }
   try{checkSource(cliDir);}catch{output.emit('source-mismatch');process.exitCode=1;return;}
-  policy=createPolicy({mode:command==='projects:list'?'projects':'inventory'});
+  policy=createPolicy({mode:command==='projects:list'?'projects':'inventory',diagnostic});
   installFileGuard(()=>{policy.stop();output.emit('file-write-blocked');});
-  const network=installNetworkGuard({policy,onBlocked:()=>output.emit('request-blocked')});
-  const {lib}=installCliBridge(cliDir,policy,network,output);
+  const network=installNetworkGuard({policy,onBlocked:()=>output.emit('request-blocked'),diagnostic});
+  const {lib}=installCliBridge(cliDir,policy,network,output,diagnostic);
   const auth=lib('auth');
   // Do not let requireAuth fall through to ADC, metadata servers or key files.
   const account=auth.getGlobalDefaultAccount();
@@ -44,7 +45,7 @@ async function main() {
     auth.setActiveAccount({},account);
     if(command==='inventory:remaining') {
       const {readInventory,cliInventoryGet}=require('./inventory-read.cjs');
-      await readInventory(cliInventoryGet(lib),output,require('../../firestore.indexes.json'));
+      await readInventory(cliInventoryGet(lib),output,require('../../firestore.indexes.json'),diagnostic);
       if(policy.isStopped())throw new Error('GUARD_STOPPED');
       return;
     }

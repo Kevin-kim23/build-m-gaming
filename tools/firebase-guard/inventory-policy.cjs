@@ -2,7 +2,7 @@
 const {PROJECT}=require('./constants.cjs');
 const base='/projects/'+PROJECT;
 const fail=()=>{throw new Error('GUARD_INVENTORY_DENIED');};
-function createInventoryPolicy() {
+function createInventoryPolicy({diagnostic}={}) {
   const states=new Map(),regions={run:new Set(),scheduler:new Set()};
   const completed={run:false,scheduler:false},issued=new Set();
   function identify(u) {
@@ -48,30 +48,31 @@ function createInventoryPolicy() {
     return true;
   }
   function observe(request,response) {
+    const invalid=check=>{diagnostic?.validation(check);fail();};
     const kind=identify(new URL(request.url));if(!kind)return false;
     const state=states.get(kind.key),body=response?.body;
     if(!state?.pending||state.url!==request.url||!response||response.status<200||response.status>=300||
-      !body||typeof body!=='object'||Array.isArray(body))fail();
-    if(body.unreachable!==undefined&&(!Array.isArray(body.unreachable)||body.unreachable.length))fail();
+      !body||typeof body!=='object'||Array.isArray(body))invalid('response-shape');
+    if(body.unreachable!==undefined&&(!Array.isArray(body.unreachable)||body.unreachable.length))invalid('unreachable');
     state.pending=false;
     if(kind.type==='database'){state.done=true;return true;}
     const values=body[kind.field]??[];
-    if(!Array.isArray(values))fail();
+    if(!Array.isArray(values))invalid('response-shape');
     if(kind.type==='locations')for(const entry of values) {
       const id=entry?.locationId;
       if(typeof id!=='string'||!/^([a-z]+-)+[a-z]+[0-9]+$/.test(id)||
-        entry.name!==base.slice(1)+'/locations/'+id||regions[kind.service].has(id))fail();
+        entry.name!==base.slice(1)+'/locations/'+id||regions[kind.service].has(id))invalid('region-identity');
       regions[kind.service].add(id);
     }
     const next=body.nextPageToken;
-    if(next!==undefined&&typeof next!=='string')fail();
+    if(next!==undefined&&typeof next!=='string')invalid('pagination');
     if(next) {
-      if(next.length>16384||issued.has(next))fail();
+      if(next.length>16384||issued.has(next))invalid('pagination');
       issued.add(next);state.expected=next;
     } else {
       state.done=true;
       if(kind.type==='locations') {
-        if(regions[kind.service].size===0)fail();
+        if(regions[kind.service].size===0)invalid('region-count');
         completed[kind.service]=true;
       }
     }

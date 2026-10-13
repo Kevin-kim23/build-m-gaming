@@ -26,15 +26,15 @@ function jsonBody(body) {
   }
   return body;
 }
-function createPolicy({mode='projects',plan}={}) {
+function createPolicy({mode='projects',plan,diagnostic}={}) {
   if(!['projects','inventory','deploy'].includes(mode))throw denied();
   // Plans are private, explicitly reviewed snapshots, never derived from an outgoing request.
   const frozenPlan=plan?structuredClone(plan):null;
   const uploads=new Set();
   const operations=new Set();
   let stopped=false;
-  const inventory=mode==='inventory'?createInventoryPolicy():null;
-  function reject(){stopped=true;throw denied();}
+  const inventory=mode==='inventory'?createInventoryPolicy({diagnostic}):null;
+  function reject(){diagnostic?.blocked(true,'request-policy');stopped=true;throw denied();}
   function decision(request) {
     if(stopped)throw denied();
     let u;

@@ -3,6 +3,7 @@
 // can produce one of these fixed, non-personal events.
 const EVENTS=new Set(['admin-account-ok','guard-ready','projects-list-ok','inventory-ok','not-logged-in','login-waiting','login-completed','login-failed','request-blocked','file-write-blocked','child-blocked','warning-stopped','node-mismatch','sdk-warning','command-failed','configuration-invalid','source-mismatch']);
 for(const event of ['inventory-stage-start','inventory-stage-ok','inventory-stage-failed','inventory-unexpected'])EVENTS.add(event);
+EVENTS.add('guard-diagnostic');
 function createOutput(write) {
   return Object.freeze({
     discard(_chunk,_encoding,callback) {
@@ -13,6 +14,32 @@ function createOutput(write) {
     emit(event,details={}) {
       if(!EVENTS.has(event))throw new Error('GUARD_INVALID_EVENT');
       const output={event};
+      if(event==='guard-diagnostic') {
+        const {CHECKS,TRANSPORTS}=require('./diagnostics.cjs');
+        const {category}=details;
+        if(!['guard-blocked','transport-failed','http-response','validation-failed','unclassified'].includes(category))throw new Error('GUARD_INVALID_EVENT');
+        output.category=category;
+        if(category==='guard-blocked'||category==='unclassified') {
+          if(typeof details.beforeTransport!=='boolean')throw new Error('GUARD_INVALID_EVENT');
+          output.beforeTransport=details.beforeTransport;
+        }
+        if(category==='unclassified') {
+          if(typeof details.responseReceived!=='boolean')throw new Error('GUARD_INVALID_EVENT');
+          output.responseReceived=details.responseReceived;
+        }
+        if(category==='guard-blocked'||category==='validation-failed') {
+          if(!CHECKS.has(details.check))throw new Error('GUARD_INVALID_EVENT');
+          output.check=details.check;
+        }
+        if(category==='transport-failed') {
+          if(!TRANSPORTS.has(details.transport))throw new Error('GUARD_INVALID_EVENT');
+          output.transport=details.transport;
+        }
+        if(category==='http-response') {
+          if(!Number.isInteger(details.status)||details.status<100||details.status>599)throw new Error('GUARD_INVALID_EVENT');
+          output.status=details.status;
+        }
+      }
       if(event.startsWith('inventory-stage-')||event==='inventory-unexpected') {
         if(!['run','scheduler','database','indexes'].includes(details.kind))throw new Error('GUARD_INVALID_EVENT');
         output.kind=details.kind;

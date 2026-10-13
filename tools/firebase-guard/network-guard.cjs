@@ -5,10 +5,10 @@ const {isDeepStrictEqual}=require('node:util');
 const http=require('node:http'),https=require('node:https'),net=require('node:net'),tls=require('node:tls');
 const http2=require('node:http2'),child=require('node:child_process'),worker=require('node:worker_threads');
 const dgram=require('node:dgram'),dns=require('node:dns');
-function installNetworkGuard({policy,onBlocked=()=>{},transport=globalThis.fetch}) {
+function installNetworkGuard({policy,onBlocked=()=>{},transport=globalThis.fetch,diagnostic}) {
   const grant=new AsyncLocalStorage(),originals=[];
   let receiverStarted=false,localLookup=false,lookupUsed=false;
-  function block(){policy.stop();onBlocked();throw Object.assign(new Error('GUARD_REQUEST_DENIED'),{code:'GUARD_REQUEST_DENIED'});}
+  function block(){diagnostic?.blocked(!grant.getStore(),'transport-options');policy.stop();onBlocked();throw Object.assign(new Error('GUARD_REQUEST_DENIED'),{code:'GUARD_REQUEST_DENIED'});}
   function patch(object,key,value){originals.push([object,key,object[key]]);object[key]=value;}
   // Only the exact fetch granted by the CLI bridge may open a socket.
   for(const [object,key] of [[http,'request'],[http,'get'],[https,'request'],[https,'get'],[http2,'connect']])patch(object,key,block);
@@ -59,9 +59,10 @@ function installNetworkGuard({policy,onBlocked=()=>{},transport=globalThis.fetch
     policy.begin?.(request); // Consume the exact page capability once, before any transport.
     return grant.run({host:url.hostname},async()=>{
       let response;
-      try { response=await transport(request.url,{...init,redirect:'error',
+      try { diagnostic?.attempted();response=await transport(request.url,{...init,redirect:'error',
         signal:init.signal?AbortSignal.any([init.signal,AbortSignal.timeout(30000)]):AbortSignal.timeout(30000)}); }
-      catch { policy.stop();throw new Error('GUARD_TRANSPORT_FAILED'); }
+      catch(error) { diagnostic?.transport(error);policy.stop();throw new Error('GUARD_TRANSPORT_FAILED'); }
+      diagnostic?.http(response.status);
       if(response.status>=300&&response.status<400)return block();
       if(response.status>=400){policy.stop();throw new Error('GUARD_HTTP_ERROR');}
       return response;
