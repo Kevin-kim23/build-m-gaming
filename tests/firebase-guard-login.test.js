@@ -267,3 +267,18 @@ test('home check resolves CLI beside the running portable Node and rejects other
   const result=spawnSync(process.execPath,[script,'login'],{encoding:'utf8',timeout:10000});
   assert.equal(result.status,1);assert.equal(result.stdout,'{"homeCheck":"failed"}\n');assert.equal(result.stderr,'');
 });
+
+
+test('callback rejection exposes only a fixed exit code while keeping unknown fields denied',()=>{
+  for(const [suffix,code] of [['&iss=FIXTURE',52],['&unknown=FIXTURE_TOKEN',50],['&state=FIXTURE',47]]) {
+    const {s,state}=listening();
+    assert.throws(()=>s.receive({...callback(state),url:callback(state).url+suffix}),/GUARD/);
+    assert.equal(s.rejectionCode(),code);s.stop();assert.equal(s.rejectionCode(),code);
+  }
+  for(const [query,code] of [['state=WRONG&code=FIXTURE',48],['error=access_denied',53],['error=FIXTURE_ERROR',49],['scope=email',51]]) {
+    const {s,state}=listening();
+    const url=query.startsWith('state=')?'/?'+query:'/?state='+state+'&'+query;
+    assert.throws(()=>s.receive({...callback(state),url}),/GUARD/);assert.equal(s.rejectionCode(),code);
+  }
+  const {s,state}=listening();s.receive(callback(state));assert.equal(s.rejectionCode(),1);
+});

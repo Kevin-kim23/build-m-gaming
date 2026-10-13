@@ -13,9 +13,9 @@ function createLoginSession({args,clientId,clientSecret,scopes}) {
   validateLoginArguments(args);
   if(!clientId||!clientSecret||JSON.stringify(scopes)!==JSON.stringify(SCOPES))fail();
   const state=crypto.randomBytes(32).toString('hex'),base=createPolicy();
-  let phase='created',port,code,posted=false;
+  let phase='created',port,code,posted=false,rejection=1;
   const stop=()=>{phase='closed';code=undefined;base.stop();};
-  const deny=()=>{stop();fail();};
+  const deny=(reason=1)=>{rejection=reason;stop();fail();};
   const redirect=()=> 'http://localhost:'+port;
   function assert(request) {
     if(phase==='closed')return base.assert(request);
@@ -55,13 +55,21 @@ function createLoginSession({args,clientId,clientSecret,scopes}) {
       phase='listening';return open(url);
     },
     receive({method,host,remoteAddress,url}) {
-      if(phase!=='listening'||method!=='GET'||!['localhost:'+port,'127.0.0.1:'+port].includes(host)||
-        remoteAddress!=='127.0.0.1'||!url?.startsWith('/?'))return deny();
-      let u;try{u=new URL(url,redirect());}catch{return deny();}
+      if(phase!=='listening')return deny(41);
+      if(method!=='GET')return deny(42);
+      if(!['localhost:'+port,'127.0.0.1:'+port].includes(host))return deny(43);
+      if(remoteAddress!=='127.0.0.1')return deny(44);
+      if(!url?.startsWith('/?'))return deny(45);
+      let u;try{u=new URL(url,redirect());}catch{return deny(46);}
       const entries=[...u.searchParams],keys=entries.map(([k])=>k);
-      if(u.origin!==redirect()||u.pathname!=='/'||u.hash||new Set(keys).size!==keys.length||
-        keys.some(k=>!['state','code','scope','authuser','prompt','hd'].includes(k))||
-        u.searchParams.get('state')!==state||!u.searchParams.get('code')||u.searchParams.get('code').length>8192)return deny();
+      if(u.origin!==redirect()||u.pathname!=='/'||u.hash)return deny(46);
+      if(new Set(keys).size!==keys.length)return deny(47);
+      if(u.searchParams.get('state')!==state)return deny(48);
+      // Diagnostic categories only: these responses remain rejected.
+      if(keys.includes('error'))return deny(u.searchParams.get('error')==='access_denied'?53:49);
+      if(keys.some(k=>!['state','code','scope','authuser','prompt','hd'].includes(k)))
+        return deny(keys.filter(k=>!['state','code','scope','authuser','prompt','hd'].includes(k)).every(k=>k==='iss')?52:50);
+      if(!u.searchParams.get('code')||u.searchParams.get('code').length>8192)return deny(51);
       code=u.searchParams.get('code');phase='received';
     },
     exchangeRequest() {
@@ -72,6 +80,7 @@ function createLoginSession({args,clientId,clientSecret,scopes}) {
       if(phase!=='exchanging')return deny();
       phase='closed';code=undefined;
     },
+    rejectionCode:()=>rejection,
     stop,assert,isStopped:()=>base.isStopped(),mode:()=>phase==='closed'?'readonly':'login'
   });
 }

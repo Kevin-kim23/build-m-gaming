@@ -22,7 +22,7 @@ function finish(ok) {
   if(!ok)active?.stop();
   if(ok)receiver?.dispose();else receiver?.close();
   store?.revoke();
-  status(ok?'완료':'실패');process.exitCode=ok?0:1;
+  status(ok?'완료':'실패');process.exitCode=ok?0:(active?.rejectionCode()??1);
 }
 process.on('uncaughtException',()=>finish(false));
 process.on('unhandledRejection',()=>finish(false));
