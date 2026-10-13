@@ -1,10 +1,13 @@
-import {parseNotice, validateBudget, nextState, TARGETS, LIMIT_KRW} from './policy.js';
+import {parseNotice, validateBudget, nextState, TARGETS} from './policy.js';
+
+import {validateConfigPolicy} from './projects.js';
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 // All cloud effects are injected: tests cannot accidentally pause a real server.
 // Lease store checkpoints intent BEFORE a remote mutation, for crash-safe recovery.
 export async function handleBudget({message, config, store, cloud, now = Date.now, log}) {
+  validateConfigPolicy(config);
   const deadline = now() + 210_000;
   const notice = parseNotice(message, config, now());
   if (!notice.current) return {status: 'ignored-old-period'};
@@ -12,11 +15,15 @@ export async function handleBudget({message, config, store, cloud, now = Date.no
   if (!config.enforce) {
     // No lease or state write in observe mode; only resource read permissions.
     for (const target of TARGETS) await cloud.inspect(target);
-    return {status: 'observe', desired: notice.cost >= LIMIT_KRW ? 'paused' : 'running'};
+    return {status: 'observe', desired: notice.cost >= config.limitKrw ? 'paused' : 'running'};
   }
   return store.exclusive(async (previous, checkpoint) => {
-    let state = nextState(previous, notice);
+    if (previous.project && previous.project !== config.project) throw Error('cost-state-project');
+    if (!previous.project && Object.keys(previous).length && config.project !== 'budae-kiugi-dev')
+      throw Error('cost-state-project');
+    let state = nextState(previous, notice, config.limitKrw);
     if (!state) return {status: 'ignored-stale-notice'};
+    state.project = config.project;
     if (previous.hold === true) return {status: 'operator-hold'};
     await checkpoint(state);
     // Jobs first when stopping; restore services before enabling scheduled work.

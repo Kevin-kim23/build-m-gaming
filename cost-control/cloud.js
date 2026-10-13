@@ -1,5 +1,6 @@
 import {createHash} from 'node:crypto';
 import {budgetName, REGION, TARGETS} from './policy.js';
+import {projectPolicy} from './projects.js';
 
 const canonical = value => Array.isArray(value) ? value.map(canonical) :
   value && typeof value === 'object' ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;
@@ -9,6 +10,7 @@ const allowedApis = new Set(['billingbudgets', 'cloudfunctions', 'run', 'cloudsc
 
 // request is a GoogleAuth client request function, injectable for protocol tests.
 export function cloudGateway(config, request, {now = Date.now, sleep = ms => new Promise(r => setTimeout(r, ms))} = {}) {
+  const policy = projectPolicy(config.project);
   const prefix = `projects/${config.project}/locations/${REGION}`;
   const prefixes = [prefix, ...(config.projectNumber ? [`projects/${config.projectNumber}/locations/${REGION}`] : [])];
   const owned = (name, collection, pattern) => typeof name === 'string' && prefixes.some(base =>
@@ -75,6 +77,9 @@ export function cloudGateway(config, request, {now = Date.now, sleep = ms => new
       setting: j.state};
   }
   async function apply(current, desired) {
+    if (!policy.enforceAllowed) throw Error('cost-production-enforce-disabled');
+    if (!owned(current.name, current.kind === 'job' ? 'jobs' : 'services', /^[a-zA-Z0-9_-]+$/))
+      throw Error('cost-target-denied');
     if (current.kind === 'job') {
       await call('cloudscheduler', `${current.name}:${desired === 'PAUSED' ? 'pause' : 'resume'}`, 'POST', {});
       return;

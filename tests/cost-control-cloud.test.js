@@ -98,7 +98,7 @@ test('private Pub/Sub function has separate runtime, no callable endpoint and bo
   const entry = new URL('../cost-control/index.js', import.meta.url).href;
   const result = spawnSync(process.execPath, ['--input-type=module', '-e',
     `const m=await import(${JSON.stringify(entry)});console.log(JSON.stringify(m.budgetCostGuard.__endpoint));`],
-  {encoding: 'utf8', env: {...process.env, GCLOUD_PROJECT: 'demo-cost-control'}});
+  {encoding: 'utf8', env: {...process.env, GCLOUD_PROJECT: PROJECT}});
   assert.equal(result.status, 0, result.stderr);
   const endpoint = JSON.parse(result.stdout.trim());
   assert.equal(endpoint.serviceAccountEmail, RUNTIME_ACCOUNT);
@@ -107,7 +107,7 @@ test('private Pub/Sub function has separate runtime, no callable endpoint and bo
   assert.equal(endpoint.callableTrigger, undefined); assert.equal(endpoint.httpsTrigger, undefined);
   assert.equal(endpoint.eventTrigger.retry, false);
 });
-test('guard deployment is separate and offline predeploy refuses missing local settings or production', () => {
+test('guard deployment is separate and offline predeploy refuses missing local settings or unknown projects', () => {
   const read = p => JSON.parse(readFileSync(new URL(`../${p}`, import.meta.url), 'utf8'));
   assert.deepEqual(read('firebase.json').functions.map(f => f.codebase), ['game']);
   assert.equal(read('firebase.cost-control.json').functions[0].codebase, 'cost-control');

@@ -1,9 +1,10 @@
-// Deliberately scoped to the approved development project. Production needs a new review.
+import {projectPolicy, validateConfigPolicy} from './projects.js';
+// Legacy development exports remain for existing integrations; runtime uses readConfig.
 export const PROJECT = 'budae-kiugi-dev';
 export const REGION = 'asia-northeast3';
-export const LIMIT_KRW = 100_000;
-export const TOPIC = 'budae-budget-events';
-export const RUNTIME_ACCOUNT = `budget-cost-guard@${PROJECT}.iam.gserviceaccount.com`;
+export const LIMIT_KRW = projectPolicy(PROJECT).limitKrw;
+export const TOPIC = projectPolicy(PROJECT).topic;
+export const RUNTIME_ACCOUNT = projectPolicy(PROJECT).runtimeAccount;
 export const FUNCTION_NAMES = Object.freeze([
   'readProfile', 'createProfile', 'readCloudSave', 'saveCloudProgress',
   'reportNickname', 'deleteGameAccount', 'moderateNicknames',
@@ -16,26 +17,33 @@ export const TARGETS = Object.freeze([
 ]);
 
 export function readConfig(env) {
-  if (env.GCLOUD_PROJECT !== PROJECT || env.COST_GUARD_RUNTIME_ACCOUNT !== RUNTIME_ACCOUNT)
+  const policy = projectPolicy(env.GCLOUD_PROJECT);
+  if (env.COST_GUARD_PROJECT_ID !== policy.project || env.COST_GUARD_RUNTIME_ACCOUNT !== policy.runtimeAccount)
     throw Error('cost-config-project-or-account');
+  if (env.COST_GUARD_LIMIT_KRW !== String(policy.limitKrw) || env.COST_GUARD_TOPIC !== policy.topic)
+    throw Error('cost-config-policy');
   if (!/^\d{6,20}$/.test(env.COST_GUARD_PROJECT_NUMBER ?? '') ||
       !/^[A-Z0-9]{6}-[A-Z0-9]{6}-[A-Z0-9]{6}$/.test(env.COST_GUARD_BILLING_ACCOUNT ?? '') ||
       !/^[a-zA-Z0-9-]{6,100}$/.test(env.COST_GUARD_BUDGET_ID ?? '')) throw Error('cost-config-identifiers');
   if (!['observe', 'enforce'].includes(env.COST_GUARD_MODE)) throw Error('cost-config-mode');
-  return Object.freeze({project: PROJECT, projectNumber: env.COST_GUARD_PROJECT_NUMBER,
+  const config = {project: policy.project, limitKrw: policy.limitKrw, topic: policy.topic,
+    runtimeAccount: policy.runtimeAccount, projectNumber: env.COST_GUARD_PROJECT_NUMBER,
     billingAccount: env.COST_GUARD_BILLING_ACCOUNT, budgetId: env.COST_GUARD_BUDGET_ID,
-    enforce: env.COST_GUARD_MODE === 'enforce'});
+    enforce: env.COST_GUARD_MODE === 'enforce'};
+  validateConfigPolicy(config);
+  return Object.freeze(config);
 }
 
 export const budgetName = c => `billingAccounts/${c.billingAccount}/budgets/${c.budgetId}`;
 export function validateBudget(b, c) {
+  validateConfigPolicy(c);
   const f = b?.budgetFilter ?? {}, m = b?.amount?.specifiedAmount;
-  if (b?.name !== budgetName(c) || m?.currencyCode !== 'KRW' || String(m.units) !== String(LIMIT_KRW) ||
+  if (b?.name !== budgetName(c) || m?.currencyCode !== 'KRW' || String(m.units) !== String(c.limitKrw) ||
       (m.nanos ?? 0) !== 0 || b.spendCap || f.calendarPeriod !== 'MONTH' || f.customPeriod ||
       f.projects?.length !== 1 || ![`projects/${c.project}`, `projects/${c.projectNumber}`].includes(f.projects[0]) ||
       ['services', 'resourceAncestors', 'subaccounts', 'creditTypes'].some(key => f[key]?.length) ||
       Object.keys(f.labels ?? {}).length || ![undefined, 'INCLUDE_ALL_CREDITS'].includes(f.creditTypesTreatment) ||
-      b.notificationsRule?.pubsubTopic !== `projects/${c.project}/topics/${TOPIC}` ||
+      b.notificationsRule?.pubsubTopic !== `projects/${c.project}/topics/${c.topic}` ||
       b.notificationsRule?.schemaVersion !== '1.0') throw Error('cost-budget-scope-mismatch');
 }
 
@@ -56,7 +64,7 @@ export function parseNotice(message, config, now) {
   catch { throw Error('cost-notice-json'); }
   const published = Date.parse(message.publishTime), start = Date.parse(p.costIntervalStart);
   if (!Number.isFinite(published) || published > now + 60_000 || !Number.isFinite(start) ||
-      p.currencyCode !== 'KRW' || p.budgetAmountType !== 'SPECIFIED_AMOUNT' || p.budgetAmount !== LIMIT_KRW ||
+      p.currencyCode !== 'KRW' || p.budgetAmountType !== 'SPECIFIED_AMOUNT' || p.budgetAmount !== config.limitKrw ||
       typeof p.costAmount !== 'number' || !Number.isFinite(p.costAmount) || Math.abs(p.costAmount) > 1e15)
     throw Error('cost-notice-values');
   // Billing calendar starts at Pacific midnight (07:00 or 08:00 UTC).
@@ -67,12 +75,12 @@ export function parseNotice(message, config, now) {
     fresh: now - published <= 24 * 60 * 60_000};
 }
 
-export function nextState(previous, notice) {
+export function nextState(previous, notice, limitKrw = LIMIT_KRW) {
   if (!notice.current || (previous.period && notice.period < previous.period)) return null;
   const same = previous.period === notice.period;
   // A stale under-budget notice must never restart a stopped service.
-  if (!same && !notice.fresh && notice.cost < LIMIT_KRW) return null;
+  if (!same && !notice.fresh && notice.cost < limitKrw) return null;
   const highCost = same ? Math.max(previous.highCost ?? 0, notice.cost) : Math.max(0, notice.cost);
   return {...previous, period: notice.period, highCost,
-    desired: highCost >= LIMIT_KRW ? 'paused' : 'running', resources: previous.resources ?? {}};
+    desired: highCost >= limitKrw ? 'paused' : 'running', resources: previous.resources ?? {}};
 }

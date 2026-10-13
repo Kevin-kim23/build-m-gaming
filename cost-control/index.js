@@ -5,12 +5,16 @@ import {GoogleAuth} from 'google-auth-library';
 import {handleBudget} from './controller.js';
 import {cloudGateway} from './cloud.js';
 import {leaseStore} from './store.js';
-import {readConfig, REGION, TOPIC, RUNTIME_ACCOUNT} from './policy.js';
+import {readConfig, REGION} from './policy.js';
 
-initializeApp();
+import {projectPolicy} from './projects.js';
+
+const policy = projectPolicy(process.env.GCLOUD_PROJECT);
+const app = initializeApp({projectId: policy.project});
 const auth = new GoogleAuth({scopes: ['https://www.googleapis.com/auth/cloud-platform']});
 export const budgetCostGuard = onMessagePublished({
-  topic: TOPIC, region: REGION, serviceAccount: RUNTIME_ACCOUNT,
+  // Firebase SDK adds GCLOUD_PROJECT to the topic resource; pass the short name.
+  topic: policy.topic, region: REGION, serviceAccount: policy.runtimeAccount,
   minInstances: 0, maxInstances: 1, concurrency: 1, cpu: 1, memory: '256MiB', timeoutSeconds: 300,
   // Billing republishes repeatedly. Don't generate a retry storm on invalid IAM/config.
   retry: false,
@@ -20,7 +24,7 @@ export const budgetCostGuard = onMessagePublished({
     const config = readConfig(process.env);
     const client = await auth.getClient();
     const result = await handleBudget({message: event.data.message, config,
-      store: leaseStore(getFirestore()), cloud: cloudGateway(config, options => client.request(options)), log});
+      store: leaseStore(getFirestore(app)), cloud: cloudGateway(config, options => client.request(options)), log});
     console.log(JSON.stringify({severity: 'INFO', area: 'cost-control.result', ...result}));
   } catch (error) {
     const code = /^cost-[a-z-]+$/.test(error?.message) ? error.message : 'cost-control-failed';

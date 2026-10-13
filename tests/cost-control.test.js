@@ -4,7 +4,8 @@ import {readConfig, validateBudget, parseNotice, budgetName, nextState, PROJECT,
 import {handleBudget} from '../cost-control/controller.js';
 import {leaseStore} from '../cost-control/store.js';
 
-const env = {GCLOUD_PROJECT: PROJECT, COST_GUARD_RUNTIME_ACCOUNT: RUNTIME_ACCOUNT,
+const env = {GCLOUD_PROJECT: PROJECT, COST_GUARD_PROJECT_ID: PROJECT,
+  COST_GUARD_LIMIT_KRW: '100000', COST_GUARD_TOPIC: TOPIC, COST_GUARD_RUNTIME_ACCOUNT: RUNTIME_ACCOUNT,
   COST_GUARD_PROJECT_NUMBER: '123456789012', COST_GUARD_BILLING_ACCOUNT: 'AAAAAA-BBBBBB-CCCCCC',
   COST_GUARD_BUDGET_ID: 'synthetic-budget', COST_GUARD_MODE: 'enforce'};
 const config = readConfig(env);
@@ -35,7 +36,7 @@ function fixture() {
       now: () => time, log: (area, fields) => errors.push({area, ...fields})})};
 }
 
-test('cost guard rejects production, wrong runtime account and missing configuration', () => {
+test('cost guard rejects mixed project settings, wrong runtime account and missing configuration', () => {
   for (const edit of [{GCLOUD_PROJECT: 'budae-kiugi-prod'}, {COST_GUARD_RUNTIME_ACCOUNT: 'default'},
     {COST_GUARD_PROJECT_NUMBER: ''}, {COST_GUARD_BILLING_ACCOUNT: 'bad'}, {COST_GUARD_MODE: 'true'}])
     assert.throws(() => readConfig({...env, ...edit}), /cost-config/);
