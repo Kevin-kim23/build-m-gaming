@@ -7,6 +7,7 @@ const http2=require('node:http2'),child=require('node:child_process'),worker=req
 const dgram=require('node:dgram'),dns=require('node:dns');
 function installNetworkGuard({policy,onBlocked=()=>{},transport=globalThis.fetch}) {
   const grant=new AsyncLocalStorage(),originals=[];
+  let receiverStarted=false,localLookup=false,lookupUsed=false;
   function block(){policy.stop();onBlocked();throw Object.assign(new Error('GUARD_REQUEST_DENIED'),{code:'GUARD_REQUEST_DENIED'});}
   function patch(object,key,value){originals.push([object,key,object[key]]);object[key]=value;}
   // Only the exact fetch granted by the CLI bridge may open a socket.
@@ -29,6 +30,17 @@ function installNetworkGuard({policy,onBlocked=()=>{},transport=globalThis.fetch
       if(typeof object[key]!=='function')continue;
       const original=object[key];
       patch(object,key,function(host,...args) {
+        // Node Server.listen resolves even numeric loopback through dns.lookup.
+        // Return a literal locally; never issue DNS or grant an outbound socket.
+        if(localLookup&&object===dns&&key==='lookup'&&host==='127.0.0.1'&&
+          !lookupUsed&&policy.mode?.()==='login'&&!policy.isStopped()) {
+          const callback=args.at(-1);
+          if(typeof callback!=='function')return block();
+          lookupUsed=true;
+          if(args[0]?.all)process.nextTick(callback,null,[{address:'127.0.0.1',family:4}]);
+          else process.nextTick(callback,null,'127.0.0.1',4);
+          return;
+        }
         if(!grant.getStore()||host!==grant.getStore().host||policy.isStopped())return block();
         return original.call(this,host,...args);
       });
@@ -64,6 +76,11 @@ function installNetworkGuard({policy,onBlocked=()=>{},transport=globalThis.fetch
   return Object.freeze({
     run(request,fn){policy.assert(request);return bridge.run(request,fn);},
     send,
+    startLoginReceiver(start) {
+      if(receiverStarted||policy.mode?.()!=='login'||policy.isStopped()||typeof start!=='function')return block();
+      receiverStarted=true;localLookup=true;
+      try {return start();} finally {localLookup=false;}
+    },
     restore(){for(const [object,key,original] of originals.reverse())object[key]=original;syncBuiltinESMExports();}
   });
 }

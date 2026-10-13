@@ -197,3 +197,34 @@ test('login timeout closes receiver and permission without credential writes',as
   await assert.rejects(receiver.result,/GUARD/);
   assert.equal(receiver.address(),null);assert.equal(s.mode(),'readonly');assert.equal(s.isStopped(),true);
 });
+
+
+test('login receiver starts with network and file guards installed together',async()=>{
+  const s=fixture(),r=createReceiver(s,{timeoutMs:1000});
+  const restoreFiles=installFileGuard(()=>s.stop());
+  const g=installNetworkGuard({policy:s});
+  try {
+    await g.startLoginReceiver(()=>r.start());
+    assert.equal(r.address().address,'127.0.0.1');
+    assert.ok(r.address().port>0);
+    assert.throws(()=>g.startLoginReceiver(()=>{}),/GUARD/);
+  } finally {r.dispose();g.restore();restoreFiles();}
+});
+
+
+test('receiver lookup exception denies other hosts, outbound sockets and repeated lookups',()=>{
+  const dns=require('node:dns'),net=require('node:net');
+  for(const attempt of [
+    g=>g.startLoginReceiver(()=>dns.lookup('fixture.invalid',()=>{})),
+    g=>g.startLoginReceiver(()=>dns.lookup('localhost',()=>{})),
+    g=>g.startLoginReceiver(()=>net.connect({host:'127.0.0.1',port:443})),
+    g=>g.startLoginReceiver(()=>{dns.lookup('127.0.0.1',()=>{});dns.lookup('127.0.0.1',()=>{});}),
+    g=>{g.startLoginReceiver(()=>{});dns.lookup('127.0.0.1',()=>{});},
+  ]) {
+    const s=fixture(),g=installNetworkGuard({policy:s});
+    try {assert.throws(()=>attempt(g),/GUARD/);assert.equal(s.isStopped(),true);}
+    finally {g.restore();}
+  }
+  const g=installNetworkGuard({policy:createPolicy({mode:'projects'})});
+  try {assert.throws(()=>g.startLoginReceiver(()=>{}),/GUARD/);}finally {g.restore();}
+});

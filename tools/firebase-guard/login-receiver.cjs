@@ -32,8 +32,10 @@ function createReceiver(session,{timeoutMs=300000,host='127.0.0.1'}={}) {
         // Port 0 asks the OS for an available ephemeral port; no port scan/retry.
         server.listen({host,port:0,exclusive:true},()=>{
           server.removeListener('error',reject);
-          const address=server.address();session.bind(address.address,address.port);
-          resolve();
+          try {
+            const address=server.address();session.bind(address.address,address.port);
+            resolve();
+          } catch {stop();reject(new Error('GUARD_LOGIN_DENIED'));}
         });
       });
       timer=setTimeout(stop,timeoutMs);

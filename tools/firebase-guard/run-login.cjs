@@ -65,7 +65,7 @@ async function main() {
   const network=installNetworkGuard({policy:active});
   receiver=createReceiver(active);
   try {
-    await receiver.start();
+    await network.startLoginReceiver(()=>receiver.start());
     status('대기');
     await active.openBrowser(active.browserUrl(),openBrowser);
     await receiver.result;
