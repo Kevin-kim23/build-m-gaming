@@ -1,3 +1,8 @@
+## 사용자 PowerShell 기본 환경 정상 확인 · 2026-10-13
+
+사용자가 고정 진단 결과 Node22=true/inputTTY=true/outputTTY=true/blockedEnvironment=false를 전달했다. 사용자 보고로 기본 환경 정상 확인, 실패 원인은 아직 미확인. 로컬에서 실제 requestHumanConfirmation을 합성 TTY·틀린 답으로 검증하여 확인 프롬프트 도달/오답 거부/클라우드 요청0을 확인했다. 배포 재시도나 실제 확인 문구 입력은 하지 않았다.
+
+다음 좁은 확인은 사용자 PowerShell에서 Git 실행 가능 여부다. 실행기의 소스 묶음 준비가 git 하위 프로세스에 의존하며 Codex와 사용자 셸 PATH가 다를 수 있으므로, git --version 출력을 버리고 성공/실행파일없음 불리언만 받는다. Git 부재를 확정 원인으로 단정하지 않는다. 기본 빌드 계정 조사는 재개하지 않는다. 문서만 변경, 테스트·빌드 재실행 없음. 설정·권한·배포 변경 없음. 정책 영향 없음.
 ## 사용자 배포 실행 중단·로컬 진단 · 2026-10-13
 
 사용자는 개발 프로젝트 최종 배포를 명시 승인했고 본인 PowerShell에서 실행했다. 전달된 요약은 requestsCompleted=false/stopped=true/functions=0/schedules=0/possibleUnconfirmedResource=false이며 최종 확인 문구 출력은 보이지 않는다. 이는 실행기 보고이며 실제 클라우드 목록 재조회로 자원0을 증명한 것은 아니다. run-deployment는 사람 확인 후에만 전송기를 만들므로 표시된 실행 흐름은 전송 전 실패 가능성이 있다. 확정된 원인은 아직 없다. 자동 재실행 금지, 실제 배포 재시도 없음.
