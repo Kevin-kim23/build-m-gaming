@@ -1,5 +1,7 @@
 # 4단계 · 개발 게임 함수9개 배포 진행 · 2026-10-13
 
+최신 직접 확인: 사용자 4개 활성화 완료 응답 후 dev의 사용 설정된 API 목록에서 Cloud Build·Artifact Registry·Cloud Run Admin·Cloud Scheduler 모두 확인했다. Cloud Functions 포함 준비5개 활성 상태다. 실제 함수/예약 배포·로그인 시험·비용 보호 연결은 미실행이다. 다음은 공개 호출 금지 범위 확인: 일반 이용자6개의 인터넷 진입과 내부 Firebase 로그인/App Check 검증, 관리자1·예약2 비공개를 구분해 사용자에게 질문했다. 아직 답변/배포 승인이 아니다.
+
 사용자 진행 방식 변경: 필요한 API 목록을 한 번에 안내받고 사용자가 직접 활성화 후 보고한다. 개발 프로젝트만, 이미 켜진 것은 건너뛰고 API 활성화만 한다. 우선 Cloud Build·Artifact Registry·Cloud Run Admin·Cloud Scheduler 4개를 안내한다. Cloud Functions는 활성 직접 확인, 나머지4개 완료는 아직 미확인. Eventarc는 공식 문서상 이벤트 트리거용 선택 항목으로 현재 HTTP/예약9개에 무조건 필수라고 안내하지 않으며, Firebase 배포 도구 요구 여부 확인 뒤 추가 안내한다. 함수/예약/저장소 생성·권한 변경·비용 보호 연결은 별도 승인 전 금지.
 
 ## 범위·승인
@@ -25,10 +27,10 @@ API는 Google 서비스에 요청하는 창구다. 아래 API를 켜는 행위 �
 | API | 용도/실제 사용 비용 | 이번 화면 근거 |
 | --- | --- | --- |
 | cloudfunctions.googleapis.com | 함수 등록·배포, 실행/빌드/보관 비용 | 사용자 활성화 후 상세 화면 사용 설정됨 직접 확인 |
-| cloudbuild.googleapis.com | 코드 빌드, 빌드 시간/전송 | Cloud Functions 활성화 뒤에도 상세 화면 사용 버튼 표시, 사용자 승인/활성화 대기 |
-| artifactregistry.googleapis.com | 실행 이미지 보관, 저장/전송 | 목록에 없음 |
-| run.googleapis.com | 서버 실행, 처리/메모리/요청/전송 | 목록에 없음 |
-| cloudscheduler.googleapis.com | 예약2개 생성·실행, 작업 수 | 목록에 없음 |
+| cloudbuild.googleapis.com | 코드 빌드, 빌드 시간/전송 | 사용자 활성화 후 사용 설정 목록에서 직접 확인 |
+| artifactregistry.googleapis.com | 실행 이미지 보관, 저장/전송 | 사용자 활성화 후 사용 설정 목록에서 직접 확인 |
+| run.googleapis.com | 서버 실행, 처리/메모리/요청/전송 | 사용자 활성화 후 사용 설정 목록에서 직접 확인 |
+| cloudscheduler.googleapis.com | 예약2개 생성·실행, 작업 수 | 사용자 활성화 후 사용 설정 목록에서 직접 확인 |
 | eventarc.googleapis.com | 2세대 배포 기반 요구 여부 확인, 이벤트 전달 비용 | 목록에 없음; 게임은 HTTP/예약이며 비용 보호 이벤트 연결은 만들지 않음 |
 | pubsub.googleapis.com | 메시지 전달, 메시지/보관 비용 | 이미 켜짐 직접 확인; 비용 보호 주제 연결 금지 |
 | logging.googleapis.com / storage.googleapis.com | 로그/배포 소스 보관, 사용량 비용 | 이미 켜짐 직접 확인 |

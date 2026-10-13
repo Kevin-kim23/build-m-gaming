@@ -1,5 +1,7 @@
 # 4단계 시작 · 개발 게임 함수 배포 준비 0.83.0
 
+최신 직접 확인: 사용자 4개 활성화 완료 응답 후 dev의 사용 설정된 API 목록에서 Cloud Build·Artifact Registry·Cloud Run Admin·Cloud Scheduler 모두 확인했다. Cloud Functions 포함 준비5개 활성 상태다. 실제 함수/예약 배포·로그인 시험·비용 보호 연결은 미실행이다. 다음은 공개 호출 금지 범위 확인: 일반 이용자6개의 인터넷 진입과 내부 Firebase 로그인/App Check 검증, 관리자1·예약2 비공개를 구분해 사용자에게 질문했다. 아직 답변/배포 승인이 아니다.
+
 사용자 진행 방식 변경: 필요한 API 목록을 한 번에 안내받고 사용자가 직접 활성화 후 보고한다. 개발 프로젝트만, 이미 켜진 것은 건너뛰고 API 활성화만 한다. 우선 Cloud Build·Artifact Registry·Cloud Run Admin·Cloud Scheduler 4개를 안내한다. Cloud Functions는 활성 직접 확인, 나머지4개 완료는 아직 미확인. Eventarc는 공식 문서상 이벤트 트리거용 선택 항목으로 현재 HTTP/예약9개에 무조건 필수라고 안내하지 않으며, Firebase 배포 도구 요구 여부 확인 뒤 추가 안내한다. 함수/예약/저장소 생성·권한 변경·비용 보호 연결은 별도 승인 전 금지.
 
 푸시 확인: 단계4 준비 문서4개를 7249f1d로 커밋하여 origin/feat/firebase-server-test에 푸시 성공(d4fcbd2→7249f1d). 실행 코드는 d4fcbd2 그대로이며 버전0.83.0 유지. 문서 검사5/5·공백 검사·추가 행 민감 패턴 검사 통과. 이 결과를 남기는 마감 문서도 같은 브랜치에 올린다.
