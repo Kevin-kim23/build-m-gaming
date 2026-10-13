@@ -1,0 +1,21 @@
+{
+  "version": "15.33.0",
+  "files": {
+    "package.json": "bdc585a7498b51fe16e7af54882c3113208f23a775e9d1a37f9dc3b51539a8c8",
+    "lib/api.js": "e46a49f13162b68ce1d21ea84cc83ff1c9a8b332e95fb5b5cfb62e7f959b31b0",
+    "lib/apiv2.js": "eada1f0c2f2bce92482647dcbf78fddff32eb6439d18f4a8cb26076fd2746db5",
+    "lib/auth.js": "3dc901ceed60f2dc6c699d00dab171d65c0f71d83af8233d5074611f1d03d64a",
+    "lib/requireAuth.js": "0a8122bdf735fbf288a1cbe796df659455012f31c9c0577e13d45527ac2197ef",
+    "lib/configstore.js": "59b5b2f5fc7aa4cc0b272a5064f8a7cce9936874add5929875909be53e299667",
+    "lib/command.js": "9bc44e66a2388fb7c05de1e552537a03c07c3295a8e34d9ff6ee26a6f53ae2c8",
+    "lib/logger.js": "1c704e62e4fda470121a4f939b303256082daa352ceaaf8ebd4a85c3aa886618",
+    "lib/commands/projects-list.js": "f81b377b4ad0f017f5a2b6584b8808ac7028420db684850a4420c8eccb615263",
+    "lib/management/projects.js": "43abf26ee000e09127a0f0101ed2c282cfef05635d482ea4cde5bb4c163f33e1",
+    "lib/gcp/cloudfunctionsv2.js": "c9fd8ed8e6faf0cad70051cdec048a7a222760384a14b45f5f01d38418d22752",
+    "lib/gcp/cloudfunctions.js": "2e5c43e3c9fe455a5cd9e96abe2cc8c31b1a9eff3f5f2692d30e870ab3329967",
+    "lib/gcp/cloudscheduler.js": "ee627631734ae491096aa887d7f81b952c28d811750a8d961acade73ffe86ac2",
+    "lib/gcp/run.js": "3ddc1ae042b6f10a2e03c70415c99b791c74ff8d830ba0f3e43ee721fbaced2d",
+    "lib/gcp/serviceusage.js": "d2c8808b0872a88a5c8d151381ed77a52be0842b068eee35b4e781e518712cfb",
+    "lib/gcp/storage.js": "da79502294d25f2e50bd29db51d7adbe0514a9175f40b14845fd698a247a61a5"
+  }
+}
