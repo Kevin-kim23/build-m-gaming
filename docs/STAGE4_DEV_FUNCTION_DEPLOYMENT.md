@@ -1,5 +1,7 @@
 # 4단계 · 개발 게임 함수9개 배포 진행 · 2026-10-13
 
+- 마감 확인:0.83.1/7925f7e를 origin/feat/firebase-server-test로 푸시 성공. reportDedup 색인1개는 사용자 생성 후 사용 설정됨까지 직접 확인했다. 다음은 이 PC의 CLI15.33.0 로그인 방법 설명/승인과 사용자 직접 Google 로그인이다. 아직 CLI 로그인/함수 배포/Invoker 부여는 미실행이다.
+
 최신 직접 확인: 사용자 4개 활성화 완료 응답 후 dev의 사용 설정된 API 목록에서 Cloud Build·Artifact Registry·Cloud Run Admin·Cloud Scheduler 모두 확인했다. Cloud Functions 포함 준비5개 활성 상태다. 실제 함수/예약 배포·로그인 시험·비용 보호 연결은 미실행이다. 다음은 공개 호출 금지 범위 확인: 일반 이용자6개의 인터넷 진입과 내부 Firebase 로그인/App Check 검증, 관리자1·예약2 비공개를 구분해 사용자에게 질문했다. 아직 답변/배포 승인이 아니다.
 
 사용자 진행 방식 변경: 필요한 API 목록을 한 번에 안내받고 사용자가 직접 활성화 후 보고한다. 개발 프로젝트만, 이미 켜진 것은 건너뛰고 API 활성화만 한다. 우선 Cloud Build·Artifact Registry·Cloud Run Admin·Cloud Scheduler 4개를 안내한다. Cloud Functions는 활성 직접 확인, 나머지4개 완료는 아직 미확인. Eventarc는 공식 문서상 이벤트 트리거용 선택 항목으로 현재 HTTP/예약9개에 무조건 필수라고 안내하지 않으며, Firebase 배포 도구 요구 여부 확인 뒤 추가 안내한다. 함수/예약/저장소 생성·권한 변경·비용 보호 연결은 별도 승인 전 금지.
