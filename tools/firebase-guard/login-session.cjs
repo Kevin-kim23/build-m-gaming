@@ -1,5 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
+const {issuerFailureCode}=require('./login-issuer.cjs');
 const {createPolicy,parseTarget}=require('./request-policy.cjs');
 const AUTH='https://accounts.google.com/o/oauth2/auth';
 const TOKEN='https://accounts.google.com/o/oauth2/token';
@@ -15,7 +16,7 @@ function createLoginSession({args,clientId,clientSecret,scopes}) {
   const state=crypto.randomBytes(32).toString('hex'),base=createPolicy();
   let phase='created',port,code,posted=false,rejection=1;
   const stop=()=>{phase='closed';code=undefined;base.stop();};
-  const deny=(reason=1)=>{rejection=reason;stop();fail();};
+  const deny=(reason=1)=>{if(rejection===1)rejection=reason;stop();fail();};
   const redirect=()=> 'http://localhost:'+port;
   function assert(request) {
     if(phase==='closed')return base.assert(request);
@@ -60,6 +61,7 @@ function createLoginSession({args,clientId,clientSecret,scopes}) {
       if(!['localhost:'+port,'127.0.0.1:'+port].includes(host))return deny(43);
       if(remoteAddress!=='127.0.0.1')return deny(44);
       if(!url?.startsWith('/?'))return deny(45);
+      if(/[\u0000-\u0020\u007f]/.test(url))return deny(46);
       let u;try{u=new URL(url,redirect());}catch{return deny(46);}
       const entries=[...u.searchParams],keys=entries.map(([k])=>k);
       if(u.origin!==redirect()||u.pathname!=='/'||u.hash)return deny(46);
@@ -67,8 +69,9 @@ function createLoginSession({args,clientId,clientSecret,scopes}) {
       if(u.searchParams.get('state')!==state)return deny(48);
       // Diagnostic categories only: these responses remain rejected.
       if(keys.includes('error'))return deny(u.searchParams.get('error')==='access_denied'?53:49);
-      if(keys.some(k=>!['state','code','scope','authuser','prompt','hd'].includes(k)))
-        return deny(keys.filter(k=>!['state','code','scope','authuser','prompt','hd'].includes(k)).every(k=>k==='iss')?52:50);
+      if(keys.some(k=>!['state','code','scope','authuser','prompt','hd','iss'].includes(k)))return deny(50);
+      const issuerFailure=issuerFailureCode(u.searchParams.get('iss'));
+      if(issuerFailure)return deny(issuerFailure);
       if(!u.searchParams.get('code')||u.searchParams.get('code').length>8192)return deny(51);
       code=u.searchParams.get('code');phase='received';
     },

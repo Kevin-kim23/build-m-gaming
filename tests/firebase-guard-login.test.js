@@ -20,7 +20,7 @@ function listening() {
   const s=fixture();s.bind('127.0.0.1',49152);const url=s.browserUrl();s.openBrowser(url,()=>{});
   return {s,state:new URL(url).searchParams.get('state')};
 }
-const callback=state=>({method:'GET',host:'localhost:49152',remoteAddress:'127.0.0.1',url:'/?state='+state+'&code=FIXTURE_CODE'});
+const callback=state=>({method:'GET',host:'localhost:49152',remoteAddress:'127.0.0.1',url:'/?state='+state+'&code=FIXTURE_CODE&iss=https%3A%2F%2Faccounts.google.com'});
 test('login opens only fixed arguments; deploy/no-localhost/extra arguments/scopes denied',()=>{
   validateLoginArguments(['login','--localhost']);
   for(const args of [[],['deploy','--localhost'],['login','--no-localhost'],['login','--localhost','--reauth']])assert.throws(()=>validateLoginArguments(args),/GUARD/);
@@ -56,7 +56,7 @@ test('login cannot bind wildcard/external interface or reuse a receiver',async()
 });
 test('login callback requires correct state, host, method, loopback peer and unique fields',()=>{
   for(const mutate of [r=>r.remoteAddress='192.0.2.1',r=>r.host='fixture.invalid',r=>r.method='POST',
-    r=>r.url='/?state=WRONG&code=FIXTURE_CODE',r=>r.url+='&state=duplicate',r=>r.url+='&unknown=1']) {
+    r=>r.url='/?state=WRONG&code=FIXTURE_CODE&iss=https%3A%2F%2Faccounts.google.com',r=>r.url+='&state=duplicate',r=>r.url+='&unknown=1']) {
     const {s,state}=listening(),r=callback(state);mutate(r);
     assert.throws(()=>s.receive(r),/GUARD/);assert.equal(s.isStopped(),true);
   }
@@ -95,7 +95,7 @@ test('login real loopback listener takes one synthetic callback then closes',asy
   s.openBrowser(authUrl.href,()=>{});
   try {
     const code=await new Promise((resolve,reject)=>{
-      const req=http.get({host:'127.0.0.1',port:address.port,path:'/?state='+state+'&code=FIXTURE_CODE',
+      const req=http.get({host:'127.0.0.1',port:address.port,path:'/?state='+state+'&code=FIXTURE_CODE&iss=https%3A%2F%2Faccounts.google.com',
         headers:{Host:'localhost:'+address.port}},res=>{res.resume();res.on('end',()=>resolve(res.statusCode));});
       req.on('error',reject);
     });
@@ -270,15 +270,38 @@ test('home check resolves CLI beside the running portable Node and rejects other
 
 
 test('callback rejection exposes only a fixed exit code while keeping unknown fields denied',()=>{
-  for(const [suffix,code] of [['&iss=FIXTURE',52],['&unknown=FIXTURE_TOKEN',50],['&state=FIXTURE',47]]) {
+  for(const [suffix,code] of [['&iss=FIXTURE',47],['&unknown=FIXTURE_TOKEN',50],['&state=FIXTURE',47]]) {
     const {s,state}=listening();
     assert.throws(()=>s.receive({...callback(state),url:callback(state).url+suffix}),/GUARD/);
     assert.equal(s.rejectionCode(),code);s.stop();assert.equal(s.rejectionCode(),code);
   }
   for(const [query,code] of [['state=WRONG&code=FIXTURE',48],['error=access_denied',53],['error=FIXTURE_ERROR',49],['scope=email',51]]) {
     const {s,state}=listening();
-    const url=query.startsWith('state=')?'/?'+query:'/?state='+state+'&'+query;
+    const url=query.startsWith('state=')?'/?'+query:'/?state='+state+'&iss=https%3A%2F%2Faccounts.google.com&'+query;
     assert.throws(()=>s.receive({...callback(state),url}),/GUARD/);assert.equal(s.rejectionCode(),code);
   }
   const {s,state}=listening();s.receive(callback(state));assert.equal(s.rejectionCode(),1);
+});
+
+
+for(const [name,value,expected] of [
+  ['missing',null,54],['different','https://fixture.invalid',52],
+  ['no https','accounts.google.com',58],['http','http://accounts.google.com',58],
+  ['trailing slash','https://accounts.google.com/',57],['case','https://ACCOUNTS.google.com',56],
+  ['leading space',' https://accounts.google.com',55],['trailing space','https://accounts.google.com ',55],
+  ['partial match','https://accounts.google.com.fixture.invalid',52],
+  ['tab','https://accounts.google.com\t',55],
+])test('issuer exact match rejects '+name+' before token exchange',()=>{
+  const {s,state}=listening();
+  const url='/?state='+state+'&code=FIXTURE_CODE'+(value===null?'':'&iss='+encodeURIComponent(value));
+  assert.throws(()=>s.receive({...callback(state),url}),/GUARD/);
+  assert.equal(s.rejectionCode(),expected);assert.equal(s.isStopped(),true);
+  assert.throws(()=>s.exchangeRequest(),/GUARD/);
+  assert.equal(s.rejectionCode(),expected);
+});
+test('issuer matching never trims literal URL whitespace or accepts duplicate issuer',()=>{
+  for(const suffix of [' ', '\t', '&iss=https%3A%2F%2Faccounts.google.com']) {
+    const {s,state}=listening();
+    assert.throws(()=>s.receive({...callback(state),url:callback(state).url+suffix}),/GUARD/);
+  }
 });

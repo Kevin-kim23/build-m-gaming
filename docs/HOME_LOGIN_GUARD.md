@@ -87,3 +87,11 @@ $taskCli = Join-Path $env:LOCALAPPDATA 'BudaeKiugiTools\firebase-15.33.0\node_mo
 - 사용자 직접 로그인 명령이 실패로 끝난 직후, 별도 PowerShell 명령 `$LASTEXITCODE`로 고정 숫자를 확인할 수 있다. 인증값이 아니며 로그인 프로그램 stdout/stderr는 여전히 대기/완료/실패뿐이다. 새 파일 로그를 만들지 않는다.
 - 번호:1 일반 실패,41 잘못된 단계/중복응답,42 요청 방식,43 Host,44 loopback 상대 주소,45 요청 경로,46 URL 구조,47 중복 항목,48 state 불일치,49 Google 오류 응답,50 미허용 필드,51 코드 누락/길이,52 미허용 iss 필드,53 access_denied 응답. 0은 성공이다. 번호는 원문/값을 포함하지 않는다.
 - 52는 iss를 허용했다는 뜻이 아니다. 다른 미허용 필드와 같이 계속 거부하며, 실제 번호를 보기 전 이것이 사용자 실패 원인이라고 단정하지 않는다. 허용 주소/방식/scope는 변경하지 않는다. 원문 인증 URL이나 토큰을 요청하지 않는다.
+# 0.83.9 승인된 발급자 검증 · 최신
+
+- 2026-10-13 사용자 승인으로 콜백 iss는 정확히 `https://accounts.google.com` 한 문자열만 허용한다. 디코딩된 쿼리 값을 `===`로 비교한다. 공백 제거, 대소문자 변환, URL 정규화, 슬래시 제거, 부분 일치로 통과시키지 않는다. 문자열 변환은 이미 거부된 형태를 분류하는 데만 사용한다. 원문 URL의 공백·제어문자는 URL 파싱 전 거부한다.
+- 누락/중복/잘못된 값은 코드 교환 전에 중단한다. 기존 state 일치/loopback/1회 콜백/정확 scope/출력3상태/파일보호를 유지한다. 새 외부 주소·방식·배포 권한을 추가하지 않는다. 실제 값이 다르면 자동 대체하지 않고 고정 형태 번호만 보고한다.
+- 소스 근거: 설치된 firebase-tools15.33.0 `lib/api.js:46`의 authOrigin 기본값은 위 HTTPS 주소다. `lib/auth.js:206` getLoginUrl이 이 주소로 인증 요청을 구성한다. `lib/auth.js:415` loginWithLocalhost는 state/code를 읽으며 원본 CLI 자체에는 이 엄격한 iss 비교가 없다. CLI가 이미 검증한다고 주장하지 않는다.
+- 프로토콜 근거(2026-10-13 확인): [Google OIDC reference](https://developers.google.com/identity/openid-connect/reference)의 Authorization Endpoint / Response parameters는 iss가 `https://accounts.google.com`으로 반환됨을 명시한다. [공개 Discovery](https://accounts.google.com/.well-known/openid-configuration)와 [RFC9207 §2.4](https://www.rfc-editor.org/rfc/rfc9207.html#section-2.4)의 발급자 정확 비교가 근거다. ID token의 레거시 발급자 설명을 콜백 허용 값 확장에 사용하지 않는다. 문서 열람은 도구 밖 조사이며 로그인 가드에 Discovery 요청을 추가하지 않았다.
+- 최신 종료 번호:52 다른 발급자,54 iss 누락,55 앞뒤 공백,56 대소문자 차이,57 끝 슬래시,58 HTTPS 형식 차이. 중복47/state48/미허용 필드50/다른 오류 번호는 유지한다. 이전52의 ‘iss 자체 미허용’ 설명은 과거다. 원문/실제 값을 기록하지 않는다.
+- 사용자 요청의 잔여 인증 점검: 점검한 설정 파일 자체는 있지만 인증 항목이 없고 오늘 이전 수정이었다. 로그인 프로세스/해당 수신0. 정상 로그인 완료 후 파일 재열람은 기존 원칙대로 하지 않는다. 실제 사용자 재로그인 성공은 별도 확인해야 한다.

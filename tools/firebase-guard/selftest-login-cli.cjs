@@ -28,7 +28,7 @@ try {
   const session=createLoginSession({args:['login','--localhost'],clientId:'FIXTURE_CLIENT',clientSecret:'FIXTURE_SECRET',scopes});
   session.bind('127.0.0.1',49152);
   const url=new URL(session.browserUrl());session.openBrowser(url.href,()=>{});
-  session.receive({method:'GET',host:'localhost:49152',remoteAddress:'127.0.0.1',url:'/?state='+url.searchParams.get('state')+'&code=FIXTURE_CODE'});
+  session.receive({method:'GET',host:'localhost:49152',remoteAddress:'127.0.0.1',url:'/?state='+url.searchParams.get('state')+'&code=FIXTURE_CODE&iss=https%3A%2F%2Faccounts.google.com'});
   check='token-form';
   const request=session.exchangeRequest(),FormData=req('form-data'),form=new FormData();
   for(const [k,v] of Object.entries(request.body))form.append(k,v);
