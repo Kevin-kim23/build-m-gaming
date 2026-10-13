@@ -3,14 +3,15 @@ const {createSession,CONFIRMATION}=require('./deployment-session.cjs');
 // The runner owns sequencing; a transport never selects a request or retries it.
 // It is deliberately separate from firebase deploy (which can mutate APIs/IAM,
 // retry creates and delete failed functions). No implicit CLI deploy fallback.
-async function runPrepared({template,privateValues,archiveHash,confirmation,send,wait=ms=>new Promise(r=>setTimeout(r,ms))}) {
+async function runPrepared({template,privateValues,archiveHash,confirmation,send,diagnostic,wait=ms=>new Promise(r=>setTimeout(r,ms))}) {
   let session;
-  try {session=createSession({template,privateValues,archiveHash,confirmation});}
+  try {session=createSession({template,privateValues,archiveHash,confirmation,diagnostic});}
   catch {return {completed:false,stopped:true,phase:'preflight',functions:0,schedules:0,possibleUnconfirmedResource:false};}
   try {
     let next;
     while((next=session.next())!==null) {
       if(session.waitMs())await wait(session.waitMs());
+      diagnostic?.reset();
       await session.dispatch(next,send);
     }
   } catch {session.stop();}

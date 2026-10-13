@@ -23,7 +23,7 @@ function bind(value,slots) {
     if(typeof slots[name]!=='string')fail();return slots[name];
   });
 }
-function createSession({template=canonical,privateValues,confirmation,archiveHash}) {
+function createSession({template=canonical,privateValues,confirmation,archiveHash,diagnostic}) {
   validateTemplate(template);
   if(confirmation!==CONFIRMATION||!/^[a-f0-9]{64}$/.test(archiveHash||''))fail();
   const slots=structuredClone(privateValues);
@@ -91,8 +91,8 @@ function createSession({template=canonical,privateValues,confirmation,archiveHas
     try {
       const response=await send(structuredClone(request));
       if(stopped)fail();
-      accept(request,response);
-    } catch {unknown=true;stop();fail();}
+      try {accept(request,response);} catch {diagnostic?.validation('response-shape');throw Error('DEPLOYMENT_STOPPED');}
+    } catch {diagnostic?.fallback();unknown=true;stop();fail();}
     finally {busy=false;}
   }
   return Object.freeze({next,check,dispatch,stop,archiveHash,

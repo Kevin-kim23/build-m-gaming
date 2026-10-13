@@ -7,7 +7,7 @@ const {installNetworkGuard}=require('./network-guard.cjs');
 const {installCliBridge}=require('./cli-bridge.cjs');
 const {installFileGuard}=require('./file-guard.cjs');
 // Only constructed by the CLI entry after human confirmation. No raw errors out.
-function createDeploymentTransport(cliDir,archive,archiveHash,output,{fakeTransport}={}) {
+function createDeploymentTransport(cliDir,archive,archiveHash,output,{fakeTransport,diagnostic}={}) {
   if(!Buffer.isBuffer(archive)||createHash('sha256').update(archive).digest('hex')!==archiveHash)throw Error('ARCHIVE_CHANGED');
   let current,used=false,stopped=false,refreshUsed=false;
   const refresh=createPolicy({mode:'projects'});
@@ -27,8 +27,8 @@ function createDeploymentTransport(cliDir,archive,archiveHash,output,{fakeTransp
     observe(r,response){assert(r);if(response.status>=300&&!(response.status===404&&isAbsentJob(r)))stop();}};
   const isAbsentJob=r=>r.method==='GET'&&r.url.startsWith('https://cloudscheduler.googleapis.com/v1/projects/budae-kiugi-dev/locations/asia-northeast3/jobs/firebase-schedule-')&&equal(normalized(r),current);
   installFileGuard(stop);
-  const network=installNetworkGuard({policy,allowExpectedNotFound:isAbsentJob,...(fakeTransport?{transport:fakeTransport}:{})});
-  const {lib}=installCliBridge(cliDir,policy,network,output);
+  const network=installNetworkGuard({policy,diagnostic,allowExpectedNotFound:isAbsentJob,...(fakeTransport?{transport:fakeTransport}:{})});
+  const {lib}=installCliBridge(cliDir,policy,network,output,diagnostic);
   const auth=lib('auth'),account=auth.getGlobalDefaultAccount();
   if(!account?.user||!account.tokens||(!account.tokens.access_token&&!account.tokens.refresh_token))throw Error('LOGIN_REQUIRED');
   auth.setActiveAccount({},account);

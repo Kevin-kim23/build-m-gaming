@@ -5,6 +5,8 @@ const {createRequire}=require('node:module');
 const {createHash}=require('node:crypto');
 const write=process.stdout.write.bind(process.stdout);
 const out=require('./privacy.cjs').installOutput();
+const diagnosticEvents=[];
+const diagnostic=require('./diagnostics.cjs').createDiagnostics(require('./privacy.cjs').createOutput(s=>diagnosticEvents.push(JSON.parse(s))));
 const {PROJECT,REGION}=require('./constants.cjs');
 const template=require('./deployment-template.json');
 const {CONFIRMATION}=require('./deployment-session.cjs');
@@ -12,7 +14,7 @@ const {runPrepared}=require('./deployment-runner.cjs');
 let stage='source';
 async function main() {
   const [cliDir,mode='normal']=process.argv.slice(2);
-  if(!['normal','refresh','missing-confirmation','error','partial','files','output','child'].includes(mode))throw Error('MODE');
+  if(!['normal','refresh','missing-confirmation','error','partial','files','output','child','network-error','bad-response'].includes(mode))throw Error('MODE');
   require('./source-check.cjs').checkSource(cliDir);
   const req=createRequire(path.join(cliDir,'package.json'));
   let memory={user:{email:'fixture'+'@example.invalid'},tokens:{access_token:'FIXTURE_ACCESS',refresh_token:'FIXTURE_REFRESH',expires_at:mode==='refresh'?1:Date.now()+3600000,scopes:[]}};
@@ -24,6 +26,8 @@ async function main() {
   const fakeTransport=async (url,opts)=>{
     if(url==='https://www.googleapis.com/oauth2/v3/token') {refreshes++;return Response.json({access_token:'FIXTURE_RENEWED',expires_in:3600,token_type:'Bearer'});}
     sends++;
+    if(mode==='network-error')throw Object.assign(new Error('FIXTURE_SECRET private@example.invalid'),{code:'ECONNRESET'});
+    if(mode==='bad-response')return Response.json({uploadUrl:'FIXTURE_SECRET private@example.invalid'});
     if(mode==='error'||mode==='partial'&&sends===6)return Response.json({error:{message:'FIXTURE_TOKEN private@example.invalid'}},{status:403});
     if(url.endsWith('functions:generateUploadUrl'))return Response.json({uploadUrl:'https://storage.googleapis.com/fixture/source.zip?GoogleAccessId=fixture&Signature=fixture',storageSource:{bucket:'fixture',object:'source.zip',generation:'1'}});
     if(opts.method==='PUT')return new Response('',{status:200});
@@ -38,8 +42,8 @@ async function main() {
   };
   stage='runner';
   let send;
-  const result=await runPrepared({privateValues:values,archiveHash,confirmation:mode==='missing-confirmation'?'':CONFIRMATION,send:async r=>{
-    if(!send)send=require('./deployment-transport.cjs').createDeploymentTransport(cliDir,archive,archiveHash,out,{fakeTransport});
+  const result=await runPrepared({privateValues:values,archiveHash,confirmation:mode==='missing-confirmation'?'':CONFIRMATION,diagnostic,send:async r=>{
+    if(!send)send=require('./deployment-transport.cjs').createDeploymentTransport(cliDir,archive,archiveHash,out,{fakeTransport,diagnostic});
     if(mode==='files')require('node:fs').writeFileSync('firebase-debug.log','FIXTURE_TOKEN');
     if(mode==='child')require('node:child_process').execSync('echo FIXTURE_TOKEN');
     if(mode==='output'){process.stdout.write('FIXTURE_');process.stderr.write('TOKEN private@example.invalid');}
@@ -47,7 +51,11 @@ async function main() {
   }});
   stage='assertions';
   if(['normal','refresh','output'].includes(mode)){assert.equal(result.completed,true);assert.equal(sends,33);}
-  else {assert.equal(result.stopped,true);assert.equal(sends,mode==='partial'?6:mode==='error'?1:0);}
+  else {assert.equal(result.stopped,true);assert.equal(sends,mode==='partial'?6:['error','network-error','bad-response'].includes(mode)?1:0);}
+  if(mode==='error')assert.ok(diagnosticEvents.some(e=>e.category==='http-response'&&e.status===403));
+  if(mode==='network-error')assert.ok(diagnosticEvents.some(e=>e.category==='transport-failed'&&e.transport==='connection'));
+  if(mode==='bad-response')assert.ok(diagnosticEvents.some(e=>e.check==='response-shape'));
+  assert.doesNotMatch(JSON.stringify(diagnosticEvents),/FIXTURE|@|https:/);
   if(mode==='refresh')assert.equal(refreshes,1);
   write(JSON.stringify({offlineDeployment:'passed',requests:sends,externalTransmissions:0})+'\n');
 }

@@ -107,3 +107,11 @@ Pub/Sub/Eventarc: 이번9개 생성 템플릿에는 eventTrigger가 없고 예�
 근거(2026-10-13): https://docs.cloud.google.com/build/docs/api/reference/rest/v1/projects.locations/getDefaultServiceAccount . GET cloudbuild.googleapis.com /v1/projects/budae-kiugi-dev/locations/asia-northeast3/defaultServiceAccount, 본문/쿼리 없음. 기존 설치 CLI15.33.0 소스 검증을 유지하고 apiv2.Client를 기존 cli-bridge/network/file/privacy 가드로 연결한다. 배포/인벤토리/프로젝트 목록 모드에는 이 요청을 열지 않는다. 반환 serviceAccountEmail은 문서상 projects/{project}/serviceAccounts/{identity} 형태이며 bare email이나 다른 형태는 넓게 허용하지 않는다. 누락 필드도 실패 처리한다. 가짜 selftest는 인증 저장소 첫 읽기 전에 메모리 합성 값으로 대체하고 실제 네트워크 전송기를 주입하지 않는다. 초기 정상 테스트 실패1개를 재현 후 수정, 현재17/17·가짜8종 통과. 실제 조회와 빌드 결과는 후속 기록한다.
 
 검증 결과: 새 단위17/17, 가드194/194, 설치CLI15.33.0 합성8종 통과. Node22 npm test 종료0·실패0·취소0·건너뜀0(약143초), npm run build 종료0(기존 라이선스 고지 청크 용량 경고). 전체 테스트 총수는 이번 출력에서 보존하지 않아 추산하지 않는다. 신규 파일 개인경로·토큰 패턴 검사 미검출(완전한 비밀 부재 보장은 아님). 실제 승인 명령은 1회만 실행: guard-ready → command-failed, 종료1. 기본 빌드 계정 미확인. HTTP 상태나 실패단계는 출력되지 않아 원인 판단 불가. 실제 대상 GET 전송 여부도 이 출력만으로 단정하지 않는다. 추가 재시도/허용 확대/인증파일 수정/클라우드 변경 없음. 기존 지시대로 여기서 중단. 다음은 고정 오류 진단 보완 여부를 사용자와 정하며 실제 재조회는 새 승인 전 금지. 정책 영향 없음.
+
+## 실패 진단 해석 · 0.83.15
+
+배포 요청 계획 및 허용 목록은 변경하지 않았다. deployment-request의 number는 이번 실행에서 시도하는 순번(성공한 작업 수가 아님)이다. deployment-stop의 phase는 preflight/offline-capture/private-input/source-archive/human-confirmation/transport-setup/execution 중 하나, kind는 caught-error/uncaught-exception/unhandled-rejection/runtime-warning 중 하나다. 이벤트는 고정 코드만 사용하고 예외 객체·메시지·스택은 출력하지 않는다.
+
+guard-diagnostic은 기존 읽기 가드와 같은 보호 출력이다. guard-blocked는 가드 차단, transport-failed는 통신 오류 분류, http-response는 숫자 상태, validation-failed/response-shape는 반환값 검사 실패다. 요청마다 진단 상태를 초기화하므로 정상적으로 예상한 Scheduler 404 이후의 실패도 진단 가능하다. 진단은 허용 판정·중단 동작을 바꾸지 않는다. HTTP200만으로 함수 생성 성공을 뜻하지 않는다. 응답 검사 실패 때에도 원문은 저장하지 않는다. 출력만으로 원인을 확정할 수 없으면 추가 가짜 재현 또는 승인된 읽기 점검을 사용한다.
+
+기존 사용자 직접 TTY 확인 문구 입력을 유지한다. 진단을 위해 확인 문구를 대신 입력하거나 비공개 값을 출력하지 않는다. 코드 진단 보완은 실제 배포 성공과 다르다. 실제 첫 오류에서는 중단하고, 허용 목록/IAM 변경이 필요한 경우 해당 범위의 별도 승인을 받는다. 기본 빌드 계정 추가 조사는 사용자 중단 지시대로 수행하지 않는다.

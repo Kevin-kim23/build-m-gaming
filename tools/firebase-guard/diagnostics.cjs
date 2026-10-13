@@ -18,6 +18,7 @@ function createDiagnostics(output) {
   const check=value=>CHECKS.has(value)?value:'unknown-check';
   const failure=details=>{if(!failed){failed=true;output.emit('guard-diagnostic',details);}};
   return {
+    reset(){failed=false;attempted=false;status=undefined;},
     attempted(){attempted=true;},
     blocked(beforeTransport,name){failure({category:'guard-blocked',beforeTransport,check:check(name)});},
     transport(error){failure({category:'transport-failed',transport:transportKind(error)});},
