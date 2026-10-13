@@ -23,9 +23,11 @@ function bind(value,slots) {
     if(typeof slots[name]!=='string')fail();return slots[name];
   });
 }
-function createSession({template=canonical,privateValues,confirmation,archiveHash,diagnostic}) {
+function createSession({template=canonical,privateValues,confirmation,archiveHash,diagnostic,resume=false}) {
   validateTemplate(template);
-  if(confirmation!==CONFIRMATION||!/^[a-f0-9]{64}$/.test(archiveHash||''))fail();
+  const resumePlan=require('./resume-plan.cjs');
+  if(typeof resume!=='boolean'||confirmation!==(resume?resumePlan.RESUME_CONFIRMATION:CONFIRMATION)||!/^[a-f0-9]{64}$/.test(archiveHash||''))fail();
+  const requests=resume?resumePlan.resumeRequests():canonical.requests;
   const slots=structuredClone(privateValues);
   if(!equal(Object.keys(slots).sort(),['ADMIN_RUNTIME','DEFAULT_RUNTIME','FIREBASE_CONFIG','PROJECT_NUMBER'].sort())||
     !/^\d{6,20}$/.test(slots.PROJECT_NUMBER)||
@@ -36,14 +38,21 @@ function createSession({template=canonical,privateValues,confirmation,archiveHas
   if(!equal(config,{projectId:PROJECT}))fail();
   let index=0,stopped=false,busy=false,polls=0,earliestPoll=0,unknown=false;
   const created={functions:0,schedules:0},seenOps=new Set(),seenServices=new Set();
+  let preservedFunctions=0;
   const stop=()=>{stopped=true;};
-  function next() {if(stopped||busy)fail();return index<canonical.requests.length?bind(canonical.requests[index],slots):null;}
+  function next() {if(stopped||busy)fail();return index<requests.length?bind(requests[index],slots):null;}
   function check(request) {
     try {if(!equal(request,next()))fail();}catch {stop();fail();}
     return true;
   }
   function accept(request,response) {
-    const model=canonical.requests[index],body=response?.body;
+    const model=requests[index],body=response?.body;
+    if(resume&&index===0) {
+      if(response?.status!==200)fail();
+      const f=resumePlan.validateExistingInventory(body,slots,diagnostic);
+      slots['SERVICE:createProfile']=f.service;slots['URI:createProfile']=f.uri;
+      seenServices.add(f.service);preservedFunctions=1;index++;return;
+    }
     const getJob=request.method==='GET'&&request.url.includes('cloudscheduler.googleapis.com');
     if(getJob) {if(response.status!==404)fail();index++;return;}
     if(!Number.isInteger(response?.status)||response.status<200||response.status>=300)fail();
@@ -56,22 +65,16 @@ function createSession({template=canonical,privateValues,confirmation,archiveHas
       slots['OPERATION:'+id]=body.name;seenOps.add(body.name);
     } else if(model.url.includes('${OPERATION:')) {
       const id=/\$\{OPERATION:([^}]+)\}/.exec(model.url)[1];
-      if(body?.error||body?.name!==slots['OPERATION:'+id]||![undefined,false,true].includes(body.done))fail();
+      if(body?.error){diagnostic?.validation('operation.error');fail();}
+      if(body?.name!==slots['OPERATION:'+id]||![undefined,false,true].includes(body.done)){diagnostic?.validation('operation.identity');fail();}
       if(!body.done) {
         if(++polls>360)fail();
         earliestPoll=Date.now()+5000;
         return; // Successful pending status is polling, never an error retry.
       }
-      const f=body.response,s=f?.serviceConfig;
-      if(f?.name!==parent+'/functions/'+id||f?.buildConfig?.runtime!=='nodejs22'||
-        s?.maxInstanceCount!==canonical.requests.find(r=>r.body?.buildConfig?.entryPoint===id).body.serviceConfig.maxInstanceCount||
-        s?.serviceAccountEmail!==(id==='moderateNicknames'?slots.ADMIN_RUNTIME:slots.DEFAULT_RUNTIME)||
-        !new RegExp('^'+parent+'/services/[a-z][a-z0-9-]{0,62}$').test(s?.service)||seenServices.has(s.service))fail();
-      const u=new URL(f.url);
-      if(u.protocol!=='https:'||u.port||u.username||u.password||u.search||u.hash||u.pathname!=='/'||
-        !(u.hostname.endsWith('.run.app')||u.hostname===REGION+'-'+PROJECT+'.cloudfunctions.net'))fail();
-      if(['retryAccountDeletions','purgeExpiredServerRecords'].includes(id)&&s.ingressSettings!=='ALLOW_INTERNAL_ONLY')fail();
-      slots['SERVICE:'+id]=s.service;slots['URI:'+id]=f.url;seenServices.add(s.service);
+      const f=require('./function-response.cjs').validateFunction(body.response,id,slots,diagnostic);
+      if(seenServices.has(f.service))fail();
+      slots['SERVICE:'+id]=f.service;slots['URI:'+id]=f.uri;seenServices.add(f.service);
       created.functions++;polls=0;earliestPoll=0;
     } else if(request.method==='GET'&&request.url.includes('compute.googleapis.com')) {
       if(body?.defaultServiceAccount!==slots.DEFAULT_RUNTIME)fail();
@@ -93,6 +96,6 @@ function createSession({template=canonical,privateValues,confirmation,archiveHas
   }
   return Object.freeze({next,check,dispatch,stop,archiveHash,
     waitMs:()=>Math.max(0,earliestPoll-Date.now()),
-    summary:()=>({completed:!stopped&&index===canonical.requests.length,stopped,functions:created.functions,schedules:created.schedules,possibleUnconfirmedResource:unknown})});
+    summary:()=>({completed:!stopped&&index===requests.length,stopped,functions:created.functions,schedules:created.schedules,...(resume?{preservedFunctions}:{}),possibleUnconfirmedResource:unknown})});
 }
 module.exports={createSession,validateTemplate,CONFIRMATION,bind};

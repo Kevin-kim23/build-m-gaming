@@ -45,4 +45,9 @@ async function archiveCommittedSource(cliDir,repo) {
   const archive=Buffer.concat(chunks);
   return {archive,archiveHash:createHash('sha256').update(archive).digest('hex'),head};
 }
-module.exports={readPrivateValues,archiveCommittedSource};
+function assertResumeSource(repo) {
+  // The first function was deployed by the user from this recorded revision.
+  // This proves LOCAL source continuity, not remote artifact byte identity.
+  git(repo,['diff','--exit-code','3a7ac58','HEAD','--','server','src']);
+}
+module.exports={readPrivateValues,archiveCommittedSource,assertResumeSource};

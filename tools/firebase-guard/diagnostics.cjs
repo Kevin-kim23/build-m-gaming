@@ -1,6 +1,9 @@
 'use strict';
 const CHECKS=new Set(['request-policy','transport-options','redirect','response-shape','unreachable',
   'upload-url','upload-source-fields','upload-source-format','upload-generation',
+  'response.name','response.buildConfig.runtime','response.buildConfig.entryPoint','response.serviceConfig.maxInstanceCount',
+  'response.serviceConfig.serviceAccountEmail','response.serviceConfig.service','response.url','response.serviceConfig.ingressSettings',
+  'response.state','existing.configuration','existing.environment','existing.inventory','operation.error','operation.identity',
   'region-identity','pagination','region-count','database-location','index-definition','index-match',
   'index-ready','index-missing','unexpected-resource','cli-request','response-decoding','unknown-check']);
 const TRANSPORTS=new Set(['dns','connection','timeout','tls','aborted','other']);
