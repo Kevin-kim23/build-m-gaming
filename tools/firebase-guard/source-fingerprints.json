@@ -16,6 +16,8 @@
     "lib/gcp/cloudscheduler.js": "ee627631734ae491096aa887d7f81b952c28d811750a8d961acade73ffe86ac2",
     "lib/gcp/run.js": "3ddc1ae042b6f10a2e03c70415c99b791c74ff8d830ba0f3e43ee721fbaced2d",
     "lib/gcp/serviceusage.js": "d2c8808b0872a88a5c8d151381ed77a52be0842b068eee35b4e781e518712cfb",
-    "lib/gcp/storage.js": "da79502294d25f2e50bd29db51d7adbe0514a9175f40b14845fd698a247a61a5"
+    "lib/gcp/storage.js": "da79502294d25f2e50bd29db51d7adbe0514a9175f40b14845fd698a247a61a5",
+    "lib/scopes.js": "4cf7913a639a62aedadfe795a8a7f2a8c6cd6ff4ad05e0bec77956ec0783105a",
+    "../configstore/index.js": "f73b0646d931f35d290ce242fb9cddb75e5142cbae134a36e89dff4c2e265f14"
   }
 }
