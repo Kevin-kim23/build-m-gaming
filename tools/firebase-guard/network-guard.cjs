@@ -5,7 +5,7 @@ const {isDeepStrictEqual}=require('node:util');
 const http=require('node:http'),https=require('node:https'),net=require('node:net'),tls=require('node:tls');
 const http2=require('node:http2'),child=require('node:child_process'),worker=require('node:worker_threads');
 const dgram=require('node:dgram'),dns=require('node:dns');
-function installNetworkGuard({policy,onBlocked=()=>{},transport=globalThis.fetch,diagnostic}) {
+function installNetworkGuard({policy,onBlocked=()=>{},transport=globalThis.fetch,diagnostic,allowExpectedNotFound=()=>false}) {
   const grant=new AsyncLocalStorage(),originals=[];
   let receiverStarted=false,localLookup=false,lookupUsed=false;
   function block(){diagnostic?.blocked(!grant.getStore(),'transport-options');policy.stop();onBlocked();throw Object.assign(new Error('GUARD_REQUEST_DENIED'),{code:'GUARD_REQUEST_DENIED'});}
@@ -64,7 +64,7 @@ function installNetworkGuard({policy,onBlocked=()=>{},transport=globalThis.fetch
       catch(error) { diagnostic?.transport(error);policy.stop();throw new Error('GUARD_TRANSPORT_FAILED'); }
       diagnostic?.http(response.status);
       if(response.status>=300&&response.status<400)return block();
-      if(response.status>=400){policy.stop();throw new Error('GUARD_HTTP_ERROR');}
+      if(response.status>=400&&!(response.status===404&&allowExpectedNotFound(request))){policy.stop();throw new Error('GUARD_HTTP_ERROR');}
       return response;
     });
   }

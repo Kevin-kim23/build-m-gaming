@@ -1,0 +1,689 @@
+{
+  "schema": 1,
+  "cli": "15.33.0",
+  "project": "budae-kiugi-dev",
+  "region": "asia-northeast3",
+  "requests": [
+    {
+      "method": "POST",
+      "url": "https://cloudfunctions.googleapis.com/v2/projects/budae-kiugi-dev/locations/asia-northeast3/functions:generateUploadUrl"
+    },
+    {
+      "method": "PUT",
+      "url": "${UPLOAD_URL}",
+      "body": {
+        "$archive": true
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudfunctions.googleapis.com/v2/projects/budae-kiugi-dev/locations/asia-northeast3/functions?functionId=createProfile",
+      "body": {
+        "name": "projects/budae-kiugi-dev/locations/asia-northeast3/functions/createProfile",
+        "buildConfig": {
+          "runtime": "nodejs22",
+          "entryPoint": "createProfile",
+          "source": {
+            "storageSource": {
+              "$slot": "STORAGE_SOURCE"
+            }
+          },
+          "environmentVariables": {
+            "GOOGLE_NODE_RUN_SCRIPTS": ""
+          }
+        },
+        "serviceConfig": {
+          "environmentVariables": {
+            "MODERATION_RUNTIME_SERVICE_ACCOUNT": "${ADMIN_RUNTIME}",
+            "MODERATION_ADMIN_AUDIENCE": "",
+            "MODERATION_ADMIN_SUBJECT": "",
+            "FIREBASE_CONFIG": "${FIREBASE_CONFIG}",
+            "GCLOUD_PROJECT": "budae-kiugi-dev",
+            "FUNCTION_REGION": "asia-northeast3",
+            "FUNCTION_TARGET": "createProfile",
+            "LOG_EXECUTION_ID": "true"
+          },
+          "ingressSettings": null,
+          "timeoutSeconds": null,
+          "serviceAccountEmail": null,
+          "availableMemory": "256Mi",
+          "minInstanceCount": null,
+          "maxInstanceCount": 2,
+          "maxInstanceRequestConcurrency": 80,
+          "availableCpu": "1",
+          "vpcConnector": null,
+          "vpcConnectorEgressSettings": null,
+          "directVpcNetworkInterface": null,
+          "directVpcEgress": null
+        },
+        "labels": {
+          "deployment-callable": "true",
+          "firebase-functions-codebase": "game"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudfunctions.googleapis.com/v2/${OPERATION:createProfile}"
+    },
+    {
+      "method": "POST",
+      "url": "https://run.googleapis.com/v1/${SERVICE:createProfile}:setIamPolicy",
+      "body": {
+        "policy": {
+          "bindings": [
+            {
+              "role": "roles/run.invoker",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "",
+          "version": 3
+        },
+        "updateMask": "bindings,etag,version"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudfunctions.googleapis.com/v2/projects/budae-kiugi-dev/locations/asia-northeast3/functions?functionId=deleteGameAccount",
+      "body": {
+        "name": "projects/budae-kiugi-dev/locations/asia-northeast3/functions/deleteGameAccount",
+        "buildConfig": {
+          "runtime": "nodejs22",
+          "entryPoint": "deleteGameAccount",
+          "source": {
+            "storageSource": {
+              "$slot": "STORAGE_SOURCE"
+            }
+          },
+          "environmentVariables": {
+            "GOOGLE_NODE_RUN_SCRIPTS": ""
+          }
+        },
+        "serviceConfig": {
+          "environmentVariables": {
+            "MODERATION_RUNTIME_SERVICE_ACCOUNT": "${ADMIN_RUNTIME}",
+            "MODERATION_ADMIN_AUDIENCE": "",
+            "MODERATION_ADMIN_SUBJECT": "",
+            "FIREBASE_CONFIG": "${FIREBASE_CONFIG}",
+            "GCLOUD_PROJECT": "budae-kiugi-dev",
+            "FUNCTION_REGION": "asia-northeast3",
+            "FUNCTION_TARGET": "deleteGameAccount",
+            "LOG_EXECUTION_ID": "true"
+          },
+          "ingressSettings": null,
+          "timeoutSeconds": null,
+          "serviceAccountEmail": null,
+          "availableMemory": "256Mi",
+          "minInstanceCount": null,
+          "maxInstanceCount": 2,
+          "maxInstanceRequestConcurrency": 80,
+          "availableCpu": "1",
+          "vpcConnector": null,
+          "vpcConnectorEgressSettings": null,
+          "directVpcNetworkInterface": null,
+          "directVpcEgress": null
+        },
+        "labels": {
+          "deployment-callable": "true",
+          "firebase-functions-codebase": "game"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudfunctions.googleapis.com/v2/${OPERATION:deleteGameAccount}"
+    },
+    {
+      "method": "POST",
+      "url": "https://run.googleapis.com/v1/${SERVICE:deleteGameAccount}:setIamPolicy",
+      "body": {
+        "policy": {
+          "bindings": [
+            {
+              "role": "roles/run.invoker",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "",
+          "version": 3
+        },
+        "updateMask": "bindings,etag,version"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudfunctions.googleapis.com/v2/projects/budae-kiugi-dev/locations/asia-northeast3/functions?functionId=moderateNicknames",
+      "body": {
+        "name": "projects/budae-kiugi-dev/locations/asia-northeast3/functions/moderateNicknames",
+        "buildConfig": {
+          "runtime": "nodejs22",
+          "entryPoint": "moderateNicknames",
+          "source": {
+            "storageSource": {
+              "$slot": "STORAGE_SOURCE"
+            }
+          },
+          "environmentVariables": {
+            "GOOGLE_NODE_RUN_SCRIPTS": ""
+          }
+        },
+        "serviceConfig": {
+          "environmentVariables": {
+            "MODERATION_RUNTIME_SERVICE_ACCOUNT": "${ADMIN_RUNTIME}",
+            "MODERATION_ADMIN_AUDIENCE": "",
+            "MODERATION_ADMIN_SUBJECT": "",
+            "FIREBASE_CONFIG": "${FIREBASE_CONFIG}",
+            "GCLOUD_PROJECT": "budae-kiugi-dev",
+            "FUNCTION_REGION": "asia-northeast3",
+            "FUNCTION_TARGET": "moderateNicknames",
+            "LOG_EXECUTION_ID": "true"
+          },
+          "ingressSettings": null,
+          "timeoutSeconds": 60,
+          "serviceAccountEmail": "${ADMIN_RUNTIME}",
+          "availableMemory": "256Mi",
+          "minInstanceCount": 0,
+          "maxInstanceCount": 1,
+          "maxInstanceRequestConcurrency": 1,
+          "availableCpu": "1",
+          "vpcConnector": null,
+          "vpcConnectorEgressSettings": null,
+          "directVpcNetworkInterface": null,
+          "directVpcEgress": null
+        },
+        "labels": {
+          "firebase-functions-codebase": "game"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudfunctions.googleapis.com/v2/${OPERATION:moderateNicknames}"
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudfunctions.googleapis.com/v2/projects/budae-kiugi-dev/locations/asia-northeast3/functions?functionId=purgeExpiredServerRecords",
+      "body": {
+        "name": "projects/budae-kiugi-dev/locations/asia-northeast3/functions/purgeExpiredServerRecords",
+        "buildConfig": {
+          "runtime": "nodejs22",
+          "entryPoint": "purgeExpiredServerRecords",
+          "source": {
+            "storageSource": {
+              "$slot": "STORAGE_SOURCE"
+            }
+          },
+          "environmentVariables": {
+            "GOOGLE_NODE_RUN_SCRIPTS": ""
+          }
+        },
+        "serviceConfig": {
+          "environmentVariables": {
+            "MODERATION_RUNTIME_SERVICE_ACCOUNT": "${ADMIN_RUNTIME}",
+            "MODERATION_ADMIN_AUDIENCE": "",
+            "MODERATION_ADMIN_SUBJECT": "",
+            "FIREBASE_CONFIG": "${FIREBASE_CONFIG}",
+            "GCLOUD_PROJECT": "budae-kiugi-dev",
+            "FUNCTION_REGION": "asia-northeast3",
+            "FUNCTION_TARGET": "purgeExpiredServerRecords",
+            "LOG_EXECUTION_ID": "true"
+          },
+          "ingressSettings": "ALLOW_INTERNAL_ONLY",
+          "timeoutSeconds": 300,
+          "serviceAccountEmail": null,
+          "availableMemory": "256Mi",
+          "minInstanceCount": 0,
+          "maxInstanceCount": 1,
+          "maxInstanceRequestConcurrency": 1,
+          "availableCpu": "1",
+          "vpcConnector": null,
+          "vpcConnectorEgressSettings": null,
+          "directVpcNetworkInterface": null,
+          "directVpcEgress": null
+        },
+        "labels": {
+          "deployment-scheduled": "true",
+          "firebase-functions-codebase": "game"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudfunctions.googleapis.com/v2/${OPERATION:purgeExpiredServerRecords}"
+    },
+    {
+      "method": "GET",
+      "url": "https://compute.googleapis.com/compute/v1/projects/${PROJECT_NUMBER}"
+    },
+    {
+      "method": "POST",
+      "url": "https://run.googleapis.com/v1/${SERVICE:purgeExpiredServerRecords}:setIamPolicy",
+      "body": {
+        "policy": {
+          "bindings": [
+            {
+              "role": "roles/run.invoker",
+              "members": [
+                "serviceAccount:${DEFAULT_RUNTIME}"
+              ]
+            }
+          ],
+          "etag": "",
+          "version": 3
+        },
+        "updateMask": "bindings,etag,version"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudscheduler.googleapis.com/v1/projects/budae-kiugi-dev/locations/asia-northeast3/jobs/firebase-schedule-purgeExpiredServerRecords-asia-northeast3"
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudscheduler.googleapis.com/v1/projects/budae-kiugi-dev/locations/asia-northeast3/jobs",
+      "body": {
+        "timeZone": "Asia/Seoul",
+        "name": "projects/budae-kiugi-dev/locations/asia-northeast3/jobs/firebase-schedule-purgeExpiredServerRecords-asia-northeast3",
+        "httpTarget": {
+          "uri": "${URI:purgeExpiredServerRecords}",
+          "httpMethod": "POST",
+          "oidcToken": {
+            "serviceAccountEmail": "${DEFAULT_RUNTIME}"
+          }
+        },
+        "schedule": "0 3 * * *",
+        "attemptDeadline": "300s",
+        "retryConfig": {
+          "maxDoublings": 1,
+          "retryCount": 2,
+          "maxBackoffDuration": "720s",
+          "minBackoffDuration": "360s",
+          "maxRetryDuration": "0s"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudfunctions.googleapis.com/v2/projects/budae-kiugi-dev/locations/asia-northeast3/functions?functionId=readCloudSave",
+      "body": {
+        "name": "projects/budae-kiugi-dev/locations/asia-northeast3/functions/readCloudSave",
+        "buildConfig": {
+          "runtime": "nodejs22",
+          "entryPoint": "readCloudSave",
+          "source": {
+            "storageSource": {
+              "$slot": "STORAGE_SOURCE"
+            }
+          },
+          "environmentVariables": {
+            "GOOGLE_NODE_RUN_SCRIPTS": ""
+          }
+        },
+        "serviceConfig": {
+          "environmentVariables": {
+            "MODERATION_RUNTIME_SERVICE_ACCOUNT": "${ADMIN_RUNTIME}",
+            "MODERATION_ADMIN_AUDIENCE": "",
+            "MODERATION_ADMIN_SUBJECT": "",
+            "FIREBASE_CONFIG": "${FIREBASE_CONFIG}",
+            "GCLOUD_PROJECT": "budae-kiugi-dev",
+            "FUNCTION_REGION": "asia-northeast3",
+            "FUNCTION_TARGET": "readCloudSave",
+            "LOG_EXECUTION_ID": "true"
+          },
+          "ingressSettings": null,
+          "timeoutSeconds": null,
+          "serviceAccountEmail": null,
+          "availableMemory": "256Mi",
+          "minInstanceCount": null,
+          "maxInstanceCount": 2,
+          "maxInstanceRequestConcurrency": 80,
+          "availableCpu": "1",
+          "vpcConnector": null,
+          "vpcConnectorEgressSettings": null,
+          "directVpcNetworkInterface": null,
+          "directVpcEgress": null
+        },
+        "labels": {
+          "deployment-callable": "true",
+          "firebase-functions-codebase": "game"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudfunctions.googleapis.com/v2/${OPERATION:readCloudSave}"
+    },
+    {
+      "method": "POST",
+      "url": "https://run.googleapis.com/v1/${SERVICE:readCloudSave}:setIamPolicy",
+      "body": {
+        "policy": {
+          "bindings": [
+            {
+              "role": "roles/run.invoker",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "",
+          "version": 3
+        },
+        "updateMask": "bindings,etag,version"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudfunctions.googleapis.com/v2/projects/budae-kiugi-dev/locations/asia-northeast3/functions?functionId=readProfile",
+      "body": {
+        "name": "projects/budae-kiugi-dev/locations/asia-northeast3/functions/readProfile",
+        "buildConfig": {
+          "runtime": "nodejs22",
+          "entryPoint": "readProfile",
+          "source": {
+            "storageSource": {
+              "$slot": "STORAGE_SOURCE"
+            }
+          },
+          "environmentVariables": {
+            "GOOGLE_NODE_RUN_SCRIPTS": ""
+          }
+        },
+        "serviceConfig": {
+          "environmentVariables": {
+            "MODERATION_RUNTIME_SERVICE_ACCOUNT": "${ADMIN_RUNTIME}",
+            "MODERATION_ADMIN_AUDIENCE": "",
+            "MODERATION_ADMIN_SUBJECT": "",
+            "FIREBASE_CONFIG": "${FIREBASE_CONFIG}",
+            "GCLOUD_PROJECT": "budae-kiugi-dev",
+            "FUNCTION_REGION": "asia-northeast3",
+            "FUNCTION_TARGET": "readProfile",
+            "LOG_EXECUTION_ID": "true"
+          },
+          "ingressSettings": null,
+          "timeoutSeconds": null,
+          "serviceAccountEmail": null,
+          "availableMemory": "256Mi",
+          "minInstanceCount": null,
+          "maxInstanceCount": 2,
+          "maxInstanceRequestConcurrency": 80,
+          "availableCpu": "1",
+          "vpcConnector": null,
+          "vpcConnectorEgressSettings": null,
+          "directVpcNetworkInterface": null,
+          "directVpcEgress": null
+        },
+        "labels": {
+          "deployment-callable": "true",
+          "firebase-functions-codebase": "game"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudfunctions.googleapis.com/v2/${OPERATION:readProfile}"
+    },
+    {
+      "method": "POST",
+      "url": "https://run.googleapis.com/v1/${SERVICE:readProfile}:setIamPolicy",
+      "body": {
+        "policy": {
+          "bindings": [
+            {
+              "role": "roles/run.invoker",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "",
+          "version": 3
+        },
+        "updateMask": "bindings,etag,version"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudfunctions.googleapis.com/v2/projects/budae-kiugi-dev/locations/asia-northeast3/functions?functionId=reportNickname",
+      "body": {
+        "name": "projects/budae-kiugi-dev/locations/asia-northeast3/functions/reportNickname",
+        "buildConfig": {
+          "runtime": "nodejs22",
+          "entryPoint": "reportNickname",
+          "source": {
+            "storageSource": {
+              "$slot": "STORAGE_SOURCE"
+            }
+          },
+          "environmentVariables": {
+            "GOOGLE_NODE_RUN_SCRIPTS": ""
+          }
+        },
+        "serviceConfig": {
+          "environmentVariables": {
+            "MODERATION_RUNTIME_SERVICE_ACCOUNT": "${ADMIN_RUNTIME}",
+            "MODERATION_ADMIN_AUDIENCE": "",
+            "MODERATION_ADMIN_SUBJECT": "",
+            "FIREBASE_CONFIG": "${FIREBASE_CONFIG}",
+            "GCLOUD_PROJECT": "budae-kiugi-dev",
+            "FUNCTION_REGION": "asia-northeast3",
+            "FUNCTION_TARGET": "reportNickname",
+            "LOG_EXECUTION_ID": "true"
+          },
+          "ingressSettings": null,
+          "timeoutSeconds": null,
+          "serviceAccountEmail": null,
+          "availableMemory": "256Mi",
+          "minInstanceCount": null,
+          "maxInstanceCount": 2,
+          "maxInstanceRequestConcurrency": 80,
+          "availableCpu": "1",
+          "vpcConnector": null,
+          "vpcConnectorEgressSettings": null,
+          "directVpcNetworkInterface": null,
+          "directVpcEgress": null
+        },
+        "labels": {
+          "deployment-callable": "true",
+          "firebase-functions-codebase": "game"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudfunctions.googleapis.com/v2/${OPERATION:reportNickname}"
+    },
+    {
+      "method": "POST",
+      "url": "https://run.googleapis.com/v1/${SERVICE:reportNickname}:setIamPolicy",
+      "body": {
+        "policy": {
+          "bindings": [
+            {
+              "role": "roles/run.invoker",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "",
+          "version": 3
+        },
+        "updateMask": "bindings,etag,version"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudfunctions.googleapis.com/v2/projects/budae-kiugi-dev/locations/asia-northeast3/functions?functionId=retryAccountDeletions",
+      "body": {
+        "name": "projects/budae-kiugi-dev/locations/asia-northeast3/functions/retryAccountDeletions",
+        "buildConfig": {
+          "runtime": "nodejs22",
+          "entryPoint": "retryAccountDeletions",
+          "source": {
+            "storageSource": {
+              "$slot": "STORAGE_SOURCE"
+            }
+          },
+          "environmentVariables": {
+            "GOOGLE_NODE_RUN_SCRIPTS": ""
+          }
+        },
+        "serviceConfig": {
+          "environmentVariables": {
+            "MODERATION_RUNTIME_SERVICE_ACCOUNT": "${ADMIN_RUNTIME}",
+            "MODERATION_ADMIN_AUDIENCE": "",
+            "MODERATION_ADMIN_SUBJECT": "",
+            "FIREBASE_CONFIG": "${FIREBASE_CONFIG}",
+            "GCLOUD_PROJECT": "budae-kiugi-dev",
+            "FUNCTION_REGION": "asia-northeast3",
+            "FUNCTION_TARGET": "retryAccountDeletions",
+            "LOG_EXECUTION_ID": "true"
+          },
+          "ingressSettings": "ALLOW_INTERNAL_ONLY",
+          "timeoutSeconds": 300,
+          "serviceAccountEmail": null,
+          "availableMemory": "256Mi",
+          "minInstanceCount": 0,
+          "maxInstanceCount": 1,
+          "maxInstanceRequestConcurrency": 1,
+          "availableCpu": "1",
+          "vpcConnector": null,
+          "vpcConnectorEgressSettings": null,
+          "directVpcNetworkInterface": null,
+          "directVpcEgress": null
+        },
+        "labels": {
+          "deployment-scheduled": "true",
+          "firebase-functions-codebase": "game"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudfunctions.googleapis.com/v2/${OPERATION:retryAccountDeletions}"
+    },
+    {
+      "method": "POST",
+      "url": "https://run.googleapis.com/v1/${SERVICE:retryAccountDeletions}:setIamPolicy",
+      "body": {
+        "policy": {
+          "bindings": [
+            {
+              "role": "roles/run.invoker",
+              "members": [
+                "serviceAccount:${DEFAULT_RUNTIME}"
+              ]
+            }
+          ],
+          "etag": "",
+          "version": 3
+        },
+        "updateMask": "bindings,etag,version"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudscheduler.googleapis.com/v1/projects/budae-kiugi-dev/locations/asia-northeast3/jobs/firebase-schedule-retryAccountDeletions-asia-northeast3"
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudscheduler.googleapis.com/v1/projects/budae-kiugi-dev/locations/asia-northeast3/jobs",
+      "body": {
+        "timeZone": "Asia/Seoul",
+        "name": "projects/budae-kiugi-dev/locations/asia-northeast3/jobs/firebase-schedule-retryAccountDeletions-asia-northeast3",
+        "httpTarget": {
+          "uri": "${URI:retryAccountDeletions}",
+          "httpMethod": "POST",
+          "oidcToken": {
+            "serviceAccountEmail": "${DEFAULT_RUNTIME}"
+          }
+        },
+        "schedule": "0 0,6,12,18 * * *",
+        "attemptDeadline": "300s",
+        "retryConfig": {
+          "maxDoublings": 1,
+          "retryCount": 2,
+          "maxBackoffDuration": "720s",
+          "minBackoffDuration": "360s",
+          "maxRetryDuration": "0s"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudfunctions.googleapis.com/v2/projects/budae-kiugi-dev/locations/asia-northeast3/functions?functionId=saveCloudProgress",
+      "body": {
+        "name": "projects/budae-kiugi-dev/locations/asia-northeast3/functions/saveCloudProgress",
+        "buildConfig": {
+          "runtime": "nodejs22",
+          "entryPoint": "saveCloudProgress",
+          "source": {
+            "storageSource": {
+              "$slot": "STORAGE_SOURCE"
+            }
+          },
+          "environmentVariables": {
+            "GOOGLE_NODE_RUN_SCRIPTS": ""
+          }
+        },
+        "serviceConfig": {
+          "environmentVariables": {
+            "MODERATION_RUNTIME_SERVICE_ACCOUNT": "${ADMIN_RUNTIME}",
+            "MODERATION_ADMIN_AUDIENCE": "",
+            "MODERATION_ADMIN_SUBJECT": "",
+            "FIREBASE_CONFIG": "${FIREBASE_CONFIG}",
+            "GCLOUD_PROJECT": "budae-kiugi-dev",
+            "FUNCTION_REGION": "asia-northeast3",
+            "FUNCTION_TARGET": "saveCloudProgress",
+            "LOG_EXECUTION_ID": "true"
+          },
+          "ingressSettings": null,
+          "timeoutSeconds": null,
+          "serviceAccountEmail": null,
+          "availableMemory": "256Mi",
+          "minInstanceCount": null,
+          "maxInstanceCount": 2,
+          "maxInstanceRequestConcurrency": 80,
+          "availableCpu": "1",
+          "vpcConnector": null,
+          "vpcConnectorEgressSettings": null,
+          "directVpcNetworkInterface": null,
+          "directVpcEgress": null
+        },
+        "labels": {
+          "deployment-callable": "true",
+          "firebase-functions-codebase": "game"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudfunctions.googleapis.com/v2/${OPERATION:saveCloudProgress}"
+    },
+    {
+      "method": "POST",
+      "url": "https://run.googleapis.com/v1/${SERVICE:saveCloudProgress}:setIamPolicy",
+      "body": {
+        "policy": {
+          "bindings": [
+            {
+              "role": "roles/run.invoker",
+              "members": [
+                "allUsers"
+              ]
+            }
+          ],
+          "etag": "",
+          "version": 3
+        },
+        "updateMask": "bindings,etag,version"
+      }
+    }
+  ]
+}
