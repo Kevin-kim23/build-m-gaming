@@ -1,5 +1,56 @@
 # 검증 결과 · 로컬 환경 파일 업로드 제외 0.83.1
 
+## 4단계 최종 사전 점검 · 배포 승인 대기 · 2026-10-13
+
+이 절이 아래 과거 진행 기록보다 최신이다. 사용자 약1시간 제한 시작13:11 KST, 약14:11 KST에는 미완료 상태를 인계하고 멈춘다. 최종 실행 승인은 아직 받지 않았다. 이번 종료 범위는 배포/사후 읽기 확인까지이며 관리자 Invoker 연결도 이번에는 하지 않는다.
+
+### 직접 확인함
+
+- 시작 커밋 cd62272, feat/firebase-server-test, 작업 폴더 깨끗함. fetch 후 원격 차이0/0. src/와 server/의 추적 실행 소스는 d4fcbd2와 차이0. 앱 버전0.83.1은 승인된 업로드 제외/검증/문서 변경 때문이다. 이번 추가 문서 커밋은 실행 소스 변경이 아니다.
+- 로컬 필수 설정: MODERATION_RUNTIME_SERVICE_ACCOUNT 있음/승인 계정과 일치. MODERATION_ADMIN_AUDIENCE 없음(빈 값), MODERATION_ADMIN_SUBJECT 없음(빈 값): 첫 배포 관리자 전부 거부를 유지하는 승인 상태다. 승인 외 추가 항목 없음. 실제 값은 출력하지 않았다. 해당 파일은 Git 제외.
+- predeploy 두 단계(check-moderation-runtime, prepare-server) 모두 통과. 생성 game JS185개는 src 원본과 바이트 일치, 누락/불일치/추가0. 공식 CLI 환경 파일 제외 재현도 다시 통과: .env/.env.* 및 예시 소스 업로드 제외, 로컬 환경 값 읽기 유지, 공개 예시 Git/파일 내용 유지.
+- 사용자 dev 프로젝트 확인 후 읽기: 전 지역1세대 함수0,2세대 함수0(조회 불가 지역0); Scheduler 지원34지역 작업0(실패0); Cloud Run 공식 전역 목록 서비스0(조회 불가 지역0).
+- 읽기 오류 기록: 처음 Run지역목록을 v2로 요청해500, 공식 문서/CLI의 v1 지역목록으로 수정. 지역별 서비스 조회42지역0, me-central2만403. 이어 공식 v1 전역서비스 목록에서0/조회 불가0 확인했다. 지역별403 원인을 단정하거나 권한을 변경하지 않았다. 외부 배포 실패가 아니며 외부 변경 없음.
+- 필요한 API 활성 상태 읽기 확인(Functions,Build,Artifact Registry,Run,Scheduler,Eventarc,PubSub,Storage 등). 기본 실행 계정/관리자 실행 계정 존재·비활성 아님, 현재 로그인 사용자의 관리자 실행 계정 연결 권한 있음. 계정 실제 값/숫자ID 미출력.
+- Pub/Sub/Eventarc Google 관리형 기본 계정 조회404 확인. CLI15.33.0은 첫2세대 배포에서 이2개 준비를 요청하므로 사용자에게 추가 범위를 먼저 설명했다. 사용자 승인: 기본 계정2개 준비를 이번 배포 범위에 포함. 아직 생성하지 않았다. 비용 보호 계정/주제 연결과 다르며 추가 프로젝트 전체 권한/정책 변경은 승인에 포함하지 않는다.
+- 로그인 상태 파일(firebase-tools.json)은 실제 저장소 밖이며 Git 추적 목록에 없음. 인증 파일 원문은 출력하지 않았다. 해당 이름을 저장소 안에 복사하면 현재 .gitignore는 차단하지 않는 것도 확인했다. 파일을 복사/이동하지 않고 .gitignore는 이번에 변경하지 않는다.
+
+### 배포 실행 방식 제안 — 아직 미승인/미실행
+
+같은 PC의 Codex 실행 환경에서 사용자 직접 로그인한 상태를 사용한다. 키 파일 로그인 없음. cwd는 현재 프로젝트 outputs/budae-kiugi. CLI는 저장소 밖 work/firebase-deploy-tools/node_modules/firebase-tools/lib/bin/firebase.js(15.33.0), Node는 C:/Program Files/nodejs/node.exe. 원문 로그 차단/요청 제한 preload인 work/firebase-deploy-tools/deploy-guard.cjs를 --require로 적용한다. BUDAE_ALLOW_MANAGED_AGENTS=1은 승인된 기본계정2개 준비 허용 표시이며 비밀값/서버 설정이 아니다.
+
+실제 CLI 인수는 아래로 고정한다. --force/--interactive 없음, 개발 프로젝트 명시, only9개, 자동 질문에 답하지 않는 --non-interactive 사용. 아직 실행하지 않았다.
+
+```powershell
+firebase deploy --project budae-kiugi-dev --config firebase.json --only "functions:game:readProfile,functions:game:createProfile,functions:game:readCloudSave,functions:game:saveCloudProgress,functions:game:reportNickname,functions:game:deleteGameAccount,functions:game:moderateNicknames,functions:game:retryAccountDeletions,functions:game:purgeExpiredServerRecords" --non-interactive
+```
+
+- 원문 stdout/stderr/디버그 파일을 남기지 않고 정해진 진행 상태/함수 이름만 출력한다. 요청 제한은 CLI의 외부 요청을 검사해 승인 대상 생성/업로드/호출 권한 외 변경을 차단한다. 서비스 자체가 수행하는 내부 작업 전체를 통제하거나 비용 상한을 보장하는 장치는 아니다.
+- 허용: 서울 Node22 함수9개 최초 생성, 해당 배포 업로드, Google 관리형 계정2개 준비, 일반6개 서비스의 공개 호출 권한, 예약2개 서비스의 기본 실행 계정 호출 권한과 정해진 예약 생성, 선언된 동시 처리 설정. 관리자 호출 권한 연결은 금지.
+- 차단: 함수 삭제/기존 함수 수정, 다른 프로젝트/리전/함수 생성, API 추가 활성화, 프로젝트 전체 권한 변경, 관리자 공개/호출계정 Invoker, 비용 보호 주제, 이미지 정리 정책 변경. 경고/오류/미승인 요청은 중단하며 추측 재시도 금지. 가짜 요청·출력 검사10/10 통과, 실제 배포 검증 아님.
+- CLI15.33.0은 최초 배포 뒤 이미지 자동 삭제 정책을 질문할 수 있다. 이번엔 설정하지 않고 중단한다. 이 경우 명령 종료 코드만 보고 함수 배포 전체 실패라고 하지 말고 실제9개/예약2개 목록을 읽어 부분 완료를 보고한다.
+- 배포 도구 자체 dry-run도 API를 켤 수 있다는 CLI 설명을 확인하여 실행하지 않았다. 로컬/읽기 검사를 dry-run 배포라고 부르지 않는다.
+
+### 비용 설명 — 공식 단가와 가정 구분
+
+실제 첫 배포 소요시간/실행 이미지 크기/남은 무료 할당량/원화 환율·세금은 미확인이다. 무과금이나 월10만원 절대 상한을 보장하지 않는다. 현재 비용 자동중단 미활성 상태다.
+
+- Build 공식 e2-standard-2 기본풀 분당0.006USD, 해당 무료 월2500분은 결제계정 공유/조건부. 예시로9개를 각10분 빌드하면 무료분 제외 전0.54USD다(가정이며 실제 빌드 수/시간/머신 미확인).
+- Artifact Registry 저장은 월0.5GiB 무료 이후 시간당0.000136986USD/GiB(월 약0.10USD/GiB). 총5GiB를30일 보관하는 예시는 무료분 제외 전 약0.49USD. 실제 크기/공유 무료분 미확인.
+- Scheduler 작업2개는 무료분이 없다고 가정하면31일0.20USD. 일시정지해도 작업 수 요금은 남는다.
+- 위 작은 예시 합계는 약1.23USD에 Run실행/Storage/로그/DB/전송 및 환율·세금이 더해진다. 승인 설명의 첫 배포·작은 점검 계획치0~5000원은 이 소규모 가정의 여유 예산이며 청구 상한/정확한 견적이 아니다. 비정상 요청/재시도/지속 실행은 초과할 수 있다. 예상 밖 과금 안내/유료 기능 추가 제안은 즉시 중단한다.
+- 공식 출처: https://cloud.google.com/build/pricing , https://cloud.google.com/artifact-registry/pricing , https://cloud.google.com/scheduler/pricing , https://cloud.google.com/run/pricing . 읽기 경로: https://docs.cloud.google.com/run/docs/reference/rest/v1/projects.locations/list , https://docs.cloud.google.com/run/docs/reference/rest/v1/namespaces.services/list .
+
+### 배포 후 확인 표 — 현재 전부 미확인
+
+9개 이름/서울Node22, 일반6 최대2·동시80(도구 기본), 관리자1 최대1·동시1·256MiB·60초, 예약2 최대1·동시1·256MiB·300초/내부접근을 실제 값과 대조한다. 관리자 runtime/필수환경은 원문 없이 로컬값 일치 여부만 확인. 일반6만 공개, 관리자1/예약2 비공개, 관리자 인증 없는 요청1회 HTTP코드만 보고. 예약2 KST0/6/12/18시·03시, 실제 자동실행은 시간 경과 전이면 미확인. 비용·오류 로그는 개인정보 원문 없이 확인하며 청구집계 지연을 명시한다.
+
+이번에는 관리자 Invoker 연결, 비용 보호③, 앱 로그인시험6단계, 운영,API키 제한,나머지8개실행계정분리,main/AAB/Play를 하지 않는다. 일부만 생성되면 생성/미생성 목록을 보고하고 예약 생성시 일시정지 여부를 사용자에게 묻는다. 삭제는 하지 않는다. 첫 배포에는 되돌릴 이전 서버 버전이 없으므로 승인 후 예약 정지/대상 접근 제한 또는 검토한 특정 자원 제거 계획을 따로 제시한다. 자동 삭제나 DB/Auth 기록 삭제 금지. 이미 든 비용/보관비는 취소로 환불되지 않는다.
+
+로그아웃은 같은 CLI의 logout 명령(추가 계정이 있으면 전부 로그아웃될 수 있음)을 사용자 승인 후에만 안내/실행한다. 이번에는 실행하지 않는다. 배포 후 인증 파일 Git 비포함 여부를 재확인한다. 은행 비유: 개발 지점이 비어 있고 설계도/직원 출입증/안전장치를 점검했으며 아직 개점 승인 전이다. 함수=서버 작업 프로그램, Scheduler=자동 실행 예약, 서비스 계정=프로그램 계정, 인스턴스=서버 실행 자리, 동시 처리=자리 하나가 동시에 받는 요청 수다.
+
+검증: predeploy2개/업로드 재현/출력·요청차단10개 통과. 직전 전체 npm test938/938·npm run build 성공 이후 게임/서버 소스 미변경, 전체검사 반복 없음. 문서 검사/푸시 결과는 마감 보고. 방침11·약관8 유지. 지금 준비 작업은 정책 영향 없음, 실제 배포 후 공개 정책/Play 대조 목록은 미완료다.
+
 ## 사용자 직접 CLI 로그인 및 개발 접근 확인 완료 · 2026-10-13
 
 - 사용자 제공 화면에서 Firebase CLI Login Successful 문구 확인. 이후 승인된 읽기 전용 확인만 실행했다. AI의 --interactive 재시도는 실행하지 않았다.
