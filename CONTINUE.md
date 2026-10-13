@@ -1,4 +1,8 @@
-# 집 PC에서 이어가기 · 0.83.6 · 2026-10-13
+# 집 PC에서 이어가기 · 0.83.7 · 2026-10-13
+
+- 최신 사용자 결과: cli-source / manifest-unreadable. 기존 AppData 설치의 package.json은 Codex에서 읽히지만 사용자 셸에서 읽히지 않는다. 파일 누락/권한/실행 환경 차이 중 실제 원인은 미확인이다.
+- 사용자 실행이 확인된 휴대용 Node22의 작업 폴더 옆에 firebase-cli-15.33.0을 새로 설치했다(저장소 밖). 기존 집 설치의 공개 package.json/package-lock만 사용한 npm ci이며 인증/설정/회사 파일 복사 없음.18개 승인 지문·오프라인 검사는 통과했다.
+- run-home-check.cjs는 이제 process.execPath의 node22/node-v22.*-win-x64/node.exe 배치에서 이웃 firebase-cli-15.33.0을 찾는다. USERPROFILE/LOCALAPPDATA로 CLI 위치를 추정하지 않는다. 다음 사용자 행동은 같은 run-home-check 명령으로 오프라인 검사1회. 통과 전 로그인 재시도 금지. 실제 로그인/서버 상태는 미확인이다.
 
 - 사용자 오프라인 실패는 cli-source까지 좁혀졌다. 집 PC 설치본18개 지문, 기본 설치 위치, Windows 등록 위치, 비관리자 실행 및 프로필 소유자 일치는 Codex에서 직접 확인. 사용자 홈 폴더와 Windows PowerShell 비대화형 실행도 통과. 사용자의 기존 PowerShell 프로세스에서 실패하는 정확한 원인은 아직 미확인이다.
 - run-home-check.cjs를 추가했다. 외부 CLI 경로를 사용자가 복사하지 않고 집 프로필의 고정 설치 위치에서 찾는 오프라인 검사다. 기존 셸 LOCALAPPDATA에 의존하지 않으며 로그인/설치/인증 내용 읽기/쓰기는 없다. source-check는 누락/잘못된JSON/버전차이/파일차이를 고정 reason으로 구분하지만 지문 검사는 그대로 강제한다. 사용자 실제 로그인 해결 완료로 기록하지 않는다.

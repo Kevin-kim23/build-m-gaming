@@ -77,3 +77,8 @@ $taskCli = Join-Path $env:LOCALAPPDATA 'BudaeKiugiTools\firebase-15.33.0\node_mo
 - run-home-check.cjs는 Windows/Node22/추가 인자 없음에서만 실행한다. 사용자 프로필 아래 AppData/Local/BudaeKiugiTools/firebase-15.33.0/node_modules/firebase-tools를 사용하며 외부 CLI 경로를 별도 입력하지 않는다. 기본 위치가 아닌 설치는 자동 탐색/신뢰하지 않는다.
 - source-check의 실패 reason: path-invalid, manifest-unreadable, manifest-invalid, version-mismatch, source-unreadable, source-changed. 원문 오류·경로·내용·계정은 출력하지 않는다. 버전과18개 지문은 기존 그대로이며 다른 파일을 임의 승인하지 않는다.
 - 새 실행기는 오프라인 검사만 한다. 파일을 재설치/이동하거나 로그인하지 않는다. 사용자 기존 터미널의 실패 원인은 결과 확인 전 미확인이다.
+# 0.83.7 최신 집 설치 위치
+
+- 아래 AppData 기준은 과거 기록이다. 현재 run-home-check.cjs는 실행 중인 node.exe의 위치를 기준으로 `<작업폴더>/node22/node-v22.*-win-x64/node.exe`에서 `<작업폴더>/firebase-cli-15.33.0/node_modules/firebase-tools`를 찾는다. CLI 경로는 저장소 밖이어야 하며 잘못된 배치나 다른 버전 폴더는 거부한다.
+- USERPROFILE/LOCALAPPDATA로 CLI 위치를 추정하지 않는다. 설치본의 버전과18개 지문 검사는 유지한다. 사용자 셸에서 이 오프라인 검사 통과를 확인하기 전 로그인 재시도를 안내하지 않는다. 나중에 로그인할 때에도 새 CLI 경로를 명시하고 사용자가 직접 실행한다.
+- 새 설치에는 공개 패키지 명세/lock과 의존성만 있으며 회사/집 인증 파일을 복사하지 않았다. 기존 설치와 사용자 로그인 정보는 보존했다.

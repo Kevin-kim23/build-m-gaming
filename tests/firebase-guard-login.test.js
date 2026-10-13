@@ -255,10 +255,13 @@ test('source diagnostics distinguish missing, invalid, wrong version and changed
 });
 
 
-test('home check uses the fixed external home install and rejects extra arguments',()=>{
+test('home check resolves CLI beside the running portable Node and rejects other layouts',()=>{
   const {resolveHomeCli}=require('../tools/firebase-guard/run-home-check.cjs');
-  const fixtureHome=path.resolve(os.tmpdir(),'FIXTURE_HOME');
-  assert.equal(resolveHomeCli(fixtureHome),path.join(fixtureHome,'AppData','Local','BudaeKiugiTools','firebase-15.33.0','node_modules','firebase-tools'));
+  const fixtureWork=path.resolve(os.tmpdir(),'FIXTURE_WORK');
+  const fixtureNode=path.join(fixtureWork,'node22','node-v22.23.3-win-x64','node.exe');
+  assert.equal(resolveHomeCli(fixtureNode),path.join(fixtureWork,'firebase-cli-15.33.0','node_modules','firebase-tools'));
+  assert.throws(()=>resolveHomeCli(path.join(fixtureWork,'node.exe')),/GUARD/);
+  assert.throws(()=>resolveHomeCli(path.join(fixtureWork,'node22','node-v24.0.0-win-x64','node.exe')),/GUARD/);
   assert.throws(()=>resolveHomeCli('relative'),/GUARD/);
   const script=fileURLToPath(new URL('../tools/firebase-guard/run-home-check.cjs',import.meta.url));
   const result=spawnSync(process.execPath,[script,'login'],{encoding:'utf8',timeout:10000});
