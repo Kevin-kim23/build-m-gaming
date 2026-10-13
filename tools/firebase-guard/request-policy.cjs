@@ -1,6 +1,7 @@
 'use strict';
 const {isDeepStrictEqual:equal} = require('node:util');
 const {PROJECT,REGION,FUNCTIONS,USER_FUNCTIONS,SCHEDULES}=require('./constants.cjs');
+const {ADMIN_ACCOUNTS,accountEmail}=require('./admin-read.cjs');
 const CF='https://cloudfunctions.googleapis.com';
 const parent='projects/'+PROJECT+'/locations/'+REGION;
 const denied=()=>Object.assign(new Error('GUARD_REQUEST_DENIED'),{code:'GUARD_REQUEST_DENIED'});
@@ -56,6 +57,8 @@ function createPolicy({mode='projects',plan}={}) {
         request.authRefresh===true)return 'token-refresh';
       return reject();
     }
+    if(mode==='inventory'&&method==='GET'&&origin==='https://iam.googleapis.com'&&!u.search&&
+      ADMIN_ACCOUNTS.some(name=>path==='/v1/projects/'+PROJECT+'/serviceAccounts/'+accountEmail(name)))return 'admin-account-get';
     if(mode!=='projects'&&method==='GET') {
       if(origin===CF&&path==='/v1/projects/'+PROJECT+'/locations/-/functions'&&!u.search)return 'functions-v1-list';
       if(origin===CF&&path==='/v2/projects/'+PROJECT+'/locations/-/functions'&&

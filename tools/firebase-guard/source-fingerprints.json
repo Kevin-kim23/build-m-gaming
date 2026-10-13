@@ -18,6 +18,7 @@
     "lib/gcp/serviceusage.js": "d2c8808b0872a88a5c8d151381ed77a52be0842b068eee35b4e781e518712cfb",
     "lib/gcp/storage.js": "da79502294d25f2e50bd29db51d7adbe0514a9175f40b14845fd698a247a61a5",
     "lib/scopes.js": "4cf7913a639a62aedadfe795a8a7f2a8c6cd6ff4ad05e0bec77956ec0783105a",
-    "../configstore/index.js": "f73b0646d931f35d290ce242fb9cddb75e5142cbae134a36e89dff4c2e265f14"
+    "../configstore/index.js": "f73b0646d931f35d290ce242fb9cddb75e5142cbae134a36e89dff4c2e265f14",
+    "lib/gcp/iam.js": "4f4b74d87e47af3c711979074478efb7e4d5bb6a41f29fdf41f35496cc042b29"
   }
 }

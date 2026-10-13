@@ -1,7 +1,7 @@
 'use strict';
 // Raw text is never an authorization or success signal. Only callers holding emit
 // can produce one of these fixed, non-personal events.
-const EVENTS=new Set(['guard-ready','projects-list-ok','inventory-ok','not-logged-in','login-waiting','login-completed','login-failed','request-blocked','file-write-blocked','child-blocked','warning-stopped','node-mismatch','sdk-warning','command-failed','configuration-invalid','source-mismatch']);
+const EVENTS=new Set(['admin-account-ok','guard-ready','projects-list-ok','inventory-ok','not-logged-in','login-waiting','login-completed','login-failed','request-blocked','file-write-blocked','child-blocked','warning-stopped','node-mismatch','sdk-warning','command-failed','configuration-invalid','source-mismatch']);
 function createOutput(write) {
   return Object.freeze({
     discard(_chunk,_encoding,callback) {
@@ -12,6 +12,11 @@ function createOutput(write) {
     emit(event,details={}) {
       if(!EVENTS.has(event))throw new Error('GUARD_INVALID_EVENT');
       const output={event};
+      if(event==='admin-account-ok') {
+        if(!['moderation-caller','moderation-runtime'].includes(details.account)||
+          typeof details.exists!=='boolean'||typeof details.disabled!=='boolean')throw new Error('GUARD_INVALID_EVENT');
+        output.account=details.account;output.exists=details.exists;output.disabled=details.disabled;
+      }
       if(event==='projects-list-ok') {
         if(!Number.isSafeInteger(details.count)||details.count<0||details.count>100000||typeof details.devVisible!=='boolean')throw new Error('GUARD_INVALID_EVENT');
         output.count=details.count;output.devVisible=details.devVisible;
