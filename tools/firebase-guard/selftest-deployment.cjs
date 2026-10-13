@@ -14,7 +14,7 @@ const {runPrepared}=require('./deployment-runner.cjs');
 let stage='source';
 async function main() {
   const [cliDir,mode='normal']=process.argv.slice(2);
-  if(!['normal','refresh','missing-confirmation','error','partial','files','output','child','network-error','bad-response'].includes(mode))throw Error('MODE');
+  if(!['normal','refresh','missing-confirmation','error','partial','files','output','child','network-error','bad-response','missing-generation'].includes(mode))throw Error('MODE');
   require('./source-check.cjs').checkSource(cliDir);
   const req=createRequire(path.join(cliDir,'package.json'));
   let memory={user:{email:'fixture'+'@example.invalid'},tokens:{access_token:'FIXTURE_ACCESS',refresh_token:'FIXTURE_REFRESH',expires_at:mode==='refresh'?1:Date.now()+3600000,scopes:[]}};
@@ -29,7 +29,7 @@ async function main() {
     if(mode==='network-error')throw Object.assign(new Error('FIXTURE_SECRET private@example.invalid'),{code:'ECONNRESET'});
     if(mode==='bad-response')return Response.json({uploadUrl:'FIXTURE_SECRET private@example.invalid'});
     if(mode==='error'||mode==='partial'&&sends===6)return Response.json({error:{message:'FIXTURE_TOKEN private@example.invalid'}},{status:403});
-    if(url.endsWith('functions:generateUploadUrl'))return Response.json({uploadUrl:'https://storage.googleapis.com/fixture/source.zip?GoogleAccessId=fixture&Signature=fixture',storageSource:{bucket:'fixture',object:'source.zip',generation:'1'}});
+    if(url.endsWith('functions:generateUploadUrl'))return Response.json({uploadUrl:'https://storage.googleapis.com/fixture/source.zip?GoogleAccessId=fixture&Signature=fixture',storageSource:{bucket:'fixture',object:'source.zip',...(mode==='missing-generation'?{}:{generation:'1'})}});
     if(opts.method==='PUT')return new Response('',{status:200});
     if(url.includes('compute.googleapis.com'))return Response.json({defaultServiceAccount:values.DEFAULT_RUNTIME});
     if(url.includes('cloudscheduler.googleapis.com'))return opts.method==='GET'?Response.json({error:{message:'missing'}},{status:404}):Response.json({name:JSON.parse(opts.body).name});
@@ -50,11 +50,11 @@ async function main() {
     return send(r);
   }});
   stage='assertions';
-  if(['normal','refresh','output'].includes(mode)){assert.equal(result.completed,true);assert.equal(sends,33);}
+  if(['normal','refresh','output','missing-generation'].includes(mode)){assert.equal(result.completed,true);assert.equal(sends,33);}
   else {assert.equal(result.stopped,true);assert.equal(sends,mode==='partial'?6:['error','network-error','bad-response'].includes(mode)?1:0);}
   if(mode==='error')assert.ok(diagnosticEvents.some(e=>e.category==='http-response'&&e.status===403));
   if(mode==='network-error')assert.ok(diagnosticEvents.some(e=>e.category==='transport-failed'&&e.transport==='connection'));
-  if(mode==='bad-response')assert.ok(diagnosticEvents.some(e=>e.check==='response-shape'));
+  if(mode==='bad-response')assert.ok(diagnosticEvents.some(e=>e.check==='upload-url'));
   assert.doesNotMatch(JSON.stringify(diagnosticEvents),/FIXTURE|@|https:/);
   if(mode==='refresh')assert.equal(refreshes,1);
   write(JSON.stringify({offlineDeployment:'passed',requests:sends,externalTransmissions:0})+'\n');

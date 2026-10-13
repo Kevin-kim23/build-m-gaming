@@ -115,3 +115,9 @@ Pub/Sub/Eventarc: 이번9개 생성 템플릿에는 eventTrigger가 없고 예�
 guard-diagnostic은 기존 읽기 가드와 같은 보호 출력이다. guard-blocked는 가드 차단, transport-failed는 통신 오류 분류, http-response는 숫자 상태, validation-failed/response-shape는 반환값 검사 실패다. 요청마다 진단 상태를 초기화하므로 정상적으로 예상한 Scheduler 404 이후의 실패도 진단 가능하다. 진단은 허용 판정·중단 동작을 바꾸지 않는다. HTTP200만으로 함수 생성 성공을 뜻하지 않는다. 응답 검사 실패 때에도 원문은 저장하지 않는다. 출력만으로 원인을 확정할 수 없으면 추가 가짜 재현 또는 승인된 읽기 점검을 사용한다.
 
 기존 사용자 직접 TTY 확인 문구 입력을 유지한다. 진단을 위해 확인 문구를 대신 입력하거나 비공개 값을 출력하지 않는다. 코드 진단 보완은 실제 배포 성공과 다르다. 실제 첫 오류에서는 중단하고, 허용 목록/IAM 변경이 필요한 경우 해당 범위의 별도 승인을 받는다. 기본 빌드 계정 추가 조사는 사용자 중단 지시대로 수행하지 않는다.
+
+## 승인된 업로드 응답 검사 수정 · 0.83.16
+
+사용자 승인 범위로 업로드 응답 generation 생략을 허용하고, 있으면 음이 아닌 int64 범위의 십진 문자열만 허용한다. 누락을 임의 숫자로 채우지 않고 그대로 전달한다. bucket/object 필수·추가 필드 거부·기존 주소 검사는 유지한다. upload-url/upload-source-fields/upload-source-format/upload-generation 고정 검사 이름으로 오류를 구분하고 원문은 출력하지 않는다. 새22개 테스트는 수정 전3통과/19실패(생략 정상 사례 및 진단 세분화 기대 실패), 수정 후22/22 및 기존 진단2/2 통과. 실제 과거 응답 원인과 재배포 성공은 미확인. 실제 재시도는 이번 수정 승인과 별개이며 실행하지 않는다. 버전0.83.16, 방침11·약관8 유지. 정책 영향 없음.
+
+소스 근거: firebase-tools15.33.0 lib/gcp/cloudfunctionsv2.js:65-69 및 lib/deploy/functions/deploy.js:65-67. 공식 근거(2026-10-13): https://docs.cloud.google.com/functions/docs/reference/rest/v2/projects.locations.functions/generateUploadUrl 및 https://docs.cloud.google.com/functions/docs/reference/rest/v2/projects.locations.functions#StorageSource . 공식 생략 허용에 맞추되 generation 숫자형/음수/공백/소수/지수/범위초과는 거부한다. 부호 없는 정규 십진 문자열 또는 생략만 허용하며 알 수 없는 필드는 거부한다. 합성 계정과 가짜 업로드 주소만 검증에 사용한다.

@@ -12,7 +12,7 @@ test('deployment rejects malformed upload response with safe diagnosis and no ne
   const diagnostic=createDiagnostics(createOutput(s=>events.push(JSON.parse(s))));
   const result=await runPrepared({privateValues,archiveHash:'a'.repeat(64),confirmation:CONFIRMATION,diagnostic,send:async()=>{sends++;return {status:200,body:{uploadUrl:'FAKE_SECRET private@example.invalid'}};}});
   assert.equal(result.stopped,true);assert.equal(sends,1);
-  assert.ok(events.some(e=>e.check==='response-shape'));
+  assert.ok(events.some(e=>e.check==='upload-url'));
   assert.doesNotMatch(JSON.stringify(events),/FAKE_SECRET|@|https:/);
 });
 test('deployment missing confirmation retains zero transmissions with diagnosis enabled',async()=>{

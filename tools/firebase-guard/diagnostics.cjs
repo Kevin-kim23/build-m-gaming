@@ -1,5 +1,6 @@
 'use strict';
 const CHECKS=new Set(['request-policy','transport-options','redirect','response-shape','unreachable',
+  'upload-url','upload-source-fields','upload-source-format','upload-generation',
   'region-identity','pagination','region-count','database-location','index-definition','index-match',
   'index-ready','index-missing','unexpected-resource','cli-request','response-decoding','unknown-check']);
 const TRANSPORTS=new Set(['dns','connection','timeout','tls','aborted','other']);

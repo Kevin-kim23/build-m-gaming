@@ -48,12 +48,8 @@ function createSession({template=canonical,privateValues,confirmation,archiveHas
     if(getJob) {if(response.status!==404)fail();index++;return;}
     if(!Number.isInteger(response?.status)||response.status<200||response.status>=300)fail();
     if(model.url.endsWith('functions:generateUploadUrl')) {
-      const u=new URL(body.uploadUrl);
-      if(u.protocol!=='https:'||u.hostname!=='storage.googleapis.com'||u.username||u.password||u.port||u.hash||!u.search||u.pathname==='/')fail();
-      const s=body.storageSource;
-      if(!s||!equal(Object.keys(s).sort(),['bucket','generation','object'])||
-        !Object.values(s).every(v=>typeof v==='string'&&v.length>0&&v.length<2048))fail();
-      slots.UPLOAD_URL=u.href;slots.STORAGE_SOURCE=structuredClone(s);
+      const validated=require('./upload-response.cjs').validateUploadResponse(body,diagnostic);
+      slots.UPLOAD_URL=validated.uploadUrl;slots.STORAGE_SOURCE=validated.storageSource;
     } else if(request.method==='POST'&&new URL(request.url).searchParams.has('functionId')) {
       const id=new URL(request.url).searchParams.get('functionId');
       if(body?.error||!new RegExp('^'+parent+'/operations/[A-Za-z0-9_-]+$').test(body?.name)||seenOps.has(body.name))fail();
