@@ -4,6 +4,23 @@
 
 사용자 진행 방식 변경: 필요한 API 목록을 한 번에 안내받고 사용자가 직접 활성화 후 보고한다. 개발 프로젝트만, 이미 켜진 것은 건너뛰고 API 활성화만 한다. 우선 Cloud Build·Artifact Registry·Cloud Run Admin·Cloud Scheduler 4개를 안내한다. Cloud Functions는 활성 직접 확인, 나머지4개 완료는 아직 미확인. Eventarc는 공식 문서상 이벤트 트리거용 선택 항목으로 현재 HTTP/예약9개에 무조건 필수라고 안내하지 않으며, Firebase 배포 도구 요구 여부 확인 뒤 추가 안내한다. 함수/예약/저장소 생성·권한 변경·비용 보호 연결은 별도 승인 전 금지.
 
+
+## 0.83.1 승인된 업로드 제외 보완 · 2026-10-13
+
+- 사용자 승인: 일반 callable6개 인터넷 진입+Firebase 로그인/App Check/호출 제한, 관리자1·예약2 비공개로 구분한다. 실제 배포 승인은 별도다.
+- 준비 API6개(Functions/Build/Artifact Registry/Run/Scheduler/Eventarc) 활성 직접 확인. Eventarc는 공식 일반 Run 문서에서는 선택이지만 Firebase CLI15.33.0의 prepare.js에서 gcfv2가 있으면 사용 설정을 요구하므로 추가 사용자 활성화 후 확인했다. 비용 보호 주제/트리거 생성은 없다.
+- CLI15.33.0을 저장소 밖 work/firebase-deploy-tools에 공식 npm으로 설치했다(설치 스크립트 비활성). 앱 의존성 변경 없음. 종속 패키지 지원 종료 경고가 있었고 로그인/배포 실행은 없었다. CLI 로그 파일에 원문이 기록되는 구현을 확인해 개인정보 출력 차단 방법을 준비하기 전 실행하지 않는다.
+- firebase.json의 game ignore에 .env와 .env.*만 추가했다. 게임/서버 실행 소스는 d4fcbd2 그대로지만 승인된 설정/검증/버전 변경으로 버전0.83.1이다. 비용 보호용 firebase.cost-control.json은 변경하지 않는다.
+- 공식 근거: [환경 변수 파일과 프로젝트별 값 전달](https://firebase.google.com/docs/functions/config-env#environment_variables), [배포할 때 제외되는 Cloud Functions 파일](https://firebase.google.com/docs/cli#cloud_functions_files_to_ignore_on_deploy). 공식 문서는 .env/.env.<project> 값을 배포 환경 변수로 전달하고 ignore는 백엔드에 올릴 파일을 걸러내는 것으로 설명한다. 두 경로의 독립 동작은 아래 실제 CLI 검증으로 추가 확인했다.
+- 재현: tools/verify-functions-upload.mjs에 CLI 패키지 폴더를 인수로 전달한다. 테스트용 임시 파일만 생성하고 CLI의 실제 prepareFunctionsUpload로 묶음을 만들고 열어 확인하며, loadUserEnvs로 설정 읽기를 별도 검증한다. 로그인/네트워크 배포/실제 로컬 값 읽기 없음.
+- 수정 전: 기존 ignore는 .env 및 프로젝트 파일을 묶음에 넣어 재현 실패. 수정 후: .env/.env.* 제외, 실행 소스 유지, 로컬 값/프로젝트 값 읽기 유지, 빈 관리자 audience/subject 유지, .env.local 및 예시 값 미주입, 로컬 파일 내용 불변 모두 통과했다.
+- .env.example도 .env.*에 해당하여 업로드에서 빠진다. Git의 !.env.example 예외와 예시 파일 내용은 유지됨을 따로 검증했다. 공개 예시가 배포 묶음에도 남는다고 보고하지 않는다.
+- 실제 서버 파일명만 대조:209개에서208개로 변경, 로컬 env 포함 true→false, index.js 유지. 실제 값 출력 없음.
+- 배포 전 콘솔 직접 확인: 개발 Cloud Run 서비스0개, Scheduler 작업0개. Firestore(default) 서울·데이터 추가 전 빈 화면, 전체 클라이언트 read/write if false 규칙 확인. 초기 1세대 목록 화면은 로딩 중 이동되어 전체 구형 함수 부재는 아직 확정하지 않았다. Firebase 직접 규칙 URL은 개요로 이동되어 메뉴로 다시 접근했다.
+- 누락: 콘솔 수동 색인 목록은 비어 있고, 저장소에는 reportDedup의 targetUid ASCENDING + nicknameRevision ASCENDING, COLLECTION 색인1개가 정의돼 있다. 함수9개 범위 외이므로 사용자 별도 승인 전 생성/배포하지 않는다.
+- 배포 후 필수: moderateNicknames의 실제 실행 계정과 필수 환경 설정이 승인된 로컬 설정과 일치하는지 값 출력 없이 대조한다. 소스/오프라인 검사 통과를 실제 적용 완료로 대체하지 않는다. 현재 미확인.
+- ③단계 필수 인계: firebase.cost-control.json의 환경 파일 묶음 제외·로컬 로드·실제 적용 여부를 별도 재현 검토한다. 이번에 운영 또는 비용 보호 설정을 수정하지 않는다.
+
 ## 범위·승인
 
 - 개발 budae-kiugi-dev 하나. 운영 콘솔/배포/설정, 비용 보호 계정/주제/observe/enforce, 앱 로그인 시험, API 키 제한, 사용자/예약8개 실행 계정 분리, main/AAB/Play 금지.

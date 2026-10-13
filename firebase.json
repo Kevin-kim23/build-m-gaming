@@ -1,5 +1,5 @@
 {
-  "functions": [{"source": "server", "codebase": "game", "predeploy":["node tools/check-moderation-runtime.mjs", "node tools/prepare-server.mjs"], "ignore": ["node_modules", "*.log"]}],
+  "functions": [{"source": "server", "codebase": "game", "predeploy":["node tools/check-moderation-runtime.mjs", "node tools/prepare-server.mjs"], "ignore": ["node_modules", "*.log", ".env", ".env.*"]}],
   "firestore": {"rules": "firestore.rules", "indexes": "firestore.indexes.json"},
   "emulators": {
     "auth": {"host":"127.0.0.1","port":9099},
