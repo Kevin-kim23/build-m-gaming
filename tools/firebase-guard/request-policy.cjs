@@ -27,7 +27,9 @@ function jsonBody(body) {
   return body;
 }
 function createPolicy({mode='projects',plan,diagnostic}={}) {
-  if(!['projects','inventory','deploy'].includes(mode))throw denied();
+  if(!['projects','inventory','deploy','build-account'].includes(mode))throw denied();
+  const buildAccount=require('./build-account-read.cjs');
+  let buildStarted=false,buildFinished=false;
   // Plans are private, explicitly reviewed snapshots, never derived from an outgoing request.
   const frozenPlan=plan?structuredClone(plan):null;
   const uploads=new Set();
@@ -46,7 +48,7 @@ function createPolicy({mode='projects',plan,diagnostic}={}) {
     try{body=jsonBody(request.body);}catch{return reject();}
     if(method==='GET'&&body!==undefined)return reject();
     try {if(inventory?.inspect(request))return 'inventory-read';}catch{return reject();}
-    if(origin==='https://firebase.googleapis.com'&&method==='GET') {
+    if(mode!=='build-account'&&origin==='https://firebase.googleapis.com'&&method==='GET') {
       if(path==='/v1beta1/projects' && queryOnly(u,['pageSize','pageToken']) &&
         /^(?:[1-9]\d{0,2}|1000)$/.test(u.searchParams.get('pageSize')||'') &&
         (!u.searchParams.has('pageToken')||u.searchParams.get('pageToken').length>0))return 'projects-list';
@@ -58,6 +60,10 @@ function createPolicy({mode='projects',plan,diagnostic}={}) {
         Object.keys(body).length===5&&body.grant_type==='refresh_token'&&
         ['refresh_token','client_id','client_secret'].every(k=>typeof body[k]==='string'&&body[k].length>0)&&typeof body.scope==='string'&&
         request.authRefresh===true)return 'token-refresh';
+      return reject();
+    }
+    if(mode==='build-account') {
+      if(method==='GET'&&request.url===buildAccount.URL&&!buildFinished)return 'build-account-get';
       return reject();
     }
     if(mode==='inventory'&&method==='GET'&&origin==='https://iam.googleapis.com'&&!u.search&&
@@ -122,6 +128,12 @@ function createPolicy({mode='projects',plan,diagnostic}={}) {
     // Only a successful response to our authorized request may mint a dynamic capability.
     const kind=decision(request);
     if(!response||response.status<200||response.status>=300)return reject();
+    if(kind==='build-account-get') {
+      if(!buildStarted||buildFinished||response.status!==200)return reject();
+      try {buildAccount.summarizeBuildAccount(response.body);}catch{return reject();}
+      buildFinished=true;
+      return;
+    }
     if(kind==='upload-url') {
       let u;
       try{u=parseTarget(response.body?.uploadUrl);}catch{return reject();}
@@ -143,7 +155,11 @@ function createPolicy({mode='projects',plan,diagnostic}={}) {
     catch { stopped=true;throw Object.assign(new Error('GUARD_TRANSPORT_STOPPED'),{code:'GUARD_TRANSPORT_STOPPED'}); }
   }
   function begin(request) {
-    decision(request);
+    const kind=decision(request);
+    if(kind==='build-account-get') {
+      if(buildStarted)return reject();
+      buildStarted=true;
+    }
     try {inventory?.begin(request);}catch{return reject();}
   }
   return Object.freeze({assert:decision,begin,observe,dispatch,stop:()=>{stopped=true;},isStopped:()=>stopped});

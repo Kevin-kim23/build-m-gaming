@@ -4,6 +4,7 @@
 const EVENTS=new Set(['admin-account-ok','guard-ready','projects-list-ok','inventory-ok','not-logged-in','login-waiting','login-completed','login-failed','request-blocked','file-write-blocked','child-blocked','warning-stopped','node-mismatch','sdk-warning','command-failed','configuration-invalid','source-mismatch']);
 for(const event of ['inventory-stage-start','inventory-stage-ok','inventory-stage-failed','inventory-unexpected'])EVENTS.add(event);
 EVENTS.add('guard-diagnostic');
+EVENTS.add('build-account-ok');
 function createOutput(write) {
   return Object.freeze({
     discard(_chunk,_encoding,callback) {
@@ -14,6 +15,10 @@ function createOutput(write) {
     emit(event,details={}) {
       if(!EVENTS.has(event))throw new Error('GUARD_INVALID_EVENT');
       const output={event};
+      if(event==='build-account-ok') {
+        if(!['compute','legacy-cloud-build','none'].includes(details.kind))throw new Error('GUARD_INVALID_EVENT');
+        output.kind=details.kind;
+      }
       if(event==='guard-diagnostic') {
         const {CHECKS,TRANSPORTS}=require('./diagnostics.cjs');
         const {category}=details;

@@ -99,3 +99,11 @@ Pub/Sub/Eventarc: 이번9개 생성 템플릿에는 eventTrigger가 없고 예�
 공식 근거(2026-10-13): https://docs.cloud.google.com/firestore/native/docs/security/iam ; https://docs.cloud.google.com/iam/docs/roles-permissions/firebaseauth ; https://docs.cloud.google.com/functions/docs/building ; https://docs.cloud.google.com/build/docs/cloud-build-service-account-updates ; https://firebase.google.com/docs/functions/schedule-functions . 설치 CLI 소스는 직접 확인, 클라우드 현황은 사용자 제공 화면 범위만 확인, 기본 빌드 계정·두 에이전트 실존·축소 후 동작은 미확인이다.
 
 다음 사용자 행동 하나: 개발 Cloud Build 설정 화면 열기만 요청. API 사용/역할 저장/빌드 실행은 누르지 않는다. 화면이 예상과 다르면 추측하지 않고 안내를 멈춘다. 은행 업무 직원과 프로그램을 포장하는 제작 담당자가 같은 신분증을 쓰는지 확인하는 단계. 클라우드 API 호출·설정 변경·배포 없음. 문서만 변경, 버전·방침11·약관8 유지, 테스트·빌드 재실행 없음. 정책 영향 없음.
+
+## 기본 빌드 계정 읽기 승인 보완 · 0.83.14
+
+개발 서울 Cloud Build 기본 계정 GET 한 경로를 전용 build-account 모드에 추가. 다른 프로젝트/지역/호스트/쿼리/본문/쓰기 거부, 전송 시작 1회 제한, 오류 후 재시도 없음. 기존 로그인 인증 갱신만 유지. 응답의 정확한 리소스 이름과 문서화된 계정 형식을 검사하고 compute/legacy-cloud-build/none 고정 분류만 출력. 알 수 없는 응답은 실패로 중단. 원문·이메일·번호 저장 없음. 실제 조회는 전체 테스트·빌드 통과 후 승인된 1회만 예정. 설정 변경·배포 미승인. 방침11·약관8 유지. 정책 영향 없음.
+
+근거(2026-10-13): https://docs.cloud.google.com/build/docs/api/reference/rest/v1/projects.locations/getDefaultServiceAccount . GET cloudbuild.googleapis.com /v1/projects/budae-kiugi-dev/locations/asia-northeast3/defaultServiceAccount, 본문/쿼리 없음. 기존 설치 CLI15.33.0 소스 검증을 유지하고 apiv2.Client를 기존 cli-bridge/network/file/privacy 가드로 연결한다. 배포/인벤토리/프로젝트 목록 모드에는 이 요청을 열지 않는다. 반환 serviceAccountEmail은 문서상 projects/{project}/serviceAccounts/{identity} 형태이며 bare email이나 다른 형태는 넓게 허용하지 않는다. 누락 필드도 실패 처리한다. 가짜 selftest는 인증 저장소 첫 읽기 전에 메모리 합성 값으로 대체하고 실제 네트워크 전송기를 주입하지 않는다. 초기 정상 테스트 실패1개를 재현 후 수정, 현재17/17·가짜8종 통과. 실제 조회와 빌드 결과는 후속 기록한다.
+
+검증 결과: 새 단위17/17, 가드194/194, 설치CLI15.33.0 합성8종 통과. Node22 npm test 종료0·실패0·취소0·건너뜀0(약143초), npm run build 종료0(기존 라이선스 고지 청크 용량 경고). 전체 테스트 총수는 이번 출력에서 보존하지 않아 추산하지 않는다. 신규 파일 개인경로·토큰 패턴 검사 미검출(완전한 비밀 부재 보장은 아님). 실제 승인 명령은 1회만 실행: guard-ready → command-failed, 종료1. 기본 빌드 계정 미확인. HTTP 상태나 실패단계는 출력되지 않아 원인 판단 불가. 실제 대상 GET 전송 여부도 이 출력만으로 단정하지 않는다. 추가 재시도/허용 확대/인증파일 수정/클라우드 변경 없음. 기존 지시대로 여기서 중단. 다음은 고정 오류 진단 보완 여부를 사용자와 정하며 실제 재조회는 새 승인 전 금지. 정책 영향 없음.
