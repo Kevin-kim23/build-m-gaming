@@ -14,6 +14,7 @@ async function fixture(t) {
   });
   await mkdir(join(root,'tools'));
   await mkdir(join(root,'server'));
+  await mkdir(join(root,'cost-control'));
   return root;
 }
 
@@ -36,11 +37,14 @@ test('root installer keeps spaced server paths intact and propagates npm ci fail
   const root=await fixture(t),script=join(root,'tools','install-server-dependencies.mjs');
   await copyFile(new URL('../tools/install-server-dependencies.mjs',import.meta.url),script);
   const npmCli=join(root,'stub npm.mjs'),capture=join(root,'arguments.json');
-  await writeFile(npmCli,"import{writeFileSync}from'node:fs';writeFileSync(process.env.BOOTSTRAP_CAPTURE,JSON.stringify(process.argv.slice(2)));process.exit(Number(process.env.BOOTSTRAP_EXIT));");
+  await writeFile(npmCli,"import{appendFileSync}from'node:fs';appendFileSync(process.env.BOOTSTRAP_CAPTURE,JSON.stringify(process.argv.slice(2))+'\\n');process.exit(Number(process.env.BOOTSTRAP_EXIT));");
   for(const status of [0,73]) {
+    await writeFile(capture,'');
     const result=spawnSync(process.execPath,[script],{cwd:tmpdir(),encoding:'utf8',
       env:{...process.env,npm_execpath:npmCli,BOOTSTRAP_CAPTURE:capture,BOOTSTRAP_EXIT:String(status)}});
     assert.equal(result.status,status,result.stderr);
-    assert.deepEqual(JSON.parse(await readFile(capture,'utf8')),['ci','--prefix',join(root,'server')+sep]);
+    const calls=(await readFile(capture,'utf8')).trim().split('\n').map(JSON.parse);
+    assert.deepEqual(calls,[['ci','--prefix',join(root,'server')+sep],
+      ...(status ? [] : [['ci','--prefix',join(root,'cost-control')+sep]])]);
   }
 });

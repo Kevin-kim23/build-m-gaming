@@ -8,8 +8,11 @@ if(!npmCli) {
   console.error('Run this installer through npm install/ci, or run npm ci --prefix server explicitly.');
   process.exitCode=1;
 } else {
-  const server=fileURLToPath(new URL('../server/',import.meta.url));
-  const result=spawnSync(process.execPath,[npmCli,'ci','--prefix',server],{stdio:'inherit',shell:false});
-  if(result.error)console.error('Server dependency installation could not start.');
-  process.exitCode=result.status??1;
+  for(const directory of ['server','cost-control']) {
+    const target=fileURLToPath(new URL(`../${directory}/`,import.meta.url));
+    const result=spawnSync(process.execPath,[npmCli,'ci','--prefix',target],{stdio:'inherit',shell:false});
+    if(result.error)console.error('Server dependency installation could not start.');
+    process.exitCode=result.status??1;
+    if(process.exitCode)break;
+  }
 }

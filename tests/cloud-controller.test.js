@@ -3,6 +3,19 @@ import assert from 'node:assert/strict';
 import {createCloudController,cloudErrorMessage} from '../src/cloud-controller.js';
 import {cloudMarkup} from '../src/cloud-ui.js';
 
+test('server unavailable retains local progress, remote snapshot and upload retry without claiming a save',async()=>{
+  const saved={revision:3,raw:'synthetic-remote'},local='synthetic-local';let stopped=false,restores=0;
+  const cloud=createCloudController({localSave:()=>local,restore:()=>{restores++;return true;},requestId:()=> 'synthetic-retry',
+    call:async name=>{if(stopped)throw {code:'functions/unavailable',message:'Service disabled'};
+      return name==='readProfile'?{nickname:'테스트계정'}:saved;}});
+  cloud.setUser({uid:'synthetic-user'});assert.equal(await cloud.refresh(),true);stopped=true;
+  assert.equal(await cloud.upload('synthetic-user'),false);
+  assert.deepEqual(cloud.state.cloud,saved);assert.match(cloud.state.message,/기기 기록은 유지/);
+  assert.doesNotMatch(cloud.state.message,/서버에 저장했어요/);
+  assert.equal(await cloud.restore('synthetic-user'),false);assert.equal(restores,0);
+  assert.equal(local,'synthetic-local');assert.deepEqual(cloud.state.cloud,saved);
+});
+
 test('refresh stops before a second request when the account changes',async()=>{
   let finish;const calls=[];
   const cloud=createCloudController({call:name=>{calls.push(name);return name==='readProfile'?new Promise(done=>{finish=done;}):Promise.resolve(null);}});
