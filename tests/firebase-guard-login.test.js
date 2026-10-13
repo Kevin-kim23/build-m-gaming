@@ -228,3 +228,14 @@ test('receiver lookup exception denies other hosts, outbound sockets and repeate
   const g=installNetworkGuard({policy:createPolicy({mode:'projects'})});
   try {assert.throws(()=>g.startLoginReceiver(()=>{}),/GUARD/);}finally {g.restore();}
 });
+
+
+test('offline login diagnostics identify only a fixed check without exposing input or error',()=>{
+  const script=fileURLToPath(new URL('../tools/firebase-guard/selftest-login-cli.cjs',import.meta.url));
+  const input=path.join(os.tmpdir(),'FIXTURE_TOKEN_fixture@example.invalid');
+  const result=spawnSync(process.execPath,[script,input],{encoding:'utf8',timeout:10000});
+  assert.equal(result.status,1);
+  assert.deepEqual(JSON.parse(result.stdout),{offlineLoginCli:'failed',check:'cli-source'});
+  assert.equal(result.stderr,'');
+  assert.equal(result.stdout.includes('FIXTURE'),false);
+});
