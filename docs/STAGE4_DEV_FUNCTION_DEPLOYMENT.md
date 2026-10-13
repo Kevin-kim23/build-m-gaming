@@ -1,5 +1,7 @@
 # 4단계 · 개발 게임 함수9개 배포 진행 · 2026-10-13
 
+사용자 진행 방식 변경: 필요한 API 목록을 한 번에 안내받고 사용자가 직접 활성화 후 보고한다. 개발 프로젝트만, 이미 켜진 것은 건너뛰고 API 활성화만 한다. 우선 Cloud Build·Artifact Registry·Cloud Run Admin·Cloud Scheduler 4개를 안내한다. Cloud Functions는 활성 직접 확인, 나머지4개 완료는 아직 미확인. Eventarc는 공식 문서상 이벤트 트리거용 선택 항목으로 현재 HTTP/예약9개에 무조건 필수라고 안내하지 않으며, Firebase 배포 도구 요구 여부 확인 뒤 추가 안내한다. 함수/예약/저장소 생성·권한 변경·비용 보호 연결은 별도 승인 전 금지.
+
 ## 범위·승인
 
 - 개발 budae-kiugi-dev 하나. 운영 콘솔/배포/설정, 비용 보호 계정/주제/observe/enforce, 앱 로그인 시험, API 키 제한, 사용자/예약8개 실행 계정 분리, main/AAB/Play 금지.
