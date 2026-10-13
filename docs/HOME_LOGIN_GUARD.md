@@ -72,3 +72,8 @@ $taskCli = Join-Path $env:LOCALAPPDATA 'BudaeKiugiTools\firebase-15.33.0\node_mo
 
 - selftest-login-cli.cjs 실패 시 check에는 고정된 항목 이름만 나온다: cli-source(설치 소스), cli-modules(모듈 로딩), auth-origin(인증 주소), scope-session(범위·가짜 세션), token-form(가짜 요청 형식), credential-path(파일 위치 안전성). 임의 오류/파일 경로/계정/토큰을 출력하지 않는다.
 - 이 검사에는 로그인·브라우저·클라우드 요청·인증 파일 내용 읽기가 없다. 로그인 실행 도구 출력은 여전히 대기/완료/실패만이다. 사용자 셸 결과와 Codex 셸 결과가 다르면 원인을 확정할 때까지 로그인 재시도를 안내하지 않는다.
+# 0.83.6 집 설치 위치 직접 검사
+
+- run-home-check.cjs는 Windows/Node22/추가 인자 없음에서만 실행한다. 사용자 프로필 아래 AppData/Local/BudaeKiugiTools/firebase-15.33.0/node_modules/firebase-tools를 사용하며 외부 CLI 경로를 별도 입력하지 않는다. 기본 위치가 아닌 설치는 자동 탐색/신뢰하지 않는다.
+- source-check의 실패 reason: path-invalid, manifest-unreadable, manifest-invalid, version-mismatch, source-unreadable, source-changed. 원문 오류·경로·내용·계정은 출력하지 않는다. 버전과18개 지문은 기존 그대로이며 다른 파일을 임의 승인하지 않는다.
+- 새 실행기는 오프라인 검사만 한다. 파일을 재설치/이동하거나 로그인하지 않는다. 사용자 기존 터미널의 실패 원인은 결과 확인 전 미확인이다.

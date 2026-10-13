@@ -235,7 +235,32 @@ test('offline login diagnostics identify only a fixed check without exposing inp
   const input=path.join(os.tmpdir(),'FIXTURE_TOKEN_fixture@example.invalid');
   const result=spawnSync(process.execPath,[script,input],{encoding:'utf8',timeout:10000});
   assert.equal(result.status,1);
-  assert.deepEqual(JSON.parse(result.stdout),{offlineLoginCli:'failed',check:'cli-source'});
+  assert.deepEqual(JSON.parse(result.stdout),{offlineLoginCli:'failed',check:'cli-source',reason:'manifest-unreadable'});
   assert.equal(result.stderr,'');
   assert.equal(result.stdout.includes('FIXTURE'),false);
+});
+
+
+test('source diagnostics distinguish missing, invalid, wrong version and changed files without paths',()=>{
+  const {checkSource}=require('../tools/firebase-guard/source-check.cjs');
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'guard-source-'));
+  const file=path.join(root,'package.json');
+  const expect=reason=>assert.throws(()=>checkSource(root),e=>e.message==='GUARD_SOURCE_MISMATCH'&&e.guardReason===reason);
+  try {
+    expect('manifest-unreadable');
+    fs.writeFileSync(file,'FIXTURE_TOKEN_fixture@example.invalid');expect('manifest-invalid');
+    fs.writeFileSync(file,JSON.stringify({name:'firebase-tools',version:'0.0.0'}));expect('version-mismatch');
+    fs.writeFileSync(file,JSON.stringify({name:'firebase-tools',version:'15.33.0'}));expect('source-changed');
+  }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+
+
+test('home check uses the fixed external home install and rejects extra arguments',()=>{
+  const {resolveHomeCli}=require('../tools/firebase-guard/run-home-check.cjs');
+  const fixtureHome=path.resolve(os.tmpdir(),'FIXTURE_HOME');
+  assert.equal(resolveHomeCli(fixtureHome),path.join(fixtureHome,'AppData','Local','BudaeKiugiTools','firebase-15.33.0','node_modules','firebase-tools'));
+  assert.throws(()=>resolveHomeCli('relative'),/GUARD/);
+  const script=fileURLToPath(new URL('../tools/firebase-guard/run-home-check.cjs',import.meta.url));
+  const result=spawnSync(process.execPath,[script,'login'],{encoding:'utf8',timeout:10000});
+  assert.equal(result.status,1);assert.equal(result.stdout,'{"homeCheck":"failed"}\n');assert.equal(result.stderr,'');
 });

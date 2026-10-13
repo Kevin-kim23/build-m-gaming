@@ -3,16 +3,18 @@ const trusted=process.stdout.write.bind(process.stdout);
 require('./privacy.cjs').installOutput();
 const assert=require('node:assert/strict'),path=require('node:path');
 const {createRequire}=require('node:module');
-const {checkSource}=require('./source-check.cjs');
+const {checkSource,SOURCE_REASONS}=require('./source-check.cjs');
 const {createLoginSession}=require('./login-session.cjs');
 const {multipartFields}=require('./cli-bridge.cjs');
 const {validateCredentialPath}=require('./login-store.cjs');
 // Static CLI compatibility + synthetic OAuth data only. Never opens a browser,
 // authenticates, reads credential content or transmits any request.
 let check='cli-source',finished=false;
-function failed(){
+function failed(error){
   if(finished)return;finished=true;
-  trusted(JSON.stringify({offlineLoginCli:'failed',check})+'\n');process.exitCode=1;
+  const result={offlineLoginCli:'failed',check};
+  if(check==='cli-source'&&SOURCE_REASONS.includes(error?.guardReason))result.reason=error.guardReason;
+  trusted(JSON.stringify(result)+'\n');process.exitCode=1;
 }
 process.on('warning',failed);process.on('uncaughtException',failed);process.on('unhandledRejection',failed);
 try {
@@ -38,4 +40,4 @@ try {
   validateCredentialPath(configPath,{expectedPath:configPath,repo:path.resolve(__dirname,'../..'),
     syncRoots:[process.env.OneDrive,process.env.OneDriveConsumer,process.env.OneDriveCommercial]});
   setImmediate(()=>{if(!finished){finished=true;trusted('{"offlineLoginCli":"passed","credentialPathSafe":true}\n');}});
-} catch {failed();}
+} catch(error) {failed(error);}
