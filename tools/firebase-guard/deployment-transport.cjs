@@ -38,7 +38,7 @@ function createDeploymentTransport(cliDir,archive,archiveHash,output,{fakeTransp
     try {
       const url=new URL(request.url),upload=request.body?.$archive===true;
       const client=new (lib('apiv2').Client)({urlPrefix:url.origin,auth:!upload});
-      return await client.request({method:request.method,path:url.pathname,queryParams:url.searchParams,
+      return await client.request({method:request.method,...require('./deployment-request-options.cjs').requestLocation(url,upload),
         ...(request.body!==undefined?{body:upload?Readable.from(archive):request.body}:{}),
         ...(upload?{headers:{'content-type':'application/zip'},responseType:'xml',ignoreQuotaProject:true}:{resolveOnHTTPError:true}),
         retries:0,retryCodes:[],redirect:'error'});

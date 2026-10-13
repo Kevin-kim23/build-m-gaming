@@ -121,3 +121,9 @@ guard-diagnostic은 기존 읽기 가드와 같은 보호 출력이다. guard-bl
 사용자 승인 범위로 업로드 응답 generation 생략을 허용하고, 있으면 음이 아닌 int64 범위의 십진 문자열만 허용한다. 누락을 임의 숫자로 채우지 않고 그대로 전달한다. bucket/object 필수·추가 필드 거부·기존 주소 검사는 유지한다. upload-url/upload-source-fields/upload-source-format/upload-generation 고정 검사 이름으로 오류를 구분하고 원문은 출력하지 않는다. 새22개 테스트는 수정 전3통과/19실패(생략 정상 사례 및 진단 세분화 기대 실패), 수정 후22/22 및 기존 진단2/2 통과. 실제 과거 응답 원인과 재배포 성공은 미확인. 실제 재시도는 이번 수정 승인과 별개이며 실행하지 않는다. 버전0.83.16, 방침11·약관8 유지. 정책 영향 없음.
 
 소스 근거: firebase-tools15.33.0 lib/gcp/cloudfunctionsv2.js:65-69 및 lib/deploy/functions/deploy.js:65-67. 공식 근거(2026-10-13): https://docs.cloud.google.com/functions/docs/reference/rest/v2/projects.locations.functions/generateUploadUrl 및 https://docs.cloud.google.com/functions/docs/reference/rest/v2/projects.locations.functions#StorageSource . 공식 생략 허용에 맞추되 generation 숫자형/음수/공백/소수/지수/범위초과는 거부한다. 부호 없는 정규 십진 문자열 또는 생략만 허용하며 알 수 없는 필드는 거부한다. 합성 계정과 가짜 업로드 주소만 검증에 사용한다.
+
+## 업로드 쿼리 보존 · 0.83.17
+
+사용자 보고는 첫 응답 통과 후 요청2 request-policy 전송 전 차단이다. 직접 재현: 업로드 URL의 쿼리를 URLSearchParams로 재직렬화하면 @/공백/퍼센트 인코딩/물결표 표기가 바뀌어 승인 원문과 달라진다. 실제CLI 합성 signed-query 모드는 수정 전 실패, 수정 후33요청 완료/외부전송0. 업로드만 pathname+search를 CLI path에 그대로 전달하도록 수정했다. 정책 비교·호스트·방법·본문·1회 제한은 그대로여서 변경된 주소는 계속 거부한다. 응답 값은 보관하지 않았으므로 실제 실패 원인과의 일치는 아직 미확인이다. 실제 배포 재시도 없음. 방침11·약관8 유지. 정책 영향 없음.
+
+구현 근거: 설치CLI15.33.0 lib/apiv2.js:214-235. 업로드에서는 queryParams를 생략하고 path에 pathname+search를 넣으면 실제 Client 및 requestFromClient 양쪽이 원문 쿼리를 그대로 사용한다. 비교 대상 URL을 정규화하거나 서명 키를 무시하는 방법은 사용하지 않는다. ordinary API queryParams는 기존대로 유지한다. 합성 입력은 실제 계정·서명이 아니며 실제 서명 주소는 출력/저장하지 않는다.

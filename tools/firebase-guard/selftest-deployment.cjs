@@ -14,7 +14,7 @@ const {runPrepared}=require('./deployment-runner.cjs');
 let stage='source';
 async function main() {
   const [cliDir,mode='normal']=process.argv.slice(2);
-  if(!['normal','refresh','missing-confirmation','error','partial','files','output','child','network-error','bad-response','missing-generation'].includes(mode))throw Error('MODE');
+  if(!['normal','refresh','missing-confirmation','error','partial','files','output','child','network-error','bad-response','missing-generation','signed-query'].includes(mode))throw Error('MODE');
   require('./source-check.cjs').checkSource(cliDir);
   const req=createRequire(path.join(cliDir,'package.json'));
   let memory={user:{email:'fixture'+'@example.invalid'},tokens:{access_token:'FIXTURE_ACCESS',refresh_token:'FIXTURE_REFRESH',expires_at:mode==='refresh'?1:Date.now()+3600000,scopes:[]}};
@@ -23,14 +23,15 @@ async function main() {
   const archive=Buffer.from('FAKE_ZIP'),archiveHash=createHash('sha256').update(archive).digest('hex');
   const parent='projects/'+PROJECT+'/locations/'+REGION;
   let sends=0,refreshes=0;
+  const signedUrl=mode==='signed-query'?'https://storage.googleapis.com/fixture/source.zip?GoogleAccessId=fixture@example.invalid&Signature=a%2fb%20c~&Expires=123':'https://storage.googleapis.com/fixture/source.zip?GoogleAccessId=fixture&Signature=fixture';
   const fakeTransport=async (url,opts)=>{
     if(url==='https://www.googleapis.com/oauth2/v3/token') {refreshes++;return Response.json({access_token:'FIXTURE_RENEWED',expires_in:3600,token_type:'Bearer'});}
     sends++;
     if(mode==='network-error')throw Object.assign(new Error('FIXTURE_SECRET private@example.invalid'),{code:'ECONNRESET'});
     if(mode==='bad-response')return Response.json({uploadUrl:'FIXTURE_SECRET private@example.invalid'});
     if(mode==='error'||mode==='partial'&&sends===6)return Response.json({error:{message:'FIXTURE_TOKEN private@example.invalid'}},{status:403});
-    if(url.endsWith('functions:generateUploadUrl'))return Response.json({uploadUrl:'https://storage.googleapis.com/fixture/source.zip?GoogleAccessId=fixture&Signature=fixture',storageSource:{bucket:'fixture',object:'source.zip',...(mode==='missing-generation'?{}:{generation:'1'})}});
-    if(opts.method==='PUT')return new Response('',{status:200});
+    if(url.endsWith('functions:generateUploadUrl'))return Response.json({uploadUrl:signedUrl,storageSource:{bucket:'fixture',object:'source.zip',...(mode==='missing-generation'?{}:{generation:'1'})}});
+    if(opts.method==='PUT'){assert.equal(url,signedUrl,'signed URL must be sent byte-for-byte without query reserialization');return new Response('',{status:200});}
     if(url.includes('compute.googleapis.com'))return Response.json({defaultServiceAccount:values.DEFAULT_RUNTIME});
     if(url.includes('cloudscheduler.googleapis.com'))return opts.method==='GET'?Response.json({error:{message:'missing'}},{status:404}):Response.json({name:JSON.parse(opts.body).name});
     if(url.includes('/operations/')) {
@@ -50,7 +51,7 @@ async function main() {
     return send(r);
   }});
   stage='assertions';
-  if(['normal','refresh','output','missing-generation'].includes(mode)){assert.equal(result.completed,true);assert.equal(sends,33);}
+  if(['normal','refresh','output','missing-generation','signed-query'].includes(mode)){assert.equal(result.completed,true);assert.equal(sends,33);}
   else {assert.equal(result.stopped,true);assert.equal(sends,mode==='partial'?6:['error','network-error','bad-response'].includes(mode)?1:0);}
   if(mode==='error')assert.ok(diagnosticEvents.some(e=>e.category==='http-response'&&e.status===403));
   if(mode==='network-error')assert.ok(diagnosticEvents.some(e=>e.category==='transport-failed'&&e.transport==='connection'));
