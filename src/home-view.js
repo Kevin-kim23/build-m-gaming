@@ -1,3 +1,4 @@
+import { homeMenuIcon } from './home-menu-icons.js';
 import { personalIcon } from './personal-art.js';
 import { generalRankBadge, marshalRankBadge, galacticRankBadge, rankBadgeInstance } from './rank-frame.js';
 import { RANK_DEFINITIONS } from "./ranks.js";
@@ -5,8 +6,6 @@ import { APP_VERSION } from "./version.js";
 import { homeItemsMarkup } from "./home-quick-items.js";
 export const coin =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10l5 5v10l-5 5H7l-5-5V7z" fill="#d9b55d"/><path d="M8 5h8l3 3v8l-3 3H8l-3-3V8z" fill="#e8cd84"/><path d="M14 8h-4v8h4v-4h-2" fill="none" stroke="#8a6932" stroke-width="2"/></svg>';
-const shopIcon =
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m4 4-2 5v3h20V9l-2-5zM4 12v9h16v-9M9 21v-6h6v6M8 4 7 12m9-8 1 8"/></svg>';
 
 function headerMarkup(state) {
   return `<header class="hud">
@@ -83,13 +82,12 @@ function dockMarkup() {
   return `<section class="home-dock" aria-label="내 부대">
     <div class="coach" id="coach" role="status" aria-live="polite" hidden><p id="coach-text"></p><button type="button" id="coach-off" aria-label="안내 끄기">끄기</button></div>
     <nav class="home-tabs" aria-label="부대 메뉴">
-    <button id="open-recruit"><span aria-hidden="true">♟</span><span>군대 모집</span></button>
-    <button id="open-facilities"><span aria-hidden="true">▥</span><span>시설</span></button>
-    <button id="open-equipment"><span aria-hidden="true">⚙</span><span>장비</span></button>
-    <button id="open-personal"><span aria-hidden="true">✦</span><span>개인장비</span></button>
-    <button id="open-shop">${shopIcon}<span>상점</span>
-    </button>
-    <button id="open-items"><span aria-hidden="true">⚗</span><span>아이템</span></button>
+    <button id="open-recruit">${homeMenuIcon('recruit')}<span>군대 모집</span></button>
+    <button id="open-equipment">${homeMenuIcon('equipment')}<span>군사 장비</span></button>
+    <button id="open-shop">${homeMenuIcon('shop')}<span>상점</span></button>
+    <button id="open-facilities">${homeMenuIcon('facilities')}<span>시설</span></button>
+    <button id="open-personal">${homeMenuIcon('personal')}<span>개인장비</span></button>
+    <button id="open-items">${homeMenuIcon('items')}<span>아이템</span></button>
     </nav>
     <button id="open-battle" class="home-battle" hidden><span aria-hidden="true">⚔</span><span>전투</span><small id="battle-lock-label"></small></button>
     </section>`;

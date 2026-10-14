@@ -87,7 +87,7 @@ test('personal list upgrades update existing art only after level changes and ke
 
 test('military and personal gear retain distinct titles with the same direct-action row layout',()=>{
   const s={...freshState(T),soldiers:1280},military=equipmentPanelMarkup(s,'artillery','military'),personal=equipmentPanelMarkup(s,'artillery','personal');
-  assert.match(military,/<h2 id="modal-title">장비<\/h2>/);assert.match(personal,/<h2 id="modal-title">개인장비<\/h2>/);
+  assert.match(military,/<h2 id="modal-title">군사 장비<\/h2>/);assert.match(personal,/<h2 id="modal-title">개인장비<\/h2>/);
   assert.doesNotMatch(military,/data-personal-equipment=/);assert.doesNotMatch(personal,/data-buy-equipment=|data-enhance-equipment=/);
   assert.match(personal,/data-enhance-personal="commandBaton"/);
   for(const html of [military,personal]){assert.match(html,/equipment-list-card/);assert.doesNotMatch(html,/data-panel=|data-equipment-category|panel-tabs|equipment-categories/);}

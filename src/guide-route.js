@@ -4,7 +4,7 @@ export function guideRoute(step,context={}) {
   const route=(selector,text)=>({selector,text});
   const destinations={recruit:['#open-recruit','군대 모집'],store:['#open-shop','상점'],
     facilities:['#open-facilities','시설'],items:['#open-items','아이템'],
-    military:['#open-equipment','장비'],personal:['#open-personal','개인장비']};
+    military:['#open-equipment','군사 장비'],personal:['#open-personal','개인장비']};
   const category=step.category??(step.panel==='shop'?'recruit':'military');
   const destination=destinations[category];
   if(!destination)return null;
