@@ -73,8 +73,13 @@ test("unrevealed equipment remains absent and invalid category IDs safely fall b
 });
 
 
-test("reserved paid shop has no purchases or old categories",()=>{
+test("paid offers live in the store while potion use and ads stay in items",()=>{
   const html=markup(state(1280),"store");
   assert.match(html,/<h2 id="modal-title">상점<\/h2>/);
-  assert.doesNotMatch(html,/data-buy|data-upgrade|data-school=|data-facility|data-potion|data-toggle|data-unit=/);
+  assert.match(html,/data-buy-starter/);assert.match(html,/data-buy-home-auto/);
+  assert.match(html,/예정 가격/);assert.match(html,/5,900/);assert.match(html,/자동터치 미포함/);
+  assert.doesNotMatch(html,/data-upgrade|data-school=|data-facility|data-potion-ad|data-potion-use|data-unit=/);
+  const items=markup(state(1280),'items');
+  assert.doesNotMatch(items,/data-home-auto-tap|data-buy-starter/);
+  assert.match(items,/data-potion-ad="red"/);assert.match(items,/data-potion-use="blue"/);
 });

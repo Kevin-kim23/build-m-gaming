@@ -1,5 +1,5 @@
 import { facilitiesMarkup } from './facility-panels.js';
-import { homeAutoTapMarkup } from './home-auto-tap-ui.js';
+import { storeMarkup } from './store-panels.js';
 import { recruitRankMarkup } from './recruit-rank.js';
 import { potionsMarkup } from './potion-panels.js';
 import { fmtGold } from "./format.js";
@@ -51,7 +51,7 @@ export function shopMarkup(s, coin, insignia, category = "recruit") {
   const selected = screen.id;
   const content = selected === "recruit"
     ? recruitmentMarkup(s, insignia)
-    : selected === "facilities" ? facilitiesMarkup(s) : selected === "items" ? potionsMarkup()+homeAutoTapMarkup() : "";
+    : selected === "facilities" ? facilitiesMarkup(s) : selected === "items" ? potionsMarkup() : storeMarkup();
   return `<div class="sheet-grip"></div>
   <div class="shop-header"><div><small>${{recruit:"RECRUITMENT",facilities:"FACILITIES",items:"ITEMS",store:"STORE"}[selected]}</small><h2 id="modal-title">${screen.name}</h2></div><button id="close-shop" aria-label="${screen.name} 닫기">×</button></div>
   <div class="shop-wallet"><span>보유 골드</span><strong>${coin}<b id="shop-gold"></b><small>G</small></strong></div>

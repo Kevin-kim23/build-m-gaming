@@ -1,5 +1,6 @@
 import {CONSTELLATION_OFFICERS} from './constellation-officers.js';
 import { emptyHomeAutoTap } from './home-auto-tap-rules.js';
+import { emptyStarterPack } from './starter-pack.js';
 import { COMMAND_OFFICERS } from './command-officers.js';
 import { GALACTIC_OFFICERS } from './galactic-officers.js';
 import { emptyPotions, POTIONS } from './potions.js';
@@ -47,6 +48,7 @@ function migrateSave(s, now) {
     replayRewardDay:s.version>=37?s.replayRewardDay:0,replayRewardCount:s.version>=37?s.replayRewardCount:0,
     ...Object.fromEntries(CONSTELLATION_OFFICERS.map(u=>[u.field,s.version>=37?s[u.field]:0])),
     homeAutoTap:s.version>=33?{...s.homeAutoTap}:emptyHomeAutoTap(),
+    starterPack:s.version>=39?{...s.starterPack}:emptyStarterPack(),
     potions:s.version>=32?Object.fromEntries(Object.keys(POTIONS).map(id=>[id,{...s.potions[id]}])):emptyPotions(),
     facilities: s.version >= 25 ? [...s.facilities] : [],
     facilityLevels: s.version >= 26 ? {...s.facilityLevels} :

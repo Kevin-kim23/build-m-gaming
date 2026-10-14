@@ -1,7 +1,9 @@
 import {createHomeOfferPopup} from './home-offer-popup.js';
 import {academyLevel} from './academy-levels.js';
-import { createHomeAutoTapPurchase, renderHomeAutoTap } from './home-auto-tap-ui.js';
-import { createAutoTapTestPurchase } from './test-purchase.js';
+import { createStorePurchase } from './store-purchase.js';
+import { renderStore } from './store-panels.js';
+import { createStoreTestPurchase } from './test-purchase.js';
+import './store.css';
 import { createPersonalAwardUI } from './personal-awards.js';
 import { renderPotions } from './potion-panels.js';
 import { POTIONS } from './potions.js';
@@ -51,10 +53,10 @@ export function createArmyPanels(session, audio, access) {
     suspendAudio:()=>audio.suspendForAd()}),onChange:()=>{
     if(dialog.open && activePanel==='shop' && category==='items')renderPotions(state(),dialog,{busy:potionController.busy,busyItem:potionController.busyItem,active:session.active});
   }});
-  const homeAutoPurchase=createHomeAutoTapPurchase(session,{showPurchase:createAutoTapTestPurchase(),onChange:()=>{
-    if(dialog.open && activePanel==='shop' && category==='items')renderHomeAutoTap(state(),dialog,{busy:homeAutoPurchase.busy,active:session.active});
+  const storePurchase=createStorePurchase(session,{showPurchase:createStoreTestPurchase(),onChange:()=>{
+    if(dialog.open && activePanel==='shop' && category==='store')renderStore(state(),dialog,{busy:storePurchase.busy,active:session.active});
   }});
-  const homeOffers=createHomeOfferPopup({watch:id=>potionController.watch(id),buy:()=>homeAutoPurchase.buy(),active:()=>session.active,onSuccess:()=>audio.ui('purchase',state().sound)});
+  const homeOffers=createHomeOfferPopup({watch:id=>potionController.watch(id),buy:()=>storePurchase.buy('auto'),active:()=>session.active,onSuccess:()=>audio.ui('purchase',state().sound)});
   const personalUI=createPersonalUpgradeUI(session,audio);
   const personalAwards=createPersonalAwardUI({canShow:()=>session.active});
   let equipmentLevels=null,catalogBaton=-1;
@@ -80,8 +82,8 @@ export function createArmyPanels(session, audio, access) {
     if (category === 'facilities') renderFacilities(s, dialog);
     if (category === 'items') {
       renderPotions(s,dialog,{busy:potionController.busy,busyItem:potionController.busyItem,active:session.active});
-      renderHomeAutoTap(s,dialog,{busy:homeAutoPurchase.busy,active:session.active});
     }
+    if (category === 'store') renderStore(s,dialog,{busy:storePurchase.busy,active:session.active});
     if (category !== 'recruit') return;
     for (const unit of Object.values(UNITS)) {
       const card = $(`[data-unit="${unit.id}"]`);
@@ -238,11 +240,18 @@ export function createArmyPanels(session, audio, access) {
     const button = event.target.closest('button');
     if (!button || button.disabled) return;
     if (button.id === 'close-shop' || button.id === 'close-equipment') dialog.close();
+    else if(button.hasAttribute('data-buy-starter')){
+      const result=await storePurchase.buy('starter');
+      if(result?.ok)audio.ui('purchase',state().sound);
+      if(dialog.open && activePanel==='shop' && category==='store')text('#shop-message',result?.ok
+        ? '스타터팩을 받았어요! 물약은 아이템에서 사용할 수 있어요.'
+        : result?.reason==='cancelled'?'무료 테스트를 취소했어요.':result?.reason==='limit'?'물약 보관 한도를 확인해 주세요.':'지급을 완료하지 못했어요. 다시 확인해 주세요.');
+    }
     else if(button.hasAttribute('data-buy-home-auto')||button.hasAttribute('data-toggle-home-auto')){
       const buying=button.hasAttribute('data-buy-home-auto');
-      const result=buying?await homeAutoPurchase.buy():homeAutoPurchase.toggle();
+      const result=buying?await storePurchase.buy('auto'):storePurchase.toggle();
       if(result?.ok)audio.ui(buying?'purchase':'equip',state().sound);
-      if(dialog.open && activePanel==='shop' && category==='items')text('#shop-message',result?.ok
+      if(dialog.open && activePanel==='shop' && category==='store')text('#shop-message',result?.ok
         ? buying?'자동터치 영구 보유! 홈으로 돌아가면 작동해요.':result.enabled?'자동터치를 켰어요.':'자동터치를 껐어요.'
         : result?.reason==='cancelled'?'유료결제 테스트를 취소했어요.':'자동터치 설정을 완료하지 못했어요.');
     }
@@ -291,7 +300,7 @@ export function createArmyPanels(session, audio, access) {
     else if (action === 'manage-equipment') { closeDetail(); openEquipment(data.id, 'military'); }
   });
   const openItemOffer=id=>homeOffers.open(id);
-  const useHomeItem=id=>id==='auto'?homeAutoPurchase.toggle():potionController.use(id);
+  const useHomeItem=id=>id==='auto'?storePurchase.toggle():potionController.use(id);
   dialog.addEventListener('close', () => {
     const target=activePanel === 'equipment' ? (equipmentCategory === 'personal' ? '#open-personal' : '#open-equipment')
       : ({recruit:'#open-recruit',facilities:'#open-facilities',items:'#open-items',store:'#open-shop'}[category]);

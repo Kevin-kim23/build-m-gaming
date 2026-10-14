@@ -1,5 +1,7 @@
 import {reportError} from './diagnostics.js';
 import {POTIONS} from './potions.js';
+import {HOME_AUTO_TAP} from './home-auto-tap-rules.js';
+import {fmt} from './format.js';
 import {homeAutoTapIcon,AUTO_TAP_TEST_GRANT} from './home-auto-tap-ui.js';
 import {openDetail,onDetailAction} from './detail-popup.js';
 
@@ -10,7 +12,7 @@ export function homeOfferMarkup(id,{allowTestGrant=AUTO_TAP_TEST_GRANT}={}) {
   return {kicker:auto?'영구 아이템':'물약 받기',title:auto?'자동터치':p.name,
     body:`<div class="home-offer" data-home-offer="${id}"><div class="home-offer-art">${auto?homeAutoTapIcon:adIcon}</div>
     <p>${auto?'홈에서 초당 2회 자동터치 · 손가락 터치와 함께 사용':`${p.effect} · ${p.durationLabel}`}</p>
-    <p>${auto?'영구 보유 · 예정 가격 4,900원':'광고 보상 조건을 완료하면 물약 1개를 받아요.'}</p>
+    <p>${auto?`영구 보유 · 예정 가격 ${fmt(HOME_AUTO_TAP.priceWon)}원`:'광고 보상 조건을 완료하면 물약 1개를 받아요.'}</p>
     <button type="button" class="buy" data-detail-action="home-offer-claim" data-item="${id}" ${auto&&!allowTestGrant?'disabled':''}>${auto?(allowTestGrant?'구매하기 · 개발 테스트':'구매 준비 중'):'광고 보기'}</button>
     <p class="potion-note">${auto?'실제 결제·구매 복원은 아직 연결되지 않았어요. 개발 테스트에서는 결제하지 않아요.':'Android 앱에서 이용할 수 있어요. 광고를 중간에 닫으면 지급되지 않아요.'}</p>
     <p role="status" data-home-offer-message></p></div>`};

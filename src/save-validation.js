@@ -3,6 +3,7 @@ import { COMMAND_OFFICERS } from './command-officers.js';
 import { GALACTIC_OFFICERS } from './galactic-officers.js';
 import { CONTINENT_STAGE_COUNT } from './campaign-constants.js';
 import { validHomeAutoTap } from './home-auto-tap-rules.js';
+import { validStarterPack } from './starter-pack.js';
 import { validPotions } from './potions.js';
 import { validFacilities, validFacilityLevels } from './facility-catalog.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
@@ -41,6 +42,7 @@ export function validateSave(s) {
     requireSave(integer(s.replayRewardDay,2000000),'replayRewardDay');requireSave(integer(s.replayRewardCount,10),'replayRewardCount');
   }
   requireSave(typeof s.sound === 'boolean', 'sound');
+  if(s.version>=39)requireSave(validStarterPack(s.starterPack),'starterPack');
   if(s.version>=33)requireSave(validHomeAutoTap(s.homeAutoTap),'homeAutoTap');
   if(s.version>=32)requireSave(validPotions(s.potions),'potions');
   if (s.version >= 29) for (const key of ['sfxVolume', 'musicVolume'])

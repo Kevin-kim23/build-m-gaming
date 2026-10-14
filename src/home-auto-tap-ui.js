@@ -1,5 +1,6 @@
-import {grantTestHomeAutoTap,toggleHomeAutoTap} from './home-auto-tap-rules.js';
-import {fmtGold} from './format.js';
+import {HOME_AUTO_TAP} from './home-auto-tap-rules.js';
+import {createStorePurchase,STORE_TEST_GRANT} from './store-purchase.js';
+import {fmt,fmtGold} from './format.js';
 import {reportError} from './diagnostics.js';
 
 export const homeAutoTapIcon=`<svg viewBox="0 0 66 80" role="img" aria-label="자동터치 커서 · AUTO" shape-rendering="crispEdges">
@@ -12,11 +13,12 @@ export const homeAutoTapIcon=`<svg viewBox="0 0 66 80" role="img" aria-label="�
   <path fill="#172b23" d="M10 65h46v11H10z"/>
   <text x="33" y="74" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" letter-spacing="2" fill="#f4dfa0" shape-rendering="auto">AUTO</text>
 </svg>`;
-export const AUTO_TAP_TEST_GRANT=import.meta.env?.DEV===true;
+export const AUTO_TAP_TEST_GRANT=STORE_TEST_GRANT;
 export function homeAutoTapMarkup(){
   return `<article class="potion-card auto-tap-card" aria-label="자동터치" data-home-auto-tap>
     <div class="potion-heading"><div class="potion-art">${homeAutoTapIcon}</div><div><h3>자동터치</h3><strong>초당 2회 · 영구 보유</strong><p>홈에서 자동으로 골드를 모아요.</p><b data-home-auto-status></b></div></div>
     <p class="potion-note">손가락 터치와 함께 사용할 수 있어요.<br>상점·전투·팝업·앱 종료 중에는 멈춥니다.</p>
+    <strong class="auto-price">예정 가격 ${fmt(HOME_AUTO_TAP.priceWon)}원</strong>
     <div class="potion-actions"><button type="button" data-buy-home-auto disabled>구매 준비 중</button><button type="button" data-toggle-home-auto aria-pressed="false" disabled>자동터치 켜기</button></div>
     <p class="potion-note">기존 무료 지급 보유자는 계속 사용할 수 있어요.<br>신규 이용자는 유료 구매 예정 · 현재 구매와 계정 복원은 준비 중입니다.</p></article>`;
 }
@@ -30,19 +32,9 @@ export function renderHomeAutoTap(s,root,{busy=false,active=true,allowTestGrant=
   toggle.disabled=!owned||busy||!active;text(toggle,enabled?'자동터치 끄기':'자동터치 켜기');
   toggle.setAttribute('aria-pressed',String(enabled));
 }
-export function createHomeAutoTapPurchase(session,{showPurchase,allowTestGrant=AUTO_TAP_TEST_GRANT,onChange=()=>{},onError=reportError}){
-  let busy=false;
-  async function buy(){
-    if(!allowTestGrant||busy||!session.active||session.state.homeAutoTap?.owned)return {ok:false,reason:'unavailable'};
-    busy=true;onChange();
-    try{
-      const result=await showPurchase();
-      if(result?.status!=='granted'||result?.source!=='test')return {ok:false,reason:'cancelled'};
-      return session.change(grantTestHomeAutoTap)??{ok:false,reason:'inactive'};
-    }catch(error){onError('homeAutoTap.purchase',error);return {ok:false,reason:'error'};}
-    finally{busy=false;onChange();}
-  }
-  return {buy,toggle:()=>busy?{ok:false,reason:'busy'}:session.change(toggleHomeAutoTap),get busy(){return busy;}};
+export function createHomeAutoTapPurchase(session,{onError=reportError,...options}){
+  const purchase=createStorePurchase(session,{...options,onError:(_,error)=>onError('homeAutoTap.purchase',error)});
+  return {buy:()=>purchase.buy('auto'),toggle:purchase.toggle,get busy(){return purchase.busy;}};
 }
 export function createHomeAutoTapFeedback(node, label = '자동'){
   let animation=null;
