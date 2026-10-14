@@ -42,7 +42,7 @@ export function validateSave(s) {
     requireSave(integer(s.replayRewardDay,2000000),'replayRewardDay');requireSave(integer(s.replayRewardCount,10),'replayRewardCount');
   }
   requireSave(typeof s.sound === 'boolean', 'sound');
-  if(s.version>=39)requireSave(validStarterPack(s.starterPack),'starterPack');
+  if(s.version>=39)requireSave(validStarterPack(s.starterPack,s.version),'starterPack');
   if(s.version>=33)requireSave(validHomeAutoTap(s.homeAutoTap,s.version),'homeAutoTap');
   if(s.version>=32)requireSave(validPotions(s.potions,s.version),'potions');
   if (s.version >= 29) for (const key of ['sfxVolume', 'musicVolume'])

@@ -78,7 +78,7 @@ test('only explicit unclaimed or test-claimed starter flags pass save validation
   assert.equal(validStarterPack(emptyStarterPack()),true);
   assert.equal(validStarterPack({claimed:true,source:'test'}),true);
   for(const bad of [null,undefined,[],{},true,{claimed:0,source:null},{claimed:false,source:'test'},
-    {claimed:true,source:null},{claimed:true,source:'play'},{claimed:true,source:'test',extra:true}]){
+    {claimed:true,source:null},{claimed:true,source:'unknown'},{claimed:true,source:'test',extra:true}]){
     assert.equal(validStarterPack(bad),false);
     const s=freshState(T);s.starterPack=bad;
     assert.equal(inspectSave(serializeSave(s),T).issue.field,'starterPack');

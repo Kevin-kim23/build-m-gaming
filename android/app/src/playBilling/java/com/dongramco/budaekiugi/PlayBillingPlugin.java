@@ -16,9 +16,11 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
     private PluginCall pending;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private long generation;
+    private String productId="";
+    private boolean starter, completing;
     private boolean configured() {
         return BuildConfig.DEBUG && BuildConfig.PLAY_BILLING_ENABLED
-            && !BuildConfig.PLAY_AUTO_TAP_PRODUCT.isEmpty() && !BuildConfig.PLAY_BILLING_KEY.isEmpty();
+            && !productId.isEmpty() && !BuildConfig.PLAY_BILLING_KEY.isEmpty();
     }
     private void finish(String status) { JSObject out=new JSObject();out.put("status",status);out.put("configured",configured());finish(out); }
     private void finish(JSObject out) {
@@ -29,6 +31,11 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
         getActivity().runOnUiThread(()->{
             if(pending!=null){JSObject out=new JSObject();out.put("status","busy");call.resolve(out);return;}
             pending=call;
+            String product=call.getString("product","auto");
+            if(!product.equals("auto")&&!product.equals("starter")){finish("unavailable");return;}
+            starter=product.equals("starter");completing=call.getMethodName().equals("completeDelivery");
+            productId=starter?BuildConfig.PLAY_STARTER_PRODUCT:BuildConfig.PLAY_AUTO_TAP_PRODUCT;
+            if(!productId.isEmpty()&&BuildConfig.PLAY_AUTO_TAP_PRODUCT.equals(BuildConfig.PLAY_STARTER_PRODUCT)){finish("unavailable");return;}
             if(!configured()){finish("unavailable");return;}
             long ticket=++generation;
             // Timeouts never grant or revoke. A later restore can finish an interrupted purchase.
@@ -49,11 +56,11 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
     private void product(java.util.function.Consumer<ProductDetails> next) {
         PluginCall call=pending;
         QueryProductDetailsParams.Product item=QueryProductDetailsParams.Product.newBuilder()
-            .setProductId(BuildConfig.PLAY_AUTO_TAP_PRODUCT).setProductType(BillingClient.ProductType.INAPP).build();
+            .setProductId(productId).setProductType(BillingClient.ProductType.INAPP).build();
         client.queryProductDetailsAsync(QueryProductDetailsParams.newBuilder().setProductList(Collections.singletonList(item)).build(),(result,details)->{
             if(pending!=call)return;
             if(result.getResponseCode()!=BillingClient.BillingResponseCode.OK){finish("unavailable");return;}
-            for(ProductDetails detail:details.getProductDetailsList())if(detail.getProductId().equals(BuildConfig.PLAY_AUTO_TAP_PRODUCT)){
+            for(ProductDetails detail:details.getProductDetailsList())if(detail.getProductId().equals(productId)){
                 List<ProductDetails.OneTimePurchaseOfferDetails> offers=detail.getOneTimePurchaseOfferDetailsList();
                 // Multiple offers require explicit product design, never choose a price arbitrarily.
                 if(offers==null||offers.size()!=1){finish("unavailable");return;}
@@ -67,6 +74,7 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
         out.put("price",detail.getOneTimePurchaseOfferDetailsList().get(0).getFormattedPrice());finish(out);
     }));}
     @PluginMethod public void restore(PluginCall call){start(call,this::queryOwned);}
+    @PluginMethod public void completeDelivery(PluginCall call){start(call,()->{if(!starter){finish("unavailable");return;}queryOwned();});}
     @PluginMethod public void purchase(PluginCall call){start(call,()->product(detail->{
         if(getActivity().isFinishing()){finish("unavailable");return;}
         BillingFlowParams.ProductDetailsParams item=BillingFlowParams.ProductDetailsParams.newBuilder()
@@ -91,15 +99,17 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
             if(pending!=call)return;
             if(result.getResponseCode()!=BillingClient.BillingResponseCode.OK){finish("unavailable");return;}
             Purchase match=null;
-            for(Purchase purchase:purchases)if(purchase.getProducts().contains(BuildConfig.PLAY_AUTO_TAP_PRODUCT)){
+            for(Purchase purchase:purchases)if(purchase.getProducts().contains(productId)){
                 if(match!=null){finish("unavailable");return;}match=purchase;
             }
             if(match==null){synced(false);return;}
             if(match.getPurchaseState()==Purchase.PurchaseState.PENDING){finish("pending");return;}
             if(match.getPurchaseState()!=Purchase.PurchaseState.PURCHASED||!valid(match)){finish("unavailable");return;}
+            if(starter&&!completing){synced(true);return;}
+            if(starter&&!getContext().getSharedPreferences("play-billing-entitlement",0).edit().putBoolean("delivered-"+productId,true).commit()){finish("unavailable");return;}
             if(match.isAcknowledged()){synced(true);return;}
             // Durable device entitlement before acknowledgement; a restore reconciles process death.
-            if(!getContext().getSharedPreferences("play-billing-entitlement",0).edit().putBoolean("auto",true).commit()){finish("unavailable");return;}
+            if(!getContext().getSharedPreferences("play-billing-entitlement",0).edit().putBoolean(productId,true).commit()){finish("unavailable");return;}
             client.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(match.getPurchaseToken()).build(),ack->{
                 if(pending!=call)return;
                 if(ack.getResponseCode()==BillingClient.BillingResponseCode.OK)synced(true);else finish("unavailable");
@@ -116,8 +126,10 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
         }catch(Exception invalid){return false;}
     }
     private void synced(boolean owned){
-        if(!getContext().getSharedPreferences("play-billing-entitlement",0).edit().putBoolean("auto",owned).commit()){finish("unavailable");return;}
-        JSObject out=new JSObject();out.put("status","synced");out.put("verified",true);out.put("owned",owned);finish(out);
+        if(!getContext().getSharedPreferences("play-billing-entitlement",0).edit().putBoolean(productId,owned).commit()){finish("unavailable");return;}
+        JSObject out=new JSObject();out.put("status","synced");out.put("verified",true);out.put("owned",owned);
+        if(starter)out.put("delivered",getContext().getSharedPreferences("play-billing-entitlement",0).getBoolean("delivered-"+productId,false));
+        finish(out);
     }
     @Override protected void handleOnDestroy(){
         if(pending!=null)finish("unavailable");

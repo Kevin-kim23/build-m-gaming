@@ -54,13 +54,16 @@ export function createArmyPanels(session, audio, access) {
     suspendAudio:()=>audio.suspendForAd()}),onChange:()=>{
     if(dialog.open && activePanel==='shop' && category==='items')renderPotions(state(),dialog,{busy:potionController.busy,busyItem:potionController.busyItem,active:session.active});
   }});
-  const billing=createPlayBilling(session,{onChange:()=>{
-    if(dialog.open && activePanel==='shop' && category==='store')renderStore(state(),dialog,{busy:billing.busy,active:session.active,billing:billing.info});
+  const billingLock={busy:false};
+  const refreshBilling=()=>{
+    if(dialog.open && activePanel==='shop' && category==='store')renderStore(state(),dialog,{busy:billingLock.busy,active:session.active,billing:billing.info,starterBilling:starterBilling.info});
+  };
+  const billing=createPlayBilling(session,{lock:billingLock,onChange:refreshBilling});
+  const starterBilling=createPlayBilling(session,{product:'starter',lock:billingLock,onChange:refreshBilling});
+  const storePurchase=createStorePurchase(session,{playBilling:billing,starterBilling,showPurchase:createStoreTestPurchase(),onChange:()=>{
+    if(dialog.open && activePanel==='shop' && category==='store')renderStore(state(),dialog,{busy:storePurchase.busy,active:session.active,billing:billing.info,starterBilling:starterBilling.info});
   }});
-  const storePurchase=createStorePurchase(session,{playBilling:billing,showPurchase:createStoreTestPurchase(),onChange:()=>{
-    if(dialog.open && activePanel==='shop' && category==='store')renderStore(state(),dialog,{busy:storePurchase.busy,active:session.active,billing:billing.info});
-  }});
-  const homeOffers=createHomeOfferPopup({openStore:()=>openShop('store'),watch:id=>potionController.watch(id),buy:()=>storePurchase.buy('auto'),active:()=>session.active,onSuccess:()=>audio.ui('purchase',state().sound)});
+  const homeOffers=createHomeOfferPopup({watch:id=>potionController.watch(id),buy:id=>storePurchase.buy(id),getBilling:id=>id==='auto'?billing.info:starterBilling.info,isOwned:id=>id==='auto'?state().homeAutoTap.owned:state().starterPack.claimed,active:()=>session.active,onSuccess:()=>audio.ui('purchase',state().sound)});
   const personalUI=createPersonalUpgradeUI(session,audio);
   const personalAwards=createPersonalAwardUI({canShow:()=>session.active});
   let catalogBaton=-1;
@@ -90,7 +93,7 @@ export function createArmyPanels(session, audio, access) {
     if (category === 'items') {
       renderPotions(s,dialog,{busy:potionController.busy,busyItem:potionController.busyItem,active:session.active});
     }
-    if (category === 'store') renderStore(s,dialog,{busy:storePurchase.busy,active:session.active,billing:billing.info});
+    if (category === 'store') renderStore(s,dialog,{busy:storePurchase.busy,active:session.active,billing:billing.info,starterBilling:starterBilling.info});
     if (category !== 'recruit') return;
     for (const unit of Object.values(UNITS)) {
       const card = $(`[data-unit="${unit.id}"]`);
@@ -239,12 +242,16 @@ export function createArmyPanels(session, audio, access) {
       const result=await billing.restore();
       if(dialog.open)text('#shop-message',result.ok?'Play 구매 내역을 확인했어요. 보유 상태를 확인해 주세요.':result.reason==='pending'?'결제 승인을 기다리고 있어요.':'구매 복원을 완료하지 못했어요. Play 계정과 연결을 확인해 주세요.');
     }
+    else if(button.hasAttribute('data-restore-starter')){
+      const result=await starterBilling.restore();
+      if(dialog.open)text('#shop-message',result.ok?'구매 처리를 확인했어요. 이미 받은 부스터는 다시 지급하지 않아요.':'확인을 완료하지 못했어요. 저장 상태와 연결을 확인해 주세요.');
+    }
     else if(button.hasAttribute('data-buy-starter')){
       const result=await storePurchase.buy('starter');
       if(result?.ok)audio.ui('purchase',state().sound);
       if(dialog.open && activePanel==='shop' && category==='store')text('#shop-message',result?.ok
         ? '스타터팩을 받았어요! 부스터는 아이템에서 사용할 수 있어요.'
-        : result?.reason==='cancelled'?'무료 테스트를 취소했어요.':result?.reason==='limit'?'부스터 보관 한도를 확인해 주세요.':'지급을 완료하지 못했어요. 다시 확인해 주세요.');
+        : result?.reason==='cancelled'?'구매를 취소했어요.':result?.reason==='pending'?'결제 승인 대기 중이에요. 완료 전에는 지급하지 않아요.':result?.reason==='limit'?'부스터 보관 한도를 확인해 주세요.':'지급을 완료하지 못했어요. 구매 처리 다시 확인을 눌러 주세요.');
     }
     else if(button.hasAttribute('data-buy-home-auto')||button.hasAttribute('data-toggle-home-auto')){
       const buying=button.hasAttribute('data-buy-home-auto');
@@ -307,7 +314,7 @@ export function createArmyPanels(session, audio, access) {
       toggleEquipment(data.id);showEquipmentDetail(data.id,true);
     }
   });
-  const openItemOffer=id=>id==='auto'&&billing.info.configured?openShop('store'):homeOffers.open(id);
+  const openItemOffer=id=>homeOffers.open(id);
   const useHomeItem=id=>id==='auto'?storePurchase.toggle():potionController.use(id);
   dialog.addEventListener('close', () => {
     const target=activePanel === 'equipment' ? (equipmentCategory === 'personal' ? '#open-personal' : '#open-equipment')
@@ -315,5 +322,5 @@ export function createArmyPanels(session, audio, access) {
     const fallback=document.querySelector(target);
     (returnFocus?.isConnected && returnFocus!==document.body?returnFocus:fallback).focus({preventScroll:true});
   });
-  return { syncBilling:billing.prepare, openShop, openEquipment, openItemOffer, useHomeItem, sync, syncAwards:personalAwards.sync };
+  return { syncBilling:async()=>{await billing.prepare();await starterBilling.prepare();}, openShop, openEquipment, openItemOffer, useHomeItem, sync, syncAwards:personalAwards.sync };
 }

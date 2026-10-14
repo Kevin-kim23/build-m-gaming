@@ -25,6 +25,7 @@ android {
     defaultConfig {
         buildConfigField 'boolean', 'PLAY_BILLING_ENABLED', 'false'
         buildConfigField 'String', 'PLAY_AUTO_TAP_PRODUCT', '""'
+        buildConfigField 'String', 'PLAY_STARTER_PRODUCT', '""'
         buildConfigField 'String', 'PLAY_BILLING_KEY', '""'
         applicationId "com.dongramco.budaekiugi"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -44,6 +45,7 @@ android {
         debug {
             buildConfigField 'boolean', 'PLAY_BILLING_ENABLED', playBillingTest.toString()
             buildConfigField 'String', 'PLAY_AUTO_TAP_PRODUCT', billingString('autoTapProductId')
+            buildConfigField 'String', 'PLAY_STARTER_PRODUCT', billingString('starterProductId')
             buildConfigField 'String', 'PLAY_BILLING_KEY', billingString('playLicensePublicKey')
             // Install beside the production app without replacing its saved game.
             applicationIdSuffix ".dev"

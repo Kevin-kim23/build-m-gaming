@@ -65,7 +65,7 @@ test('max cannot come from either ad entry point and home offers the pack',async
  assert.equal((await controller.watch('max')).ok,false);
  assert.equal((await createPotionAd({native:()=>true,plugin:{showRewarded:async()=>{calls++;}}})({itemId:'max'})).status,'unavailable');
  assert.equal(calls,0);assert.equal(homeItemStatus(s,'max',T).label,'스타터팩');
- assert.match(homeOfferMarkup('max').body,/스타터팩 보기/);assert.doesNotMatch(homeOfferMarkup('max').body,/광고 보기/);
+ assert.match(homeOfferMarkup('max').body,/data-detail-action="home-offer-claim" data-item="max"/);assert.doesNotMatch(homeOfferMarkup('max').body,/광고 보기|max-store/);
 });
 test('max tap stays exact at integer boundary and wallet cap',()=>{
  for(const gold of [9007199254740991n,MAX_GOLD-1n]){
