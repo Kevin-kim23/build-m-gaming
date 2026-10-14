@@ -13,7 +13,7 @@ import './potions.css';
 import './personal-awards.css';
 import { buildFacility, upgradeFacility } from './game.js';
 import { facilityOffer, facilityLevel } from './facilities.js';
-import { renderFacilities } from './facility-panels.js';
+import { renderFacilities, facilityDetailMarkup } from './facility-panels.js';
 import './facilities.css';
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { fmt, fmtGold, fmtGoldCost } from './format.js';
@@ -264,6 +264,7 @@ export function createArmyPanels(session, audio, access) {
       if (result?.ok) audio.ui('sword',state().sound);
       if (result?.ok) text('#equipment-message', `${generalSwordDuration(state())/1000}초 동안 터치 골드가 2배입니다!`);
     }
+    else if (button.dataset.detailFacility) openDetail(facilityDetailMarkup(state(),button.dataset.detailFacility));
     else if (button.dataset.detailUnit) showUnitDetail(button.dataset.detailUnit);
     else if (button.dataset.detailSchool) openDetail(schoolDetailMarkup(state(), button.dataset.detailSchool));
     else if (button.dataset.detailEquipment) showEquipmentDetail(button.dataset.detailEquipment);

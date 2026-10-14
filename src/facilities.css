@@ -1,9 +1,11 @@
 .facility-grid.equipment-list{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
 .facility-art{display:block;max-width:100%;height:auto}
 .facility-card .equipment-list-art svg{width:64px;height:auto;max-height:76px}
-.facility-card .equipment-list-action{padding-top:0;justify-content:center}
+.facility-card .equipment-list-action{padding-top:30px;justify-content:center}
 .facility-card .equipment-list-info .facility-current{color:#f3dda4;font-weight:700}
-.facility-card .facility-purpose{grid-column:1/-1;margin:0;padding-top:6px;border-top:1px solid #75855d33;font-size:11px;line-height:1.4;color:#b8c1ad}
 .facility-card.locked .facility-art{filter:grayscale(1);opacity:.6}
 .field-school .facility-art{width:100%;height:100%}
 #modal[data-category="facilities"]{overflow-anchor:none}
+.facility-card .buy small{display:block;margin-top:4px;font-size:10px;line-height:1.3;overflow-wrap:anywhere}
+.facility-card .buy small:empty{display:none}
+.equipment-list .facility-card .buy{display:flex;flex-direction:column;justify-content:center;gap:0}.facility-card .buy small{width:100%;white-space:normal;text-align:center}

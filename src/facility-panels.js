@@ -20,14 +20,12 @@ export function facilitiesMarkup(state) {
       const p=presentation(state,f.id);
       return `<article class="facility-card equipment-list-card${p.build.locked&&!p.level?' locked':''}" data-facility="${f.id}" aria-label="${f.name}">
         <div class="equipment-list-art" data-facility-art data-level="${p.level}">${facilityIcon(f.id,p.level||1)}</div>
-        <div class="equipment-list-info"><h3 data-facility-name>${f.name}${p.level?` Lv.${p.level}`:''}</h3>
-        <p class="facility-current" data-facility-effect>${facilityEffect(f,p.level||1)}</p>
-        <p data-facility-next>${p.level&&!p.max?'다음: '+facilityEffect(f,p.level+1):''}</p>
-        <p data-facility-status>${p.status}</p></div>
-        <div class="equipment-list-action"><button class="buy" type="button" data-facility-action="${f.id}" ${p.canAct?'':'disabled'}>${p.button}</button>
-        <small data-facility-price>${p.max?'':fmtGoldCost(p.offer.cost)+' G'}</small></div>
-        <p class="facility-purpose">${f.purpose}</p></article>`;
-    }).join('')}</div><p class="strength-note">종류별 1개 건설 · 골드로 최대 Lv.${MAX_FACILITY_LEVEL}까지 확정 강화<br>시설 보너스는 합산됩니다. 전투 능력에는 영향을 주지 않습니다.</p>`;
+        <div class="equipment-list-info"><h3 data-facility-name>${f.name} Lv.${p.level}</h3>
+        <p class="facility-current" data-facility-effect>${p.level?facilityEffect(f,p.level):'미보유 · 효과 없음'}</p>
+        </div>
+        <button type="button" class="equipment-list-detail" data-detail-facility="${f.id}" aria-label="${f.name} 상세보기"><span aria-hidden="true">ⓘ</span></button>
+        <div class="equipment-list-action"><button class="buy" type="button" data-facility-action="${f.id}" ${p.canAct?'':'disabled'}><span data-facility-button>${p.button}</span><small data-facility-price>${p.max?'':fmtGoldCost(p.offer.cost)+' G'}</small></button></div></article>`;
+    }).join('')}</div>`;
 }
 export function renderFacilities(state,root) {
   const set=(node,value)=>{if(node&&node.textContent!==value)node.textContent=value;};
@@ -36,16 +34,24 @@ export function renderFacilities(state,root) {
   for(const f of FACILITIES) {
     const card=root.querySelector(`[data-facility="${f.id}"]`);if(!card)continue;
     const p=presentation(state,f.id),button=card.querySelector('[data-facility-action]');
-    button.disabled=!p.canAct;set(button,p.button);
-    set(card.querySelector('[data-facility-name]'),f.name+(p.level?` Lv.${p.level}`:''));
-    set(card.querySelector('[data-facility-effect]'),facilityEffect(f,p.level||1));
-    set(card.querySelector('[data-facility-next]'),p.level&&!p.max?'다음: '+facilityEffect(f,p.level+1):'');
+    button.disabled=!p.canAct;set(card.querySelector('[data-facility-button]'),p.button);
+    set(card.querySelector('[data-facility-name]'),f.name+` Lv.${p.level}`);
+    set(card.querySelector('[data-facility-effect]'),p.level?facilityEffect(f,p.level):'미보유 · 효과 없음');
     set(card.querySelector('[data-facility-price]'),p.max?'':fmtGoldCost(p.offer.cost)+' G');
-    set(card.querySelector('[data-facility-status]'),p.status);
     card.classList.toggle('locked',p.build.locked&&!p.level);
     const art=card.querySelector('[data-facility-art]');
     if(art.dataset.level!==String(p.level)) {
       art.dataset.level=String(p.level);art.innerHTML=facilityIcon(f.id,p.level||1);
     }
   }
+}
+
+export function facilityDetailMarkup(state,id) {
+  const f=FACILITIES.find(f=>f.id===id);
+  if(!f)throw new RangeError('Unknown facility');
+  const p=presentation(state,id);
+  return {kicker:'FACILITY',title:f.name+` Lv.${p.level}`,body:
+    `<p>${f.purpose}</p><p><strong>현재 효과</strong><br>${p.level?facilityEffect(f,p.level):'미보유 · 효과 없음'}</p>`+
+    (p.max?'':`<p><strong>${p.level?'다음 강화':'건설 후'} · Lv.${p.level+1}</strong><br>${facilityEffect(f,p.level+1)}<br>비용 ${fmtGoldCost(p.offer.cost)} G</p>`)+
+    `<p>${p.status}</p><p>해금: ${f.rank}<br>종류별 1개 건설 · 최대 Lv.${MAX_FACILITY_LEVEL} · 확정 강화</p><p>시설 보너스는 합산됩니다. 전투 능력에는 영향을 주지 않습니다.</p>`};
 }
