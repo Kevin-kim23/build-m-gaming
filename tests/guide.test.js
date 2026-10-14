@@ -87,3 +87,15 @@ test('recruiting the first soldier moves the guide forward in the real game flow
   assert.equal(recruit(s, T, 'soldier').ok, true);
   assert.equal(guideStep(s).id, 'promote');
 });
+
+test('new specialist lesson uses the real recruitment button only when affordable',()=>{
+ for(const [soldiers,id,field] of [[4,'administrator','administrators'],[10,'driver','drivers'],[15,'medic','medics']]){
+  const s=army(soldiers,{gold:0}),offer=recruitOffer(s,id);
+  assert.equal(guideStep(s).ready,false);
+  s.gold=offer.cost;
+  assert.equal(guideStep(s).selector,`[data-buy="${id}"]`);
+  assert.equal(guideStep(s).category,'recruit');
+  assert.equal(recruit(s,T,id).ok,true);
+  assert.notEqual(guideStep(s)?.selector,`[data-buy="${id}"]`);
+ }
+});

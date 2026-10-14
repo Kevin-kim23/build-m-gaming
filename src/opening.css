@@ -17,7 +17,10 @@
   background: #f5f6f2;
   color: #fff4d5;
   isolation: isolate;
-  touch-action: manipulation;
+  /* Only the launch surface ignores pinch/pan; game and menus keep their gestures. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 #opening, #opening * { box-sizing: border-box; }
 @supports (height: 100dvh) { #opening { --opening-viewport-height: 100dvh; } }
@@ -84,14 +87,16 @@
   text-align: center;
 }
 .opening-heading {
-  display: block;
-  font: 900 clamp(20px, min(13vw, 7vh), 72px)/1.15 "Malgun Gothic", system-ui, sans-serif;
-  letter-spacing: -.06em;
-  color: #ffe4a2;
-  -webkit-text-stroke: 1px #ffedb0;
-  text-shadow: 0 3px 0 #996530, 0 6px 0 #3a2a20, 0 10px 26px #000b;
+  display: grid;
+  gap: .06em;
+  font: 800 clamp(28px, min(14vw, 8vh), 68px)/1.08 system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  letter-spacing: -.035em;
+  color: #fff5da;
+  text-shadow: 0 2px 12px #102324b3;
   word-break: keep-all;
 }
+.opening-heading > span { display:block; }
+.opening-heading > span:last-child { color:#eed9a2; }
 .opening-prompt {
   position: absolute;
   top: 66%;
@@ -116,7 +121,7 @@
 @media (prefers-reduced-motion: reduce) { .opening-prompt { animation: none; } }
 /* Frame-relative type also follows live window resizing; old WebViews use the fallback above. */
 @supports (font-size: 1cqw) {
-  .opening-heading { font-size: clamp(24px, min(13cqw, 12vh), 72px); }
+  .opening-heading { font-size: clamp(28px, min(14cqw, 8vh), 68px); }
   .opening-prompt { font-size: clamp(14px, 4.2cqw, 21px); }
 }
 

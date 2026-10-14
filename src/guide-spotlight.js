@@ -44,7 +44,7 @@ export function createGuideSpotlight({onLater,doc=document,win=window}) {
       sizeObserver.observe(target);
     }
     if(title.textContent!==step.title)title.textContent=step.title;
-    const text=route.selector===step.selector?route.text:step.text+' '+route.text;
+    const text=route.text;
     if(copy.textContent!==text)copy.textContent=text;
     if(!root.matches(':popover-open'))root.showPopover();
     if(changed)target.focus({preventScroll:true});

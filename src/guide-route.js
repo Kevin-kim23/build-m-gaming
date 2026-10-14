@@ -9,7 +9,7 @@ export function guideRoute(step,context={}) {
   const destination=destinations[category];
   if(!destination)return null;
   if(!context.panel){
-    return route(destination[0],`${destination[1]} 메뉴를 열어주세요.`);
+    return route(destination[0],`홈 아래의 ‘${destination[1]}’ 버튼을 눌러주세요.`);
   }
   // Independent screens have no cross-category tabs. Expose the close control
   // first; only after closing may the guide focus a non-inert home shortcut.

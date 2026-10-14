@@ -23,15 +23,15 @@ const goal=(cost,what)=>`지휘관님, ${what}에 필요한 ${price(cost)} 골�
 export function guideCandidates(state) {
   const soldier=recruitOffer(state,'soldier');
   if(armyPower(state)===0)return soldier.canBuy?[action('first-recruit','첫 병사 모집',
-    '지휘관님, 일반병을 모집해 보세요. 병사는 자동 수입과 터치 수입을 함께 늘려줍니다.',true,'shop','recruit','[data-buy="soldier"]')]:[];
+    '일반병 카드의 모집 버튼을 눌러보세요. 병사 1명부터 초당·터치 골드가 늘어납니다.',true,'shop','recruit','[data-buy="soldier"]')]:[];
   const list=[],rank=rankForArmy(state),school=schoolOffer(state,'nco');
   if(school.level===0&&(rank>=NCO_RANK||school.canBuy))list.push(action('school','사관학교 건설',
-    school.canBuy?`${price(school.cost)} 골드가 모였습니다! 사관학교를 건설하면 하사를 모집할 수 있습니다.`:goal(school.cost,'사관학교 건설'),
+    school.canBuy?`${price(school.cost)} 골드가 모였습니다! 군대 모집 맨 위의 사관학교 건설 버튼을 눌러주세요. Lv.1부터 하사가 열립니다.`:goal(school.cost,'사관학교 건설'),
     school.canBuy,'shop','recruit','[data-upgrade-school="nco"]'));
   if(school.level===0)return list;
   if(school.level===1&&!(state.sergeants??0)) {
     const offer=recruitOffer(state,'sergeant');
-    list.push(action('first-nco','첫 하사 모집',offer.canBuy?'학교가 준비됐습니다! 해금된 하사를 모집해 부대를 성장시켜 보세요.':goal(offer.cost,'첫 하사 모집'),
+    list.push(action('first-nco','첫 하사 모집',offer.canBuy?'사관학교 아래로 내려가 하사 카드의 모집 버튼을 눌러주세요.':goal(offer.cost,'첫 하사 모집'),
       offer.canBuy,'shop','recruit','[data-buy="sergeant"]'));
     return list;
   }
@@ -39,18 +39,18 @@ export function guideCandidates(state) {
   if(!owned.length) {
     const facility=FACILITIES.find(f=>!facilityOffer(state,f.id).locked);
     if(facility){const offer=facilityOffer(state,facility.id);list.push(action('facility','첫 시설 건설',
-      offer.canBuy?`${facility.name}을 건설해 보세요. 보유하는 동안 수입을 높여줍니다. 시설 메뉴에서 관리할 수 있어요.`:goal(offer.cost,facility.name+' 건설'),
+      offer.canBuy?`${facility.name}을 건설해 보세요. 보유하는 동안 수입을 높여줍니다. 홈 아래 시설 메뉴에서 관리합니다. 연병장에 보이지 않아도 효과는 적용돼요.`:goal(offer.cost,facility.name+' 건설'),
       offer.canBuy,'shop','facilities',`[data-facility-action="${facility.id}"]`));}
   }
   const guns=Object.values(EQUIPMENT).filter(g=>equipmentOf(state,g.id));
   if(!guns.length) {
     const gun=Object.values(EQUIPMENT).find(g=>!equipmentPurchaseOffer(state,g.id).locked);
     if(gun){const offer=equipmentPurchaseOffer(state,gun.id);list.push(action('equipment','첫 군사 장비 구매',
-      offer.canBuy?`${gun.name}를 구매해 보세요. 구매한 장비는 연병장에 배치되며 수입을 늘려줍니다.`:goal(offer.cost,gun.name+' 구매'),
+      offer.canBuy?`${gun.name}를 구매해 보세요. 장비 카드 오른쪽 구매 버튼을 누르면 자동 배치됩니다. 이름 옆에서 초당·터치 골드와 전투력을 확인하세요.`:goal(offer.cost,gun.name+' 구매'),
       offer.canBuy,'equipment','military','[data-buy-equipment="'+gun.id+'"]',gun.id));}
   }
   if(school.level===1&&(state.sergeants??0)>0)list.push(action('school-upgrade','사관학교 첫 증설',
-    school.canBuy?'사관학교를 Lv.2로 확장하면 중사를 모집할 수 있습니다. 모집 비용은 별도입니다.':goal(school.cost,'사관학교 Lv.2 확장'),
+    school.canBuy?'군대 모집 맨 위 사관학교를 Lv.2로 증설해 중사를 열어보세요. 모집 골드는 별도입니다.':goal(school.cost,'사관학교 Lv.2 확장'),
     school.canBuy,'shop','recruit','[data-upgrade-school="nco"]'));
   if(owned.length&&!owned.some(f=>facilityLevel(state,f.id)>=2)) {
     const f=owned.find(f=>facilityUpgradeOffer(state,f.id).canUpgrade)??owned[0],offer=facilityUpgradeOffer(state,f.id);
@@ -59,7 +59,7 @@ export function guideCandidates(state) {
   }
   if(guns.length&&!guns.some(g=>equipmentOf(state,g.id).level>=1)) {
     const gun=guns.find(g=>enhancementOffer(state,g.id).canUpgrade)??guns[0],offer=enhancementOffer(state,gun.id);
-    list.push(action('equipment-upgrade','군사 장비 첫 강화',offer.canUpgrade?`${gun.name}를 강화해 보세요. 초당·터치 수입과 전투 성능이 향상됩니다. 군사 장비 강화는 확정 성공입니다.`:goal(offer.cost,gun.name+' 강화'),
+    list.push(action('equipment-upgrade','군사 장비 첫 강화',offer.canUpgrade?`${gun.name}를 강화해 보세요. 카드 오른쪽 강화 버튼을 누르면 확정 성공하고, 옆 능력 수치가 올라갑니다. 오른쪽 위 ⓘ는 상세 안내입니다.`:goal(offer.cost,gun.name+' 강화'),
       offer.canUpgrade,'equipment','military',`[data-enhance-equipment="${gun.id}"]`,gun.id));
   }
   return list;
@@ -68,9 +68,13 @@ function basicStep(state) {
   const soldier=recruitOffer(state,'soldier');
   if(!armyPower(state))return step('tap',`화면을 터치해 골드를 모으세요. 첫 병사는 ${fmtGoldCost(soldier.cost)}G예요.`);
   const rank=rankForArmy(state);
-  if(rank===0)return step('promote',`병사는 가만히 있어도 골드를 벌어 줘요. 일병 진급까지 ${promotionProgress(state).text}`,'shop',soldier.canBuy);
+  if(rank===0)return step('promote',`상단 게이지로 진급까지 남은 전력을 확인하세요. 일병 진급까지 ${promotionProgress(state).text}`,'shop',soldier.canBuy);
   if(rank<NCO_RANK) {
     const next=SPECIALIST_UNITS.findLast(u=>armyPower(state)>=u.unlockPower&&!(state[u.field]??0));
+    if(next){
+      const offer=recruitOffer(state,next.id);
+      if(offer.canBuy)return action('grow',`첫 ${next.name} 모집`,`${next.name} 카드의 모집 버튼을 눌러보세요. 1명마다 초당 +${next.passive}G, 터치 +${next.tap}G가 늘어납니다.`,true,'shop','recruit',`[data-buy="${next.id}"]`);
+    }
     return step('grow',next?`${next.unlockRank} 해금: ${next.name}! 1명마다 초당 +${next.passive}G, 터치 +${next.tap}G. 군대 모집 메뉴에서 모집하세요.`:
       `일반병 1명마다 초당 +${UNITS.soldier.passive}G, 터치 +${UNITS.soldier.tap}G가 더해져요.`,'shop',false);
   }
