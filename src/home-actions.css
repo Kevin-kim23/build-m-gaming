@@ -47,11 +47,9 @@
 .home-item small{font-size:10px}
 .home-auto-art{width:40px}
 .field-tools .home-skill[data-home-item="max"]{border-color:#d7ae55;background:linear-gradient(145deg,#554824ee,#292b26ee)}
-#tap-zone::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,#eabc3c0d 20%,#eabc3c44 100%);box-shadow:inset 0 0 30px #ffd96a44;opacity:0;transition:opacity 1.2s}
-#tap-zone.max-boost-active::after{opacity:1}
 .building-aura{position:absolute;pointer-events:none;isolation:isolate}
 .building-aura::before,.building-aura::after{content:"";position:absolute;inset:12% -4% 5%;border-radius:50%;border:2px solid transparent;border-top-color:var(--aura-color);border-bottom-color:var(--aura-color);filter:blur(4px);opacity:.26;animation:building-orbit 16s linear infinite;box-shadow:0 0 8px var(--aura-color)}
 .building-aura::after{inset:20% -8% 12%;opacity:.14;animation-direction:reverse;animation-duration:23s}
 @keyframes building-orbit{to{transform:rotate(360deg)}}
 body:has(dialog[open]) .building-aura::before,body:has(dialog[open]) .building-aura::after{animation-play-state:paused}
-@media(prefers-reduced-motion:reduce){.building-aura::before,.building-aura::after{animation:none}#tap-zone::after{transition:none}}
+@media(prefers-reduced-motion:reduce){.building-aura::before,.building-aura::after{animation:none}}

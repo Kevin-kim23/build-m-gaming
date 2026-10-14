@@ -19,3 +19,7 @@
 .equipment-list-detail>span{display:grid;place-items:center;width:23px;height:23px;margin:auto;border:1px solid #86977066;border-radius:50%;background:#1f2d25}
 .equipment-list [hidden]{display:none}
 @media(max-width:350px){.equipment-list .equipment-list-card{grid-template-columns:54px minmax(0,1fr) 90px;gap:6px;padding:8px}.equipment-list-art{width:54px;height:70px}.equipment-list-art svg{width:50px;height:66px}.equipment-list .equipment-list-info h3{font-size:13px}}
+
+.equipment-list-info .personal-list-effect{display:inline;font-size:11px;line-height:1.5;font-weight:500;color:#e8dfbf}
+.personal-item .equipment-list-info h3 small{display:inline-block;margin-right:5px}
+.equipment-list-info .equipment-list-stats{color:#e8dfbf;font-size:11px;line-height:1.5}

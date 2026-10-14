@@ -3,7 +3,7 @@ import { createHomeAutoTapFeedback } from './home-auto-tap-ui.js';
 import { createHomeItemControls } from './home-quick-items.js';
 import './home-auto-tap.css';
 import { createIncomeHud } from './income-hud.js';
-import { potionStatus, potionMultiplier } from './potions.js';
+import { potionMultiplier } from './potions.js';
 import { autoTouchStatus } from "./personal-equipment.js";
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { tapFeedback } from "./tap-feedback.js";
@@ -188,7 +188,6 @@ function update() {
     drawHomeField();
   }
   const nextPassiveBoost=potionMultiplier(state,'passive',Date.now());
-  zone.classList.toggle('max-boost-active',potionStatus(state,'max').active);
   if(nextPassiveBoost!==passiveBoost){
     passiveBoost=nextPassiveBoost;
     setText("#passive-rate", "+" + fmtGold(perSecond(state)) + " G");

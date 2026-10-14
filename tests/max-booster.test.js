@@ -80,7 +80,7 @@ test('home groups three largest owned building types, not three instances, witho
  for(const [w,h] of [[160,120],[180,250],[206,300]]){
   const world=layoutHomeField(s,w,h);
   assert.deepEqual(world.army.map(i=>[i.id,i.count]),[['corps',3],['division',3],['regiment',2]]);
-  const [main,...small]=world.army;assert.ok(small.every(i=>i.width<main.width&&i.y>=main.y+main.height+14));
+  const [main,...small]=world.army;assert.ok(small.every(i=>i.width<main.width&&i.x>main.x+main.width&&i.y===main.y));
   for(const i of world.army)assert.ok(i.x>=0&&i.x+i.width<=w&&i.y+i.boxHeight<=h);
  }
  assert.equal(buildingAura('squad'),null);assert.ok(buildingAura('galacticCommand'));assert.equal(buildingAura('constellationCorps'),'#171425');

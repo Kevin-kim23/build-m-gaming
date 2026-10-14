@@ -25,17 +25,16 @@ export function layoutHomeField(state,viewportWidth,viewportHeight) {
     // Keep the former size budget so the requested 70% is relative to the same
     // viewport/loadout, rather than enlarging again with the freed school row.
     const buildings=groups.filter(item=>!UNITS[item.id]).slice(0,3);
-    const lowerHeight=buildings.length>1?Math.max(18,contentHeight*.38):0;
-    const mainHeight=Math.max(1,contentHeight-lowerHeight-14-3);
-    const scale=Math.min(Math.min(Math.max(1,width-20)/largest.width,Math.max(1,armyHeight-12)/largest.height,1.65)*HOME_HEADQUARTERS_SCALE,buildings.length>1?mainHeight/largest.height:Infinity);
+    const scale=Math.min(Math.max(1,width-20)/largest.width,Math.max(1,armyHeight-12)/largest.height,1.65)*HOME_HEADQUARTERS_SCALE;
     const w=largest.width*scale,h=largest.height*scale;
     world.army=[{...largest,x:margin+(armyWidth-w)/2,y:rowTop,width:w,height:h,boxWidth:w,boxHeight:h+14,
       label:true,labelX:margin,labelWidth:armyWidth,centered:true,wrapLabel:true}];
-    const secondary=buildings.slice(1),cell=(armyWidth-3)/2;
+    const secondary=buildings.slice(1),cell=(schoolWidth-gap)/2;
+    const secondaryHeight=Math.max(1,(contentHeight-31)/2);
     secondary.forEach((item,i)=>{
-      const scale=Math.min(cell/item.width,Math.max(1,lowerHeight-14)/item.height,w*.62/item.width);
+      const scale=Math.min(cell/item.width,secondaryHeight/item.height,Math.min(38,w*.65)*.8/item.width);
       const bw=item.width*scale,bh=item.height*scale;
-      world.army.push({...item,x:margin+i*(cell+3)+(cell-bw)/2,y:rowTop+contentHeight-lowerHeight,width:bw,height:bh,boxWidth:bw,boxHeight:bh+14,label:true,labelX:margin+i*(cell+3),labelWidth:cell,centered:true,wrapLabel:true});
+      world.army.push({...item,x:schoolX+i*(cell+gap)+(cell-bw)/2,y:rowTop,width:bw,height:bh,boxWidth:bw,boxHeight:bh+14,label:true,labelX:schoolX+i*(cell+gap),labelWidth:cell,centered:true,wrapLabel:true});
     });
   }else if(largest){
     const area={x:margin,y:rowTop,width:academy.level?armyWidth:width-2*margin,height:contentHeight};
@@ -47,11 +46,13 @@ export function layoutHomeField(state,viewportWidth,viewportHeight) {
   }
   if(academy.level){
     const headquarters=world.army.find(item=>!UNITS[item.id]);
-    const w=Math.max(1,Math.min(schoolWidth,38,headquarters?headquarters.width*.65:32,
+    const secondaryBottom=world.army.length>1&&headquarters?Math.max(...world.army.slice(1).map(item=>item.y+item.boxHeight))+gap:rowTop;
+    const schoolHeightBudget=Math.max(1,rowTop+contentHeight-secondaryBottom-14);
+    const w=Math.max(1,Math.min(schoolHeightBudget*96/72,schoolWidth,38,headquarters?headquarters.width*.65:32,
       headquarters?headquarters.height*.68*96/72:Infinity,Math.max(1,contentHeight-14)*96/72));
     const h=w*72/96;
     world.schools=[{id:academy.artId,name:'사관학교',level:academy.artLevel,displayLevel:academy.level,
-      x:schoolX+(schoolWidth-w)/2,y:rowTop+(headquarters?headquarters.height-h:0),width:w,height:h,
+      x:schoolX+(schoolWidth-w)/2,y:Math.max(secondaryBottom,rowTop+(headquarters?headquarters.height-h:0)),width:w,height:h,
       boxWidth:schoolWidth,boxHeight:h+14}];
   }
   if(gear.length){

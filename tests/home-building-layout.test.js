@@ -94,3 +94,18 @@ test('condensing the home is presentation only and preserves all ownership and i
   assert.deepEqual(state,before);assert.equal(armyPower(state),power);
   assert.equal(troopIncome(state,'passive'),passive);assert.equal(troopIncome(state,'tap'),tap);
 });
+
+ test('two secondary buildings sit side by side above the academy, smaller than the campus',()=>{
+  const size=id=>FORMATIONS.find(f=>f.id===id).size;
+  for(const [width,height] of viewports)for(const gear of [0,17]){
+    const s=stateFor({soldiers:3*size('corps')+3*size('division')+2*size('regiment'),school:15,gear});
+    const w=layoutHomeField(s,width,height),[main,a,b]=w.army,campus=w.schools[0];
+    assert.equal(a.y,b.y);assert.ok(a.x>main.x+main.width);
+    assert.ok(a.x+a.width<b.x);
+    for(const item of [a,b]){
+      assert.ok(item.y+item.boxHeight<=campus.y);
+      assert.ok(item.width<=campus.width);
+    }
+    assert.ok(campus.y+campus.boxHeight<=height);
+  }
+ });

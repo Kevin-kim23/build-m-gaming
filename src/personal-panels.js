@@ -19,6 +19,11 @@ export function personalLevelEffect(id,level) {
   if(id==='supremeSeal')return `전체 초당·홈 터치 골드 +${personalIncomePercent(id,level)}% · 상시 적용`;
   return `${(AUTO_TOUCH.durationMs+(level-1)*AUTO_TOUCH.durationStepMs)/1000}초 동안 자동 터치`;
 }
+export function personalListEffect(id,level) {
+  if(id!=='commandBaton')return personalLevelEffect(id,level);
+  const last=Object.entries(BULK_RECRUIT).filter(([,rule])=>rule.level<=level).at(-1);
+  return last?`${UNITS[last[0]].name}까지 100명 모집`: '100명 모집 잠금';
+}
 function effectMarkup(id,level) {
   let explanation;
   if(id==='commandBaton')explanation=Object.entries(BULK_RECRUIT).filter(([,rule])=>rule.level<=level).map(([unit])=>`${UNITS[unit].name} 100명 한 번에 모집`).join('<br>')+'<br>군사학교 해금 조건이 필요하며 모집 골드는 별도로 지불합니다. Lv.16~20은 준원수~특전원수, Lv.21~25는 은하 준장~은하 원수 100명 모집을 차례로 엽니다. Lv.26~30은 은하단 준장~은하단 원수 100명 모집을 차례로 엽니다.';
@@ -36,7 +41,7 @@ export function personalMarkup(state) {
     const status=personalStatus(state,item.id),offer=personalUpgradeOffer(state,item.id);
     return `<article class="personal-item${status.owned?'':' locked'} equipment-list-card" data-personal-equipment="${item.id}">
       <div class="equipment-list-art" data-personal-art data-level="${status.level||1}">${personalIcon(item.icon,status.level||1)}</div>
-      <div class="equipment-list-info"><h3>${item.name} <small>Lv.${status.level||1}</small></h3><p data-personal-status>${status.owned?'보유 중 · '+item.unlockRank+' 진급 보상':'🔒 '+item.unlockRank+' 진급 시 자동 지급'}</p></div>
+      <div class="equipment-list-info"><h3>${item.name} <small>Lv.${status.level||1}</small><span class="personal-list-effect" data-personal-effect>${personalListEffect(item.id,status.level||1)}</span></h3><p data-personal-status>${status.owned?'보유 중 · '+item.unlockRank+' 진급 보상':'🔒 '+item.unlockRank+' 진급 시 자동 지급'}</p></div>
       <button type="button" class="equipment-list-detail" data-detail-personal="${item.id}" aria-label="${item.name} 상세보기"><span aria-hidden="true">ⓘ</span></button>
       <div class="equipment-list-action"><button type="button" class="buy" data-enhance-personal="${item.id}"${offer.canUpgrade?'':' disabled'}>${!status.owned?'🔒 잠금':offer.reason==='max'?'최대 강화':`강화 → Lv.${status.level+1}`}</button><small data-personal-price>${offer.cost===null?(status.owned?'최대 레벨 달성':item.unlockRank+' 진급 보상'):fmtGoldCost(offer.cost)+' G'}</small></div></article>`;
   }).join('');
@@ -50,6 +55,7 @@ export function renderPersonalList(state,root,{active=true}={}) {
     card.classList.toggle('locked',!offer.owned);
     if(art.dataset.level!==String(level)){art.innerHTML=personalIcon(item.icon,level);art.dataset.level=String(level);}
     set(q('h3 small'),`Lv.${level}`);
+    set(q('[data-personal-effect]'),personalListEffect(id,level));
     let status=offer.owned?'보유 중 · '+item.unlockRank+' 진급 보상':'🔒 '+item.unlockRank+' 진급 시 자동 지급';
     if(offer.reason==='gold')status+=` · ${fmtGoldCost(subtractMoney(offer.cost,state.gold))} G 부족`;
     set(q('[data-personal-status]'),!active?'저장 상태를 확인해 주세요.':status);
