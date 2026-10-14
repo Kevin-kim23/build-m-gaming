@@ -104,6 +104,9 @@ test('all home equipment can coexist while previously stored equipment stays sto
 test('shop shows all facilities; buttons track affordability and ownership',()=>{
   const s=army('상사');s.gold=FACILITIES[0].cost-1;
   const html=facilitiesMarkup(s);assert.match(html,/취사장/);assert.match(html,/체력단련장/);assert.match(html,/풋살장/);assert.match(html,/작전지원센터/);
+  assert.match(html,/facility-grid equipment-list/);
+  assert.match(html,/equipment-list-info[\s\S]*data-facility-effect[\s\S]*data-facility-next/);
+  assert.match(html,/equipment-list-action[\s\S]*data-facility-action="kitchen"[\s\S]*data-facility-price/);
   const nodes=new Map(),card={classList:{toggle(){}},querySelector(selector){if(!nodes.has(selector))nodes.set(selector,{textContent:'',disabled:false,dataset:{},innerHTML:''});return nodes.get(selector);}};
   const root={querySelector(selector){return selector==='[data-facility="kitchen"]'?card:null;}};
   renderFacilities(s,root);assert.equal(nodes.get('[data-facility-action]').disabled,true);assert.match(nodes.get('[data-facility-status]').textContent,/1 G 부족/);

@@ -279,12 +279,14 @@ export function createArmyPanels(session, audio, access) {
       });
     }
     else if (button.dataset.facilityAction) {
+      atCurrentPosition(()=>{
       const id=button.dataset.facilityAction,owned=facilityLevel(state(),id)>0;
       const result=session.change(s=>(owned?upgradeFacility:buildFacility)(s,Date.now(),id));
       if(result) {
         audio.ui(result.ok?(owned?'upgrade-success':'build'):'error',state().sound);
         text('#shop-message',result.ok?`${facilityOffer(state(),id).facility.name} Lv.${facilityLevel(state(),id)} ${owned?'강화':'건설'} 완료! 수입 효과가 적용됩니다.`:result.reason==='max'?'최대 레벨입니다.':'시설 조건과 보유 골드를 확인하세요.');
       }
+      });
     }
     else if (button.dataset.upgradeSchool) buildSchool(button.dataset.upgradeSchool);
     else if (button.dataset.manageEquipment) openEquipment(button.dataset.manageEquipment, 'military');

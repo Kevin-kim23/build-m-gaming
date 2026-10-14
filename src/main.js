@@ -184,7 +184,10 @@ function update() {
     );
     const progress = promotionProgress(state);
     setText("#rank-progress", progress.remaining ? `전력 ${fmt(progress.remaining)} 남음` : progress.text);
+    const percent = progress.ratio >= 1 ? 100 : Math.floor(progress.ratio * 100);
     $("#promotion-fill").style.width = progress.ratio * 100 + "%";
+    setText("#promotion-percent", percent + "%");
+    $(".promotion-track").setAttribute("aria-valuenow", String(percent));
     drawHomeField();
   }
   const nextPassiveBoost=potionMultiplier(state,'passive',Date.now());

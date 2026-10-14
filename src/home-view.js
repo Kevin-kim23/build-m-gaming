@@ -28,9 +28,9 @@ function headerMarkup(state) {
     <b id="rank-progress">
     </b>
     </div>
-    <div class="promotion-track">
+    <div class="promotion-track" role="progressbar" aria-label="다음 계급 필요 전력 달성률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
     <i id="promotion-fill">
-    </i>
+    </i><span id="promotion-percent">0%</span>
     </div>
 </div>
     </header>`;

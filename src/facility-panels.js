@@ -16,16 +16,17 @@ function presentation(state, id) {
 export function facilitiesMarkup(state) {
   const bonus=facilityBonus(state);
   return `<p class="strength-note" id="facility-total">시설 합계 · 초당 +${bonus.passive}% · 터치 +${bonus.tap}%</p>
-    <div class="facility-grid">${FACILITIES.filter(f=>facilityOffer(state,f.id).visible).map(f=>{
+    <div class="facility-grid equipment-list">${FACILITIES.filter(f=>facilityOffer(state,f.id).visible).map(f=>{
       const p=presentation(state,f.id);
-      return `<article class="facility-card${p.build.locked&&!p.level?' locked':''}" data-facility="${f.id}">
-        <div data-facility-art data-level="${p.level}">${facilityIcon(f.id,p.level||1)}</div>
-        <h3 data-facility-name>${f.name}${p.level?` Lv.${p.level}`:''}</h3>
-        <strong data-facility-effect>${facilityEffect(f,p.level||1)}</strong>
-        <small data-facility-next>${p.level&&!p.max?'다음: '+facilityEffect(f,p.level+1):''}</small>
-        <b data-facility-price>${p.max?'':fmtGoldCost(p.offer.cost)+' G'}</b>
-        <button type="button" data-facility-action="${f.id}" ${p.canAct?'':'disabled'}>${p.button}</button>
-        <small data-facility-status>${p.status}</small><p>${f.purpose}</p></article>`;
+      return `<article class="facility-card equipment-list-card${p.build.locked&&!p.level?' locked':''}" data-facility="${f.id}" aria-label="${f.name}">
+        <div class="equipment-list-art" data-facility-art data-level="${p.level}">${facilityIcon(f.id,p.level||1)}</div>
+        <div class="equipment-list-info"><h3 data-facility-name>${f.name}${p.level?` Lv.${p.level}`:''}</h3>
+        <p class="facility-current" data-facility-effect>${facilityEffect(f,p.level||1)}</p>
+        <p data-facility-next>${p.level&&!p.max?'다음: '+facilityEffect(f,p.level+1):''}</p>
+        <p data-facility-status>${p.status}</p></div>
+        <div class="equipment-list-action"><button class="buy" type="button" data-facility-action="${f.id}" ${p.canAct?'':'disabled'}>${p.button}</button>
+        <small data-facility-price>${p.max?'':fmtGoldCost(p.offer.cost)+' G'}</small></div>
+        <p class="facility-purpose">${f.purpose}</p></article>`;
     }).join('')}</div><p class="strength-note">종류별 1개 건설 · 골드로 최대 Lv.${MAX_FACILITY_LEVEL}까지 확정 강화<br>시설 보너스는 합산됩니다. 전투 능력에는 영향을 주지 않습니다.</p>`;
 }
 export function renderFacilities(state,root) {

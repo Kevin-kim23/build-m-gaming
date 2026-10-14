@@ -3,6 +3,12 @@ import assert from 'node:assert/strict';
 import {homeMarkup} from '../src/home-view.js';
 import {guideRoute} from '../src/guide-route.js';
 
+test('home promotion exposes a labelled percentage progressbar',()=>{
+  const html=homeMarkup({});
+  assert.match(html,/role="progressbar" aria-label="다음 계급 필요 전력 달성률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"/);
+  assert.match(html,/<span id="promotion-percent">0%<\/span>/);
+});
+
 test('home menu follows the requested two-row reading and keyboard order',()=>{
   const nav=homeMarkup({}).match(/<nav class="home-tabs"[^>]*>([\s\S]*?)<\/nav>/)[1];
   const buttons=[...nav.matchAll(/<button id="([^"]+)">([\s\S]*?)<\/button>/g)];

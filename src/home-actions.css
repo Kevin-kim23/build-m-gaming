@@ -36,7 +36,9 @@
 
 .hud-promotion{grid-column:1/-1;min-width:0;padding-top:2px}
 .hud-promotion .promotion-line{font-size:10px;margin:0 0 4px;gap:6px}
-.hud-promotion .promotion-track{height:5px;margin:0}
+.hud-promotion .promotion-track{position:relative;height:18px;margin:0;border:1px solid #71805c;border-radius:5px;background:#17251d;overflow:hidden}
+.hud-promotion .promotion-track i{height:100%;border-radius:3px;background:linear-gradient(90deg,#6f8b4c,#c8d88d)}
+#promotion-percent{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:800 11px/1 system-ui;font-variant-numeric:tabular-nums;text-shadow:0 1px 2px #17251d,1px 0 2px #17251d;pointer-events:none}
 #tap-zone .formation-summary{display:none}
 .home-offer{text-align:center}
 .home-offer-art{height:86px;margin:12px auto;display:flex;justify-content:center}
