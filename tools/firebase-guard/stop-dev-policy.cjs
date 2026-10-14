@@ -4,7 +4,7 @@ const {PROJECT,REGION,FUNCTIONS}=require('./constants.cjs');
 const {createPolicy,parseTarget}=require('./request-policy.cjs');
 const ROOT=`https://run.googleapis.com/v2/projects/${PROJECT}/locations/${REGION}/services/`;
 const NAMES=Object.freeze(FUNCTIONS.map(name=>name.toLowerCase()));
-const MASK='scaling.scalingMode,scaling.manualInstanceCount';
+const MASK='scaling.manualInstanceCount';
 function createStopPolicy(projectNumber){
   if(!/^\d+$/.test(projectNumber))throw Error('stop-config');
   const auth=createPolicy();let stopped=false,permit=null;
@@ -18,10 +18,10 @@ function createStopPolicy(projectNumber){
     if(name){
       if(r.method==='GET'&&!u.search&&r.body===undefined)return 'read';
       const b=r.body;
-      if(r.method==='PATCH'&&u.search===`?updateMask=${MASK}`&&b&&
+      if(r.method==='PATCH'&&u.search===`?update_mask=${MASK}`&&b&&
         equal(Object.keys(b).sort(),['etag','name','scaling'])&&names.has(b.name)&&b.name.endsWith('/'+name)&&
         typeof b.etag==='string'&&b.etag.length>0&&
-        equal(b.scaling,{scalingMode:'MANUAL',manualInstanceCount:0}))return 'stop';
+        equal(b.scaling,{manualInstanceCount:0}))return 'stop';
     }
     if(r.method==='GET'&&!u.search&&r.body===undefined&&
       operations.has(u.pathname))return 'operation';

@@ -4,7 +4,7 @@ import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 const {createStopPolicy,ROOT,MASK}=require('../tools/firebase-guard/stop-dev-policy.cjs');
 const {installNetworkGuard}=require('../tools/firebase-guard/network-guard.cjs');
-const patch=()=>({url:ROOT+'createprofile?updateMask='+MASK,method:'PATCH',body:{name:'projects/budae-kiugi-dev/locations/asia-northeast3/services/createprofile',etag:'synthetic',scaling:{scalingMode:'MANUAL',manualInstanceCount:0}}});
+const patch=()=>({url:ROOT+'createprofile?update_mask='+MASK,method:'PATCH',body:{name:'projects/budae-kiugi-dev/locations/asia-northeast3/services/createprofile',etag:'synthetic',scaling:{manualInstanceCount:0}}});
 test('shutdown policy accepts exact stop and rejects duplicate transmission',()=>{
   const p=createStopPolicy('123'),r=patch();p.allow(r);p.assert(r);p.begin(r);assert.throws(()=>p.allow(r));
 });

@@ -41,8 +41,8 @@ async function main(){
   write(JSON.stringify({event:'preflight-ok',services:before.size})+'\n');
   for(const name of NAMES){
     stage='stop';const prior=before.get(name);pending=true;
-    let op=await request(ROOT+name+'?updateMask='+MASK,'PATCH',{
-      name:prior.name,etag:prior.etag,scaling:{scalingMode:'MANUAL',manualInstanceCount:0}});
+    let op=await request(ROOT+name+'?update_mask='+MASK,'PATCH',{
+      name:prior.name,etag:prior.etag,scaling:{manualInstanceCount:0}});
     for(let n=0;!op.done&&n<30;n++){
       if(!new RegExp('^projects/('+PROJECT+'|'+projectNumber+')/locations/'+REGION+'/operations/[a-zA-Z0-9_-]+$').test(op.name))throw Error('operation-shape');
       await new Promise(resolve=>setTimeout(resolve,1000));
