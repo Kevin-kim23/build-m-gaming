@@ -116,10 +116,10 @@ test('level20 active skills snapshot duration and settle exactly once across rel
   activateSword(s,T);activateAutoTouch(s,T);
   enhancePersonalEquipment(s,T,'generalSword');enhancePersonalEquipment(s,T,'generalRevolver');
   assert.equal(swordSkillStatus(s,T).durationMs,210000);assert.equal(autoTouchStatus(s,T).durationMs,240000);
-  accrue(s,T+1800000);activateSword(s,T+1800000);activateAutoTouch(s,T+1800000);s.gold=0;
+  accrue(s,T+3600000);activateSword(s,T+3600000);activateAutoTouch(s,T+3600000);s.gold=0;
   assert.equal(s.swordDurationMs,220000);assert.equal(s.autoTouchDurationMs,250000);
   const expected=exact(perSecond(s))*250n+exact(baseTapIncome(s))*(833n+733n);
-  accrue(s,T+2050000);assert.equal(s.autoTouchTicks,833);assert.equal(exact(s.gold),expected);
+  accrue(s,T+3850000);assert.equal(s.autoTouchTicks,833);assert.equal(exact(s.gold),expected);
   const restored=parseSave(serializeSave(s),s.lastAccrual);
   accrue(restored,s.lastAccrual);accrue(restored,T);assert.equal(restored.gold,s.gold);
 });

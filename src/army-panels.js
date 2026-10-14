@@ -56,7 +56,7 @@ export function createArmyPanels(session, audio, access) {
   const storePurchase=createStorePurchase(session,{showPurchase:createStoreTestPurchase(),onChange:()=>{
     if(dialog.open && activePanel==='shop' && category==='store')renderStore(state(),dialog,{busy:storePurchase.busy,active:session.active});
   }});
-  const homeOffers=createHomeOfferPopup({watch:id=>potionController.watch(id),buy:()=>storePurchase.buy('auto'),active:()=>session.active,onSuccess:()=>audio.ui('purchase',state().sound)});
+  const homeOffers=createHomeOfferPopup({openStore:()=>openShop('store'),watch:id=>potionController.watch(id),buy:()=>storePurchase.buy('auto'),active:()=>session.active,onSuccess:()=>audio.ui('purchase',state().sound)});
   const personalUI=createPersonalUpgradeUI(session,audio);
   const personalAwards=createPersonalAwardUI({canShow:()=>session.active});
   let catalogBaton=-1;

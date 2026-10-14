@@ -1,4 +1,6 @@
 import {reportError} from './diagnostics.js';
+import {STARTER_PACK} from './starter-pack.js';
+import {potionIcon} from './potion-art.js';
 import {POTIONS} from './potions.js';
 import {HOME_AUTO_TAP} from './home-auto-tap-rules.js';
 import {fmt} from './format.js';
@@ -8,6 +10,7 @@ import {openDetail,onDetailAction} from './detail-popup.js';
 const adIcon='<svg viewBox="0 0 80 64" aria-hidden="true"><rect x="4" y="6" width="72" height="48" rx="8" fill="#263c35" stroke="#e1c983" stroke-width="3"/><path d="m32 17 21 13-21 13z" fill="#e1c983"/><path d="M24 61h32" stroke="#e1c983" stroke-width="3"/></svg>';
 export function homeOfferMarkup(id,{allowTestGrant=AUTO_TAP_TEST_GRANT}={}) {
   const auto=id==='auto',p=POTIONS[id];
+  if(id==='max')return {kicker:'스타터팩 구성품',title:p.name,body:`<div class="home-offer max-offer" data-home-offer="max"><div class="home-offer-art">${potionIcon('max')}</div><h3>10분 동안 금빛 성장</h3><p>${p.effect}</p><p>스타터팩에 ${STARTER_PACK.max}개 포함 · 예정 가격 ${fmt(STARTER_PACK.priceWon)}원</p><p>사용하면 연병장에 은은한 금빛이 감돌아요.<br>시간은 종료 중에도 흐르며, 다른 부스터와 곱해 적용돼요.</p><button type="button" class="buy" data-detail-action="max-store">스타터팩 보기</button></div>`};
   if(!auto&&!p)throw new RangeError('Unknown home item');
   return {kicker:auto?'영구 아이템':'부스터 받기',title:auto?'자동터치':p.name,
     body:`<div class="home-offer" data-home-offer="${id}">${auto?homeAutoTapPitch():`<div class="home-offer-art">${adIcon}</div>`}
@@ -17,9 +20,10 @@ export function homeOfferMarkup(id,{allowTestGrant=AUTO_TAP_TEST_GRANT}={}) {
     <p class="potion-note">${auto?'실제 결제·구매 복원은 아직 연결되지 않았어요. 개발 테스트에서는 결제하지 않아요.':'Android 앱에서 이용할 수 있어요. 광고를 중간에 닫으면 지급되지 않아요.'}</p>
     <p role="status" data-home-offer-message></p></div>`};
 }
-export function createHomeOfferPopup({watch,buy,onSuccess=()=>{},active=()=>true,register=onDetailAction,show=openDetail}) {
+export function createHomeOfferPopup({watch,buy,openStore=()=>{},onSuccess=()=>{},active=()=>true,register=onDetailAction,show=openDetail}) {
   let busy=false;
   register(async(action,data,dialog)=>{
+    if(action==='max-store'&&active()){dialog.close();openStore();return;}
     if(action!=='home-offer-claim'||busy||!active())return;
     const card=dialog.querySelector('[data-home-offer]');
     if(!card||card.dataset.homeOffer!==data.item)return;

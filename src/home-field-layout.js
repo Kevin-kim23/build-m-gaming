@@ -1,4 +1,5 @@
-import {fieldArmy,layoutFieldArmy} from './field-layout.js';
+import {layoutFieldArmy} from './field-layout.js';
+import {groupArmy} from './formations.js';
 import {UNITS} from './units.js';
 import {deployedEquipment} from './equipment.js';
 import {academyView} from './academy-view.js';
@@ -8,7 +9,7 @@ export const HOME_HEADQUARTERS_SCALE=.7;
 // Fixed viewport composition. Only presentation is condensed; every owned unit still earns income.
 export function layoutHomeField(state,viewportWidth,viewportHeight) {
   const width=Math.max(1,Math.floor(viewportWidth)),height=Math.max(1,Math.floor(viewportHeight));
-  const academy=academyView(state),gear=deployedEquipment(state),largest=fieldArmy(state).largest;
+  const academy=academyView(state),gear=deployedEquipment(state),groups=groupArmy(state),largest=groups[0];
   const top=Math.min(42,height*.24),bottom=5,gap=3;
   const columns=Math.max(1,Math.min(7,Math.ceil(gear.length/3))),rows=Math.ceil(gear.length/columns);
   const schoolSpace=academy.level?Math.min(30,height*.16):0;
@@ -23,10 +24,19 @@ export function layoutHomeField(state,viewportWidth,viewportHeight) {
   if(largest&&!UNITS[largest.id]){
     // Keep the former size budget so the requested 70% is relative to the same
     // viewport/loadout, rather than enlarging again with the freed school row.
-    const scale=Math.min(Math.max(1,width-20)/largest.width,Math.max(1,armyHeight-12)/largest.height,1.65)*HOME_HEADQUARTERS_SCALE;
+    const buildings=groups.filter(item=>!UNITS[item.id]).slice(0,3);
+    const lowerHeight=buildings.length>1?Math.max(18,contentHeight*.38):0;
+    const mainHeight=Math.max(1,contentHeight-lowerHeight-14-3);
+    const scale=Math.min(Math.min(Math.max(1,width-20)/largest.width,Math.max(1,armyHeight-12)/largest.height,1.65)*HOME_HEADQUARTERS_SCALE,buildings.length>1?mainHeight/largest.height:Infinity);
     const w=largest.width*scale,h=largest.height*scale;
     world.army=[{...largest,x:margin+(armyWidth-w)/2,y:rowTop,width:w,height:h,boxWidth:w,boxHeight:h+14,
       label:true,labelX:margin,labelWidth:armyWidth,centered:true,wrapLabel:true}];
+    const secondary=buildings.slice(1),cell=(armyWidth-3)/2;
+    secondary.forEach((item,i)=>{
+      const scale=Math.min(cell/item.width,Math.max(1,lowerHeight-14)/item.height,w*.62/item.width);
+      const bw=item.width*scale,bh=item.height*scale;
+      world.army.push({...item,x:margin+i*(cell+3)+(cell-bw)/2,y:rowTop+contentHeight-lowerHeight,width:bw,height:bh,boxWidth:bw,boxHeight:bh+14,label:true,labelX:margin+i*(cell+3),labelWidth:cell,centered:true,wrapLabel:true});
+    });
   }else if(largest){
     const area={x:margin,y:rowTop,width:academy.level?armyWidth:width-2*margin,height:contentHeight};
     const items=layoutFieldArmy(state,area);

@@ -8,3 +8,8 @@
 .starter-price{display:flex;gap:8px;align-items:baseline;justify-content:center;margin:8px 0 12px}.starter-price>span{font-size:12px;color:#c5cfcd}.starter-price strong{font-size:27px;font-variant-numeric:tabular-nums}.starter-price small{font-size:14px;margin-left:3px}
 .starter-pack>button{width:100%;min-height:48px;border:1px solid #fff0b6;border-radius:9px;background:linear-gradient(#ffe6a7,#dcad56);box-shadow:0 3px 0 #86642e;color:#32270f;font-size:14px;font-weight:800;padding:12px 6px;cursor:pointer}.starter-pack>button:disabled{background:#455653;border-color:#788e7b;box-shadow:none;color:#c6d2cc;cursor:default}.starter-pack>button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 .starter-pack [data-starter-status]{font-size:12px;line-height:1.6;color:#f2d993;min-height:19px;margin:12px 0 6px}.starter-pack .potion-note{color:#c2cfca;margin-bottom:0}
+
+.starter-reward.max{grid-column:1/-1;border-color:#ffe0a0;background:radial-gradient(ellipse at top,#b78a3955,#302717aa)}
+.starter-reward.max strong{color:#fff0b3}.max .starter-potion svg{filter:drop-shadow(0 0 8px #ffc85d66)}
+.max-offer{padding:12px;border:1px solid #c8a864;border-radius:12px;background:radial-gradient(ellipse at top,#bd933622,transparent)}
+.potion-card[data-potion="max"]{border-color:#d8b265;background:linear-gradient(140deg,#e8d5a222,#30291922)}

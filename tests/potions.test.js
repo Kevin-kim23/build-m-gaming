@@ -21,7 +21,7 @@ const give=(s,id,count=1)=>{for(let i=0;i<count;i++)assert.equal(grantPotion(s,i
 
 test('ads grant inventory, use consumes once, repeat extends duration without multiplying strength',()=>{
   const s={...freshState(T),soldiers:3};
-  for(const id of Object.keys(POTIONS)){
+  for(const id of ['red','blue']){
     assert.equal(usePotion(s,T,id).reason,'empty');give(s,id,2);
     assert.equal(usePotion(s,T,id).ok,true);assert.equal(s.potions[id].count,1);
     assert.equal(usePotion(s,T+1000,id).ok,true);assert.equal(s.potions[id].count,0);

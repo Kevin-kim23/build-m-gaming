@@ -21,7 +21,7 @@ test('rank awards start at level one regardless of later promotions',()=>{
     assert.equal(divisionFlagStatus(s).level,flag);assert.equal(generalRevolverStatus(s).level,revolver);
     assert.equal(activateSword(s,T).ok,true);assert.equal(s.swordDurationMs,duration);
     assert.equal(swordSkillStatus(s,T+duration-1).active,true);assert.equal(swordSkillStatus(s,T+duration).active,false);
-    assert.equal(activateSword(s,T+599999).reason,'cooldown');assert.equal(activateSword(s,T+600000).ok,true);
+    assert.equal(activateSword(s,T+3599999).reason,'cooldown');assert.equal(activateSword(s,T+3600000).ok,true);
   }
 });
 test('a promotion does not extend or resurrect an already activated sword',()=>{

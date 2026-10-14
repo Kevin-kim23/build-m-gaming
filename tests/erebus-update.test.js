@@ -12,6 +12,7 @@ import {supremeRankSymbol} from '../src/rank-emblem.js';
 const T=1800000000000;
 test('format37 preserves paid schools, troops, exact wallet and 160 conquests, appending40 empty regions',()=>{
  const s={...freshState(T),version:37,gold:MAX_GOLD-1n,soldiers:5000,sergeants:300,ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,commandSchoolLevel:5,galacticSchoolLevel:5,constellationSchoolLevel:5,galacticMarshals:64,constellationBrigadiers:777,campaignCleared:160,campaignStars:Array(160).fill(3)};
+ delete s.potions.max;
  const loaded=parseSave(serializeSave(s),T);assert.ok(loaded);
  for(const k of ['gold','soldiers','sergeants','galacticSchoolLevel','constellationSchoolLevel','galacticMarshals','constellationBrigadiers','campaignCleared'])assert.equal(loaded[k],s[k]);
  assert.equal(loaded.version,SAVE_VERSION);assert.deepEqual(loaded.campaignStars,[...s.campaignStars,...Array(40).fill(0)]);
@@ -51,6 +52,7 @@ test('three and five ruby stars retain the previous single horizontal row',()=>{
 });
 test('legacy37 combined galactic cap is still enforced while38 permits further recruitment',()=>{
  const s={...freshState(T),version:37,soldiers:5000,sergeants:300,ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:5,commandSchoolLevel:5,galacticSchoolLevel:5,campaignStars:Array(160).fill(0),galacticMarshals:256};
+ delete s.potions.max;
  assert.equal(parseSave(serializeSave(s),T),null);
  s.version=38;s.campaignStars=Array(200).fill(0);assert.ok(parseSave(serializeSave(s),T));
 });

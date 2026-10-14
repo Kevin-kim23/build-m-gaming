@@ -1,5 +1,5 @@
 import { facilityOffer, facilityUpgradeOffer, withFacilityIncome } from './facilities.js';
-import { isPotion, potionStatus, potionBonusMs, consumePotion, validPotionTime } from './potions.js';
+import { isPotion, potionMultiplier, passivePotionTime, consumePotion, validPotionTime } from './potions.js';
 export { parseSave } from './save.js';
 import { MAX_GOLD, addMoney, subtractMoney, multiplyMoney, minMoney, compactMoney, scaleMoney } from './money.js';
 import { pacedRecruitCost } from './growth-balance.js';
@@ -28,10 +28,10 @@ import { MAX_SOLDIERS,MAX_ARMY_POWER } from './state.js';
 import { MAX_OFFLINE_MS } from './offline-rules.js';
 export { MAX_OFFLINE_MS } from './offline-rules.js';
 export const baseTapIncome = s => withPersonalIncome(s,withFacilityIncome(s,addMoney(addMoney(1,troopIncome(s,'tap')),withPersonalEquipmentIncome(s,equipmentIncome(s).tap)),'tap'),'tap');
-export const perTap = (s, now = Date.now()) => multiplyMoney(baseTapIncome(s),swordSkillStatus(s,now).multiplier*potionStatus(s,'red',now).multiplier);
+export const perTap = (s, now = Date.now()) => multiplyMoney(baseTapIncome(s),swordSkillStatus(s,now).multiplier*potionMultiplier(s,'tap',now));
 export const basePassiveIncome = (s) =>
   withPersonalIncome(s,withCampaignIncome(s, withFacilityIncome(s,addMoney(troopIncome(s, 'passive'),withPersonalEquipmentIncome(s,equipmentIncome(s).passive)),'passive')));
-export const perSecond = (s, now = Date.now()) => multiplyMoney(basePassiveIncome(s),potionStatus(s,'blue',now).multiplier);
+export const perSecond = (s, now = Date.now()) => multiplyMoney(basePassiveIncome(s),potionMultiplier(s,'passive',now));
 // Preserve early prices, but avoid exponential prices blocking battalion progression.
 export const recruitCost = count => {
   if (!Number.isSafeInteger(count) || count < 0) throw new RangeError('Invalid recruit count');
@@ -106,8 +106,8 @@ export function accrue(s, now = Date.now(), onAutoTouchIncome) {
   const elapsed = Math.min(MAX_OFFLINE_MS, Math.max(0, Math.floor(now - s.lastAccrual)));
   if (!elapsed) return 0;
   // Split at the potion boundary, including capped offline time, without per-second loops.
-  const bonusMs=potionBonusMs(s,'blue',s.lastAccrual,s.lastAccrual+elapsed);
-  const scaled = addMoney(multiplyMoney(basePassiveIncome(s),elapsed+bonusMs),s.incomeRemainder);
+  const weightedMs=passivePotionTime(s,s.lastAccrual,s.lastAccrual+elapsed);
+  const scaled = addMoney(multiplyMoney(basePassiveIncome(s),weightedMs),s.incomeRemainder);
   const earned = typeof scaled === 'bigint' ? compactMoney(scaled/1000n) : Math.floor(scaled/1000);
   const actual = minMoney(earned, subtractMoney(MAX_GOLD,s.gold));
   s.gold = addMoney(s.gold,actual);

@@ -1,3 +1,4 @@
+import {buildingAura} from './building-aura.js';
 import { facilityIcon } from './facility-art.js';
 // Browser text stays sharp independently of the pixel-art canvas scaling.
 // Called only after the cached scene changes (army, equipment or dimensions).
@@ -7,7 +8,7 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
   if (!layer) return;
   const labels = army.filter(item => item.label).map(item => ({
     ...item,
-    text: item.name + (item.count > 1 ? " ×" + item.count : ""),
+    text: item.name + (item.count >= 1 ? " ×" + item.count : ""),
     labelWidth: item.labelWidth??item.boxWidth,
   }));
   labels.push(...equipment.map(item => ({
@@ -45,5 +46,13 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
     campus.append(name);
     elements.push(campus);
   }
-  layer.replaceChildren(...elements);
+  const auras=army.flatMap(item=>{
+    const color=buildingAura(item.id);if(!color)return [];
+    const aura=document.createElement('span');aura.className='building-aura';
+    aura.style.setProperty('--aura-color',color);
+    aura.style.left=`${item.x/width*100}%`;aura.style.top=`${item.y/height*100}%`;
+    aura.style.width=`${item.width/width*100}%`;aura.style.height=`${item.height/height*100}%`;
+    return [aura];
+  });
+  layer.replaceChildren(...auras,...elements);
 }

@@ -1,3 +1,4 @@
+import {serializeLegacySave} from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState,SAVE_VERSION} from '../src/state.js';
@@ -9,7 +10,7 @@ import {inspectSave,parseSave} from '../src/save.js';
 const T=1_800_000_000_000;
 
 test('starter pack catalog contains only thirty of each potion for 5900 won',()=>{
-  assert.deepEqual(STARTER_PACK,{priceWon:5900,red:30,blue:30});
+  assert.deepEqual(STARTER_PACK,{priceWon:5900,red:30,blue:30,max:10});
   assert.ok(Object.isFrozen(STARTER_PACK));
   assert.deepEqual(freshState(T).starterPack,emptyStarterPack());
 });
@@ -41,8 +42,8 @@ test('starter pack preserves active potion intervals and the existing automatic-
 });
 
 test('starter pack rejects either inventory overflow before changing any part of the save',()=>{
-  for(const id of ['red','blue']){
-    const s=freshState(T);s.potions[id].count=POTION_COUNT_LIMIT-29;
+  for(const id of ['red','blue','max']){
+    const s=freshState(T);s.potions[id].count=POTION_COUNT_LIMIT-STARTER_PACK[id]+1;
     const before=serializeSave(s),inventory=s.potions,claim=s.starterPack;
     assert.deepEqual(grantTestStarterPack(s),{ok:false,reason:'limit'});
     assert.equal(serializeSave(s),before);assert.equal(s.potions,inventory);assert.equal(s.starterPack,claim);
@@ -59,7 +60,7 @@ test('version 38 records migrate without losing progress or inventing a starter-
   const legacy=freshState(T);legacy.version=38;delete legacy.starterPack;
   legacy.gold=MAX_GOLD;legacy.soldiers=120;legacy.homeAutoTap={owned:true,enabled:false,source:'test'};
   legacy.potions.red={count:17,startedAt:T-1000,expiresAt:T+59000};legacy.potions.blue.count=11;
-  const restored=parseSave(serializeSave(legacy),T);
+  const restored=parseSave(serializeLegacySave(legacy),T);
   assert.equal(restored.version,SAVE_VERSION);assert.deepEqual(restored.starterPack,emptyStarterPack());
   for(const key of ['gold','soldiers','homeAutoTap','potions'])assert.deepEqual(restored[key],legacy[key]);
   assert.equal(grantTestStarterPack(restored).ok,true);

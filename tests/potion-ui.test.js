@@ -51,7 +51,7 @@ test('native rewarded result waits for foreground save lock and prevents duplica
 
 test('two item cards show stock, disable empty/busy use, and update text without replacing markup',()=>{
   const html=potionsMarkup();assert.equal((html.match(/data-potion-ad=/g)??[]).length,2);
-  assert.equal((html.match(/data-potion-use=/g)??[]).length,2);
+  assert.equal((html.match(/data-potion-use=/g)??[]).length,3);
   assert.match(html,/1분 지속/);assert.match(html,/30분 지속/);
   for(const id of ['red','blue']){assert.equal(potionIcon(id),potionIcon(id));assert.doesNotMatch(potionIcon(id),/href=|<image|script/);}
   assert.notEqual(potionIcon('red'),potionIcon('blue'));

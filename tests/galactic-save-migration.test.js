@@ -23,6 +23,7 @@ function version33() {
   state.equipment.orbitalAssault={level:28,count:1,deployed:true};
   state.potions.red={count:7,startedAt:T-10000,expiresAt:T+50000};
   state.potions.blue={count:3,startedAt:null,expiresAt:null};
+  delete state.potions.max;
   delete state.galacticSchoolLevel;
   for(const unit of GALACTIC_OFFICERS)delete state[unit.field];
   for(const item of Object.values(EQUIPMENT))if(item.introducedVersion>=34)delete state.equipment[item.id];
@@ -41,9 +42,10 @@ test('actual version33 save preserves all prior progression, exact gold and gran
   assert.deepEqual(loaded.campaignStars.slice(0,80),old.campaignStars);
   assert.deepEqual(loaded.campaignStars.slice(80),Array(120).fill(0));
   for(const [key,value] of Object.entries(old))
-    if(!['version','equipment','campaignStars'].includes(key))assert.deepEqual(loaded[key],value,key);
+    if(!['version','equipment','campaignStars','potions'].includes(key))assert.deepEqual(loaded[key],value,key);
   for(const item of Object.values(EQUIPMENT))
     assert.deepEqual(loaded.equipment[item.id],item.introducedVersion>=34?null:old.equipment[item.id]);
+  assert.deepEqual(loaded.potions.red,old.potions.red);assert.deepEqual(loaded.potions.blue,old.potions.blue);assert.equal(loaded.potions.max.count,0);
   assert.equal(serializeSave(old),raw,'migration does not mutate the prior save');
   assert.deepEqual(parseSave(serializeSave(loaded),T),loaded);
 });

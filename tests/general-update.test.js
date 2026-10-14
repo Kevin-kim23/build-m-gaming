@@ -105,7 +105,7 @@ test('home sword stays outside tap zone below the header promotion gauge, with s
   syncSwordControls(root,s,true,T);assert.equal(button.disabled,false);
   s.swordActivatedAt=T;syncSwordControls(root,s,true,T+1000);assert.equal(button.disabled,true);
   syncSwordControls(root,s,true,T+31000);assert.match(attrs['aria-label'],/대기/);
-  syncSwordControls(root,s,true,T+600000);assert.equal(button.disabled,false);assert.equal(label.textContent,'장군검 사용');
+  syncSwordControls(root,s,true,T+3600000);assert.equal(button.disabled,false);assert.equal(label.textContent,'장군검 사용');
 });
 test('rocket drawings distinguish all eleven stages and reuse cached previews',()=>{
   const prior=global.document;let created=0;const signatures=[];

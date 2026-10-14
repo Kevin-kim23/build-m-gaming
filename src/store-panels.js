@@ -8,9 +8,9 @@ import {fmt} from './format.js';
 export function storeMarkup(){
   return `<div class="store-products"><article class="starter-pack" data-starter-pack aria-label="스타터팩">
     <div class="starter-ribbon"><span>성장 지원</span><small>현재 기기 기록당 1회</small></div>
-    <header><small>STARTER PACK</small><h3>시작을 든든하게</h3><p>터치도, 방치도 두 배로!</p></header>
+    <header><small>STARTER PACK</small><h3>시작을 든든하게</h3><p>성장의 순간을 금빛으로!</p></header>
     <div class="starter-rewards">${Object.values(POTIONS).map(p=>`<div class="starter-reward ${p.id}"><div class="starter-potion">${potionIcon(p.id)}<b>×${STARTER_PACK[p.id]}</b></div><strong>${p.name}</strong><span>${p.effect}</span><small>1개당 ${p.durationLabel}</small></div>`).join('')}</div>
-    <p class="starter-summary">부스터 총 ${STARTER_PACK.red+STARTER_PACK.blue}개 · 자동터치 미포함</p>
+    <p class="starter-summary">부스터 총 ${STARTER_PACK.red+STARTER_PACK.blue+STARTER_PACK.max}개 · 자동터치 미포함</p>
     <div class="starter-price"><span>예정 가격</span><strong>${fmt(STARTER_PACK.priceWon)}<small>원</small></strong></div>
     <button type="button" data-buy-starter disabled>구매 준비 중</button>
     <p data-starter-status role="status"></p>

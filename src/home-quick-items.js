@@ -6,7 +6,7 @@ import {homeAutoTapIcon} from './home-auto-tap-ui.js';
 
 export function homeItemsMarkup() {
   const potions=Object.values(POTIONS).map(p=>`<button type="button" class="home-skill home-item" data-home-item="${p.id}">
-    <span class="home-item-art" aria-hidden="true">${potionIcon(p.id)}</span><span class="home-item-name">${p.name}</span><small data-item-status></small><small data-item-time hidden></small></button>`).join('');
+    <span class="home-item-art" aria-hidden="true">${potionIcon(p.id)}</span><span class="home-item-name">${p.shortName}</span><small data-item-status></small><small data-item-time hidden></small></button>`).join('');
   return potions+`<button type="button" class="home-skill home-item" data-home-item="auto">
     <span class="home-item-art home-auto-art" aria-hidden="true">${homeAutoTapIcon}<b>×${HOME_AUTO_TAP.tapsPerSecond}</b></span><span class="home-item-name">자동터치</span><small data-item-status></small></button>`;
 }
@@ -37,8 +37,8 @@ export function homeItemStatus(state,id,now=Date.now()) {
   }
   const p=potionStatus(state,id,now);
   return {active:p.active,time:p.active?compactTime(p.remainingMs):'',action:p.count?'use':'offer',
-    label:p.count?compactCount(p.count):'광고 보기',
-    aria:`${p.definition.name} · ${p.active?'사용 중 '+potionTimeLabel(p.remainingMs)+' 남음 · ':''}보유 ${p.count}개 · ${p.count?'사용':'광고 획득 안내'}`};
+    label:p.count?compactCount(p.count):p.definition.ad?'광고 보기':'스타터팩',
+    aria:`${p.definition.name} · ${p.active?'사용 중 '+potionTimeLabel(p.remainingMs)+' 남음 · ':''}보유 ${p.count}개 · ${p.count?'사용':p.definition.ad?'광고 획득 안내':'스타터팩 안내'}`};
 }
 
 export function createHomeItemControls(root,{state,writable,use,openOffer,onSuccess=()=>{}}) {

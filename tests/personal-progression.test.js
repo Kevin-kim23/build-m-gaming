@@ -16,7 +16,7 @@ test('legacy general ranks reset personal levels to one but retain active skill 
   for(const [i,rank] of ['준장','소장','중장','대장'].entries()) {
     const s={...army(rank),version:12,officerSchoolLevel:1,swordActivatedAt:T-15000}, loaded=parseSave(serializeSave(s),T);
     assert.equal(generalSwordStatus(loaded).level,1);assert.equal(commandBatonStatus(loaded).level,1);
-    assert.equal(swordSkillStatus(loaded,T).activeMs,15000);assert.equal(swordSkillStatus(loaded,T).remainingMs,585000);
+    assert.equal(swordSkillStatus(loaded,T).activeMs,15000);assert.equal(swordSkillStatus(loaded,T).remainingMs,3585000);
     assert.match(personalMarkup(loaded),new RegExp(`장군검 <small>Lv.1</small>`));
     pictures.push(personalIcon('sword',i+1));
   }

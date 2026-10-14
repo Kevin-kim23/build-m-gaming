@@ -6,7 +6,7 @@ import {potionIcon} from '../src/potion-art.js';
 import {homeAutoTapIcon} from '../src/home-auto-tap-art.js';
 
 test('boosters keep inventory IDs and share accessible, self-contained artwork across views',()=>{
-  assert.deepEqual(Object.keys(POTIONS),['red','blue']);
+  assert.deepEqual(Object.keys(POTIONS),['red','blue','max']);
   for(const id of Object.keys(POTIONS)){
     const svg=potionIcon(id);
     assert.equal(potionIcon(id),svg);

@@ -38,7 +38,11 @@ export function createIncomeHud(root) {
       for(const id of ['red','blue']){
         const node=potionNodes[id];if(!node)continue;
         const status=potionStatus(state,id,now);
-        const label=status.active?`${status.definition.name} ×2 · ${potionTimeLabel(status.remainingMs)}`:'';
+        const max=potionStatus(state,'max',now);
+        const parts=[];
+        if(status.active)parts.push(`${status.definition.name} ×2 · ${potionTimeLabel(status.remainingMs)}`);
+        if(max.active)parts.push(`맥스 ×${id==='red'?10:20} · ${potionTimeLabel(max.remainingMs)}`);
+        const label=parts.join(' · ');
         if(label===potionLabels[id])continue;
         potionLabels[id]=label;node.hidden=!label;node.textContent=label;
       }

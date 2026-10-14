@@ -11,14 +11,14 @@ import {syncSwordControls} from "../src/sword-controls.js";
 import {personalIcon} from "../src/personal-art.js";
 const T=1800000000000;
 const general=()=>({...freshState(T),soldiers:7240,sergeants:300,ncoSchoolLevel:1,gold:1000});
-test('skill activates once, doubles only home taps for exactly thirty seconds and recharges at ten minutes',()=>{
+test('skill activates once, doubles only home taps for exactly thirty seconds and recharges at one hour',()=>{
   const s=general(),base=perTap(s,T),income=perSecond(s);
   assert.equal(activateSword(s,T).ok,true);assert.equal(s.swordActivatedAt,T);
   assert.equal(activateSword(s,T).reason,'cooldown');assert.equal(perTap(s,T),base*2);
   assert.equal(tapGold(s,T),base*2);assert.equal(perSecond(s),income);
   assert.equal(perTap(s,T+29999),base*2);assert.equal(perTap(s,T+30000),base);
-  assert.equal(activateSword(s,T+599999).reason,'cooldown');
-  assert.equal(activateSword(s,T+600000).ok,true);assert.equal(perTap(s,T+600000),base*2);
+  assert.equal(activateSword(s,T+3599999).reason,'cooldown');
+  assert.equal(activateSword(s,T+3600000).ok,true);assert.equal(perTap(s,T+3600000),base*2);
 });
 test('locked ranks and malformed activation times cannot start skill, cap still applies',()=>{
   for(const patch of [{soldiers:4999},{sergeants:299},{soldiers:5000}]) {
@@ -31,8 +31,8 @@ test('reload, offline income and clock rollback cannot extend or resurrect a sav
   const s=general(),income=perSecond(s);activateSword(s,T);
   let restored=parseSave(serializeSave(s),T+15000);assert.equal(swordSkillStatus(restored,T+15000).activeMs,15000);
   accrue(restored,T+30000);assert.equal(restored.gold,1000+income*30);
-  assert.equal(swordSkillStatus(restored,T).active,false);assert.equal(swordSkillStatus(restored,T).remainingMs,570000);
-  restored=parseSave(serializeSave(restored),T+600000);assert.equal(swordSkillStatus(restored,T+600000).canUse,true);
+  assert.equal(swordSkillStatus(restored,T).active,false);assert.equal(swordSkillStatus(restored,T).remainingMs,3570000);
+  restored=parseSave(serializeSave(restored),T+3600000);assert.equal(swordSkillStatus(restored,T+3600000).canUse,true);
 });
 test('schema ten gains unused skill; schema eleven validates and preserves timestamps',()=>{
   const old={...general(),version:10};delete old.swordActivatedAt;
@@ -67,8 +67,8 @@ test('skill buttons update at expiry and recharge without recreating markup',()=
   const s=general();syncSwordControls(root,s,true,T);assert.equal(button.disabled,false);
   activateSword(s,T);syncSwordControls(root,s,true,T+29000);assert.match(button.textContent,/1초 남음/);
   syncSwordControls(root,s,true,T+30000);assert.match(button.textContent,/9:30/);assert.equal(button.disabled,true);
-  syncSwordControls(root,s,true,T+600000);assert.equal(button.disabled,false);
-  syncSwordControls(root,s,false,T+600000);assert.equal(button.disabled,true);
+  syncSwordControls(root,s,true,T+3600000);assert.equal(button.disabled,false);
+  syncSwordControls(root,s,false,T+3600000);assert.equal(button.disabled,true);
 });
 test('ceremonial pixel drawings are detailed, distinct and cached by level',()=>{
   const sword=personalIcon('sword'),baton=personalIcon('baton',1),upgraded=personalIcon('baton',2);

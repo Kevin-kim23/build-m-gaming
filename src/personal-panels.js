@@ -22,7 +22,7 @@ export function personalLevelEffect(id,level) {
 function effectMarkup(id,level) {
   let explanation;
   if(id==='commandBaton')explanation=Object.entries(BULK_RECRUIT).filter(([,rule])=>rule.level<=level).map(([unit])=>`${UNITS[unit].name} 100명 한 번에 모집`).join('<br>')+'<br>군사학교 해금 조건이 필요하며 모집 골드는 별도로 지불합니다. Lv.16~20은 준원수~특전원수, Lv.21~25는 은하 준장~은하 원수 100명 모집을 차례로 엽니다. Lv.26~30은 은하단 준장~은하단 원수 100명 모집을 차례로 엽니다.';
-  else if(id==='generalSword')explanation='사용 시점부터 10분 뒤 재사용합니다. 홈 터치와 리볼버 자동 터치에 적용되며 방치 수입과 전투에는 적용되지 않습니다.';
+  else if(id==='generalSword')explanation='사용 시점부터 1시간 뒤 재사용합니다. 홈 터치와 리볼버 자동 터치에 적용되며 방치 수입과 전투에는 적용되지 않습니다.';
   else if(id==='divisionFlag')explanation='사단기를 1레벨 강화할 때마다 군사 장비 강화 한도가 1씩 늘어납니다. 이미 달성한 군사 장비 강화는 유지됩니다.';
   else if(id==='marshalGlaive')explanation=`보유하면 초당 골드가 기존의 ${1+(MARSHAL_GLAIVE.passiveBonusPercent+(level-1)*MARSHAL_GLAIVE.passiveBonusStep)/100}배가 됩니다. 병력·배치 장비의 점령 보너스가 포함된 수입에 적용하며 소수 골드는 버립니다. 오프라인 수입에도 적용됩니다. 터치 골드·리볼버 지급·전투 능력은 바꾸지 않습니다.`;
   else if(id==='admiralsCompass')explanation='보유하면 병력·배치 장비·시설을 포함한 홈 터치 골드에 적용됩니다. 장군검과 총사령관 인장은 각각 곱해서 적용되며 리볼버 자동 터치에도 반영됩니다. 방치 수입·전투 공격력은 바꾸지 않습니다. 계산 단계마다 소수 골드는 버립니다.';

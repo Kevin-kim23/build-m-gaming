@@ -1,11 +1,11 @@
-import {isPotion,grantPotion,potionStatus,POTION_COUNT_LIMIT} from './potions.js';
+import {isAdPotion,grantPotion,potionStatus,POTION_COUNT_LIMIT} from './potions.js';
 import {usePotion} from './game.js';
 import {reportError} from './diagnostics.js';
 
 export function createPotionController(session,{showAd,onChange=()=>{},onError=reportError,now=Date.now}) {
   let busy=false,busyItem=null;
   async function watch(id) {
-    if(busy||!session.active||!isPotion(id))return {ok:false,reason:'unavailable'};
+    if(busy||!session.active||!isAdPotion(id))return {ok:false,reason:'unavailable'};
     if(potionStatus(session.state,id,now()).count>=POTION_COUNT_LIMIT)return {ok:false,reason:'limit'};
     busy=true;busyItem=id;onChange();
     try {

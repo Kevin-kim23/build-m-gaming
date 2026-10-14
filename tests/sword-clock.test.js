@@ -32,10 +32,10 @@ test('expiration retains a visible cooldown, reload resumes time, and disabled s
   syncSwordControls(c.root,restored,false,T+17000);
   assert.equal(c.timer.textContent,'13초');assert.equal(c.button.disabled,true);
   syncSwordControls(c.root,restored,true,T+30000);
-  assert.equal(c.timer.hidden,false);assert.equal(c.timer.textContent,'570초');assert.equal(c.ring.ownerSVGElement.hidden,true);assert.equal(c.button.disabled,true);
-  assert.match(c.button.attributes['aria-label'],/9:30/);
-  syncSwordControls(c.root,restored,true,T+599001);
-  assert.equal(c.timer.hidden,false);assert.equal(c.timer.textContent,'1초');
-  syncSwordControls(c.root,restored,true,T+600000);assert.equal(c.button.disabled,false);
+  assert.equal(c.timer.hidden,false);assert.equal(c.timer.textContent,'59:30');assert.equal(c.ring.ownerSVGElement.hidden,true);assert.equal(c.button.disabled,true);
+  assert.match(c.button.attributes['aria-label'],/59:30/);
+  syncSwordControls(c.root,restored,true,T+3599001);
+  assert.equal(c.timer.hidden,false);assert.equal(c.timer.textContent,'0:01');
+  syncSwordControls(c.root,restored,true,T+3600000);assert.equal(c.button.disabled,false);
   assert.equal(c.timer.hidden,true);assert.equal(c.draws(),1);
 });

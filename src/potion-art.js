@@ -7,7 +7,7 @@ export function potionIcon(id) {
   if(!isPotion(id))throw new RangeError('Unknown potion');
   if(cache.has(id))return cache.get(id);
   const touch=id==='red';
-  const [deep,mid,light,shine]=touch?['#742f29','#d9653c','#ffac62','#ffe5b0']:['#15465a','#24879b','#65dce5','#c6ffff'];
+  const [deep,mid,light,shine]=id==='max'?['#634215','#c69032','#ffe08a','#fff5ce']:touch?['#742f29','#d9653c','#ffac62','#ffe5b0']:['#15465a','#24879b','#65dce5','#c6ffff'];
   const parts=[];
   const r=(x,y,w,h,c)=>parts.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`);
   const p=(d,c)=>parts.push(`<path d="${d}" fill="${c}"/>`);
@@ -25,7 +25,9 @@ export function potionIcon(id) {
   r(21,24,25,37,'#0b1e27');r(23,26,21,33,deep);r(25,27,17,30,mid);
   r(25,27,17,3,light);r(25,31,3,21,light);r(40,31,2,23,deep);r(28,55,11,2,light);
   r(23,23,20,2,'#c8dccf');r(24,60,20,2,'#829d9f');
-  if(touch){
+  if(id==='max'){
+    p('M26 34l7 5 7-5-2 15H28z',shine);r(28,51,10,3,light);r(32,31,3,4,shine);
+  }else if(touch){
     // Offset lightning bolt on the energy cell; no cross-shaped label.
     p('M34 31h7l-6 10h6L28 54l4-11h-6z','#632b26');
     p('M33 30h7l-6 10h6L28 52l4-11h-6z',shine);

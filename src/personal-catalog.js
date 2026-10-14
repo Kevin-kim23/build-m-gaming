@@ -3,7 +3,7 @@ export const PERSONAL_MAX_LEVEL = 30;
 const item = value => Object.freeze({ level: 1, maxLevel: PERSONAL_MAX_LEVEL, introducedVersion:19, ...value });
 export const COMMAND_BATON = item({ id:'commandBaton', name:'지휘봉', icon:'baton', unlockRank:'중령', recruitAmount:100, baseUpgradeCost:50_000_000 });
 export const GENERAL_SWORD = item({ id:'generalSword', name:'장군검', icon:'sword', unlockRank:'준장', baseUpgradeCost:500_000_000,
-  durationMs:30_000, durationStepMs:10_000, cooldownMs:600_000, tapMultiplier:2 });
+  durationMs:30_000, durationStepMs:10_000, cooldownMs:3_600_000, tapMultiplier:2 });
 export const DIVISION_FLAG = item({ id:'divisionFlag', maxLevel:40, name:'사단기', icon:'flag', unlockRank:'소장', baseUpgradeCost:2_000_000_000 });
 export const GENERAL_REVOLVER = item({ id:'generalRevolver', name:'장군 리볼버', icon:'revolver', unlockRank:'중장', baseUpgradeCost:10_000_000_000 });
 export const MARSHAL_GLAIVE = item({ id:'marshalGlaive', name:'언월도', icon:'glaive', unlockRank:'준원수', introducedVersion:20,

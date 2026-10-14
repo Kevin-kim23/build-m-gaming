@@ -51,6 +51,7 @@ test('new academy requires sequential levels and its own rank; 100 recruits char
 });
 test('v36 migration preserves paid assets and wallet; v37 handles the expanded exact cap',()=>{
  const s={...freshState(T),version:36,campaignStars:Array(160).fill(0),gold:GALACTIC_MAX_GOLD-1n};s.personalLevels.divisionFlag=40;s.equipment.tank={level:50,count:1,deployed:true};
+ delete s.potions.max;
  const restored=parseSave(serializeSave(s),T);assert.equal(restored.gold,s.gold);assert.deepEqual(restored.equipment,s.equipment);assert.equal(restored.constellationSchoolLevel,0);
  for(const u of OFFICERS)assert.equal(restored[u.field],0);
  restored.gold=MAX_GOLD-1n;assert.deepEqual(parseSave(serializeSave(restored),T),restored);

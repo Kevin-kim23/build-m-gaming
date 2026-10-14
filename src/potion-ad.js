@@ -1,5 +1,5 @@
 import {Capacitor,registerPlugin} from '@capacitor/core';
-import {isPotion} from './potions.js';
+import {isAdPotion} from './potions.js';
 import {adsAllowed} from './access-rules.js';
 const ads=registerPlugin('PotionAds');
 // Native bridge contract is independent of the consent document revision.
@@ -18,7 +18,7 @@ function createRewardAd({native=()=>Capacitor.getPlatform()==='android',plugin=a
   delay=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}) {
   let busy=false;
   return async ({itemId})=>{
-    if(!native()||busy||!(isPotion(itemId)||itemId==='offline-income'))return {status:'unavailable'};
+    if(!native()||busy||!(isAdPotion(itemId)||itemId==='offline-income'))return {status:'unavailable'};
     busy=true;
     let restoreAudio;
     try {
@@ -36,7 +36,7 @@ function createRewardAd({native=()=>Capacitor.getPlatform()==='android',plugin=a
 }
 export function createPotionAd(options={}) {
   const show=createRewardAd(options);
-  return request=>isPotion(request?.itemId)?show(request):Promise.resolve({status:'unavailable'});
+  return request=>isAdPotion(request?.itemId)?show(request):Promise.resolve({status:'unavailable'});
 }
 export function createOfflineNativeAd(options={}) {
   const show=createRewardAd(options);
