@@ -28,7 +28,7 @@ test('only military50 shows final completion; military20 still explains the flag
 });
 test('military equipment is purchased and managed in its own tab, never in shop categories',()=>{
   const s={...freshState(T),soldiers:240};
-  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','schools','facilities','items']);
+  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','facilities','items','store']);
   for(const c of SHOP_CATEGORIES)assert.doesNotMatch(shopMarkup(s,'',()=>'',c.id),/data-buy-equipment/);
   assert.match(equipmentPanelMarkup(s,'artillery'),/data-buy-equipment="artillery"/);
   assert.doesNotMatch(equipmentPanelMarkup(s,'artillery'),/equipment-to-shop|상점에서/);
@@ -56,4 +56,16 @@ test('purchase UI tracks rank lock, exact price deficit, owned management and th
     renderEquipmentPanel(s,root,'rocketLauncher');assert.equal(buy.hidden,true);
     assert.equal(root.querySelector('#toggle-equipment').disabled,false);
   } finally { if(previous===undefined)delete globalThis.document;else globalThis.document=previous; }
+});
+
+
+test('military and personal gear open isolated sheets with distinct titles and contents',()=>{
+  const s={...freshState(T),soldiers:1280};
+  const military=equipmentPanelMarkup(s,'artillery','military');
+  const personal=equipmentPanelMarkup(s,'artillery','personal');
+  assert.match(military,/<h2 id="modal-title">장비<\/h2>/);
+  assert.match(personal,/<h2 id="modal-title">개인장비<\/h2>/);
+  assert.doesNotMatch(military,/data-personal-equipment=/);
+  assert.doesNotMatch(personal,/data-buy-equipment=|data-select-equipment=|id="enhance-equipment"/);
+  for(const html of [military,personal])assert.doesNotMatch(html,/data-panel=|data-equipment-category|panel-tabs|equipment-categories/);
 });

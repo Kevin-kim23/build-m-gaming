@@ -88,8 +88,6 @@ function dockMarkup() {
     <button id="open-equipment"><span aria-hidden="true">⚙</span><span>장비</span></button>
     <button id="open-personal"><span aria-hidden="true">✦</span><span>개인장비</span></button>
     <button id="open-shop">${shopIcon}<span>상점</span>
-    <i id="shop-dot" hidden>
-    </i>
     </button>
     <button id="open-items"><span aria-hidden="true">⚗</span><span>아이템</span></button>
     </nav>

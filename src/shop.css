@@ -1,35 +1,4 @@
-/* Shop categories share one wallet and one status message. */
-.shop-categories {
-  position: sticky;
-  top: 56px;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 5px;
-  margin: 16px 0 0;
-  padding: 4px;
-  border: 1px solid #47543c;
-  border-radius: 9px;
-  background: #202c23;
-}
-.shop-categories button {
-  min-width: 0;
-  min-height: 42px;
-  padding: 8px 3px;
-  border: 1px solid transparent;
-  border-radius: 5px;
-  background: transparent;
-  color: #aeb99e;
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.shop-categories button[aria-pressed="true"] {
-  border-color: #92936a;
-  background: #44523b;
-  color: #f1dfab;
-}
+/* Each home menu opens one independent screen. */
 .shop-category-content { min-width: 0; }
 .shop-category-content > .equipment-store { margin-top: 0; border-top: 0; }
 .shop-category-content > .equipment-store > h3 { margin-top: 0; }
@@ -114,8 +83,6 @@
   cursor: pointer;
 }
 @media (max-width: 360px) {
-  .shop-categories { gap: 2px; padding: 3px; }
-  .shop-categories button { font-size: 11px; }
   .personal-item { padding: 13px; }
   .personal-item-heading { gap: 10px; }
   .personal-item-art { width: 64px; height: 76px; }
@@ -137,7 +104,6 @@
 .additional-purchase p { font-size:11px; line-height:1.6; color:#c5d0b0; }
 .equipment-store [data-buy-equipment][hidden] { display:none; }
 
-.equipment-categories { grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:18px; }
 .equipment-role { color:#c9d9be; font-size:12px; text-align:center; }
 .equipment-select { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
 .equipment-select button { min-width:0; word-break:keep-all; }
@@ -246,3 +212,8 @@
 @media (max-width: 360px) {
   .personal-item .personal-item-art { width: 56px; height: 76px; }
 }
+
+/* Keep the close control reachable in long, independent lists. */
+#modal .shop-header { position:sticky; top:0; z-index:3; padding:10px 0; background:#263126; }
+#modal[data-category="store"] { min-height:240px; }
+#shop-guide:empty, #shop-message:empty, #equipment-message:empty { display:none; }

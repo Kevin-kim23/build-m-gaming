@@ -15,9 +15,12 @@ test('recruitment previews all four NCO grades with school conditions while offi
   assert.ok(shopMarkup({...s,ncoSchoolLevel:5},'',()=>'' ).includes('data-unit="lieutenant"'));
   assert.deepEqual(s,before);
 });
-test('schools remain in their own shop category with a single wallet and reveal the officer requirement at level five',()=>{
-  const s=freshState(0),html=shopMarkup(s,'',()=>'', 'schools');
-  assert.ok(html.includes('data-school="nco"'));assert.ok(!html.includes('data-unit='));
+test('academy spans a separate row before recruitment and reveals the next school requirement',()=>{
+  const s=freshState(0),html=shopMarkup(s,'',()=>'', 'recruit');
+  assert.ok(html.includes('data-school="nco"'));assert.ok(html.includes('data-unit='));
+  assert.ok(html.indexOf('data-school=')<html.indexOf('class="unit-list recruit-grid"'));
+  assert.match(html,/class="recruit-academy"/);
+  assert.doesNotMatch(html,/data-shop-category|school-recruit-link/);
   assert.equal((html.match(/id="shop-gold"/g)??[]).length,1);
   assert.ok(!schoolsMarkup(s).includes('data-school="officer"'));
   const unlocked=schoolsMarkup({...s,ncoSchoolLevel:5});
@@ -32,4 +35,11 @@ test('home has no troop status row (counts live in the shop) and campus drawings
     assert.doesNotMatch(svg,/<image|<script|href=/);icons.push(svg);
   }
   assert.equal(new Set(icons).size,5);
+});
+
+
+test('empty store keeps its home entry without misleading recruit purchase notification',()=>{
+  const html=homeMarkup(freshState(0));
+  assert.match(html,/id="open-shop"/);
+  assert.doesNotMatch(html,/id="shop-dot"/);
 });

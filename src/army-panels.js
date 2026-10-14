@@ -22,7 +22,7 @@ import { renderSchools, schoolDetailMarkup } from './school-panels.js';
 import { rankForArmy } from './ranks.js';
 import { COMMAND_BATON, BULK_RECRUIT, commandBatonStatus, generalSwordStatus, GENERAL_SWORD, generalSwordDuration, divisionFlagStatus, generalRevolverStatus, generalRevolverDuration } from './personal-equipment.js';
 import { EQUIPMENT, equipmentOf, visibleEquipment, deploymentOffer } from './equipment.js';
-import { panelTabs, equipmentPanelMarkup, renderEquipmentPanel } from './equipment-panels.js';
+import { equipmentPanelMarkup, renderEquipmentPanel } from './equipment-panels.js';
 import { drawEquipment } from './equipment-art.js';
 import { SHOP_CATEGORIES, shopMarkup } from './shop.js';
 import { drawFormationPortrait } from './art.js';
@@ -35,7 +35,8 @@ import { createPersonalUpgradeUI } from './personal-upgrade-ui.js';
 import './shop.css';
 import './schools.css';
 
-// One controller owns the shared shop/equipment dialog and its event listener.
+// Independent menu screens reuse one modal shell and one action listener.
+// Only the selected screen is mounted, so purchases and dialogs cannot duplicate.
 export function createArmyPanels(session, audio, access) {
   const dialog = document.querySelector('#modal');
   const $ = selector => dialog.querySelector(selector);
@@ -74,8 +75,8 @@ export function createArmyPanels(session, audio, access) {
     text('#shop-gold', fmtGold(s.gold));
     // Shared lesson text; the spotlight owns highlighting the exact live control.
     const guide = currentGuide(s);
-    text('#shop-guide', guide ? guide.text : '');
-    if (category === 'schools') renderSchools(s, dialog);
+    text('#shop-guide', guide?.panel === 'shop' && guide.category === category ? guide.text : '');
+    if (category === 'recruit') renderSchools(s, dialog);
     if (category === 'facilities') renderFacilities(s, dialog);
     if (category === 'items') {
       renderPotions(s,dialog,{busy:potionController.busy,busyItem:potionController.busyItem,active:session.active});
@@ -107,7 +108,9 @@ export function createArmyPanels(session, audio, access) {
     catalogRank = rankForArmy(state());
     catalogBaton=commandBatonStatus(state()).level;
     schoolLevels = schools.map(school=>state()[school.field]??0);
-    dialog.innerHTML = panelTabs('shop') + shopMarkup(state(), coin, insignia, category);
+    dialog.dataset.panel = 'shop';
+    dialog.dataset.category = category;
+    dialog.innerHTML = shopMarkup(state(), coin, insignia, category);
     if (!dialog.open) dialog.showModal();
     updateShop();
     dialog.querySelectorAll('[data-portrait]').forEach(c => drawFormationPortrait(c, c.dataset.portrait));
@@ -116,14 +119,16 @@ export function createArmyPanels(session, audio, access) {
   }
   function openEquipment(id = activeEquipment, nextCategory = equipmentCategory) {
     if(!dialog.open)returnFocus=document.activeElement;
-    equipmentCategory = nextCategory;
+    equipmentCategory = nextCategory === 'personal' ? 'personal' : 'military';
     equipmentRank = rankForArmy(state());
     equipmentLevels=state().personalLevels;
     const items = visibleEquipment(state());
     activeEquipment = items.some(d => d.id === id) ? id : (items[0]?.id ?? null);
     equipmentCatalogKey = items.map(d => d.id).join(':');
     activePanel = 'equipment';
-    dialog.innerHTML = panelTabs('equipment') + equipmentPanelMarkup(state(), activeEquipment, equipmentCategory);
+    dialog.dataset.panel = 'equipment';
+    dialog.dataset.category = equipmentCategory;
+    dialog.innerHTML = equipmentPanelMarkup(state(), activeEquipment, equipmentCategory);
     if (!dialog.open) dialog.showModal();
     updateEquipment();
     dialog.scrollTop = 0;
@@ -233,9 +238,6 @@ export function createArmyPanels(session, audio, access) {
     const button = event.target.closest('button');
     if (!button || button.disabled) return;
     if (button.id === 'close-shop' || button.id === 'close-equipment') dialog.close();
-    else if (button.dataset.panel) button.dataset.panel === 'shop' ? openShop() : openEquipment();
-    else if (button.dataset.shopCategory) { openShop(button.dataset.shopCategory); $(`[data-shop-category="${category}"]`)?.focus({preventScroll:true}); }
-    else if (button.dataset.equipmentCategory) openEquipment(activeEquipment, button.dataset.equipmentCategory);
     else if(button.hasAttribute('data-buy-home-auto')||button.hasAttribute('data-toggle-home-auto')){
       const buying=button.hasAttribute('data-buy-home-auto');
       const result=buying?await homeAutoPurchase.buy():homeAutoPurchase.toggle();
@@ -285,13 +287,15 @@ export function createArmyPanels(session, audio, access) {
     else if (button.id === 'toggle-equipment') toggleEquipment();
   });
   onDetailAction((action, data) => {
-    if (action === 'shop-category') { closeDetail(); openShop(data.category); }
+    if (action === 'open-academy') { closeDetail(); openShop('recruit'); $('[data-upgrade-school]')?.focus({preventScroll:true}); }
     else if (action === 'manage-equipment') { closeDetail(); openEquipment(data.id, 'military'); }
   });
   const openItemOffer=id=>homeOffers.open(id);
   const useHomeItem=id=>id==='auto'?homeAutoPurchase.toggle():potionController.use(id);
   dialog.addEventListener('close', () => {
-    const fallback=document.querySelector(activePanel === 'equipment' ? '#open-equipment' : '#open-shop');
+    const target=activePanel === 'equipment' ? (equipmentCategory === 'personal' ? '#open-personal' : '#open-equipment')
+      : ({recruit:'#open-recruit',facilities:'#open-facilities',items:'#open-items',store:'#open-shop'}[category]);
+    const fallback=document.querySelector(target);
     (returnFocus?.isConnected && returnFocus!==document.body?returnFocus:fallback).focus({preventScroll:true});
   });
   return { openShop, openEquipment, openItemOffer, useHomeItem, sync, syncAwards:personalAwards.sync };

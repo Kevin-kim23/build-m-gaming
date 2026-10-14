@@ -7,7 +7,7 @@ const touch = readFileSync(new URL('touch.css', dir), 'utf8');
 
 test('touch.css keeps a 44px minimum for the main controls and a hit area for tiny drawn ones', () => {
   assert.match(touch, /--tap: 44px/);
-  for (const selector of ['#sound', '.home-tabs button', '.home-skill', '.panel-tabs button', '.shop-categories button',
+  for (const selector of ['#sound', '.home-tabs button', '.home-skill', '#close-shop', '#close-equipment',
     '.tile-buttons .buy', '.school-detail', '.detail-open', '.personal-detail', '.medal-visibility', '.nation-tab', '.atlas-controls button'])
     assert.ok(touch.includes(selector), selector);
   for (const selector of ['#toggle-medals::after', '#open-achievements::after', '#medal-list button::after', '.tile-detail::after'])

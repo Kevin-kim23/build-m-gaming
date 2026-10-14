@@ -11,7 +11,6 @@
 .home-skill { height: var(--tap); }
 
 /* Panels, sheets and dialogs */
-.panel-tabs button, .shop-categories button { min-height: var(--tap); }
 #close-shop, #close-equipment, #close-achievements, .detail-close, .battle-header > button { width: var(--tap); height: var(--tap); }
 
 /* Shop, equipment, schools, personal gear */

@@ -59,7 +59,7 @@ test('detail popup lists exact numbers, requirement and both prices', () => {
   assert.match(body, /data-portrait="soldier"/);
   assert.doesNotMatch(body, /data-detail-action/);
   const sergeant = unitDetailMarkup(freshState(0), UNITS.sergeant);
-  assert.match(sergeant.body, /data-detail-action="shop-category" data-category="schools"/);
+  assert.match(sergeant.body, /data-detail-action="open-academy"/);
   assert.match(sergeant.body, /🔒/);
 });
 

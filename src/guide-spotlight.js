@@ -23,8 +23,7 @@ export function createGuideSpotlight({onLater,doc=document,win=window}) {
     const dialogs=[...doc.querySelectorAll('dialog[open]')];
     if(dialogs.some(d=>d.id!=='modal'))return {blocked:true};
     const panel=doc.querySelector('#modal[open]');
-    return panel?{panel:panel.querySelector('[data-panel][aria-selected="true"]')?.dataset.panel,
-      category:panel.querySelector('[data-shop-content]')?.dataset.shopContent??panel.querySelector('[data-equipment-category][aria-pressed="true"]')?.dataset.equipmentCategory,
+    return panel?{panel:panel.dataset.panel,category:panel.dataset.category,
       item:panel.querySelector('[data-select-equipment][aria-pressed="true"]')?.dataset.selectEquipment}:{};
   }
   const setBox=(node,box)=>{for(const [key,value] of Object.entries({left:box.x,top:box.y,width:box.width,height:box.height}))node.style[key]=value+'px';};
@@ -65,7 +64,7 @@ export function createGuideSpotlight({onLater,doc=document,win=window}) {
   const bodyObserver=new MutationObserver(()=>{watch();schedule();});
   bodyObserver.observe(doc.body,{childList:true});
   const panelObserver=new MutationObserver(schedule),panel=doc.querySelector('#modal');
-  if(panel)panelObserver.observe(panel,{childList:true});
+  if(panel)panelObserver.observe(panel,{childList:true,attributes:true,attributeFilter:['data-panel','data-category']});
   const onKey=event=>{
     if(!supported||!root.matches(':popover-open'))return;
     if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();onLater();return;}

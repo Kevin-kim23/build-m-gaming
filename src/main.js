@@ -17,8 +17,6 @@ import { createOpeningScreen } from './opening.js';
 import {createAccessUI} from './access-ui.js';
 import { createGameLifecycle } from './game-lifecycle.js';
 import { showToast } from "./toast.js";
-import { FACILITIES, facilityOffer, facilityUpgradeOffer } from './facilities.js';
-import { SCHOOLS, schoolOffer } from "./schools.js";
 import { fmtGold,fmt } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
 import { createGameSession } from "./session.js";
@@ -34,9 +32,7 @@ import "./general-promotion.css";
 import {
   SAVE_KEY,
   RANKS,
-  UNITS,
   armyPower,
-  recruitOffer,
   perTap,
   activateSword,
   activateAutoTouch,
@@ -203,11 +199,6 @@ function update() {
   syncSwordControls(document.querySelector('.field-tools'), state, session.active);
   syncRevolverControls(document.querySelector('.field-tools'), state, session.active);
   homeItems.sync();
-  $("#shop-dot").hidden = !(
-    Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
-    Object.keys(SCHOOLS).some(id=>schoolOffer(state,id).canBuy) ||
-    FACILITIES.some(f=>facilityOffer(state,f.id).canBuy || facilityUpgradeOffer(state,f.id).canUpgrade)
-  );
   setText("#save-status", session.status);
   infoUI.sync();
   zone.disabled = !session.active;
@@ -248,7 +239,7 @@ document.addEventListener('click', event => {
   if (button && !button.disabled && button !== zone && button.id !== 'sound') gameAudio.ui('click',state.sound);
 });
 $("#open-ranks").onclick = () => openRankGuide(state, insignia);
-$("#open-shop").onclick = () => armyPanels.openShop();
+$("#open-shop").onclick = () => armyPanels.openShop('store');
 $("#open-recruit").onclick = () => armyPanels.openShop('recruit');
 $("#open-facilities").onclick = () => armyPanels.openShop('facilities');
 $("#open-items").onclick = () => armyPanels.openShop('items');

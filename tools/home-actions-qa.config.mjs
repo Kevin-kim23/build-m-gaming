@@ -34,10 +34,9 @@ await import('/src/main.js');
 export default {root,define:{__APP_VERSION__:JSON.stringify(version)},
   server:{host:'127.0.0.1',port:4207,strictPort:true},
   plugins:[{name:'home-actions-qa',apply:'serve',
-    transformIndexHtml(html){return html.replace('<script type="module" src="/src/main.js"></script>','<script type="module" src="/__home-fixture.js"></script>');},
-    configureServer(server){server.middlewares.use((req,res,next)=>{
-      if(req.url!=='/__home-fixture.js')return next();
-      res.setHeader('Content-Type','text/javascript; charset=utf-8');res.end(seed);
-    });},
+    // Run before Vite appends a hot-reload timestamp to the entry script.
+    transformIndexHtml:{order:'pre',handler(html){return html.replace('<script type="module" src="/src/main.js"></script>','<script type="module" src="/__home-fixture.js"></script>');}},
+    resolveId(id){if(id==='/__home-fixture.js')return '\0home-actions-fixture';},
+    load(id){if(id==='\0home-actions-fixture')return seed;},
   }],
 };

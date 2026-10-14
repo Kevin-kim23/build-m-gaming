@@ -366,16 +366,6 @@ footer {
   width: 20px;
   height: 20px;
 }
-#shop-dot {
-  position: absolute;
-  right: 7px;
-  top: 7px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #466235;
-  box-shadow: 0 0 0 2px #bdca9566;
-}
 .promotion-line {
   display: flex;
   align-items: center;
@@ -1360,30 +1350,6 @@ footer {
 .home-tabs #open-shop {
   min-height: 38px;
   min-width: 0;
-}
-.panel-tabs {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  background: #263323;
-  display: flex;
-  gap: 7px;
-  padding: 14px 0 0;
-}
-.panel-tabs button {
-  flex: 1;
-  border: 1px solid #61734d;
-  border-radius: 4px;
-  padding: 10px;
-  background: #2c392a;
-  color: #b4c1a1;
-  font-size: 12px;
-  cursor: pointer;
-}
-.panel-tabs [aria-selected="true"] {
-  background: #546943;
-  border-color: #becb8b;
-  color: #f0edd2;
 }
 .equipment-store > h3 {
   font-size: 13px;

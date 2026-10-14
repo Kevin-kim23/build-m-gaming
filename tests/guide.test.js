@@ -46,10 +46,19 @@ test('from sergeant rank the guide points to the NCO school until one is built',
   const step = guideStep(s);
   assert.equal(step.id, 'school');
   assert.equal(step.target, 'school');
+  assert.equal(step.category, 'recruit','school construction is above troop recruitment');
   assert.match(step.text,/60만 골드/);
   assert.equal(step.pulse, false);
   assert.equal(guideStep({ ...s, gold: SCHOOLS.nco.costs[0] }).pulse, true);
   assert.notEqual(guideStep({ ...s, ncoSchoolLevel: 1 })?.id, 'school');
+});
+
+test('first academy upgrade stays in the recruitment screen with its existing completion rules', () => {
+  const step=guideStep(army(200,{gold:1e10,ncoSchoolLevel:1,sergeants:1,facilities:['kitchen'],facilityLevels:{kitchen:2}}));
+  assert.equal(step.id,'school-upgrade');
+  assert.equal(step.category,'recruit');
+  assert.equal(step.selector,'[data-upgrade-school="nco"]');
+  assert.equal(step.target,'school');
 });
 
 test('equipment purchase advances to its first enhancement, not another purchase', () => {

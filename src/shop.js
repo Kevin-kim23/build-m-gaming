@@ -9,9 +9,9 @@ import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, commandBatonStatus } fr
 
 export const SHOP_CATEGORIES = Object.freeze([
   Object.freeze({ id: "recruit", name: "군대 모집" }),
-  Object.freeze({ id: "schools", name: "군사학교" }),
   Object.freeze({ id: "facilities", name: "시설" }),
   Object.freeze({ id: "items", name: "아이템" }),
+  Object.freeze({ id: "store", name: "상점" }),
 ]);
 
 // The 100-unit button exists only for units the command baton can bulk-recruit.
@@ -41,20 +41,21 @@ function recruitTile(s, unit, insignia) {
 }
 
 function recruitmentMarkup(s, insignia) {
-  return `<div class="unit-list recruit-grid">${Object.values(UNITS).filter((unit) => unitAccess(s, unit).visible).map((unit) => recruitTile(s, unit, insignia)).join("")}</div>
+  return `<section class="recruit-academy" aria-label="사관학교 건설과 레벨업">${schoolsMarkup(s)}</section>
+  <div class="unit-list recruit-grid">${Object.values(UNITS).filter((unit) => unitAccess(s, unit).visible).map((unit) => recruitTile(s, unit, insignia)).join("")}</div>
   <p class="strength-note">간부 모집은 학교 레벨로 해금합니다.<br>모집 가격은 병력 종류별로 따로 증가합니다.</p>`;
 }
 
 export function shopMarkup(s, coin, insignia, category = "recruit") {
-  const selected = SHOP_CATEGORIES.some((item) => item.id === category) ? category : "recruit";
+  const screen = SHOP_CATEGORIES.find((item) => item.id === category) ?? SHOP_CATEGORIES[0];
+  const selected = screen.id;
   const content = selected === "recruit"
     ? recruitmentMarkup(s, insignia)
-    : selected === "schools" ? schoolsMarkup(s) : selected==='items' ? potionsMarkup()+homeAutoTapMarkup() : facilitiesMarkup(s);
+    : selected === "facilities" ? facilitiesMarkup(s) : selected === "items" ? potionsMarkup()+homeAutoTapMarkup() : "";
   return `<div class="sheet-grip"></div>
-  <div class="shop-header"><div><small>SUPPLY OFFICE</small><h2 id="modal-title">상점</h2></div><button id="close-shop" aria-label="상점 닫기">×</button></div>
+  <div class="shop-header"><div><small>${{recruit:"RECRUITMENT",facilities:"FACILITIES",items:"ITEMS",store:"STORE"}[selected]}</small><h2 id="modal-title">${screen.name}</h2></div><button id="close-shop" aria-label="${screen.name} 닫기">×</button></div>
   <div class="shop-wallet"><span>보유 골드</span><strong>${coin}<b id="shop-gold"></b><small>G</small></strong></div>
   <p class="shop-guide" id="shop-guide"></p>
-  <nav class="shop-categories" aria-label="상점 분류">${SHOP_CATEGORIES.map((item) => `<button type="button" data-shop-category="${item.id}" aria-pressed="${selected === item.id}">${item.name}</button>`).join("")}</nav>
   <p id="shop-message" role="status" aria-live="polite"></p>
   <div class="shop-category-content" data-shop-content="${selected}">${content}</div>`;
 }

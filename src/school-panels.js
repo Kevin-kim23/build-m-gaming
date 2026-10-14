@@ -13,12 +13,10 @@ export function schoolUnlockPreview(offer) {
 }
 export function schoolsMarkup(state) {
   const view=academyView(state),o=view.offer;
-  return `<p class="school-intro">사관학교를 확장하면 새로운 간부를 모집할 수 있어요.</p>
-    <article class="school-card" data-school="${view.id}"><div class="school-heading">${schoolIcon(view.artId,view.artLevel)}<div><span class="item-class">군사 교육 시설</span><h3>사관학교</h3><b>${view.level?'Lv.'+view.level+' / '+view.maxLevel:'미건설'}</b></div><button type="button" class="school-detail" data-detail-school="${view.id}" aria-label="사관학교 상세보기">상세보기</button></div>
+  return `<article class="school-card" data-school="${view.id}"><div class="school-heading">${schoolIcon(view.artId,view.artLevel)}<div><span class="item-class">군사 교육 시설</span><h3>사관학교</h3><b>${view.level?'Lv.'+view.level+' / '+view.maxLevel:'미건설'}</b></div><button type="button" class="school-detail" data-detail-school="${view.id}" aria-label="사관학교 상세보기">상세보기</button></div>
     <p class="school-requirement">${o.requirement}</p><p class="school-requirement" data-school-unlock>${schoolUnlockPreview(o)}</p>
-    <div class="price-line"><span>${view.level?'다음 확장 비용':'건설 비용'}</span><strong data-school-price></strong></div>
-    <button class="buy" data-upgrade-school="${view.id}"></button>
-    ${view.level?'<button class="school-recruit-link" data-shop-category="recruit">군대 모집으로 이동 →</button>':''}</article>`;
+    <div class="school-upgrade-row"><div class="price-line"><span>${view.level?'다음 확장 비용':'건설 비용'}</span><strong data-school-price></strong></div>
+    <button class="buy" data-upgrade-school="${view.id}"></button></div></article>`;
 }
 export function schoolDetailMarkup(state) {
   const view=academyView(state);

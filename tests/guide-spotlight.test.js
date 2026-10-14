@@ -7,7 +7,7 @@ test('spotlight batches layout, suspends for other dialogs and restores the orig
   const observers=[];
   class Observer {constructor(cb){this.cb=cb;observers.push(this);}observe(){}disconnect(){this.disconnected=true;}}
   global.ResizeObserver=global.MutationObserver=Observer;
-  const events=new Map(),queue=new Map();let serial=0,layouts=0,blocked=false;
+  const events=new Map(),queue=new Map();let serial=0,layouts=0,blocked=false,activePanel=null;
   const rect={left:20,right:300,top:410,bottom:454,width:280,height:44};
   const element=()=>({style:{},textContent:'',addEventListener(){},removeAttribute(k){delete this[k];},setAttribute(k,v){this[k]=v;},getAttribute(k){return this[k]??null;}});
   const target={...element(),getClientRects:()=>[rect],getBoundingClientRect:()=>{layouts++;return rect;},scrollIntoView(){},focus(){doc.activeElement=this;}};
@@ -18,14 +18,14 @@ test('spotlight batches layout, suspends for other dialogs and restores the orig
     querySelectorAll:()=>shades,querySelector:s=>s==='.guide-ring'?ring:s==='.guide-dialogue'?bubble:later};
   const body={append(n){n.parentElement=this;}};
   const doc={body,hidden:false,createElement:()=>root,activeElement:null,
-    querySelectorAll:()=>blocked?[{id:'promotion'}]:[],
-    querySelector:s=>s==='#open-shop'?target:null,
+    querySelectorAll:()=>blocked?[{id:'promotion'}]:activePanel?[activePanel]:[],
+    querySelector:s=>s==='#open-recruit'?target:s==='#modal[open]'||s==='#modal'?activePanel:null,
     addEventListener(name,cb){events.set(name,cb);},removeEventListener(name){events.delete(name);}};
   const win={innerWidth:320,innerHeight:480,getComputedStyle:()=>({getPropertyValue:()=>0}),
     requestAnimationFrame(cb){queue.set(++serial,cb);return serial;},cancelAnimationFrame(id){queue.delete(id);},addEventListener(){},removeEventListener(){}};
   const flush=()=>{const jobs=[...queue.values()];queue.clear();jobs.forEach(cb=>cb());};
   try {
-    const ui=createGuideSpotlight({doc,win,onLater(){}}),lesson={id:'school',ready:true,panel:'shop',text:'학교',title:'학교'};
+    const ui=createGuideSpotlight({doc,win,onLater(){}}),lesson={id:'school',ready:true,panel:'shop',category:'recruit',selector:'[data-upgrade-school="nco"]',text:'학교',title:'학교'};
     ui.sync(lesson);flush();assert.equal(root.open,true);assert.equal(target.getAttribute('aria-describedby'),'existing-help guide-dialogue-text');
     const count=layouts;
     for(let i=0;i<300;i++)ui.sync({...lesson});
@@ -33,6 +33,16 @@ test('spotlight batches layout, suspends for other dialogs and restores the orig
     for(let i=0;i<30;i++)ui.refresh();assert.equal(queue.size,1);flush();
     blocked=true;ui.refresh();flush();assert.equal(root.open,false);assert.equal(target.getAttribute('aria-describedby'),'existing-help');
     blocked=false;ui.refresh();flush();assert.equal(root.open,true);
+    const panelQueries=[];
+    activePanel={id:'modal',dataset:{panel:'shop',category:'facilities'},append(n){n.parentElement=this;},
+      querySelector(selector){panelQueries.push(selector);return selector==='#close-shop'||selector===lesson.selector?target:null;}};
+    ui.refresh();flush();
+    assert.equal(root.parentElement,activePanel,'the active popup hosts the guide');
+    assert.ok(panelQueries.includes('#close-shop'),'wrong destination exposes its close button, not a removed tab');
+    assert.match(text.textContent,/이 창을 닫고/);
+    activePanel.dataset.category='recruit';panelQueries.length=0;ui.refresh();flush();
+    assert.ok(panelQueries.includes(lesson.selector),'screen datasets select the school action without integrated navigation');
+    assert.equal(text.textContent,lesson.text);
     ui.sync(lesson,false);flush();assert.equal(root.open,false);
     for(let i=0;i<300;i++)ui.refresh();assert.equal(queue.size,0,'inactive guides do not schedule frames on taps');
     ui.destroy();assert.equal(root.removed,true);assert.ok(observers.every(o=>o.disconnected));assert.equal(events.size,0);

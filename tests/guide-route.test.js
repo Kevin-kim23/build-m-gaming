@@ -1,24 +1,39 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { guideRoute,spotlightLayout } from '../src/guide-route.js';
-const school={ready:true,panel:'shop',category:'schools',selector:'[data-upgrade-school="nco"]',text:'건설'};
-test('school navigation resolves current UI and cannot advance just by clicking a tab',()=>{
-  assert.equal(guideRoute(school).selector,'#open-shop');
-  assert.equal(guideRoute(school,{panel:'equipment'}).selector,'[data-panel="shop"]');
-  assert.equal(guideRoute(school,{panel:'shop',category:'recruit'}).selector,'.shop-categories [data-shop-category="schools"]');
-  assert.equal(guideRoute(school,{panel:'shop',category:'schools'}).selector,school.selector);
-  assert.equal(guideRoute(school,{panel:'shop',category:'facilities'}).selector,'.shop-categories [data-shop-category="schools"]');
+const school={ready:true,panel:'shop',category:'recruit',selector:'[data-upgrade-school="nco"]',text:'건설'};
+test('school guide closes another standalone popup before using the home recruit shortcut',()=>{
+  assert.equal(guideRoute(school).selector,'#open-recruit');
+  assert.equal(guideRoute(school,{panel:'equipment',category:'military'}).selector,'#close-equipment');
+  assert.equal(guideRoute(school,{panel:'shop',category:'store'}).selector,'#close-shop');
+  assert.equal(guideRoute(school,{panel:'shop',category:'recruit'}).selector,school.selector);
+  assert.equal(guideRoute(school,{panel:'shop',category:'facilities'}).selector,'#close-shop');
+  assert.equal(guideRoute(school,{panel:'shop',category:'items'}).selector,'#close-shop');
+  assert.equal(guideRoute(school).selector,'#open-recruit','closing another screen does not complete the lesson');
 });
 test('promotion, reward, battle, settings and inactive funds block the spotlight',()=>{
   assert.equal(guideRoute(school,{blocked:true}),null);
   assert.equal(guideRoute({...school,ready:false}),null);
 });
-test('equipment route handles personal tab and a different selected gun',()=>{
+test('equipment guide closes the personal screen and keeps selection within military equipment',()=>{
   const step={...school,panel:'equipment',category:'military',item:'artillery',selector:'#enhance-equipment'};
   assert.equal(guideRoute(step).selector,'#open-equipment');
-  assert.equal(guideRoute(step,{panel:'equipment',category:'personal'}).selector,'[data-equipment-category="military"]');
+  assert.equal(guideRoute(step,{panel:'equipment',category:'personal'}).selector,'#close-equipment');
+  assert.equal(guideRoute(step,{panel:'shop',category:'recruit'}).selector,'#close-shop');
   assert.equal(guideRoute(step,{panel:'equipment',category:'military',item:'tank'}).selector,'[data-select-equipment="artillery"]');
   assert.equal(guideRoute(step,{panel:'equipment',category:'military',item:'artillery'}).selector,'#enhance-equipment');
+});
+test('each standalone home destination is reached without removed integrated tabs',()=>{
+  for(const [panel,category,selector] of [
+    ['shop','recruit','#open-recruit'],['shop','store','#open-shop'],
+    ['shop','facilities','#open-facilities'],['shop','items','#open-items'],
+    ['equipment','military','#open-equipment'],['equipment','personal','#open-personal'],
+  ]) {
+    const step={...school,panel,category};
+    assert.equal(guideRoute(step).selector,selector);
+    assert.equal(guideRoute(step,{panel:panel==='shop'?'equipment':'shop',category:'other'}).selector,
+      panel==='shop'?'#close-equipment':'#close-shop');
+  }
 });
 test('spotlight shades leave the target exposed and dialogue avoids it at mobile sizes',()=>{
   for(const [w,h] of [[320,480],[360,800],[412,915],[844,390]])for(const y of [30,h/2,h-60]) {

@@ -107,16 +107,16 @@ test('aircraft rank previews require actual general ranks and 300 sergeants',()=
   const s=army();s.gold=MAX_GOLD;for(const id of ['transport','fighter'])assert.equal(equipmentPurchaseOffer(s,id).canBuy,true);
   s.sergeants=299;assert.equal(equipmentPurchaseOffer(s,'fighter').reason,'locked');
 });
-test('equipment owns military/personal navigation; shop no longer exposes personal category',()=>{
+test('equipment and personal gear each have their own content without cross-category navigation',()=>{
   const s=army(),personal=equipmentPanelMarkup(s,'tank','personal'),military=equipmentPanelMarkup(s,'tank');
-  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','schools','facilities','items']);
+  assert.deepEqual(SHOP_CATEGORIES.map(c=>c.id),['recruit','facilities','items','store']);
   assert.doesNotMatch(shopMarkup(s,'',()=>''),/data-personal-equipment|data-shop-category="personal"/);
   for(const id of ['commandBaton','generalSword','divisionFlag','generalRevolver'])assert.match(personal,new RegExp(`data-personal-equipment="${id}"`));
   // Effect text lives in each item's detail popup, not in the compact card.
   assert.match(personalDetailMarkup(s,'generalSword').body,/30초 동안 터치 골드 2배/);assert.match(personalDetailMarkup(s,'divisionFlag').body,/골드로 강화/);
   assert.doesNotMatch(personal,/50초 동안|현재 단계까지의 강화비/);for(const id of ['commandBaton','generalSword','divisionFlag','generalRevolver'])assert.match(personal,new RegExp(`data-detail-personal="${id}"`));
   assert.doesNotMatch(personal,/data-use-revolver/);assert.doesNotMatch(personal,/data-select-equipment/);
-  assert.match(military,/data-equipment-category="personal"/);assert.doesNotMatch(military,/data-level=|equipment-stage|enhancement-next/);assert.equal((equipmentDetailMarkup(s,'tank').body.match(/data-level=/g)??[]).length,11);
+  assert.doesNotMatch(military,/data-equipment-category/);assert.doesNotMatch(military,/data-level=|equipment-stage|enhancement-next/);assert.equal((equipmentDetailMarkup(s,'tank').body.match(/data-level=/g)??[]).length,11);
 });
 test('new ceremonial art is detailed, distinct and reused across renders',()=>{
   const flag=personalIcon('flag',1),upgraded=personalIcon('flag',2),revolver=personalIcon('revolver');

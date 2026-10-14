@@ -18,14 +18,12 @@ const text = (root, id, value) => {
   const node = root.querySelector("#" + id);
   if (node && node.textContent !== value) node.textContent = value;
 };
-export function panelTabs(mode) {
-  return `<nav class="panel-tabs" role="tablist" aria-label="부대 메뉴"><button role="tab" aria-selected="${mode === "shop"}" data-panel="shop">상점</button><button role="tab" aria-selected="${mode === "equipment"}" data-panel="equipment">장비</button></nav>`;
-}
 export { equipmentStoreMarkup, renderEquipmentStore } from "./equipment-tiles.js";
 export function equipmentPanelMarkup(s, id, category = "military") {
+  const title = category === "personal" ? "개인장비" : "장비";
   const items = visibleEquipment(s),
     d = EQUIPMENT[id];
-  const head = `<div class="sheet-grip"></div><div class="shop-header"><div><small>EQUIPMENT</small><h2 id="modal-title">장비 구매 · 관리</h2></div><button id="close-equipment" aria-label="장비 닫기">×</button></div><div class="shop-wallet"><span>보유 골드</span><strong><b id="equipment-gold"></b><small>G</small></strong></div><nav class="shop-categories equipment-categories" aria-label="장비 분류"><button data-equipment-category="military" aria-pressed="${category === "military"}">군사 장비</button><button data-equipment-category="personal" aria-pressed="${category === "personal"}">개인 장비</button></nav>`;
+  const head = `<div class="sheet-grip"></div><div class="shop-header"><div><small>${category === "personal" ? "PERSONAL EQUIPMENT" : "MILITARY EQUIPMENT"}</small><h2 id="modal-title">${title}</h2></div><button id="close-equipment" aria-label="${title} 닫기">×</button></div><div class="shop-wallet"><span>보유 골드</span><strong><b id="equipment-gold"></b><small>G</small></strong></div>`;
   if (category === "personal") return head + personalMarkup(s) + '<p id="equipment-message" role="status" aria-live="polite"></p>';
   if (!items.some((item) => item.id === id))
     return (
@@ -39,7 +37,7 @@ export function equipmentPanelMarkup(s, id, category = "military") {
 export function renderEquipmentPanel(s, root, id) {
   text(root, "equipment-gold", fmtGold(s.gold));
   if (!root.querySelector("#equipment-level")) return;
-  text(root, "deployment-count", `연병장 ${deployedEquipment(s).length}종 배치 · 좌우로 넘겨 확인하세요.`);
+  text(root, "deployment-count", `연병장 ${deployedEquipment(s).length}종 배치 · 관리할 장비를 선택하세요.`);
   const d = EQUIPMENT[id],
     gun = equipmentOf(s, id),
     offer = enhancementOffer(s, id),

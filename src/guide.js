@@ -14,7 +14,7 @@ export const GUIDE_STEPS = Object.freeze(['tap','first-recruit','promote','grow'
 const NCO_RANK = RANK_DEFINITIONS.findIndex(r=>r.name==='하사');
 const step=(id,text,target=null,pulse=false)=>({id,text,target,pulse,ready:false});
 const action=(id,title,text,ready,panel,category,selector,item=null)=>({
-  id,title,text,ready,pulse:ready,target:panel==='equipment'?'equipment':category==='schools'?'school':'shop',
+  id,title,text,ready,pulse:ready,target:panel==='equipment'?'equipment':id.startsWith('school')?'school':'shop',
   panel,category,selector,item,
 });
 const price=cost=>{const n=exact(cost);return n>=10000n&&n<100000000n&&n%10000n===0n?fmt(n/10000n)+'만':fmtGoldCost(cost);};
@@ -27,7 +27,7 @@ export function guideCandidates(state) {
   const list=[],rank=rankForArmy(state),school=schoolOffer(state,'nco');
   if(school.level===0&&(rank>=NCO_RANK||school.canBuy))list.push(action('school','사관학교 건설',
     school.canBuy?`${price(school.cost)} 골드가 모였습니다! 사관학교를 건설하면 하사를 모집할 수 있습니다.`:goal(school.cost,'사관학교 건설'),
-    school.canBuy,'shop','schools','[data-upgrade-school="nco"]'));
+    school.canBuy,'shop','recruit','[data-upgrade-school="nco"]'));
   if(school.level===0)return list;
   if(school.level===1&&!(state.sergeants??0)) {
     const offer=recruitOffer(state,'sergeant');
@@ -51,7 +51,7 @@ export function guideCandidates(state) {
   }
   if(school.level===1&&(state.sergeants??0)>0)list.push(action('school-upgrade','사관학교 첫 증설',
     school.canBuy?'사관학교를 Lv.2로 확장하면 중사를 모집할 수 있습니다. 모집 비용은 별도입니다.':goal(school.cost,'사관학교 Lv.2 확장'),
-    school.canBuy,'shop','schools','[data-upgrade-school="nco"]'));
+    school.canBuy,'shop','recruit','[data-upgrade-school="nco"]'));
   if(owned.length&&!owned.some(f=>facilityLevel(state,f.id)>=2)) {
     const f=owned.find(f=>facilityUpgradeOffer(state,f.id).canUpgrade)??owned[0],offer=facilityUpgradeOffer(state,f.id);
     list.push(action('facility-upgrade','시설 첫 강화',offer.canUpgrade?`${f.name}을 강화해 보세요. 강화는 확정 성공하며 시설 효과와 외형이 발전합니다.`:goal(offer.cost,f.name+' 강화'),
@@ -71,7 +71,7 @@ function basicStep(state) {
   if(rank===0)return step('promote',`병사는 가만히 있어도 골드를 벌어 줘요. 일병 진급까지 ${promotionProgress(state).text}`,'shop',soldier.canBuy);
   if(rank<NCO_RANK) {
     const next=SPECIALIST_UNITS.findLast(u=>armyPower(state)>=u.unlockPower&&!(state[u.field]??0));
-    return step('grow',next?`${next.unlockRank} 해금: ${next.name}! 1명마다 초당 +${next.passive}G, 터치 +${next.tap}G. 상점에서 모집하세요.`:
+    return step('grow',next?`${next.unlockRank} 해금: ${next.name}! 1명마다 초당 +${next.passive}G, 터치 +${next.tap}G. 군대 모집 메뉴에서 모집하세요.`:
       `일반병 1명마다 초당 +${UNITS.soldier.passive}G, 터치 +${UNITS.soldier.tap}G가 더해져요.`,'shop',false);
   }
   return null;

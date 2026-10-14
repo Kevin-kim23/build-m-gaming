@@ -10,12 +10,15 @@ const state = (power, sergeants = 40) => ({
 });
 const markup = (s, category) => category === "personal" ? personalMarkup(s) : shopMarkup(s, "", () => "", category);
 
-test("shop shows just the selected category and shares one wallet, title and live message", () => {
+test("each shop destination has its own title and content without cross-category tabs", () => {
   const s = state(1280);
-  for (const { id } of SHOP_CATEGORIES) {
+  for (const { id, name } of SHOP_CATEGORIES) {
     const html = markup(s, id);
-    assert.equal((html.match(/aria-pressed="true"/g) ?? []).length, 1);
-    assert.match(html, new RegExp(`data-shop-category="${id}" aria-pressed="true"`));
+    assert.match(html, new RegExp(`<h2 id="modal-title">${name}</h2>`));
+    assert.doesNotMatch(html, /data-shop-category|data-panel=|shop-categories/);
+    assert.equal(html.includes("data-school="), id === "recruit");
+    assert.equal(html.includes("data-facility-action="), id === "facilities");
+    assert.equal(html.includes("data-potion-ad="), id === "items");
     for (const elementId of ["shop-gold", "modal-title", "shop-message", "close-shop"])
       assert.equal((html.match(new RegExp(`id="${elementId}"`, "g")) ?? []).length, 1);
     assert.equal(html.includes('data-unit="soldier"'), id === "recruit");
@@ -65,8 +68,13 @@ test("unrevealed equipment remains absent and invalid category IDs safely fall b
     const html = markup(s, value);
     assert.match(html, /data-shop-content="recruit"/);
     assert.doesNotMatch(html, /<script>/);
-    const nav = html.match(/<nav class="shop-categories"[^>]*>(.*?)<\/nav>/s)[1];
-    const ids = [...nav.matchAll(/\sdata-shop-category="([^"]+)"/g)].map((m) => m[1]);
-    assert.deepEqual(ids, SHOP_CATEGORIES.map((item) => item.id));
+    assert.doesNotMatch(html, /data-shop-category|shop-categories/);
   }
+});
+
+
+test("reserved paid shop has no purchases or old categories",()=>{
+  const html=markup(state(1280),"store");
+  assert.match(html,/<h2 id="modal-title">상점<\/h2>/);
+  assert.doesNotMatch(html,/data-buy|data-upgrade|data-school=|data-facility|data-potion|data-toggle|data-unit=/);
 });
