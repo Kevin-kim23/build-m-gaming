@@ -21,7 +21,7 @@ test('paid baton level two adds sergeant batches but preserves soldier batches a
   assert.equal(recruitOffer(s,'sergeant',100).canBuy,true);
   assert.equal(recruitOffer(s,'soldier',100).canBuy,true);
   s.ncoSchoolLevel=0;assert.equal(recruitOffer(s,'sergeant',100).reason,'locked');
-  assert.match(recruitOffer(s,'sergeant',100).requirement,/부사관학교/);
+  assert.match(recruitOffer(s,'sergeant',100).requirement,/사관학교 Lv.1/);
   assert.equal(recruitOffer(s,'soldier',100).canBuy,true);
   s.sergeants=39;assert.equal(commandBatonStatus(s).level,2);
 });

@@ -21,7 +21,7 @@ export function supremeRankSymbol(tier) {
   if (cache.has(tier)) return cache.get(tier);
   let art;
   if (tier === 5) {
-    art = [[15,15],[49,15],[32,32],[15,49],[49,49]].map(([x,y])=>star(x,y,10)).join('');
+    art = Array.from({length:5},(_,i)=>star(8+i*12,32,6)).join('');
   } else {
     const count=tier>15?tier-15:tier>10?tier-10:tier-5, gap=count===5?12:count===2?30:count===4?16:21, radius=count===5?6:count===1?19:count===2?14:count===4?8:10;
     art = Array.from({length:count},(_,i)=>star(32+(i-(count-1)/2)*gap,32,radius,tier>15?'white':tier>10?'copper-gold':'white')).join('');

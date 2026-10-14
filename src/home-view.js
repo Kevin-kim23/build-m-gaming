@@ -23,6 +23,17 @@ function headerMarkup(state) {
     ${goldMarkup()}
     <button id="sound" aria-label="설정" title="설정"><span aria-hidden="true" style="font-size:24px">⚙</span></button>
     ${incomeMarkup()}
+    <div class="hud-promotion" aria-label="진급 진행">    <div class="promotion-line">
+    <span id="next-rank">
+    </span>
+    <b id="rank-progress">
+    </b>
+    </div>
+    <div class="promotion-track">
+    <i id="promotion-fill">
+    </i>
+    </div>
+</div>
     </header>`;
 }
 
@@ -44,7 +55,7 @@ function incomeMarkup() {
 }
 
 function fieldMarkup() {
-  return `<section class="field-region" aria-label="상하좌우로 둘러보는 연병장"><div id="field-viewport"><button id="tap-zone" aria-label="화면 터치해서 골드 획득">
+  return `<section class="field-region" aria-label="내 부대 연병장"><div id="field-viewport"><button id="tap-zone" aria-label="화면 터치해서 골드 획득">
     <canvas id="field" aria-hidden="true">
     </canvas>
     <span id="field-labels" aria-hidden="true"></span>
@@ -71,16 +82,6 @@ function fieldMarkup() {
 function dockMarkup() {
   return `<section class="home-dock" aria-label="내 부대">
     <div class="coach" id="coach" role="status" aria-live="polite" hidden><p id="coach-text"></p><button type="button" id="coach-off" aria-label="안내 끄기">끄기</button></div>
-    <div class="promotion-line">
-    <span id="next-rank">
-    </span>
-    <b id="rank-progress">
-    </b>
-    </div>
-    <div class="promotion-track">
-    <i id="promotion-fill">
-    </i>
-    </div>
     <nav class="home-tabs" aria-label="부대 메뉴">
     <button id="open-recruit"><span aria-hidden="true">♟</span><span>군대 모집</span></button>
     <button id="open-facilities"><span aria-hidden="true">▥</span><span>시설</span></button>

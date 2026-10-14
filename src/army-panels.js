@@ -1,3 +1,5 @@
+import {createHomeOfferPopup} from './home-offer-popup.js';
+import {academyLevel} from './academy-levels.js';
 import { createHomeAutoTapPurchase, renderHomeAutoTap } from './home-auto-tap-ui.js';
 import { createAutoTapTestPurchase } from './test-purchase.js';
 import { createPersonalAwardUI } from './personal-awards.js';
@@ -51,6 +53,7 @@ export function createArmyPanels(session, audio, access) {
   const homeAutoPurchase=createHomeAutoTapPurchase(session,{showPurchase:createAutoTapTestPurchase(),onChange:()=>{
     if(dialog.open && activePanel==='shop' && category==='items')renderHomeAutoTap(state(),dialog,{busy:homeAutoPurchase.busy,active:session.active});
   }});
+  const homeOffers=createHomeOfferPopup({watch:id=>potionController.watch(id),buy:()=>homeAutoPurchase.buy(),active:()=>session.active,onSuccess:()=>audio.ui('purchase',state().sound)});
   const personalUI=createPersonalUpgradeUI(session,audio);
   const personalAwards=createPersonalAwardUI({canShow:()=>session.active});
   let equipmentLevels=null,catalogBaton=-1;
@@ -200,7 +203,7 @@ export function createArmyPanels(session, audio, access) {
     const result=session.change(s=>upgradeSchool(s,Date.now(),id));
     if(!result)return;
     audio.ui(result.ok ? 'build' : 'error',state().sound);
-    text('#shop-message',result.ok?`${SCHOOLS[id].name} Lv.${result.level} 완료! ${SCHOOLS[id].effects[result.level-1]} 해금`
+    text('#shop-message',result.ok?`사관학교 Lv.${academyLevel(id,result.level)} 완료! ${SCHOOLS[id].effects[result.level-1]} 해금`
       :result.reason==='locked'?schoolOffer(state(),id).requirement+' 조건이 필요해요.':result.reason==='max'?'최대 레벨입니다.':'골드가 부족해요.');
   }
   function upgradeGun() {
@@ -272,7 +275,7 @@ export function createArmyPanels(session, audio, access) {
       const result=session.change(s=>(owned?upgradeFacility:buildFacility)(s,Date.now(),id));
       if(result) {
         audio.ui(result.ok?(owned?'upgrade-success':'build'):'error',state().sound);
-        text('#shop-message',result.ok?`${facilityOffer(state(),id).facility.name} Lv.${facilityLevel(state(),id)} ${owned?'강화':'건설'} 완료! 연병장에서 확인하세요.`:result.reason==='max'?'최대 레벨입니다.':'시설 조건과 보유 골드를 확인하세요.');
+        text('#shop-message',result.ok?`${facilityOffer(state(),id).facility.name} Lv.${facilityLevel(state(),id)} ${owned?'강화':'건설'} 완료! 수입 효과가 적용됩니다.`:result.reason==='max'?'최대 레벨입니다.':'시설 조건과 보유 골드를 확인하세요.');
       }
     }
     else if (button.dataset.upgradeSchool) buildSchool(button.dataset.upgradeSchool);
@@ -285,14 +288,7 @@ export function createArmyPanels(session, audio, access) {
     if (action === 'shop-category') { closeDetail(); openShop(data.category); }
     else if (action === 'manage-equipment') { closeDetail(); openEquipment(data.id, 'military'); }
   });
-  function openItemOffer(id) {
-    openShop('items');
-    const card=id==='auto'?$('[data-home-auto-tap]'):$(`[data-potion="${id}"]`);
-    card?.scrollIntoView({block:'nearest'});
-    const button=card?.querySelector(id==='auto'?'[data-buy-home-auto]':'[data-potion-ad]');
-    if(button && !button.disabled)button.focus({preventScroll:true});
-    else {card?.setAttribute('tabindex','-1');card?.focus({preventScroll:true});}
-  }
+  const openItemOffer=id=>homeOffers.open(id);
   const useHomeItem=id=>id==='auto'?homeAutoPurchase.toggle():potionController.use(id);
   dialog.addEventListener('close', () => {
     const fallback=document.querySelector(activePanel === 'equipment' ? '#open-equipment' : '#open-shop');

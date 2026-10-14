@@ -1,3 +1,4 @@
+import {academyName} from './academy-levels.js';
 import {CONSTELLATION_OFFICERS} from './constellation-officers.js';
 import { ADVANCED_OFFICERS } from './advanced-officers.js';
 import { COMMAND_OFFICERS } from './command-officers.js';
@@ -9,7 +10,7 @@ import { NCO_SCHOOL_COSTS } from './growth-balance.js';
 export const SCHOOLS = Object.freeze({
   nco: Object.freeze({id:'nco',name:'부사관학교',field:'ncoSchoolLevel',maxLevel:5,
     costs:NCO_SCHOOL_COSTS,
-    effects:Object.freeze(['하사 모집','중사 모집','상사 모집','원사 모집','준위 모집 · 사관학교 건설 공개'])}),
+    effects:Object.freeze(['하사 모집','중사 모집','상사 모집','원사 모집','준위 모집'])}),
   officer: Object.freeze({id:'officer',name:'사관학교',field:'officerSchoolLevel',maxLevel:OFFICER_GRADES.length,
     prerequisite:'nco', unlockRank:'소장',
     costs:Object.freeze(OFFICER_GRADES.map(grade=>grade.academyCost)),
@@ -45,7 +46,7 @@ export function schoolOffer(state,id) {
   const cost=max?0:school.costs[level];
   const reason=max?'max':locked?'locked':state.gold<cost?'gold':null;
   return {school,level,nextLevel:max?level:level+1,cost,visible,reason,canBuy:reason===null,
-    requirement:previous?`${previous.name} Lv.${previous.maxLevel} · ${requiredRank} 이상`:'골드를 모아 단계별로 건설·확장',
+    requirement:previous?`${academyName(previous.id,previous.maxLevel)}${requiredRank?' · '+requiredRank+' 이상':''}`:'골드를 모아 단계별로 건설·확장',
     effect:school.effects[max?level-1:level]};
 }
 // Frozen pre-v9 compensation: today's power-only promotion must not grant extra

@@ -19,7 +19,7 @@ import { createGameLifecycle } from './game-lifecycle.js';
 import { showToast } from "./toast.js";
 import { FACILITIES, facilityOffer, facilityUpgradeOffer } from './facilities.js';
 import { SCHOOLS, schoolOffer } from "./schools.js";
-import { fmtGold } from "./format.js";
+import { fmtGold,fmt } from "./format.js";
 import { homeMarkup, insignia } from "./home-view.js";
 import { createGameSession } from "./session.js";
 import { createOfflineRewardUI } from './offline-reward-ui.js';
@@ -185,7 +185,7 @@ function update() {
         : RANKS[r + 1] + " 진급까지",
     );
     const progress = promotionProgress(state);
-    setText("#rank-progress", progress.text);
+    setText("#rank-progress", progress.remaining ? `전력 ${fmt(progress.remaining)} 남음` : progress.text);
     $("#promotion-fill").style.width = progress.ratio * 100 + "%";
     drawHomeField();
   }

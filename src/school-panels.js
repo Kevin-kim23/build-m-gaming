@@ -1,3 +1,5 @@
+import {academyView} from './academy-view.js';
+import {ACADEMY_STAGES,academyLevel} from './academy-levels.js';
 import { subtractMoney } from './money.js';
 import { SCHOOLS, schoolOffer } from './schools.js';
 import { fmtGoldCost, fmtGold } from './format.js';
@@ -10,38 +12,30 @@ export function schoolUnlockPreview(offer) {
   return unit?`${unit.name} 해금 · 1명당 초당 +${fmtGold(unit.passive)} G / 터치 +${fmtGold(unit.tap)} G` : offer.effect;
 }
 export function schoolsMarkup(state) {
-  return `<p class="school-intro">학교를 건설·확장하면 새로운 간부를 모집할 수 있어요.</p>`+
-    Object.keys(SCHOOLS).map(id=>schoolOffer(state,id)).filter(o=>o.visible).map(o=>{
-      const d=o.school;
-      return `<article class="school-card" data-school="${d.id}"><div class="school-heading">${schoolIcon(d.id,o.level)}<div><span class="item-class">군사 교육 시설</span><h3>${d.name}</h3><b>${o.level?'Lv.'+o.level+' / '+d.maxLevel:'미건설'}</b></div><button type="button" class="school-detail" data-detail-school="${d.id}" aria-label="${d.name} 상세보기">상세보기</button></div>
-      <p class="school-requirement">${o.requirement}</p>
-      <p class="school-requirement" data-school-unlock>${schoolUnlockPreview(o)}</p>
-      <div class="price-line"><span>${o.level?'다음 확장 비용':'건설 비용'}</span><strong data-school-price></strong></div>
-      <button class="buy" data-upgrade-school="${d.id}"></button>
-      ${o.level?'<button class="school-recruit-link" data-shop-category="recruit">군대 모집으로 이동 →</button>':''}</article>`;
-    }).join('');
+  const view=academyView(state),o=view.offer;
+  return `<p class="school-intro">사관학교를 확장하면 새로운 간부를 모집할 수 있어요.</p>
+    <article class="school-card" data-school="${view.id}"><div class="school-heading">${schoolIcon(view.artId,view.artLevel)}<div><span class="item-class">군사 교육 시설</span><h3>사관학교</h3><b>${view.level?'Lv.'+view.level+' / '+view.maxLevel:'미건설'}</b></div><button type="button" class="school-detail" data-detail-school="${view.id}" aria-label="사관학교 상세보기">상세보기</button></div>
+    <p class="school-requirement">${o.requirement}</p><p class="school-requirement" data-school-unlock>${schoolUnlockPreview(o)}</p>
+    <div class="price-line"><span>${view.level?'다음 확장 비용':'건설 비용'}</span><strong data-school-price></strong></div>
+    <button class="buy" data-upgrade-school="${view.id}"></button>
+    ${view.level?'<button class="school-recruit-link" data-shop-category="recruit">군대 모집으로 이동 →</button>':''}</article>`;
 }
-// Level-by-level effects, costs and notes live in the detail popup.
-export function schoolDetailMarkup(state,id) {
-  const o=schoolOffer(state,id),d=o.school;
-  return {kicker:'군사 교육 시설',title:d.name,
-    body:`<div class="detail-art detail-art-wide">${schoolIcon(d.id,o.level)}</div>
-      <p>${o.level?'Lv.'+o.level+' / '+d.maxLevel:'미건설'} · ${o.requirement}</p>
-      <ol class="school-levels">${d.effects.map((effect,i)=>`<li class="${o.level>i?'complete':''}"><b>Lv.${i+1}</b> ${effect}${o.level>i?' ✓':''}<small>${fmtGoldCost(d.costs[i])} G${d.requiredRanks?` · ${d.requiredRanks[i]} 이상 필수`:d.recommendedRanks?` · ${d.recommendedRanks[i]} 구간 권장`:''}</small></li>`).join('')}</ol>
-      ${d.recommendedRanks?'<p>Lv.2~5는 추가 계급 제한 없이 골드로 확장합니다.<br>표시된 비용은 각 단계의 건설·확장비이며 모집비는 별도입니다.</p>':''}
-      <p>학교는 한 채씩 보유하며 병력은 별도로 모집합니다. 자체 수입이나 전력은 없습니다.</p>`};
+export function schoolDetailMarkup(state) {
+  const view=academyView(state);
+  return {kicker:'군사 교육 시설',title:'사관학교',body:`<div class="detail-art detail-art-wide">${schoolIcon(view.artId,view.artLevel)}</div>
+    <p>Lv.${view.level} / ${view.maxLevel} · ${view.offer.requirement}</p>
+    <ol class="school-levels">${ACADEMY_STAGES.flatMap(id=>{
+      const d=SCHOOLS[id];return d.effects.map((effect,i)=>`<li class="${(state[d.field]??0)>i?'complete':''}"><b>Lv.${academyLevel(id,i+1)}</b> ${effect}${(state[d.field]??0)>i?' ✓':''}<small>${fmtGoldCost(d.costs[i])} G${d.requiredRanks?` · ${d.requiredRanks[i]} 이상 필수`:d.recommendedRanks?` · ${d.recommendedRanks[i]} 구간 권장`:''}</small></li>`);
+    }).join('')}</ol><p>Lv.7~10은 추가 계급 제한 없이 골드로 확장합니다. 다른 단계의 필수 계급은 각 항목에 표시됩니다.</p><p>표시 비용은 각 단계의 확장비이며 모집비는 별도입니다. 자체 수입이나 전력은 없습니다.</p>`};
 }
 export function renderSchools(state,root) {
-  for(const id of Object.keys(SCHOOLS)) {
-    const card=root.querySelector(`[data-school="${id}"]`);if(!card)continue;
-    const offer=schoolOffer(state,id),button=card.querySelector('[data-upgrade-school]');
-    const unlock=card.querySelector('[data-school-unlock]'),preview=schoolUnlockPreview(offer);
-    if(unlock.textContent!==preview)unlock.textContent=preview;
-    const label=offer.reason==='max'?'최대 레벨 달성':offer.reason==='locked'?'🔒 '+offer.requirement
-      :offer.reason==='gold'?`${fmtGoldCost(subtractMoney(offer.cost,state.gold))} G 부족`:`${offer.level?'Lv.'+offer.nextLevel+' 확장':'건설'} · ${offer.effect}`;
-    if(button.textContent!==label)button.textContent=label;
-    button.disabled=!offer.canBuy;
-    const price=card.querySelector('[data-school-price]'),value=offer.reason==='max'?'—':fmtGoldCost(offer.cost)+' G';
-    if(price.textContent!==value)price.textContent=value;
-  }
+  const view=academyView(state),offer=view.offer,card=root.querySelector(`[data-school="${view.id}"]`);if(!card)return;
+  const button=card.querySelector('[data-upgrade-school]'),unlock=card.querySelector('[data-school-unlock]'),preview=schoolUnlockPreview(offer);
+  if(unlock.textContent!==preview)unlock.textContent=preview;
+  const label=offer.reason==='max'?'최대 레벨 달성':offer.reason==='locked'?'🔒 '+offer.requirement
+    :offer.reason==='gold'?`${fmtGoldCost(subtractMoney(offer.cost,state.gold))} G 부족`:`${view.level?'Lv.'+view.nextLevel+' 확장':'건설'} · ${offer.effect}`;
+  if(button.textContent!==label)button.textContent=label;
+  button.disabled=!offer.canBuy;
+  const price=card.querySelector('[data-school-price]'),value=offer.reason==='max'?'—':fmtGoldCost(offer.cost)+' G';
+  if(price.textContent!==value)price.textContent=value;
 }

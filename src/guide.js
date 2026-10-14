@@ -25,8 +25,8 @@ export function guideCandidates(state) {
   if(armyPower(state)===0)return soldier.canBuy?[action('first-recruit','첫 병사 모집',
     '지휘관님, 일반병을 모집해 보세요. 병사는 자동 수입과 터치 수입을 함께 늘려줍니다.',true,'shop','recruit','[data-buy="soldier"]')]:[];
   const list=[],rank=rankForArmy(state),school=schoolOffer(state,'nco');
-  if(school.level===0&&(rank>=NCO_RANK||school.canBuy))list.push(action('school','부사관학교 건설',
-    school.canBuy?`${price(school.cost)} 골드가 모였습니다! 부사관학교를 건설하면 하사를 모집할 수 있습니다.`:goal(school.cost,'부사관학교 건설'),
+  if(school.level===0&&(rank>=NCO_RANK||school.canBuy))list.push(action('school','사관학교 건설',
+    school.canBuy?`${price(school.cost)} 골드가 모였습니다! 사관학교를 건설하면 하사를 모집할 수 있습니다.`:goal(school.cost,'사관학교 건설'),
     school.canBuy,'shop','schools','[data-upgrade-school="nco"]'));
   if(school.level===0)return list;
   if(school.level===1&&!(state.sergeants??0)) {
@@ -39,7 +39,7 @@ export function guideCandidates(state) {
   if(!owned.length) {
     const facility=FACILITIES.find(f=>!facilityOffer(state,f.id).locked);
     if(facility){const offer=facilityOffer(state,facility.id);list.push(action('facility','첫 시설 건설',
-      offer.canBuy?`${facility.name}을 건설해 보세요. 연병장에 나타나며 보유하는 동안 수입을 높여줍니다.`:goal(offer.cost,facility.name+' 건설'),
+      offer.canBuy?`${facility.name}을 건설해 보세요. 보유하는 동안 수입을 높여줍니다. 시설 메뉴에서 관리할 수 있어요.`:goal(offer.cost,facility.name+' 건설'),
       offer.canBuy,'shop','facilities',`[data-facility-action="${facility.id}"]`));}
   }
   const guns=Object.values(EQUIPMENT).filter(g=>equipmentOf(state,g.id));
@@ -49,8 +49,8 @@ export function guideCandidates(state) {
       offer.canBuy?`${gun.name}를 구매해 보세요. 구매한 장비는 연병장에 배치되며 수입을 늘려줍니다.`:goal(offer.cost,gun.name+' 구매'),
       offer.canBuy,'equipment','military','[data-buy-equipment="'+gun.id+'"]',gun.id));}
   }
-  if(school.level===1&&(state.sergeants??0)>0)list.push(action('school-upgrade','부사관학교 첫 증설',
-    school.canBuy?'부사관학교를 Lv.2로 확장하면 중사를 모집할 수 있습니다. 모집 비용은 별도입니다.':goal(school.cost,'부사관학교 Lv.2 확장'),
+  if(school.level===1&&(state.sergeants??0)>0)list.push(action('school-upgrade','사관학교 첫 증설',
+    school.canBuy?'사관학교를 Lv.2로 확장하면 중사를 모집할 수 있습니다. 모집 비용은 별도입니다.':goal(school.cost,'사관학교 Lv.2 확장'),
     school.canBuy,'shop','schools','[data-upgrade-school="nco"]'));
   if(owned.length&&!owned.some(f=>facilityLevel(state,f.id)>=2)) {
     const f=owned.find(f=>facilityUpgradeOffer(state,f.id).canUpgrade)??owned[0],offer=facilityUpgradeOffer(state,f.id);

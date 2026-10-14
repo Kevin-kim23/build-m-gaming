@@ -8,7 +8,7 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
   const labels = army.filter(item => item.label).map(item => ({
     ...item,
     text: item.name + (item.count > 1 ? " ×" + item.count : ""),
-    labelWidth: item.boxWidth,
+    labelWidth: item.labelWidth??item.boxWidth,
   }));
   labels.push(...equipment.map(item => ({
     ...item, text: item.shortName??item.name, labelWidth: item.boxWidth??item.width, centered: true, gearLevel: item.level ?? 0,
@@ -22,7 +22,7 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
       count.className = "field-equipment-level"; count.textContent = `Lv.${item.gearLevel}`;
       label.append(count);
     }
-    label.style.left = `${item.x / width * 100}%`;
+    label.style.left = `${(item.labelX??item.x) / width * 100}%`;
     label.style.top = `${(item.y + item.height + 1) / height * 100}%`;
     label.style.width = `${item.labelWidth / width * 100}%`;
     label.style.textAlign = item.centered ? "center" : "left";
@@ -40,7 +40,8 @@ export function renderFieldLabels(layer, army, equipment, width, height, schools
     const name = document.createElement('span');
     name.className = 'field-school-name';
     name.style.width=`${(item.boxWidth??item.width)/item.width*100}%`;
-    name.textContent = `${item.name} Lv.${item.level}`;
+    name.textContent = `${item.name} Lv.${item.displayLevel??item.level}`;
+    name.style.left="50%";name.style.transform="translateX(-50%)";
     campus.append(name);
     elements.push(campus);
   }

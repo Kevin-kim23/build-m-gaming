@@ -1,3 +1,4 @@
+import {subtractMoney} from './money.js';
 import { CONSTELLATION_FORMATIONS } from './constellation-formations.js';
 import {CONSTELLATION_OFFICERS,CONSTELLATION_NAMES,CONSTELLATION_POWERS} from './constellation-officers.js';
 import { fmt } from "./format.js";
@@ -186,6 +187,7 @@ export function promotionProgress(s) {
   if (!next)
     return { text: "총 전력 " + fmt(power), ratio: 1 };
   return {
+    remaining: subtractMoney(next.required,power),
     text:
       "전력 " +
       fmt(power) +

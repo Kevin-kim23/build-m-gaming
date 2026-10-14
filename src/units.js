@@ -1,3 +1,4 @@
+import {academyName} from './academy-levels.js';
 import {CONSTELLATION_OFFICERS} from './constellation-officers.js';
 import { COMMAND_OFFICERS } from './command-officers.js';
 import { GALACTIC_OFFICERS } from './galactic-officers.js';
@@ -77,7 +78,7 @@ export function unitAccess(state, unit) {
   return {
     visible: !school?.previous || (state[school.previous]??0)>=5 || (state[unit.field]??0)>0,
     unlocked: unit.recruitRankPower ? level>=unit.schoolLevel && armyPower(state)>=unit.recruitRankPower : unit.unlockPower ? armyPower(state)>=unit.unlockPower : !unit.school || level >= unit.schoolLevel,
-    requirement: unit.school ? `${school.name} Lv.${unit.schoolLevel}${unit.unlockRank ? ' · '+unit.unlockRank+' 이상 모집·학교 확장' : ''}` : unit.unlockRank ? `${unit.unlockRank} 이상 · 전력 ${unit.unlockPower}` : '기본 모집',
+    requirement: unit.school ? `${academyName(unit.school,unit.schoolLevel)}${unit.unlockRank ? ' · '+unit.unlockRank+' 이상 모집·학교 확장' : ''}` : unit.unlockRank ? `${unit.unlockRank} 이상 · 전력 ${unit.unlockPower}` : '기본 모집',
   };
 }
 export const armyPower = (s) =>

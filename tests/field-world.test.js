@@ -23,21 +23,21 @@ test('ten independent fingers can tap; swipe, cancel, extra fingers and scroll c
 });
 
 function element(){const events={};return {events,disabled:false,scrollLeft:0,scrollTop:0,clientWidth:320,clientHeight:400,style:{setProperty(){}},parentElement:{},addEventListener(type,fn){events[type]=fn;},scrollTo({left}){this.scrollLeft=left;this.events.scroll?.();},setPointerCapture(){}};}
-test('continuous scrolling retains tap/keyboard access and never rewards a swipe',()=>{
+test('fixed home preserves tap and keyboard activation without scrolling or swipe rewards',()=>{
   const viewport=element(),zone=element(),hint=element();let earned=0;
   const ui=createFieldNavigation({viewport,zone,hint,earnTap:()=>earned++});
-  const world=ui.sync(full());assert.equal(zone.style.width,`${world.width*2}px`);assert.equal(hint.hidden,false);
-  zone.events.keydown({key:'ArrowRight',preventDefault(){}});assert.equal(viewport.scrollLeft,80);assert.equal(earned,0);
+  const world=ui.sync(full());assert.equal(zone.style.width,`100%`);assert.equal(world.width,160);assert.equal(hint.hidden,true);
+  assert.equal(zone.events.keydown,undefined);assert.equal(viewport.scrollLeft,0);assert.equal(earned,0);
   const event={pointerId:1,clientX:100,clientY:60,pointerType:'mouse',button:0,timeStamp:1};
   zone.events.pointerdown(event);zone.events.pointerup(event);assert.equal(earned,1);
-  zone.events.pointerdown({...event,timeStamp:2});zone.events.pointermove({...event,clientX:50});zone.events.pointerup({...event,clientX:50});assert.equal(viewport.scrollLeft,130);assert.equal(earned,1);
+  zone.events.pointerdown({...event,timeStamp:2});zone.events.pointermove({...event,clientX:50});zone.events.pointerup({...event,clientX:50});assert.equal(viewport.scrollLeft,0);assert.equal(earned,1);
   zone.events.click({detail:1});assert.equal(earned,1);zone.events.click({detail:0});assert.equal(earned,2);
   zone.disabled=true;zone.events.pointerdown(event);zone.events.pointerup(event);zone.events.click({detail:0});assert.equal(earned,2);
   zone.disabled=false;zone.events.pointerdown(event);ui.clear();zone.events.pointerup(event);assert.equal(earned,2);
 });
-test('layout changes retain a valid scroll offset and a small army needs no scrolling',()=>{
+test('layout changes reset old scroll offsets and never extend the viewport',()=>{
   const viewport=element(),zone=element(),hint=element();const ui=createFieldNavigation({viewport,zone,hint,earnTap(){}});
-  ui.sync(full());viewport.scrollLeft=100;ui.sync(full());assert.equal(viewport.scrollLeft,100);
-  viewport.clientWidth=480;ui.sync(full());assert.ok(viewport.scrollLeft<=Number.parseFloat(zone.style.width)-480);
-  ui.sync(freshState(1));assert.equal(viewport.scrollLeft,0);assert.equal(hint.hidden,true);assert.equal(zone.style.width,'480px');
+  ui.sync(full());viewport.scrollLeft=100;ui.sync(full());assert.equal(viewport.scrollLeft,0);
+  viewport.clientWidth=480;ui.sync(full());assert.equal(viewport.scrollLeft,0);
+  ui.sync(freshState(1));assert.equal(viewport.scrollLeft,0);assert.equal(hint.hidden,true);assert.equal(zone.style.width,'100%');
 });

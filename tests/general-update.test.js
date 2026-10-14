@@ -92,11 +92,11 @@ test('rocket launcher deploys as a long-range firepower unit with its own stats'
   assert.equal(u.cls,'firepower');assert.equal(u.damage,stats.damage);assert.equal(u.intervalMs,stats.intervalMs);
   assert.ok(u.range>UNIT_TRAITS.tank.range,'rockets outrange tanks');
 });
-test('home sword sits in the dock under the field (where the troop status row used to be), preserves icon and short text through cooldown updates',()=>{
+test('home sword stays outside tap zone below the header promotion gauge, with stable cooldown icon',()=>{
   const html=homeMarkup(general());
-  assert.ok(html.indexOf('medal-shelf')<html.indexOf('id="tap-zone"'));
+  assert.doesNotMatch(html,/medal-shelf/);
   assert.ok(html.indexOf('id="tap-zone"')<html.indexOf('data-use-sword'));
-  assert.ok(html.indexOf('data-use-sword')<html.indexOf('id="promotion-fill"'));
+  assert.ok(html.indexOf('id="promotion-fill"')<html.indexOf('id="tap-zone"'));
   assert.equal((html.match(/data-use-sword/g)||[]).length,1);
   assert.doesNotMatch(html,/30초 터치/);
   const label={textContent:'장군검 사용'},attrs={};

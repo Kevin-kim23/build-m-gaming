@@ -23,8 +23,8 @@ test('item blocks distinguish unavailable, owned, active and expired potion/auto
   assert.equal(homeItemStatus(s,'red',T).action,'offer');
   assert.equal(homeItemStatus(s,'auto',T).action,'offer');
   s.potions.red={count:1,startedAt:T,expiresAt:T+60000};
-  assert.equal(homeItemStatus(s,'red',T+30000).label,'0:30');
-  assert.equal(homeItemStatus(s,'red',T+60000).label,'1개');
+  assert.equal(homeItemStatus(s,'red',T+30000).time,'0:30');
+  assert.equal(homeItemStatus(s,'red',T+60000).label,'×1');
   s.potions.red.count=0;
   const empty=homeItemStatus(s,'red',T+30000);
   assert.equal(empty.active,true);assert.equal(empty.action,'offer');

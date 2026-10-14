@@ -9,7 +9,7 @@ test('recruitment previews all four NCO grades with school conditions while offi
   const s=freshState(0),html=shopMarkup(s,'',()=>''),before=structuredClone(s);
   for(const u of Object.values(UNITS).filter(u=>u.school==='nco')) {
     assert.ok(html.includes(`data-unit="${u.id}"`));
-    assert.ok(html.includes(`부사관학교 Lv.${u.schoolLevel}`));
+    assert.ok(html.includes(`사관학교 Lv.${u.schoolLevel}`));
   }
   assert.ok(!html.includes('data-unit="lieutenant"'));
   assert.ok(shopMarkup({...s,ncoSchoolLevel:5},'',()=>'' ).includes('data-unit="lieutenant"'));

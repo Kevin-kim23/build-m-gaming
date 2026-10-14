@@ -23,10 +23,10 @@ test('home labels remain separate from pixel-scaled artwork and refresh only wit
     assert.equal(updates,1);
     canvas.clientWidth=480;drawScene(canvas,army,layer);assert.equal(updates,2);
     army.ncoSchoolLevel=1;drawScene(canvas,army,layer);
-    assert.ok(layer.children.some(c=>c.innerHTML?.includes('부사관학교 Lv.1')));
+    assert.ok(layer.children.some(c=>c.innerHTML?.includes('사관학교 Lv.1')));
     army.ncoSchoolLevel=5;army.officerSchoolLevel=1;drawScene(canvas,army,layer);
     assert.equal(layer.children.filter(c=>c.className==='field-school').length,2);
-    assert.ok(layer.children.some(c=>c.innerHTML?.includes('부사관학교 Lv.5')));
+    assert.ok(layer.children.some(c=>c.innerHTML?.includes('사관학교 Lv.5')));
     const afterSchools=updates;assert.equal(drawScene(canvas,army,layer),false);assert.equal(updates,afterSchools);
     army.equipment.tank.count=2;drawScene(canvas,army,layer);
     assert.equal(layer.children.find(c=>c.textContent==='전차').children[0].textContent,'Lv.10');

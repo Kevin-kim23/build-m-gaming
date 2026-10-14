@@ -33,7 +33,7 @@ test('tiles use a four-column grid class and the one shared tile template for ev
 
 test('locked tiles keep the requirement visible and cannot be bought from the markup alone', () => {
   const html = tile(recruit(freshState(0)), 'sergeant');
-  assert.match(html, /🔒 부사관학교 Lv\.1/);
+  assert.match(html, /🔒 사관학교 Lv\.1/);
   assert.doesNotMatch(html, /data-buy-bulk/);
 });
 

@@ -87,7 +87,8 @@ test('version sixteen migration preserves assets and ignores injected advanced u
 
 test('advanced school UI lists each required rank and has five distinct cached campuses',()=>{
   const s=army('대장');
-  assert.match(schoolsMarkup(s),/고급 사관학교/);
+  assert.match(schoolsMarkup(s),/사관학교/);
+  assert.doesNotMatch(schoolsMarkup(s),/<h3>고급 사관학교/);
   const detail=schoolDetailMarkup(s,'advanced').body;
   for(const rank of ['대장'])assert.ok(detail.includes(rank+' 이상 필수'));
   const icons=ADVANCED_OFFICERS.map(g=>schoolIcon('advanced',g.schoolLevel));

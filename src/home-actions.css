@@ -20,3 +20,12 @@
 @media(max-width:350px) {
   .home-tabs button,.home-tabs #open-shop {font-size:11px;gap:3px}
 }
+
+.hud-promotion{grid-column:1/-1;min-width:0;padding-top:2px}
+.hud-promotion .promotion-line{font-size:10px;margin:0 0 4px;gap:6px}
+.hud-promotion .promotion-track{height:5px;margin:0}
+#tap-zone .formation-summary{display:none}
+.home-offer{text-align:center}
+.home-offer-art{height:86px;margin:12px auto;display:flex;justify-content:center}
+.home-offer-art svg{width:90px;height:86px}
+.home-offer .buy{width:100%;min-height:48px}

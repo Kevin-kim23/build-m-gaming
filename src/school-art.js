@@ -1,4 +1,4 @@
-import { SCHOOLS } from './schools.js';
+import {academyName} from './academy-levels.js';
 import { commandSchoolBody } from './late-facility-art.js';
 import { galacticSchoolBody } from './galactic-school-art.js';
 const drawings=new Map();
@@ -7,11 +7,11 @@ export function schoolIcon(id,level) {
   const key=`${id}:${level}`;
   if(drawings.has(key)) return drawings.get(key);
   if(id==='galactic'||id==='constellation') {
-    const svg=`<svg class="school-art" viewBox="0 0 96 72" role="img" aria-label="${SCHOOLS[id].name} Lv.${level} 건물" shape-rendering="crispEdges">${id==='constellation'?galacticSchoolBody(level).replaceAll('#a395d7','#82aecf').replaceAll('#77718c','#31567c'):galacticSchoolBody(level)}</svg>`;
+    const svg=`<svg class="school-art" viewBox="0 0 96 72" role="img" aria-label="${academyName(id,level)} 건물" shape-rendering="crispEdges">${id==='constellation'?galacticSchoolBody(level).replaceAll('#a395d7','#82aecf').replaceAll('#77718c','#31567c'):galacticSchoolBody(level)}</svg>`;
     drawings.set(key,svg);return svg;
   }
   if(id==='command') {
-    const svg=`<svg class="school-art" viewBox="0 0 96 72" role="img" aria-label="지휘 사관학교 Lv.${level} 건물" shape-rendering="crispEdges">${commandSchoolBody(level)}</svg>`;
+    const svg=`<svg class="school-art" viewBox="0 0 96 72" role="img" aria-label="${academyName(id,level)} 건물" shape-rendering="crispEdges">${commandSchoolBody(level)}</svg>`;
     drawings.set(key,svg);return svg;
   }
   const officer=id==='officer'||id==='advanced';
@@ -42,6 +42,6 @@ export function schoolIcon(id,level) {
     }
     detail+='<path fill="#344d60" d="M80 21h9v38h-9z"/><path fill="#e1cc8c" d="M79 19h11v2H79zM83 11h2v8h-2zM80 13h8v1h-8z"/><path fill="#99bbcb" d="M82 26h4v6h-4zM82 36h4v6h-4zM82 46h4v6h-4z"/>';
   }
-  const svg=`<svg class="school-art" viewBox="0 0 96 72" role="img" aria-label="${SCHOOLS[id].name} Lv.${level} 건물" shape-rendering="crispEdges"><path fill="#15271d66" d="M13 59h75v8H13z"/><path fill="#445c48" d="M12 43h72v19H12z"/><path fill="${color}" d="M19 ${top}h58v${62-top}H19z"/><path fill="#c9c393" d="M16 ${top-4}h64v5H16z"/>${windows}<path fill="#35493d" d="M42 53h12v10H42z"/><path fill="#dac98c" d="M9 17h2v45H9z"/><path fill="${id==='advanced'?'#be9b57':officer?'#85aabc':'#b5c18b'}" d="M11 17h16v9H11z"/><path fill="#e7d795" d="M43 ${top-10}h10v5H43z"/>${detail}</svg>`;
+  const svg=`<svg class="school-art" viewBox="0 0 96 72" role="img" aria-label="${academyName(id,level)} 건물" shape-rendering="crispEdges"><path fill="#15271d66" d="M13 59h75v8H13z"/><path fill="#445c48" d="M12 43h72v19H12z"/><path fill="${color}" d="M19 ${top}h58v${62-top}H19z"/><path fill="#c9c393" d="M16 ${top-4}h64v5H16z"/>${windows}<path fill="#35493d" d="M42 53h12v10H42z"/><path fill="#dac98c" d="M9 17h2v45H9z"/><path fill="${id==='advanced'?'#be9b57':officer?'#85aabc':'#b5c18b'}" d="M11 17h16v9H11z"/><path fill="#e7d795" d="M43 ${top-10}h10v5H43z"/>${detail}</svg>`;
   drawings.set(key,svg);return svg;
 }
