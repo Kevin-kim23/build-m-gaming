@@ -3,6 +3,7 @@ import {addMoney,subtractMoney,multiplyMoney,minMoney,MAX_GOLD} from './money.js
 
 import { HOME_AUTO_TAP, homeAutoTapEnabled } from './home-auto-tap-rules.js';
 export * from './home-auto-tap-rules.js';
+const MAX_BATCH=Math.ceil(HOME_AUTO_TAP.maxGapMs/HOME_AUTO_TAP.intervalMs);
 
 export function homeAutoTapHomeVisible(root){
   if(root.querySelector('dialog[open]'))return false;
@@ -12,7 +13,7 @@ export function homeAutoTapHomeVisible(root){
 
 // Internal wallet action only: no DOM click, finger slot, manual tap count or offline pulses.
 export function awardHomeAutoTaps(s,now,count){
-  if(!homeAutoTapEnabled(s)||!Number.isInteger(count)||count<1||count>2 ||
+  if(!homeAutoTapEnabled(s)||!Number.isInteger(count)||count<1||count>MAX_BATCH ||
     !Number.isSafeInteger(now)||now<0||now>100_000_000_000_000)return 0;
   accrue(s,now);
   const amount=minMoney(multiplyMoney(perTap(s,now),count),subtractMoney(MAX_GOLD,s.gold));

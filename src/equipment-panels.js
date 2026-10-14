@@ -1,96 +1,18 @@
-import {compactGuidePower} from './power-format.js';
-import {equipmentCombatPower,equipmentCombatStats} from './battle-balance.js';
-import { subtractMoney } from './money.js';
-import { personalMarkup } from "./personal-panels.js";
-import { repeatPurchaseMarkup, renderRepeatPurchase } from "./equipment-repeat-ui.js";
-import { fmt, fmtGold, fmtGoldCost } from "./format.js";
-import {
-  EQUIPMENT,
-  deployedEquipment, deploymentOffer,
-  equipmentOf, equipmentCount,
-  equipmentPurchaseOffer,
-  enhancementOffer,
-  visibleEquipment,
-} from "./equipment.js";
-import { drawEquipment } from "./equipment-art.js";
+import {personalMarkup,renderPersonalList} from './personal-panels.js';
+import {equipmentStoreMarkup,renderEquipmentStore} from './equipment-tiles.js';
+import {fmtGold} from './format.js';
+export {equipmentStoreMarkup,renderEquipmentStore} from './equipment-tiles.js';
 
-const text = (root, id, value) => {
-  const node = root.querySelector("#" + id);
-  if (node && node.textContent !== value) node.textContent = value;
-};
-export { equipmentStoreMarkup, renderEquipmentStore } from "./equipment-tiles.js";
-export function equipmentPanelMarkup(s, id, category = "military") {
-  const title = category === "personal" ? "개인장비" : "장비";
-  const items = visibleEquipment(s),
-    d = EQUIPMENT[id];
-  const head = `<div class="sheet-grip"></div><div class="shop-header"><div><small>${category === "personal" ? "PERSONAL EQUIPMENT" : "MILITARY EQUIPMENT"}</small><h2 id="modal-title">${title}</h2></div><button id="close-equipment" aria-label="${title} 닫기">×</button></div><div class="shop-wallet"><span>보유 골드</span><strong><b id="equipment-gold"></b><small>G</small></strong></div>`;
-  if (category === "personal") return head + personalMarkup(s) + '<p id="equipment-message" role="status" aria-live="polite"></p>';
-  if (!items.some((item) => item.id === id))
-    return (
-      head + '<p class="equipment-empty">진급하면 새로운 장비가 공개됩니다.</p>'
-    );
-  return (
-    head +
-    `<p class="deployment-count" id="deployment-count"></p><nav class="equipment-select" aria-label="관리할 장비">${items.map((item) => `<button data-select-equipment="${item.id}" aria-pressed="${id === item.id}">${item.name} <span data-select-count="${item.id}">[${fmt(equipmentCount(s, item.id))}문]</span></button>`).join("")}</nav><article class="equipment-detail"><div class="equipment-detail-title"><div><h3>${d.name} <b id="equipment-level"></b></h3><span class="equipment-quantity" id="equipment-count"></span></div><span id="equipment-deployed"></span><button type="button" class="detail-open" data-detail-equipment="${id}" aria-label="${d.name} 능력 상세보기">능력 상세</button></div><div class="equipment-preview"><canvas data-gun-preview width="440" height="248" role="img" aria-label="${d.name} 외형"></canvas></div><p id="equipment-combat-power"></p><p id="equipment-empty"></p><button class="buy" id="purchase-equipment" data-buy-equipment="${id}">${d.name} 구매</button><div id="owned-equipment" hidden><button class="equipment-deploy" id="toggle-equipment"></button><section class="enhancement-box"><div class="price-line"><span>강화 비용</span><strong id="enhancement-cost"></strong></div><button class="buy" id="enhance-equipment"></button></section>${repeatPurchaseMarkup(id)}</div></article><p id="equipment-message" role="status" aria-live="polite"></p>`
-  );
+// Both independent panels use the same list presentation. `id` is retained for
+// existing open-panel callers; selection no longer replaces the visible list.
+export function equipmentPanelMarkup(state,id,category='military') {
+  const personal=category==='personal',title=personal?'개인장비':'장비';
+  return `<div class="sheet-grip"></div><div class="shop-header"><div><small>${personal?'PERSONAL EQUIPMENT':'MILITARY EQUIPMENT'}</small><h2 id="modal-title">${title}</h2></div><button id="close-equipment" aria-label="${title} 닫기">×</button></div><div class="shop-wallet"><span>보유 골드</span><strong><b id="equipment-gold"></b><small>G</small></strong></div>`+
+    (personal?personalMarkup(state):equipmentStoreMarkup(state))+'<p id="equipment-message" role="status" aria-live="polite"></p>';
 }
-export function renderEquipmentPanel(s, root, id) {
-  text(root, "equipment-gold", fmtGold(s.gold));
-  if (!root.querySelector("#equipment-level")) return;
-  text(root, "deployment-count", `연병장 ${deployedEquipment(s).length}종 배치 · 관리할 장비를 선택하세요.`);
-  const d = EQUIPMENT[id],
-    gun = equipmentOf(s, id),
-    offer = enhancementOffer(s, id),
-    level = gun?.level ?? 0,
-    purchase = equipmentPurchaseOffer(s, id);
-  text(root,"equipment-combat-power",`장비 전투력 ${compactGuidePower(BigInt(equipmentCombatPower(id,level)))} · 종류·강화 기준`);
-  text(root, "equipment-level", gun ? "+" + level : "");
-  text(root, "equipment-count", `[${fmt(equipmentCount(s, id))}문]`);
-  for (const node of root.querySelectorAll("[data-select-count]")) node.textContent = `[${fmt(equipmentCount(s, node.dataset.selectCount))}문]`;
-  renderRepeatPurchase(s, root);
-  text(
-    root,
-    "equipment-deployed",
-    gun ? (gun.deployed ? "배치 중" : "보관 중") : "미보유",
-  );
-  text(
-    root,
-    "equipment-empty",
-    gun
-      ? ""
-      : purchase.locked
-        ? d.unlockRank + " 진급 후 구매할 수 있어요."
-        : fmtGoldCost(d.cost) + " 골드로 구매할 수 있어요.",
-  );
-  const buy = root.querySelector("#purchase-equipment");
-  buy.hidden = !!gun;
-  buy.disabled = !purchase.canBuy;
-  text(root, "purchase-equipment", purchase.locked ? `🔒 ${d.unlockRank} 해금` : purchase.reason === 'gold'
-    ? `${fmtGoldCost(subtractMoney(purchase.cost,s.gold))} G 부족` : `${d.name} 구매 · ${fmtGoldCost(purchase.cost)} G`);
-  root.querySelector("#owned-equipment").hidden = !gun;
-  const canvas = root.querySelector("[data-gun-preview]");
-  drawEquipment(canvas, level, id);
-  canvas.setAttribute("aria-label", d.name + " " + level + "강 외형");
-  if (!gun) return;
-  text(
-    root,
-    "toggle-equipment",
-    gun.deployed ? "보관하기" : "연병장에 배치하기",
-  );
-  root
-    .querySelector("#toggle-equipment")
-    .setAttribute("aria-pressed", String(gun.deployed));
-  root.querySelector("#toggle-equipment").disabled = !deploymentOffer(s, id).canDeploy;
-  const max = offer.reason === "max";
-  text(root, "enhancement-cost", max ? `현재 한도 ${offer.limit}강` : fmtGoldCost(offer.cost) + " G");
-  text(
-    root,
-    "enhance-equipment",
-    max
-      ? level>offer.limit ? `기존 ${level}강 유지` : offer.limit===d.maxLevel ? "최대 강화 완료" : "사단기를 강화하면 한도가 늘어납니다"
-      : offer.reason === "gold"
-        ? fmtGoldCost(subtractMoney(offer.cost,s.gold)) + " G 부족"
-        : level + 1 + "강으로 강화",
-  );
-  root.querySelector("#enhance-equipment").disabled = !offer.canUpgrade;
+export function renderEquipmentPanel(state,root,id,{active=true}={}) {
+  const wallet=root.querySelector('#equipment-gold'),gold=fmtGold(state.gold);
+  if(wallet&&wallet.textContent!==gold)wallet.textContent=gold;
+  renderEquipmentStore(state,root,{active});
+  renderPersonalList(state,root,{active});
 }

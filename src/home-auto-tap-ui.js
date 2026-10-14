@@ -3,20 +3,12 @@ import {createStorePurchase,STORE_TEST_GRANT} from './store-purchase.js';
 import {fmt,fmtGold} from './format.js';
 import {reportError} from './diagnostics.js';
 
-export const homeAutoTapIcon=`<svg viewBox="0 0 66 80" role="img" aria-label="자동터치 커서 · AUTO" shape-rendering="crispEdges">
-  <path fill="#0c1917" d="M14 5h5l36 30v5H40l8 16-14 7-9-18-11 11z"/>
-  <path fill="#9b8958" d="M17 8l34 29H36l9 18-9 4-10-20-9 10z"/>
-  <path fill="#e9dfb4" d="M17 8l31 26H32l10 20-5 2-11-22-9 10z"/>
-  <path fill="#fff5d6" d="M17 8l26 22H24v7l-7 7z"/>
-  <path fill="#b7c9aa" d="M8 6h3v7H8zM2 16h7v3H2zM27 3h3v7h-3z"/>
-  <path fill="#586e57" d="M9 64h48v13H9z"/>
-  <path fill="#172b23" d="M10 65h46v11H10z"/>
-  <text x="33" y="74" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" letter-spacing="2" fill="#f4dfa0" shape-rendering="auto">AUTO</text>
-</svg>`;
+import {homeAutoTapIcon} from './home-auto-tap-art.js';
+export {homeAutoTapIcon} from './home-auto-tap-art.js';
 export const AUTO_TAP_TEST_GRANT=STORE_TEST_GRANT;
 export function homeAutoTapMarkup(){
   return `<article class="potion-card auto-tap-card" aria-label="자동터치" data-home-auto-tap>
-    <div class="potion-heading"><div class="potion-art">${homeAutoTapIcon}</div><div><h3>자동터치</h3><strong>초당 2회 · 영구 보유</strong><p>홈에서 자동으로 골드를 모아요.</p><b data-home-auto-status></b></div></div>
+    <div class="potion-heading"><div class="potion-art">${homeAutoTapIcon}</div><div><h3>자동터치</h3><strong>초당 ${HOME_AUTO_TAP.tapsPerSecond}회 · 영구 보유</strong><p>홈에서 자동으로 골드를 모아요.</p><b data-home-auto-status></b></div></div>
     <p class="potion-note">손가락 터치와 함께 사용할 수 있어요.<br>상점·전투·팝업·앱 종료 중에는 멈춥니다.</p>
     <strong class="auto-price">예정 가격 ${fmt(HOME_AUTO_TAP.priceWon)}원</strong>
     <div class="potion-actions"><button type="button" data-buy-home-auto disabled>구매 준비 중</button><button type="button" data-toggle-home-auto aria-pressed="false" disabled>자동터치 켜기</button></div>

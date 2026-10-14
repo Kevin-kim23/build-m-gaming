@@ -23,8 +23,7 @@ export function createGuideSpotlight({onLater,doc=document,win=window}) {
     const dialogs=[...doc.querySelectorAll('dialog[open]')];
     if(dialogs.some(d=>d.id!=='modal'))return {blocked:true};
     const panel=doc.querySelector('#modal[open]');
-    return panel?{panel:panel.dataset.panel,category:panel.dataset.category,
-      item:panel.querySelector('[data-select-equipment][aria-pressed="true"]')?.dataset.selectEquipment}:{};
+    return panel?{panel:panel.dataset.panel,category:panel.dataset.category}:{};
   }
   const setBox=(node,box)=>{for(const [key,value] of Object.entries({left:box.x,top:box.y,width:box.width,height:box.height}))node.style[key]=value+'px';};
   function render(){

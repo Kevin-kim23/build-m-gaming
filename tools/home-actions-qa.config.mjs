@@ -21,6 +21,11 @@ if(sessionStorage.getItem('home-actions-seeded')!==kind){
     if(kind==='owned'){
       s.potions.red.count=2;s.potions.blue.count=2;s.homeAutoTap={owned:true,enabled:false,source:'test'};
     }
+    if(kind==='boosters'){
+      s.potions.red={count:12345,startedAt:now,expiresAt:now+120000};
+      s.potions.blue={count:987654321,startedAt:now,expiresAt:now+8820000};
+      s.homeAutoTap={owned:true,enabled:false,source:'test'};
+    }
   }
   localStorage.setItem(SAVE_KEY,serializeSave(s));localStorage.setItem(SAVE_KEY+'-backup',serializeSave(s));
   localStorage.setItem('budae-kiugi-ui-guide-off','1');

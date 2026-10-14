@@ -18,12 +18,12 @@ import './facilities.css';
 import { syncSwordControls, syncRevolverControls } from "./sword-controls.js";
 import { fmt, fmtGold, fmtGoldCost } from './format.js';
 import { coin, insignia } from './home-view.js';
-import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, buyAdditionalEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool, activateSword, activateAutoTouch } from './game.js';
+import { UNITS, RANKS, armyPower, recruit, recruitOffer, buyEquipment, enhanceEquipment, setEquipmentDeployed, upgradeSchool, activateSword, activateAutoTouch } from './game.js';
 import { SCHOOLS, schoolOffer } from './schools.js';
 import { renderSchools, schoolDetailMarkup } from './school-panels.js';
 import { rankForArmy } from './ranks.js';
 import { COMMAND_BATON, BULK_RECRUIT, commandBatonStatus, generalSwordStatus, GENERAL_SWORD, generalSwordDuration, divisionFlagStatus, generalRevolverStatus, generalRevolverDuration } from './personal-equipment.js';
-import { EQUIPMENT, equipmentOf, visibleEquipment, deploymentOffer } from './equipment.js';
+import { EQUIPMENT, equipmentOf, visibleEquipment } from './equipment.js';
 import { equipmentPanelMarkup, renderEquipmentPanel } from './equipment-panels.js';
 import { drawEquipment } from './equipment-art.js';
 import { SHOP_CATEGORIES, shopMarkup } from './shop.js';
@@ -59,16 +59,19 @@ export function createArmyPanels(session, audio, access) {
   const homeOffers=createHomeOfferPopup({watch:id=>potionController.watch(id),buy:()=>storePurchase.buy('auto'),active:()=>session.active,onSuccess:()=>audio.ui('purchase',state().sound)});
   const personalUI=createPersonalUpgradeUI(session,audio);
   const personalAwards=createPersonalAwardUI({canShow:()=>session.active});
-  let equipmentLevels=null,catalogBaton=-1;
+  let catalogBaton=-1;
   const text = (selector, value) => {
     const node = $(selector), next = String(value);
     if (node && node.textContent !== next) node.textContent = next;
   };
+  function atCurrentPosition(action) {
+    const scrollTop=dialog.scrollTop;
+    try {return action();}
+    finally {if(dialog.open)dialog.scrollTop=scrollTop;}
+  }
   function lockPanel() {
-    const toggle = $('#toggle-equipment');
-    if (toggle) toggle.disabled = !session.active || !deploymentOffer(state(), activeEquipment).canDeploy;
     if (session.active) return;
-    dialog.querySelectorAll('[data-buy], [data-buy-bulk], [data-buy-equipment], [data-buy-additional], [data-upgrade-school], [data-facility-action], #enhance-equipment')
+    dialog.querySelectorAll('[data-buy], [data-buy-bulk], [data-buy-equipment], [data-enhance-equipment], [data-enhance-personal], [data-upgrade-school], [data-facility-action]')
       .forEach(button => { button.disabled = true; });
   }
   function updateShop() {
@@ -119,11 +122,11 @@ export function createArmyPanels(session, audio, access) {
     dialog.scrollTop = 0;
     lockPanel();
   }
-  function openEquipment(id = activeEquipment, nextCategory = equipmentCategory) {
+  function openEquipment(id = activeEquipment, nextCategory = equipmentCategory, preserveScroll=false) {
+    const scrollTop=preserveScroll&&dialog.open?dialog.scrollTop:0;
     if(!dialog.open)returnFocus=document.activeElement;
     equipmentCategory = nextCategory === 'personal' ? 'personal' : 'military';
     equipmentRank = rankForArmy(state());
-    equipmentLevels=state().personalLevels;
     const items = visibleEquipment(state());
     activeEquipment = items.some(d => d.id === id) ? id : (items[0]?.id ?? null);
     equipmentCatalogKey = items.map(d => d.id).join(':');
@@ -133,11 +136,11 @@ export function createArmyPanels(session, audio, access) {
     dialog.innerHTML = equipmentPanelMarkup(state(), activeEquipment, equipmentCategory);
     if (!dialog.open) dialog.showModal();
     updateEquipment();
-    dialog.scrollTop = 0;
+    dialog.scrollTop = scrollTop;
     lockPanel();
   }
   function updateEquipment() {
-    renderEquipmentPanel(state(), dialog, activeEquipment);
+    renderEquipmentPanel(state(), dialog, activeEquipment,{active:session.active});
     syncSwordControls(dialog, state(), session.active);
     syncRevolverControls(dialog, state(), session.active);
   }
@@ -145,7 +148,7 @@ export function createArmyPanels(session, audio, access) {
     personalUI.sync();
     if (!dialog.open) return;
     if (activePanel === 'shop') updateShop();
-    else if (equipmentRank !== rankForArmy(state()) || equipmentLevels!==state().personalLevels || equipmentCatalogKey !== visibleEquipment(state()).map(d => d.id).join(':')) openEquipment();
+    else if (equipmentRank !== rankForArmy(state()) || equipmentCatalogKey !== visibleEquipment(state()).map(d => d.id).join(':')) openEquipment(activeEquipment,equipmentCategory,true);
     else updateEquipment();
     lockPanel();
   }
@@ -153,8 +156,8 @@ export function createArmyPanels(session, audio, access) {
     const popup = openDetail(unitDetailMarkup(state(), UNITS[id]));
     popup.querySelectorAll('[data-portrait]').forEach(c => drawFormationPortrait(c, c.dataset.portrait));
   }
-  function showEquipmentDetail(id) {
-    const popup = openDetail(equipmentDetailMarkup(state(), id, { manage: activePanel === 'shop' }));
+  function showEquipmentDetail(id,preserveScroll=false) {
+    const popup = openDetail(equipmentDetailMarkup(state(), id, { manage: activePanel === 'shop',active:session.active }),{preserveScroll});
     popup.querySelectorAll('[data-gun-preview]').forEach(c => drawEquipment(c, equipmentOf(state(), id)?.level ?? 0, id));
   }
   function buyUnit(id, quantity = 1) {
@@ -195,17 +198,6 @@ export function createArmyPanels(session, audio, access) {
       : result.reason === 'locked' ? `${EQUIPMENT[id].unlockRank} 진급 후 구매할 수 있어요.`
       : result.reason === 'owned' ? '이미 보유한 장비입니다.' : '골드가 부족해요.');
   }
-  function purchaseAdditionalGun(id) {
-    const result = session.change(s => buyAdditionalEquipment(s, Date.now(), id));
-    if (!result) return;
-    audio.ui(result.ok ? 'purchase' : 'error',state().sound);
-    text(activePanel === 'equipment' ? '#equipment-message' : '#shop-message', result.ok
-      ? `${EQUIPMENT[id].name} [${fmt(result.count)}문] · +${result.level}강 유지 · ${result.deployed ? '같은 칸에 합류!' : '보관함에 합류!'}`
-      : result.reason === 'disabled' ? '장비 추가 구매는 현재 잠겨 있습니다.'
-      : result.reason === 'locked' ? '장비 추가 구매 조건이 필요해요.'
-      : result.reason === 'enhancement' ? '먼저 10강까지 강화하세요.'
-      : result.reason === 'gold' ? '골드가 부족해요.' : '추가 구매 조건을 확인하세요.');
-  }
   function buildSchool(id) {
     const result=session.change(s=>upgradeSchool(s,Date.now(),id));
     if(!result)return;
@@ -213,21 +205,20 @@ export function createArmyPanels(session, audio, access) {
     text('#shop-message',result.ok?`사관학교 Lv.${academyLevel(id,result.level)} 완료! ${SCHOOLS[id].effects[result.level-1]} 해금`
       :result.reason==='locked'?schoolOffer(state(),id).requirement+' 조건이 필요해요.':result.reason==='max'?'최대 레벨입니다.':'골드가 부족해요.');
   }
-  function upgradeGun() {
-    const id = activeEquipment;
+  function upgradeGun(id) {
     const result = session.change(s => enhanceEquipment(s, Date.now(), id));
     if (!result) return;
     audio.ui(result.ok ? 'upgrade-success' : 'error',state().sound);
-    if (dialog.open && activePanel === 'equipment' && activeEquipment === id) text('#equipment-message', result.ok
+    if (dialog.open && activePanel === 'equipment') text('#equipment-message', result.ok
       ? `${EQUIPMENT[id].name} +${result.level}강 완료!`
       : result.reason === 'max' ? '현재 강화 한도입니다. 개인 장비에서 사단기를 골드로 강화하면 한도가 1강씩 늘어납니다.'
       : result.reason === 'unowned' ? '장비를 먼저 구매하세요.' : '골드가 부족해요.');
   }
-  function toggleEquipment() {
-    const id = activeEquipment;
+  function toggleEquipment(id) {
+    if(!session.active||!Object.hasOwn(EQUIPMENT,id))return;
     const result = session.change(s => setEquipmentDeployed(s, !equipmentOf(s, id)?.deployed, Date.now(), id));
     if (result) audio.ui(result.ok ? 'equip' : 'error',state().sound);
-    if (result?.ok && dialog.open && activePanel === 'equipment' && activeEquipment === id)
+    if (result?.ok && dialog.open && activePanel === 'equipment')
       text('#equipment-message', EQUIPMENT[id].name + (result.deployed ? ' 배치 완료!' : ' 보관 완료! 강화는 유지됩니다.'));
   }
   dialog.addEventListener('click', async event => {
@@ -244,8 +235,8 @@ export function createArmyPanels(session, audio, access) {
       const result=await storePurchase.buy('starter');
       if(result?.ok)audio.ui('purchase',state().sound);
       if(dialog.open && activePanel==='shop' && category==='store')text('#shop-message',result?.ok
-        ? '스타터팩을 받았어요! 물약은 아이템에서 사용할 수 있어요.'
-        : result?.reason==='cancelled'?'무료 테스트를 취소했어요.':result?.reason==='limit'?'물약 보관 한도를 확인해 주세요.':'지급을 완료하지 못했어요. 다시 확인해 주세요.');
+        ? '스타터팩을 받았어요! 부스터는 아이템에서 사용할 수 있어요.'
+        : result?.reason==='cancelled'?'무료 테스트를 취소했어요.':result?.reason==='limit'?'부스터 보관 한도를 확인해 주세요.':'지급을 완료하지 못했어요. 다시 확인해 주세요.');
     }
     else if(button.hasAttribute('data-buy-home-auto')||button.hasAttribute('data-toggle-home-auto')){
       const buying=button.hasAttribute('data-buy-home-auto');
@@ -261,7 +252,7 @@ export function createArmyPanels(session, audio, access) {
       if(result.ok)audio.ui(button.dataset.potionAd?'purchase':'equip',state().sound);
       if(dialog.open && activePanel==='shop' && category==='items')text('#shop-message',result.ok
         ? `${POTIONS[id].name} ${button.dataset.potionAd?'1개 획득!':`${POTIONS[id].durationLabel} 사용!`}`
-        : result.reason==='cancelled'?'광고 시청을 완료하지 않았어요.':result.reason==='unavailable'?'광고를 불러올 수 없어요. Android 앱과 인터넷 연결을 확인해 주세요.':result.reason==='empty'?'보유한 물약이 없어요.':'지급·사용을 완료하지 못했어요. 다시 확인해 주세요.');
+        : result.reason==='cancelled'?'광고 시청을 완료하지 않았어요.':result.reason==='unavailable'?'광고를 불러올 수 없어요. Android 앱과 인터넷 연결을 확인해 주세요.':result.reason==='empty'?'보유한 부스터가 없어요.':'지급·사용을 완료하지 못했어요. 다시 확인해 주세요.');
     }
     else if (button.hasAttribute('data-use-revolver')) {
       const result = session.change(s => activateAutoTouch(s));
@@ -279,8 +270,14 @@ export function createArmyPanels(session, audio, access) {
     else if (button.dataset.detailPersonal) personalUI.open(button.dataset.detailPersonal);
     else if (button.dataset.buy) buyUnit(button.dataset.buy);
     else if (button.dataset.buyBulk) buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount);
-    else if (button.dataset.buyAdditional) purchaseAdditionalGun(button.dataset.buyAdditional);
-    else if (button.dataset.buyEquipment) purchaseGun(button.dataset.buyEquipment);
+    else if (button.dataset.buyEquipment) atCurrentPosition(()=>purchaseGun(button.dataset.buyEquipment));
+    else if (button.dataset.enhanceEquipment) atCurrentPosition(()=>upgradeGun(button.dataset.enhanceEquipment));
+    else if (button.dataset.enhancePersonal) {
+      atCurrentPosition(()=>{
+        const result=personalUI.upgrade(button.dataset.enhancePersonal);
+        if(result)text('#equipment-message',result.message);
+      });
+    }
     else if (button.dataset.facilityAction) {
       const id=button.dataset.facilityAction,owned=facilityLevel(state(),id)>0;
       const result=session.change(s=>(owned?upgradeFacility:buildFacility)(s,Date.now(),id));
@@ -291,13 +288,13 @@ export function createArmyPanels(session, audio, access) {
     }
     else if (button.dataset.upgradeSchool) buildSchool(button.dataset.upgradeSchool);
     else if (button.dataset.manageEquipment) openEquipment(button.dataset.manageEquipment, 'military');
-    else if (button.dataset.selectEquipment) openEquipment(button.dataset.selectEquipment);
-    else if (button.id === 'enhance-equipment') upgradeGun();
-    else if (button.id === 'toggle-equipment') toggleEquipment();
   });
   onDetailAction((action, data) => {
     if (action === 'open-academy') { closeDetail(); openShop('recruit'); $('[data-upgrade-school]')?.focus({preventScroll:true}); }
     else if (action === 'manage-equipment') { closeDetail(); openEquipment(data.id, 'military'); }
+    else if (action === 'toggle-equipment'&&session.active&&Object.hasOwn(EQUIPMENT,data.id)) {
+      toggleEquipment(data.id);showEquipmentDetail(data.id,true);
+    }
   });
   const openItemOffer=id=>homeOffers.open(id);
   const useHomeItem=id=>id==='auto'?storePurchase.toggle():potionController.use(id);

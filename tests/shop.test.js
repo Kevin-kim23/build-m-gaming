@@ -44,7 +44,8 @@ test("personal equipment is visible early and owned only at its award rank", () 
   assert.match(owned, /Lv\.1/);
   assert.doesNotMatch(owned, /class="personal-recruit-link" data-shop-category="recruit"/);
   assert.match(personalDetailMarkup(state(1280), "commandBaton").body, /골드는 별도로 지불/);
-  assert.doesNotMatch(owned, /data-buy=|data-buy-equipment=|data-buy-bulk=|data-enhance/);
+  assert.doesNotMatch(owned, /data-buy=|data-buy-equipment=|data-buy-bulk=/);
+  assert.match(owned,/data-enhance-personal="commandBaton"/);
 });
 
 test("baton adds four enlisted batch actions without replacing individual recruitment", () => {

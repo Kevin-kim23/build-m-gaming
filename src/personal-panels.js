@@ -4,6 +4,7 @@ import { fmtGold, fmtGoldCost } from './format.js';
 import { PERSONAL_EQUIPMENT, GENERAL_SWORD, MARSHAL_GLAIVE, personalIncomePercent, AUTO_TOUCH } from './personal-catalog.js';
 import { BULK_RECRUIT, personalStatus } from './personal-equipment.js';
 import { personalUpgradeOffer, personalUpgradeStep } from './personal-enhancement.js';
+import {subtractMoney} from './money.js';
 
 export function personalLevelEffect(id,level) {
   if(id==='commandBaton'){
@@ -22,7 +23,7 @@ function effectMarkup(id,level) {
   let explanation;
   if(id==='commandBaton')explanation=Object.entries(BULK_RECRUIT).filter(([,rule])=>rule.level<=level).map(([unit])=>`${UNITS[unit].name} 100명 한 번에 모집`).join('<br>')+'<br>군사학교 해금 조건이 필요하며 모집 골드는 별도로 지불합니다. Lv.16~20은 준원수~특전원수, Lv.21~25는 은하 준장~은하 원수 100명 모집을 차례로 엽니다. Lv.26~30은 은하단 준장~은하단 원수 100명 모집을 차례로 엽니다.';
   else if(id==='generalSword')explanation='사용 시점부터 10분 뒤 재사용합니다. 홈 터치와 리볼버 자동 터치에 적용되며 방치 수입과 전투에는 적용되지 않습니다.';
-  else if(id==='divisionFlag')explanation='사단기를 1레벨 강화할 때마다 군사 장비 강화 한도가 1씩 늘어납니다. 이미 달성한 군사 장비 강화는 유지됩니다. 장비 추가 구매는 현재 잠겨 있습니다.';
+  else if(id==='divisionFlag')explanation='사단기를 1레벨 강화할 때마다 군사 장비 강화 한도가 1씩 늘어납니다. 이미 달성한 군사 장비 강화는 유지됩니다.';
   else if(id==='marshalGlaive')explanation=`보유하면 초당 골드가 기존의 ${1+(MARSHAL_GLAIVE.passiveBonusPercent+(level-1)*MARSHAL_GLAIVE.passiveBonusStep)/100}배가 됩니다. 병력·배치 장비의 점령 보너스가 포함된 수입에 적용하며 소수 골드는 버립니다. 오프라인 수입에도 적용됩니다. 터치 골드·리볼버 지급·전투 능력은 바꾸지 않습니다.`;
   else if(id==='admiralsCompass')explanation='보유하면 병력·배치 장비·시설을 포함한 홈 터치 골드에 적용됩니다. 장군검과 총사령관 인장은 각각 곱해서 적용되며 리볼버 자동 터치에도 반영됩니다. 방치 수입·전투 공격력은 바꾸지 않습니다. 계산 단계마다 소수 골드는 버립니다.';
   else if(id==='strategicTablet')explanation='연병장에 배치한 군사 장비의 초당·터치 수입 합계에 먼저 적용합니다. 병력의 기본 수입·보관 중인 장비·전투 능력은 바꾸지 않습니다. 시설·점령·다른 개인 장비 효과는 그 뒤에 각각 곱해서 적용됩니다. 장비 화면의 기본 능력에는 이 보너스가 포함되지 않습니다. 계산 단계마다 소수 골드는 버립니다.';
@@ -32,22 +33,38 @@ function effectMarkup(id,level) {
 }
 export function personalMarkup(state) {
   const cards=Object.values(PERSONAL_EQUIPMENT).map(item=>{
-    const status=personalStatus(state,item.id);
-
-    return `<article class="personal-item${status.owned?'':' locked'}" data-personal-equipment="${item.id}">
-      <div class="personal-item-heading"><div class="personal-item-art">${personalIcon(item.icon,status.level||1)}</div>
-      <div><span class="item-class">개인 장비</span><h3>${item.name} <small>Lv.${status.level||1}</small></h3>
-      <p class="personal-item-status">${status.owned?'보유 중 · '+item.unlockRank+' 진급 보상':'🔒 '+item.unlockRank+' 진급 시 자동 지급'}</p></div></div>
-      <div class="personal-item-actions"><button type="button" class="personal-detail" data-detail-personal="${item.id}">상세보기</button></div></article>`;
+    const status=personalStatus(state,item.id),offer=personalUpgradeOffer(state,item.id);
+    return `<article class="personal-item${status.owned?'':' locked'} equipment-list-card" data-personal-equipment="${item.id}">
+      <div class="equipment-list-art" data-personal-art data-level="${status.level||1}">${personalIcon(item.icon,status.level||1)}</div>
+      <div class="equipment-list-info"><h3>${item.name} <small>Lv.${status.level||1}</small></h3><p data-personal-status>${status.owned?'보유 중 · '+item.unlockRank+' 진급 보상':'🔒 '+item.unlockRank+' 진급 시 자동 지급'}</p></div>
+      <button type="button" class="equipment-list-detail" data-detail-personal="${item.id}" aria-label="${item.name} 상세보기"><span aria-hidden="true">ⓘ</span></button>
+      <div class="equipment-list-action"><button type="button" class="buy" data-enhance-personal="${item.id}"${offer.canUpgrade?'':' disabled'}>${!status.owned?'🔒 잠금':offer.reason==='max'?'최대 강화':`강화 → Lv.${status.level+1}`}</button><small data-personal-price>${offer.cost===null?(status.owned?'최대 레벨 달성':item.unlockRank+' 진급 보상'):fmtGoldCost(offer.cost)+' G'}</small></div></article>`;
   }).join('');
-  return cards||'<p class="shop-category-empty">진급하면 새로운 개인 장비가 공개됩니다.</p>';
+  return `<section class="equipment-list">${cards}</section>`;
+}
+const set=(node,value)=>{if(node&&node.textContent!==value)node.textContent=value;};
+export function renderPersonalList(state,root,{active=true}={}) {
+  for(const card of root.querySelectorAll('[data-personal-equipment]')) {
+    const id=card.dataset.personalEquipment,item=PERSONAL_EQUIPMENT[id],offer=personalUpgradeOffer(state,id);
+    const q=selector=>card.querySelector(selector),level=offer.level||1,art=q('[data-personal-art]');
+    card.classList.toggle('locked',!offer.owned);
+    if(art.dataset.level!==String(level)){art.innerHTML=personalIcon(item.icon,level);art.dataset.level=String(level);}
+    set(q('h3 small'),`Lv.${level}`);
+    let status=offer.owned?'보유 중 · '+item.unlockRank+' 진급 보상':'🔒 '+item.unlockRank+' 진급 시 자동 지급';
+    if(offer.reason==='gold')status+=` · ${fmtGoldCost(subtractMoney(offer.cost,state.gold))} G 부족`;
+    set(q('[data-personal-status]'),!active?'저장 상태를 확인해 주세요.':status);
+    const price=!offer.owned?item.unlockRank+' 진급 보상':offer.reason==='max'?'최대 레벨 달성':fmtGoldCost(offer.cost)+' G';
+    const button=q('[data-enhance-personal]');button.disabled=!active||!offer.canUpgrade;
+    set(button,!offer.owned?'🔒 잠금':offer.reason==='max'?'최대 강화':`강화 → Lv.${level+1}`);
+    button.setAttribute('aria-label',!offer.owned?`${item.name} · ${item.unlockRank} 진급 시 지급`:offer.reason==='max'?`${item.name} 최대 레벨 ${level}`:`${item.name} Lv.${level+1} 강화 · ${price}`);
+    set(q('[data-personal-price]'),price);
+  }
 }
 export function personalDetailMarkup(state,id,{message=''}={}) {
   const item=PERSONAL_EQUIPMENT[id],status=personalStatus(state,id),level=status.level||1,offer=personalUpgradeOffer(state,id);
   const enhancement=status.owned?`<section class="personal-upgrade" data-personal-upgrade="${id}">
     <h3>골드로 강화 · 최대 Lv.${item.maxLevel}</h3><p>보유 골드 <b data-personal-wallet>${fmtGold(state.gold)} G</b></p>
-    ${offer.reason==='max'?'<p>최대 레벨을 달성했어요.</p>':`<p>Lv.${level} → Lv.${level+1} · 확정 강화<br>강화 비용 <strong>${fmtGoldCost(offer.cost)} G</strong></p>
-      <button class="detail-link" type="button" data-detail-action="enhance-personal" data-id="${id}"${offer.canUpgrade?'':' disabled'}>Lv.${level+1} 확정 강화</button>`}
+    ${offer.reason==='max'?'<p>최대 레벨을 달성했어요.</p>':`<p>Lv.${level} → Lv.${level+1} · 확정 강화<br>강화 비용 <strong>${fmtGoldCost(offer.cost)} G</strong></p>`}
     <p class="personal-upgrade-result" role="status">${message}</p><p data-personal-hint>${offer.reason==='gold'?'골드가 부족해요.':''}</p>
     ${offer.reason==='max'?'':`<p>다음 능력: ${personalLevelEffect(id,level+1)}</p>`}
     <p>표시된 골드를 지불하면 반드시 1레벨 상승합니다.</p>

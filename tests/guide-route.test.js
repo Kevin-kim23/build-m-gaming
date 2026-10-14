@@ -15,13 +15,13 @@ test('promotion, reward, battle, settings and inactive funds block the spotlight
   assert.equal(guideRoute(school,{blocked:true}),null);
   assert.equal(guideRoute({...school,ready:false}),null);
 });
-test('equipment guide closes the personal screen and keeps selection within military equipment',()=>{
-  const step={...school,panel:'equipment',category:'military',item:'artillery',selector:'#enhance-equipment'};
+test('equipment guide closes the personal screen and targets the exact military list row',()=>{
+  const step={...school,panel:'equipment',category:'military',item:'artillery',selector:'[data-enhance-equipment="artillery"]'};
   assert.equal(guideRoute(step).selector,'#open-equipment');
   assert.equal(guideRoute(step,{panel:'equipment',category:'personal'}).selector,'#close-equipment');
   assert.equal(guideRoute(step,{panel:'shop',category:'recruit'}).selector,'#close-shop');
-  assert.equal(guideRoute(step,{panel:'equipment',category:'military',item:'tank'}).selector,'[data-select-equipment="artillery"]');
-  assert.equal(guideRoute(step,{panel:'equipment',category:'military',item:'artillery'}).selector,'#enhance-equipment');
+  assert.equal(guideRoute(step,{panel:'equipment',category:'military',item:'tank'}).selector,step.selector);
+  assert.equal(guideRoute(step,{panel:'equipment',category:'military'}).selector,step.selector);
 });
 test('each standalone home destination is reached without removed integrated tabs',()=>{
   for(const [panel,category,selector] of [

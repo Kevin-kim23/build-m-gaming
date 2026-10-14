@@ -17,9 +17,7 @@ export function guideRoute(step,context={}) {
     return route(context.panel==='equipment'?'#close-equipment':'#close-shop',
       `이 창을 닫고 홈의 ${destination[1]} 메뉴로 이동해 주세요.`);
   }
-  if(step.panel==='equipment'&&category==='military') {
-    if(context.item!==step.item)return route(`[data-select-equipment="${step.item}"]`,'안내할 장비를 선택해 주세요.');
-  }
+  // Military and personal equipment now expose their own action on every list row.
   return route(step.selector,step.text);
 }
 

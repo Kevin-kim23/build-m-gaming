@@ -1,7 +1,7 @@
 // Pure inventory/time rules. A future ad adapter grants only after reward-earned.
 export const POTIONS = Object.freeze({
-  red: Object.freeze({id:'red',name:'빨간물약',kind:'tap',durationMs:60_000,durationLabel:'1분',effect:'터치 골드 2배'}),
-  blue: Object.freeze({id:'blue',name:'파랑물약',kind:'passive',durationMs:1_800_000,durationLabel:'30분',effect:'초당 골드 2배'}),
+  red: Object.freeze({id:'red',name:'터치 부스터',kind:'tap',durationMs:60_000,durationLabel:'1분',effect:'터치 골드 2배'}),
+  blue: Object.freeze({id:'blue',name:'초당 부스터',kind:'passive',durationMs:1_800_000,durationLabel:'30분',effect:'초당 골드 2배'}),
 });
 export const POTION_TIME_LIMIT = 100_000_000_000_000;
 export const POTION_COUNT_LIMIT = Number.MAX_SAFE_INTEGER;

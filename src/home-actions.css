@@ -1,14 +1,22 @@
 /* Viewport overlay: outside tap-zone, so button taps cannot award manual gold or scroll the map. */
-.field-tools {position:absolute;top:8px;right:8px;z-index:4;padding:0;max-width:calc(100% - 16px);pointer-events:none}
-.home-skills {display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;pointer-events:none}
-.field-tools .home-skill {pointer-events:auto;flex:0 0 52px;width:52px;height:70px;padding:4px 2px;display:flex;flex-direction:column;gap:2px;background:#253a30ed;box-shadow:0 2px 5px #14241d66;font-size:10px;line-height:11px}
+.field-tools {position:absolute;display:block;top:8px;right:8px;z-index:4;padding:0;width:max-content;max-width:calc(100% - 16px);pointer-events:none}
+/* Keep one row in the reserved top area. Narrow screens scroll instead of
+   shrinking text or wrapping a second row over the headquarters. */
+.home-skills {display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:4px;max-width:100%;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x;scroll-snap-type:x proximity;scrollbar-width:auto;pointer-events:auto}
+.home-skills::-webkit-scrollbar {height:3px}
+.home-skills::-webkit-scrollbar-track {background:#1a2c23}
+.home-skills::-webkit-scrollbar-thumb {background:#d5bf79;border-radius:2px}
+.field-tools .home-skill {pointer-events:auto;flex:0 0 68px;width:68px;height:72px;padding:4px 3px;display:flex;flex-direction:column;gap:1px;scroll-snap-align:start;background:#253a30ed;box-shadow:0 2px 5px #14241d66;font-size:10px;line-height:12px;touch-action:pan-x}
 .field-tools .home-skill[hidden] {display:none}
 .field-tools .home-skill > span:last-child {white-space:nowrap}
 .field-tools .home-skill.skill-active {border-color:#ffe59a;background:#58633aee;box-shadow:0 0 7px #d6c57b66}
 .field-tools .home-skill:disabled {opacity:.78}
-.home-item-art {display:grid;place-items:center;width:30px;height:30px}
-.home-item-art svg {max-width:28px;height:30px}
-.home-item small {max-width:100%;overflow:hidden;text-overflow:ellipsis;font:700 10px/11px system-ui;color:#f5df9d;white-space:nowrap}
+.home-item-art {display:grid;place-items:center;flex:none;width:30px;height:24px}
+.home-item-art svg {max-width:30px;height:24px}
+.home-auto-art {display:flex;justify-content:center;gap:2px;width:52px}
+.home-auto-art b {font:900 13px/1 system-ui;color:#ffe7a4}
+.home-item-name {white-space:nowrap;line-height:12px}
+.home-item small {max-width:100%;font:700 10px/11px system-ui;color:#f5df9d;white-space:nowrap;font-variant-numeric:tabular-nums}
 .field-tools .sword-clock {margin-bottom:10px}
 .field-tools .home-skill [data-sword-time],.field-tools .home-skill [data-revolver-time] {bottom:-10px;font-size:10px}
 .home-tabs {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}

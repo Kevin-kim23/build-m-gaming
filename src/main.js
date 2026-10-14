@@ -53,6 +53,7 @@ import { createInfoPanel } from "./info-ui.js";
 import { openRankGuide } from "./rank-guide.js";
 import "./detail.css";
 import "./home-actions.css";
+import "./equipment-list.css";
 import "./touch.css";
 import { hidePromotion } from "./promotion.js";
 import { createSettingsUI } from './settings-ui.js';
@@ -275,7 +276,7 @@ const resizeObserver = new ResizeObserver(() => {
   pendingResize = requestAnimationFrame(() => drawHomeField());
 });
 resizeObserver.observe($("#field-viewport"));
-// One clock: revolver uses 300ms, permanent home taps 500ms; both settle elapsed time.
+// One 100ms clock: each automatic source settles elapsed time with its own interval.
 let lastTick = 0;
 setInterval(() => {
   const automaticGold=homeAutoRuntime.tick();

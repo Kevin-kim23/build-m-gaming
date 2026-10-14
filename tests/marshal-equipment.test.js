@@ -8,21 +8,20 @@ import {RANKS,RANK_REQUIREMENTS} from '../src/ranks.js';
 import {EQUIPMENT,equipmentPurchaseOffer,equipmentStats} from '../src/equipment.js';
 import {personalStatus} from '../src/personal-equipment.js';
 import {PERSONAL_EQUIPMENT} from '../src/personal-catalog.js';
-import {personalDetailMarkup,personalLevelEffect} from '../src/personal-panels.js';
+import {personalDetailMarkup,personalLevelEffect,personalMarkup} from '../src/personal-panels.js';
 import {equipmentCombatStats,createBattle,BATTLE_RULES} from '../src/battle.js';
 import {armyPower} from '../src/units.js';
 import {quietBattle,deployNow} from './lane-helpers.js';
 const T=1800000000000;
 const army=(rank='준원수')=>({...freshState(T),soldiers:RANK_REQUIREMENTS[RANKS.indexOf(rank)]-3000,sergeants:300,gold:MAX_GOLD,ncoSchoolLevel:5});
 
-test('enhancement control comes before growing descriptions, artwork and result text at every level',()=>{
+test('enhancement stays in the list instead of shifting down with growing detail descriptions',()=>{
   for(let level=1;level<10;level++){
     const s=army();s.personalLevels.commandBaton=level;
     const body=personalDetailMarkup(s,'commandBaton',{message:'강화 성공!'}).body;
-    const index=body.indexOf('data-detail-action="enhance-personal"');
-    assert.ok(index>=0&&index<body.indexOf('personal-item-effect'));
-    assert.ok(index<body.indexOf('detail-art')&&index<body.indexOf('personal-upgrade-result'));
-    assert.ok(index<body.indexOf('다음 능력'));
+    assert.doesNotMatch(body,/data-detail-action="enhance-personal"/);
+    assert.match(personalMarkup(s),/data-enhance-personal="commandBaton"/);
+    assert.match(body,/강화 비용·능력표/);
   }
 });
 test('railgun and ICBM preview one rank early, enforce ranks and use exact gold and automatic home deployment',()=>{

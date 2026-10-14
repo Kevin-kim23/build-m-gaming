@@ -11,7 +11,7 @@ function setup(watch){
 }
 test('independent ad popup debounces repeated clicks and grants through the existing controller once',async()=>{
   let resolve,watches=0;const fixture=setup(()=>{watches++;return new Promise(r=>resolve=r);});
-  fixture.ui.open('red');assert.equal(fixture.shown().title,'빨간물약');assert.equal(watches,0);
+  fixture.ui.open('red');assert.equal(fixture.shown().title,'터치 부스터');assert.equal(watches,0);
   const pending=fixture.run();await fixture.run();assert.equal(watches,1);assert.equal(fixture.button.disabled,true);
   resolve({ok:true});await pending;assert.equal(fixture.calls(),1);assert.equal(fixture.button.textContent,'획득 완료');
   await fixture.run();assert.equal(watches,1);

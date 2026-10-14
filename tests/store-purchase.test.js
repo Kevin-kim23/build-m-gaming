@@ -50,10 +50,10 @@ function fakeNode(){
 test('one shared dialog shows exact product contents, clears acknowledgement and cancels without a grant',async()=>{
   const dialog={...fakeNode(),open:false,showModal(){this.open=true;},close(){this.open=false;this.listeners.close();}};
   let creates=0;const show=createStoreTestPurchase({createElement(){creates++;return dialog;},body:{append(){}}});
-  const pack=show('starter');assert.match(dialog.innerHTML,/빨간물약 30개 \+ 파랑물약 30개/);assert.match(dialog.innerHTML,/5,900원/);assert.match(dialog.innerHTML,/자동터치는 포함되지/);
+  const pack=show('starter');assert.match(dialog.innerHTML,/터치 부스터 30개 \+ 초당 부스터 30개/);assert.match(dialog.innerHTML,/5,900원/);assert.match(dialog.innerHTML,/자동터치는 포함되지/);
   assert.equal((await show('auto')).status,'unavailable');
   dialog.querySelector('[data-test-purchase-ack]').checked=true;dialog.querySelector('[data-test-purchase-confirm]').listeners.click();assert.deepEqual(await pack,granted);
-  const auto=show('auto');assert.match(dialog.innerHTML,/자동터치 무료 테스트/);assert.match(dialog.innerHTML,/4,900원/);assert.doesNotMatch(dialog.innerHTML,/빨간물약 30개/);
+  const auto=show('auto');assert.match(dialog.innerHTML,/자동터치 무료 테스트/);assert.match(dialog.innerHTML,/4,900원/);assert.doesNotMatch(dialog.innerHTML,/터치 부스터 30개/);
   assert.equal(dialog.querySelector('[data-test-purchase-ack]').checked,false);dialog.querySelector('[data-test-purchase-cancel]').listeners.click();assert.equal((await auto).status,'cancelled');assert.equal(creates,1);
 });
 test('store renderer locks release, claimed and full inventories, with no unchanged text rewrites',()=>{

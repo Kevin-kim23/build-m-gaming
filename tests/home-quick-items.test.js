@@ -33,6 +33,22 @@ test('item blocks distinguish unavailable, owned, active and expired potion/auto
   s.homeAutoTap.enabled=true;assert.equal(homeItemStatus(s,'auto',T).label,'ON');
 });
 
+test('long booster timers and large inventories stay compact while accessibility keeps exact values',()=>{
+  const s=freshState(T);
+  s.potions.blue={count:12345,startedAt:T,expiresAt:T+8_820_000};
+  const status=homeItemStatus(s,'blue',T);
+  assert.equal(status.label,'×1.2만');
+  assert.equal(status.time,'2:27:00');
+  assert.match(status.aria,/보유 12345개/);
+  assert.match(status.aria,/2시간 27분/);
+  s.potions.blue={count:Number.MAX_SAFE_INTEGER,startedAt:T,expiresAt:100_000_000_000_000};
+  const extreme=homeItemStatus(s,'blue',T);
+  assert.equal(extreme.label,'×9007조');
+  assert.ok(extreme.time.length<=9,extreme.time);
+  assert.match(extreme.aria,/보유 9007199254740991개/);
+  assert.match(extreme.aria,/시간/);
+});
+
 test('quick controls route offers without granting items and respect inactive sessions',()=>{
   const s=freshState(T),calls=[],label={textContent:''};
   const button={dataset:{homeItem:'red'},classList:{toggle(){}},attrs:{},

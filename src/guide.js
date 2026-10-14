@@ -60,7 +60,7 @@ export function guideCandidates(state) {
   if(guns.length&&!guns.some(g=>equipmentOf(state,g.id).level>=1)) {
     const gun=guns.find(g=>enhancementOffer(state,g.id).canUpgrade)??guns[0],offer=enhancementOffer(state,gun.id);
     list.push(action('equipment-upgrade','군사 장비 첫 강화',offer.canUpgrade?`${gun.name}를 강화해 보세요. 초당·터치 수입과 전투 성능이 향상됩니다. 군사 장비 강화는 확정 성공입니다.`:goal(offer.cost,gun.name+' 강화'),
-      offer.canUpgrade,'equipment','military','#enhance-equipment',gun.id));
+      offer.canUpgrade,'equipment','military',`[data-enhance-equipment="${gun.id}"]`,gun.id));
   }
   return list;
 }

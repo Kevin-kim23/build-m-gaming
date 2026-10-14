@@ -72,7 +72,7 @@ test('home HUD shows both potion timers, clears at expiry and does no extra writ
   for(const id of ['red','blue']){grantPotion(s,id);usePotion(s,T,id);}
   ui.syncPotions(s,T);
   const red=nodes.get('#tap-potion-effect'),blue=nodes.get('#passive-potion-effect');
-  assert.equal(red.textContent,'빨간물약 ×2 · 1:00');assert.equal(blue.textContent,'파랑물약 ×2 · 30:00');
+  assert.equal(red.textContent,'터치 부스터 ×2 · 1:00');assert.equal(blue.textContent,'초당 부스터 ×2 · 30:00');
   const writes=red.writes+blue.writes;
   for(let i=0;i<300;i++)ui.syncPotions(s,T);assert.equal(red.writes+blue.writes,writes);
   ui.syncPotions(s,T+60000);assert.equal(red.hidden,true);assert.equal(blue.hidden,false);

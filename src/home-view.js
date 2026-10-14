@@ -106,7 +106,7 @@ function footerMarkup() {
 
 function fieldToolsMarkup() {
   return '<section class="field-tools" aria-label="사용 아이템">' +
-    '<div class="home-skills" role="group" aria-label="사용 아이템">' + homeItemsMarkup() + '<button class="home-skill home-sword" data-use-sword hidden><span class="sword-clock">' +
+    '<div class="home-skills" role="group" aria-label="사용 아이템 · 좌우로 밀어 더 보기">' + homeItemsMarkup() + '<button class="home-skill home-sword" data-use-sword hidden><span class="sword-clock">' +
     '<svg class="sword-clock-ring" viewBox="0 0 48 48" aria-hidden="true" focusable="false" hidden><circle class="sword-clock-track" cx="24" cy="24" r="21"/><circle data-sword-ring cx="24" cy="24" r="21" pathLength="100" stroke-dasharray="100 100" transform="rotate(-90 24 24)"/></svg>' +
     '<span data-sword-art>' + personalIcon('sword') + '</span><span data-sword-time hidden></span></span>' +
     '<span data-sword-label>장군검</span></button>' +

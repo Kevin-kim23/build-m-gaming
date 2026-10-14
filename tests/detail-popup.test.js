@@ -45,6 +45,12 @@ test('shared details keep padding clicks open, close on backdrop or close contro
     assert.equal(openings, before);
     assert.match(dialog.innerHTML, /전차/);
     assert.equal(dialog.scrollTop, 0);
+    dialog.scrollTop=260;
+    openDetail({title:'전차',body:'<p>갱신한 설명</p>'},{preserveScroll:true});
+    assert.equal(dialog.scrollTop,260,'refreshing the same detail preserves its reading position');
+    closeDetail();
+    openDetail(content,{preserveScroll:true});
+    assert.equal(dialog.scrollTop,0,'opening a new sheet starts from the top');
     assert.equal(creations, 1); assert.equal(attached, 1); assert.equal(events.size, 1);
   } finally {
     closeDetail(); global.document = previous;

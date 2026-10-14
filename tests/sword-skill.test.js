@@ -76,9 +76,10 @@ test('ceremonial pixel drawings are detailed, distinct and cached by level',()=>
   assert.notEqual(baton,upgraded);assert.notEqual(baton,sword);assert.equal(personalIcon('sword'),sword);
 });
 
-test('owned sword card retains valid article attributes and only detail buttons',()=>{
+test('owned sword card retains valid attributes, direct upgrades and no duplicated skill buttons',()=>{
   const html=personalMarkup(general());
-  assert.match(html,/<article class="personal-item" data-personal-equipment="generalSword">/);
+  assert.match(html,/<article class="personal-item equipment-list-card" data-personal-equipment="generalSword">/);
+  assert.match(html,/data-enhance-personal="generalSword"/);
   assert.equal((html.match(/data-use-sword/g)??[]).length,0);
   assert.equal((html.match(/<button class="sword-skill-button"/g)??[]).length,0);
 });
