@@ -6,7 +6,7 @@ import {STORE_TEST_GRANT} from './store-purchase.js';
 import {fmt} from './format.js';
 
 export function storeMarkup(){
-  return `<div class="store-products"><article class="starter-pack" data-starter-pack aria-label="스타터팩">
+  return `<div class="store-products">${homeAutoTapMarkup()}<article class="starter-pack" data-starter-pack aria-label="스타터팩">
     <div class="starter-ribbon"><span>성장 지원</span><small>현재 기기 기록당 1회</small></div>
     <header><small>STARTER PACK</small><h3>시작을 든든하게</h3><p>터치도, 방치도 두 배로!</p></header>
     <div class="starter-rewards">${Object.values(POTIONS).map(p=>`<div class="starter-reward ${p.id}"><div class="starter-potion">${potionIcon(p.id)}<b>×${STARTER_PACK[p.id]}</b></div><strong>${p.name}</strong><span>${p.effect}</span><small>1개당 ${p.durationLabel}</small></div>`).join('')}</div>
@@ -15,7 +15,7 @@ export function storeMarkup(){
     <button type="button" data-buy-starter disabled>구매 준비 중</button>
     <p data-starter-status role="status"></p>
     <p class="potion-note">부스터는 아이템에서 직접 사용해요.<br>실제 결제는 아직 연결되지 않았어요. 개발 화면에서만 무료 테스트 지급을 받을 수 있어요.</p>
-  </article>${homeAutoTapMarkup()}</div>`;
+  </article></div>`;
 }
 export function renderStore(s,root,{busy=false,active=true,allowTestGrant=STORE_TEST_GRANT}={}){
   renderHomeAutoTap(s,root,{busy,active,allowTestGrant});

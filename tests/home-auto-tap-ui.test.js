@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState} from '../src/state.js';
 import {createAutoTapTestPurchase} from '../src/test-purchase.js';
-import {createHomeAutoTapFeedback,homeAutoTapMarkup,renderHomeAutoTap} from '../src/home-auto-tap-ui.js';
+import {createHomeAutoTapFeedback,homeAutoTapMarkup,homeAutoTapPitch,renderHomeAutoTap} from '../src/home-auto-tap-ui.js';
+import {homeOfferMarkup} from '../src/home-offer-popup.js';
+import {HOME_AUTO_TAP} from '../src/home-auto-tap-rules.js';
 import {createBackHandler} from '../src/back-button.js';
 import {grantTestHomeAutoTap,toggleHomeAutoTap} from '../src/home-auto-tap-rules.js';
 import {recruitRank,recruitRankMarkup} from '../src/recruit-rank.js';
@@ -16,6 +18,17 @@ function fakeNode(){
     setAttribute(k,v){attributes[k]=v;},addEventListener:(t,fn)=>{listeners[t]=fn;},
     querySelector(s){if(!children.has(s))children.set(s,fakeNode());return children.get(s);},click(){return listeners.click?.();}};
 }
+
+test('store and standalone offer share an inert preview while retaining explicit purchase controls and limits',()=>{
+  const pitch=homeAutoTapPitch(),store=homeAutoTapMarkup(),offer=homeOfferMarkup('auto',{allowTestGrant:false}).body;
+  assert.ok(store.includes(pitch));assert.ok(offer.includes(pitch));
+  assert.match(pitch,new RegExp(`초당 ${HOME_AUTO_TAP.tapsPerSecond}회`));
+  assert.match(pitch,/상점·전투·팝업·앱 종료 중에는 멈춥니다/);
+  assert.match(pitch,/작동 예시/);assert.doesNotMatch(pitch,/<button|<input|onclick|data-buy|data-detail-action/);
+  assert.equal((store.match(/data-buy-home-auto/g)||[]).length,1);
+  assert.equal((offer.match(/data-detail-action=/g)||[]).length,1);
+  assert.match(offer,/disabled>구매 준비 중/);assert.match(store,/구매 복원은 준비 중/);
+});
 test('test purchase dialog confirms explicitly, cancels via Android back, and safely reopens',async()=>{
   const dialog={...fakeNode(),open:false,showModal(){this.open=true;},close(){this.open=false;}};
   const root={createElement:()=>dialog,body:{append(){}},querySelector:s=>s==='#test-purchase-modal'?dialog:null};
@@ -36,10 +49,12 @@ test('item UI clearly shows free test, locks repurchase, toggles accessibly and 
   assert.match(homeAutoTapMarkup(),/예정 가격 4,900원/);assert.match(homeAutoTapMarkup(),/구매 준비 중/);assert.match(homeAutoTapMarkup(),/초당 5회/);
   const s=freshState(1),root=fakeNode(),card=root.querySelector('[data-home-auto-tap]');
   renderHomeAutoTap(s,root);assert.equal(card.querySelector('[data-toggle-home-auto]').disabled,true);assert.equal(card.querySelector('[data-buy-home-auto]').disabled,true);
+  assert.equal(card.querySelector('[data-toggle-home-auto]').hidden,true);
   grantTestHomeAutoTap(s);renderHomeAutoTap(s,root);
   const buy=card.querySelector('[data-buy-home-auto]'),toggle=card.querySelector('[data-toggle-home-auto]');
   assert.equal(buy.disabled,true);assert.equal(buy.textContent,'보유 중');
   assert.equal(toggle.disabled,false);assert.equal(toggle.attributes['aria-pressed'],'true');
+  assert.equal(toggle.hidden,false);assert.equal(card.querySelector('[data-home-auto-status]').hidden,false);
   const writes=buy.writes+toggle.writes;for(let i=0;i<100;i++)renderHomeAutoTap(s,root);
   assert.equal(buy.writes+toggle.writes,writes);
   toggleHomeAutoTap(s);renderHomeAutoTap(s,root);assert.equal(toggle.attributes['aria-pressed'],'false');
