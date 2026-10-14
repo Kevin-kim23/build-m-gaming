@@ -1,3 +1,7 @@
+# 0.76.18 Google Play 결제 도입 (2026-10-14)
+
+사용자 최종 문안 승인 후 앱/생성 Markdown·HTML 방침12·약관9 반영. 공개 Google Docs와 Play 데이터 보안/스토어 입력은 미수정. 게시용 파일 PRIVACY_POLICY.md, SERVICE_TERMS.md. 광고 샘플 ID 유지. 새 Billing SDK/진단·구매 처리 검토 사항은 ../../docs/PLAY_BILLING_RELEASE_07618.md 참조. 실제 결제 시험과 상품 활성화 미완료. 과거 보고11/8 유지 표현은 서버 브랜치와 혼동했으며 직전 UI 실제값7/4에서 이번 승인12/9로 변경.
+
 # 0.73.1 비공개 테스트 광고 전환 (2026-10-10)
 
 - 사용자 요청으로 release/debug 모두 Google 공식 샘플 앱/보상형 광고 ID 사용. 실제 수익 없음. 아래0.72 운영 ID 기록보다 이 항목이 우선함.

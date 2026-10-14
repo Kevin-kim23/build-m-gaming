@@ -44,7 +44,7 @@ export function renderHomeAutoTap(s,root,{busy=false,active=true,allowTestGrant=
   if(play){
     const price=card.querySelector('[data-play-price]'),note=card.querySelector('[data-play-note]');
     if(price)text(price,billing.price||'Play 가격 확인 중');
-    if(note)text(note,'Google Play 결제 시험 빌드입니다. 구매창의 가격과 계정을 확인하세요. 같은 Play 계정으로 영구 상품을 복원할 수 있어요. 게임 진행 기록은 복원되지 않아요.');
+    if(note)text(note,'Google Play 일회성 구매 상품입니다. 구매창의 가격과 계정을 확인하세요. 같은 Play 계정으로 영구 상품을 복원할 수 있어요. 게임 진행 기록은 복원되지 않아요.');
   }
   toggle.disabled=!owned||busy||!active;text(toggle,enabled?'자동터치 끄기':'자동터치 켜기');
   toggle.setAttribute('aria-pressed',String(enabled));

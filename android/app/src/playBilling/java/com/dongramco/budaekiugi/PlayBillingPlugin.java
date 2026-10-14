@@ -9,7 +9,7 @@ import org.json.JSONObject;
 import java.util.Collections;
 import java.util.List;
 
-/** Opt-in debug integration only. No Firebase, HTTP backend or credential logging. */
+/** Explicitly configured Play integration. No Firebase, HTTP backend or credential logging. */
 @CapacitorPlugin(name = "PlayBilling")
 public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListener {
     private BillingClient client;
@@ -19,7 +19,7 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
     private String productId="";
     private boolean starter, completing;
     private boolean configured() {
-        return BuildConfig.DEBUG && BuildConfig.PLAY_BILLING_ENABLED
+        return BuildConfig.PLAY_BILLING_ENABLED
             && !productId.isEmpty() && !BuildConfig.PLAY_BILLING_KEY.isEmpty();
     }
     private void finish(String status) { JSObject out=new JSObject();out.put("status",status);out.put("configured",configured());finish(out); }

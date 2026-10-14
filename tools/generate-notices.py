@@ -21,6 +21,10 @@ def add_text(value):
 
 def licenses(pom):
     tree = ET.parse(pom)
+    # Some Maven POMs (e.g. javax.inject:1) omit the XML namespace.
+    if not tree.getroot().tag.startswith('{'):
+        for element in tree.iter():
+            element.tag = '{' + NS['m'] + '}' + element.tag
     found = tree.findall('m:licenses/m:license', NS)
     if found:
         return [(n.findtext('m:name', namespaces=NS), n.findtext('m:url', namespaces=NS)) for n in found]

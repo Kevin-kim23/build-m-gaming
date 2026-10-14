@@ -10,6 +10,16 @@
     ]
   },
   {
+    "coordinate": "androidx.activity:activity:1.11.0",
+    "sha256": "26726186b34f90b0fe55bbf0ebbf640ade99915bc35f4cb0153ddcf751499bd3",
+    "licenses": [
+      [
+        "The Apache Software License, Version 2.0",
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ]
+    ]
+  },
+  {
     "coordinate": "androidx.annotation:annotation-experimental:1.4.1",
     "sha256": "6bd4c7c7476f8260cd3bdbb81183583e93fc9f790c27dea7dc314181cbf87aa0",
     "licenses": [
@@ -580,6 +590,46 @@
     ]
   },
   {
+    "coordinate": "com.android.billingclient:billing:8.3.0",
+    "sha256": "9810b5cd47e20bc82b354f3583c9d3bf7c42b33e64e192dce0495d036a85f505",
+    "licenses": [
+      [
+        "Android Software Development Kit License",
+        "https://developer.android.com/studio/terms.html"
+      ]
+    ]
+  },
+  {
+    "coordinate": "com.google.android.datatransport:transport-api:3.0.0",
+    "sha256": "4e6983c0703b357df6f1c6ceacb1b5dfc2c5006a789c799fec2298b2b5337466",
+    "licenses": [
+      [
+        "The Apache Software License, Version 2.0",
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ]
+    ]
+  },
+  {
+    "coordinate": "com.google.android.datatransport:transport-backend-cct:3.1.8",
+    "sha256": "e17edd1ef7fd475c90baa4e39422332f27087d34bcb46cb48ce86af9a54a612e",
+    "licenses": [
+      [
+        "The Apache Software License, Version 2.0",
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ]
+    ]
+  },
+  {
+    "coordinate": "com.google.android.datatransport:transport-runtime:3.1.8",
+    "sha256": "cb9353ef1791ae17097d878ca711e25a9c32cec9042adc49b00cadfee1a7290b",
+    "licenses": [
+      [
+        "The Apache Software License, Version 2.0",
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ]
+    ]
+  },
+  {
     "coordinate": "com.google.android.gms:play-services-ads:25.5.0",
     "sha256": "9c27b4a694954e13b4f60c071f894e579340452e250056fa43a1768ca93ddb29",
     "licenses": [
@@ -620,8 +670,8 @@
     ]
   },
   {
-    "coordinate": "com.google.android.gms:play-services-base:18.0.0",
-    "sha256": "3f30895041fcea46dc5ac151a37c0de8a3a169b520007a53d097819df385df60",
+    "coordinate": "com.google.android.gms:play-services-base:18.5.0",
+    "sha256": "59a5c0c2da12311d75d965ce1f419498536b1a167fb28ff7dfc2dfd9cefa4157",
     "licenses": [
       [
         "Android Software Development Kit License",
@@ -632,6 +682,16 @@
   {
     "coordinate": "com.google.android.gms:play-services-basement:18.9.0",
     "sha256": "c6ed7236b1b3ce0296b508a5c0a09108fd52d83559d35cad2639505cd04ab255",
+    "licenses": [
+      [
+        "Android Software Development Kit License",
+        "https://developer.android.com/studio/terms.html"
+      ]
+    ]
+  },
+  {
+    "coordinate": "com.google.android.gms:play-services-location:19.0.0",
+    "sha256": "6b205c43ba5df751eca8ce9dae7a58effafac7d637fb4fc708a7522d1b99cf80",
     "licenses": [
       [
         "Android Software Development Kit License",
@@ -652,6 +712,16 @@
   {
     "coordinate": "com.google.android.gms:play-services-measurement-sdk-api:20.1.2",
     "sha256": "cd910d45be7ebe3b70c9a4c16c9bee65e8748115ed40123643984f35e91b5f38",
+    "licenses": [
+      [
+        "Android Software Development Kit License",
+        "https://developer.android.com/studio/terms.html"
+      ]
+    ]
+  },
+  {
+    "coordinate": "com.google.android.gms:play-services-places-placereport:17.0.0",
+    "sha256": "2c7fd63ad02f28150ae4ffe4615dac7d694d790e2c4667f777aedc8ee054e929",
     "licenses": [
       [
         "Android Software Development Kit License",
@@ -710,6 +780,36 @@
     ]
   },
   {
+    "coordinate": "com.google.firebase:firebase-encoders:17.0.0",
+    "sha256": "282a5a703f9b7eb56508dde97ea918e95d73318b157050f457f7a86dca750150",
+    "licenses": [
+      [
+        "The Apache Software License, Version 2.0",
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ]
+    ]
+  },
+  {
+    "coordinate": "com.google.firebase:firebase-encoders-json:18.0.0",
+    "sha256": "80aece7e1ef58957ca2fc1957bc9208ec92a3a9528201331d3c63e3182570f97",
+    "licenses": [
+      [
+        "The Apache Software License, Version 2.0",
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ]
+    ]
+  },
+  {
+    "coordinate": "com.google.firebase:firebase-encoders-proto:16.0.0",
+    "sha256": "293db96a0d1d43f033167881b638d8fde844e4e5495f5101cf52295765295e0e",
+    "licenses": [
+      [
+        "The Apache Software License, Version 2.0",
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ]
+    ]
+  },
+  {
     "coordinate": "com.google.guava:failureaccess:1.0.1",
     "sha256": "a171ee4c734dd2da837e4b16be9df4661afab72a41adaf31eb84dfdaf936ca26",
     "licenses": [
@@ -742,6 +842,16 @@
   {
     "coordinate": "com.google.j2objc:j2objc-annotations:1.3",
     "sha256": "21af30c92267bd6122c0e0b4d20cccb6641a37eaf956c6540ec471d584e64a7b",
+    "licenses": [
+      [
+        "The Apache Software License, Version 2.0",
+        "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      ]
+    ]
+  },
+  {
+    "coordinate": "javax.inject:javax.inject:1",
+    "sha256": "91c77044a50c481636c32d916fd89c9118a72195390452c81065080f957de7ff",
     "licenses": [
       [
         "The Apache Software License, Version 2.0",

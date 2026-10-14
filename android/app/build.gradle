@@ -10,9 +10,17 @@ def appVersionCode = appVersionParts[0] * 1000000 + appVersionParts[1] * 1000 + 
 apply plugin: 'com.android.application'
 // Billing stays out of normal/release artifacts until product and policy approval.
 def playBillingTest = providers.gradleProperty('playBillingTest').orNull == 'true'
+def playBillingRelease = providers.gradleProperty('playBillingRelease').orNull == 'true'
 def billingConfig = new Properties()
 def billingFile = file('../play-billing.properties')
-if (playBillingTest && billingFile.exists()) billingFile.withInputStream { billingConfig.load(it) }
+if ((playBillingTest || playBillingRelease) && billingFile.exists()) billingFile.withInputStream { billingConfig.load(it) }
+if (playBillingRelease) {
+    ['autoTapProductId', 'starterProductId', 'playLicensePublicKey'].each { name ->
+        if (!billingConfig.getProperty(name, '').trim()) throw new GradleException('Missing local billing setting: ' + name)
+    }
+    if (billingConfig.getProperty('autoTapProductId') == billingConfig.getProperty('starterProductId'))
+        throw new GradleException('Billing product IDs must be distinct.')
+}
 def billingString = { name -> groovy.json.JsonOutput.toJson(billingConfig.getProperty(name, '')) }
 
 
@@ -53,6 +61,10 @@ android {
             resValue "string", "potion_rewarded_ad_unit", "ca-app-pub-3940256099942544/5224354917"
         }
         release {
+            buildConfigField 'boolean', 'PLAY_BILLING_ENABLED', playBillingRelease.toString()
+            buildConfigField 'String', 'PLAY_AUTO_TAP_PRODUCT', billingString('autoTapProductId')
+            buildConfigField 'String', 'PLAY_STARTER_PRODUCT', billingString('starterProductId')
+            buildConfigField 'String', 'PLAY_BILLING_KEY', billingString('playLicensePublicKey')
             resValue "string", "admob_app_id", "ca-app-pub-3940256099942544~3347511713"
             resValue "string", "potion_rewarded_ad_unit", "ca-app-pub-3940256099942544/5224354917"
             minifyEnabled false
@@ -71,6 +83,10 @@ if (playBillingTest) {
     android.sourceSets.debug.java.srcDir 'src/playBilling/java'
     android.sourceSets.test.java.srcDir 'src/playBillingTest/java'
     dependencies { debugImplementation 'com.android.billingclient:billing:8.3.0' }
+}
+if (playBillingRelease) {
+    android.sourceSets.release.java.srcDir 'src/playBilling/java'
+    dependencies { releaseImplementation 'com.android.billingclient:billing:8.3.0' }
 }
 apply from: 'release-signing.gradle'
 

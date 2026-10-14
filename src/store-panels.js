@@ -27,13 +27,13 @@ export function renderStore(s,root,{busy=false,active=true,allowTestGrant=STORE_
   const play=starterBilling?.configured===true;
   button.disabled=claimed||full||busy||!active||(play?!starterBilling.price:!allowTestGrant);
   const label=claimed?'수령 완료':play?(starterBilling.price?'Google Play로 구매':'상품 확인 필요'):allowTestGrant?'스타터팩 · 무료 테스트':'구매 준비 중';
-  const note=claimed?'이 기기의 게임 기록에서 이미 받았어요.':full?'부스터 보관 한도를 확인해 주세요.':play?'구매창의 가격과 테스트 결제 수단을 확인하세요.':allowTestGrant?'개발용 무료 테스트 · 실제 결제 없음':'정식 결제 연결 전에는 구매할 수 없어요.';
+  const note=claimed?'이 기기의 게임 기록에서 이미 받았어요.':full?'부스터 보관 한도를 확인해 주세요.':play?'구매창의 가격과 결제 계정을 확인하세요.':allowTestGrant?'개발용 무료 테스트 · 실제 결제 없음':'정식 결제 연결 전에는 구매할 수 없어요.';
   const restore=card.querySelector('[data-restore-starter]');
   if(restore){restore.hidden=!play;restore.disabled=busy||!active;}
   if(play){
     const price=card.querySelector('[data-starter-price]'),info=card.querySelector('[data-starter-note]');
     if(price)price.textContent=starterBilling.price||'Play 가격 확인 중';
-    if(info)info.textContent='결제 시험용 1회 상품입니다. 사용한 부스터는 다시 지급하지 않아요. 재설치·다른 기기의 지급 기록은 완전히 보호할 수 없어 실제 판매는 비활성화 상태입니다.';
+    if(info)info.textContent='1회 구매 상품입니다. 같은 게임 기록에서 다시 지급하지 않아요. 별도 서버가 없어 재설치·다른 기기에서는 다시 지급될 수 있습니다. 게임 진행 기록은 복원되지 않아요.';
   }
   if(button.textContent!==label)button.textContent=label;
   if(status.textContent!==note)status.textContent=note;

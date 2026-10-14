@@ -14,7 +14,7 @@ export function homeOfferMarkup(id,{allowTestGrant=AUTO_TAP_TEST_GRANT,billing=n
   const price=String(billing?.price??'Play 가격 확인 중').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const disabled=owned||(play?!billing.price:!allowTestGrant);
   const label=owned?'보유 중':play?(billing.price?'Google Play로 구매':'상품 확인 필요'):allowTestGrant?'구매하기 · 개발 테스트':'구매 준비 중';
-  const purchaseNote=play?'결제 시험 빌드입니다. 구매창의 가격과 테스트 결제 수단을 확인하세요.':'실제 결제·구매 복원은 아직 연결되지 않았어요. 개발 테스트에서는 결제하지 않아요.';
+  const purchaseNote=play?'Google Play 일회성 구매 상품입니다. 구매창의 가격과 결제 계정을 확인하세요.':'실제 결제·구매 복원은 아직 연결되지 않았어요. 개발 테스트에서는 결제하지 않아요.';
   if(id==='max')return {kicker:'스타터팩',title:p.name,body:`<div class="home-offer max-offer" data-home-offer="max"><div class="home-offer-art">${potionIcon('max')}</div><h3>10분 동안 금빛 성장</h3><p>${p.effect}</p><p>스타터팩: 빨강 ${STARTER_PACK.red}개 · 파랑 ${STARTER_PACK.blue}개 · 금빛 ${STARTER_PACK.max}개 · 자동터치 미포함</p><p>${play?price:`예정 가격 ${fmt(STARTER_PACK.priceWon)}원`}</p><p>시간은 종료 중에도 흐르며, 다른 부스터와 곱해 적용돼요.</p><button type="button" class="buy" data-detail-action="home-offer-claim" data-item="max" ${disabled?'disabled':''}>${label}</button><p class="potion-note">${purchaseNote} 이미 받은 부스터는 다시 지급하지 않아요.</p><p role="status" data-home-offer-message></p></div>`};
   if(!auto&&!p)throw new RangeError('Unknown home item');
   return {kicker:auto?'영구 아이템':'부스터 받기',title:auto?'자동터치':p.name,

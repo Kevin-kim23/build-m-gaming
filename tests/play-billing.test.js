@@ -56,6 +56,7 @@ test('normal/release build keeps SDK out; no backend or consume API in permanent
   const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
   const gradle=read('android/app/build.gradle');assert.match(gradle,/if \(playBillingTest\) \{[\s\S]*debugImplementation 'com.android.billingclient:billing:8.3.0'/);
   const native=read('android/app/src/playBilling/java/com/dongramco/budaekiugi/PlayBillingPlugin.java');
-  assert.match(native,/BuildConfig.DEBUG && BuildConfig.PLAY_BILLING_ENABLED/);assert.doesNotMatch(native,/consumeAsync|https?:\/\//);
+  assert.match(native,/return BuildConfig.PLAY_BILLING_ENABLED/);assert.doesNotMatch(native,/consumeAsync|https?:\/\//);
+  assert.match(gradle,/if \(playBillingRelease\)/);assert.match(gradle,/Missing local billing setting/);
   assert.match(native,/PlayPurchaseVerifier.verify/);assert.match(native,/PurchaseState.PENDING/);
 });
