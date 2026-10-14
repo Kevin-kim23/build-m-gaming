@@ -4,9 +4,11 @@ import {reportError} from './diagnostics.js';
 
 export const STORE_TEST_GRANT=import.meta.env?.DEV===true;
 // One pending purchase for both products, including the home quick action.
-export function createStorePurchase(session,{showPurchase,allowTestGrant=STORE_TEST_GRANT,onChange=()=>{},onError=reportError}){
+export function createStorePurchase(session,{showPurchase,playBilling=null,allowTestGrant=STORE_TEST_GRANT,onChange=()=>{},onError=reportError}){
   let busy=false;
   async function buy(id){
+    if(busy||playBilling?.busy)return {ok:false,reason:'busy'};
+    if(id==='auto'&&playBilling?.info.configured)return playBilling.buy();
     const grant=id==='auto'?grantTestHomeAutoTap:id==='starter'?grantTestStarterPack:null;
     const owned=id==='auto'?session.state.homeAutoTap?.owned:session.state.starterPack?.claimed;
     if(!grant||!allowTestGrant||busy||!session.active||owned)return {ok:false,reason:'unavailable'};
@@ -19,5 +21,5 @@ export function createStorePurchase(session,{showPurchase,allowTestGrant=STORE_T
     }catch(error){onError('store.purchase',error);return {ok:false,reason:'error'};}
     finally{busy=false;onChange();}
   }
-  return {buy,toggle:()=>busy?{ok:false,reason:'busy'}:session.change(toggleHomeAutoTap),get busy(){return busy;}};
+  return {buy,toggle:()=>busy||playBilling?.busy?{ok:false,reason:'busy'}:session.change(toggleHomeAutoTap),get busy(){return busy||!!playBilling?.busy;}};
 }

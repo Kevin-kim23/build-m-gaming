@@ -125,7 +125,7 @@ test('v32 migration preserves progress without granting entitlement; v33 validat
   assert.equal(migrated.version,SAVE_VERSION);assert.deepEqual(migrated.homeAutoTap,emptyHomeAutoTap());
   assert.equal(migrated.gold,legacy.gold);assert.deepEqual(migrated.facilityLevels,legacy.facilityLevels);
   assert.deepEqual(migrated.potions,legacy.potions);assert.deepEqual(migrated.equipment,legacy.equipment);
-  for(const bad of [null,[],{owned:false,enabled:true,source:null},{owned:true,enabled:true,source:'play'},
+  for(const bad of [null,[],{owned:false,enabled:true,source:null},{owned:true,enabled:true,source:'unknown'},
     {owned:1,enabled:true,source:'test'},{owned:true,enabled:false,source:null}]){
     assert.equal(inspectSave(serializeSave({...migrated,homeAutoTap:bad}),T).issue.field,'homeAutoTap');
   }

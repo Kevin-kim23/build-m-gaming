@@ -17,8 +17,8 @@ export function storeMarkup(){
     <p class="potion-note">부스터는 아이템에서 직접 사용해요.<br>실제 결제는 아직 연결되지 않았어요. 개발 화면에서만 무료 테스트 지급을 받을 수 있어요.</p>
   </article>${homeAutoTapMarkup()}</div>`;
 }
-export function renderStore(s,root,{busy=false,active=true,allowTestGrant=STORE_TEST_GRANT}={}){
-  renderHomeAutoTap(s,root,{busy,active,allowTestGrant});
+export function renderStore(s,root,{busy=false,active=true,allowTestGrant=STORE_TEST_GRANT,billing=null}={}){
+  renderHomeAutoTap(s,root,{busy,active,allowTestGrant,billing});
   const card=root.querySelector('[data-starter-pack]');if(!card)return;
   const claimed=s.starterPack?.claimed===true;
   const full=Object.keys(POTIONS).some(id=>(s.potions?.[id]?.count??0)>POTION_COUNT_LIMIT-STARTER_PACK[id]);

@@ -20,3 +20,6 @@ Thumbs.db
 # Generated licensed audio is bundled locally into the app, not distributed as raw assets on public GitHub.
 public/audio/music/
 private-audio/
+
+# Local Play product configuration (public key, not server credentials).
+android/play-billing.properties

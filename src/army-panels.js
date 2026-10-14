@@ -1,3 +1,4 @@
+import {createPlayBilling} from './play-billing.js';
 import {createHomeOfferPopup} from './home-offer-popup.js';
 import {academyLevel} from './academy-levels.js';
 import { createStorePurchase } from './store-purchase.js';
@@ -53,8 +54,11 @@ export function createArmyPanels(session, audio, access) {
     suspendAudio:()=>audio.suspendForAd()}),onChange:()=>{
     if(dialog.open && activePanel==='shop' && category==='items')renderPotions(state(),dialog,{busy:potionController.busy,busyItem:potionController.busyItem,active:session.active});
   }});
-  const storePurchase=createStorePurchase(session,{showPurchase:createStoreTestPurchase(),onChange:()=>{
-    if(dialog.open && activePanel==='shop' && category==='store')renderStore(state(),dialog,{busy:storePurchase.busy,active:session.active});
+  const billing=createPlayBilling(session,{onChange:()=>{
+    if(dialog.open && activePanel==='shop' && category==='store')renderStore(state(),dialog,{busy:billing.busy,active:session.active,billing:billing.info});
+  }});
+  const storePurchase=createStorePurchase(session,{playBilling:billing,showPurchase:createStoreTestPurchase(),onChange:()=>{
+    if(dialog.open && activePanel==='shop' && category==='store')renderStore(state(),dialog,{busy:storePurchase.busy,active:session.active,billing:billing.info});
   }});
   const homeOffers=createHomeOfferPopup({openStore:()=>openShop('store'),watch:id=>potionController.watch(id),buy:()=>storePurchase.buy('auto'),active:()=>session.active,onSuccess:()=>audio.ui('purchase',state().sound)});
   const personalUI=createPersonalUpgradeUI(session,audio);
@@ -86,7 +90,7 @@ export function createArmyPanels(session, audio, access) {
     if (category === 'items') {
       renderPotions(s,dialog,{busy:potionController.busy,busyItem:potionController.busyItem,active:session.active});
     }
-    if (category === 'store') renderStore(s,dialog,{busy:storePurchase.busy,active:session.active});
+    if (category === 'store') renderStore(s,dialog,{busy:storePurchase.busy,active:session.active,billing:billing.info});
     if (category !== 'recruit') return;
     for (const unit of Object.values(UNITS)) {
       const card = $(`[data-unit="${unit.id}"]`);
@@ -231,6 +235,10 @@ export function createArmyPanels(session, audio, access) {
     const button = event.target.closest('button');
     if (!button || button.disabled) return;
     if (button.id === 'close-shop' || button.id === 'close-equipment') dialog.close();
+    else if(button.hasAttribute('data-restore-home-auto')){
+      const result=await billing.restore();
+      if(dialog.open)text('#shop-message',result.ok?'Play 구매 내역을 확인했어요. 보유 상태를 확인해 주세요.':result.reason==='pending'?'결제 승인을 기다리고 있어요.':'구매 복원을 완료하지 못했어요. Play 계정과 연결을 확인해 주세요.');
+    }
     else if(button.hasAttribute('data-buy-starter')){
       const result=await storePurchase.buy('starter');
       if(result?.ok)audio.ui('purchase',state().sound);
@@ -244,7 +252,7 @@ export function createArmyPanels(session, audio, access) {
       if(result?.ok)audio.ui(buying?'purchase':'equip',state().sound);
       if(dialog.open && activePanel==='shop' && category==='store')text('#shop-message',result?.ok
         ? buying?'자동터치 영구 보유! 홈으로 돌아가면 작동해요.':result.enabled?'자동터치를 켰어요.':'자동터치를 껐어요.'
-        : result?.reason==='cancelled'?'유료결제 테스트를 취소했어요.':'자동터치 설정을 완료하지 못했어요.');
+        : result?.reason==='cancelled'?'결제를 취소했어요.':result?.reason==='pending'?'결제 승인 대기 중이에요. 완료 전에는 지급하지 않아요.':'완료하지 못했어요. 구매 복원으로 다시 확인해 주세요.');
     }
     else if(button.dataset.potionAd || button.dataset.potionUse){
       const id=button.dataset.potionAd??button.dataset.potionUse;
@@ -299,7 +307,7 @@ export function createArmyPanels(session, audio, access) {
       toggleEquipment(data.id);showEquipmentDetail(data.id,true);
     }
   });
-  const openItemOffer=id=>homeOffers.open(id);
+  const openItemOffer=id=>id==='auto'&&billing.info.configured?openShop('store'):homeOffers.open(id);
   const useHomeItem=id=>id==='auto'?storePurchase.toggle():potionController.use(id);
   dialog.addEventListener('close', () => {
     const target=activePanel === 'equipment' ? (equipmentCategory === 'personal' ? '#open-personal' : '#open-equipment')
@@ -307,5 +315,5 @@ export function createArmyPanels(session, audio, access) {
     const fallback=document.querySelector(target);
     (returnFocus?.isConnected && returnFocus!==document.body?returnFocus:fallback).focus({preventScroll:true});
   });
-  return { openShop, openEquipment, openItemOffer, useHomeItem, sync, syncAwards:personalAwards.sync };
+  return { syncBilling:billing.prepare, openShop, openEquipment, openItemOffer, useHomeItem, sync, syncAwards:personalAwards.sync };
 }

@@ -8,6 +8,13 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(PotionAdsPlugin.class);
+        if (BuildConfig.PLAY_BILLING_ENABLED) {
+            try {
+                registerPlugin(Class.forName("com.dongramco.budaekiugi.PlayBillingPlugin").asSubclass(com.getcapacitor.Plugin.class));
+            } catch (ClassNotFoundException unavailable) {
+                android.util.Log.e("BillingSetup", "Billing integration unavailable");
+            }
+        }
         super.onCreate(savedInstanceState);
         // No extra icon/fade before the in-app Dongramco opening.
         if (Build.VERSION.SDK_INT >= 31) {

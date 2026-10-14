@@ -124,6 +124,7 @@ const opening = createOpeningScreen({onStart: async () => {
   $('#app').inert=false;
   gameAudio.setMusicScene('home');
   lifecycle.start();
+  void armyPanels.syncBilling();
   if (!document.querySelector('dialog[open]')) zone.focus({preventScroll:true});
 }, soundEnabled: !session.hasSavedProgress || (state.sound && !session.saveNotice), soundVolume: state.sfxVolume,
   onState: (stage, active) => {
@@ -265,6 +266,7 @@ if (Capacitor.isNativePlatform()) {
   App.addListener('appStateChange', ({isActive}) => {
     if (isActive) openingBars.sync();
     lifecycle.setNativeActive(isActive);
+    if(isActive&&lifecycle.started)void armyPanels.syncBilling();
   })
     .catch(error => reportError('app.appStateChange', error));
 }

@@ -8,14 +8,24 @@ def appVersionParts = appVersion.split('-')[0].tokenize('.').collect { it.toInte
 def appVersionCode = appVersionParts[0] * 1000000 + appVersionParts[1] * 1000 + appVersionParts[2]
 
 apply plugin: 'com.android.application'
+// Billing stays out of normal/release artifacts until product and policy approval.
+def playBillingTest = providers.gradleProperty('playBillingTest').orNull == 'true'
+def billingConfig = new Properties()
+def billingFile = file('../play-billing.properties')
+if (playBillingTest && billingFile.exists()) billingFile.withInputStream { billingConfig.load(it) }
+def billingString = { name -> groovy.json.JsonOutput.toJson(billingConfig.getProperty(name, '')) }
+
 
 android {
     namespace = "com.dongramco.budaekiugi"
     compileSdk = rootProject.ext.compileSdkVersion
     // Closed-test build: both release and debug use Google sample inventory.
     // Restore publisher IDs and revalidate before production launch (docs/store/LIVE_ADS_072.md).
-    buildFeatures { resValues true }
+    buildFeatures { resValues true; buildConfig true }
     defaultConfig {
+        buildConfigField 'boolean', 'PLAY_BILLING_ENABLED', 'false'
+        buildConfigField 'String', 'PLAY_AUTO_TAP_PRODUCT', '""'
+        buildConfigField 'String', 'PLAY_BILLING_KEY', '""'
         applicationId "com.dongramco.budaekiugi"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
@@ -32,6 +42,9 @@ android {
     }
     buildTypes {
         debug {
+            buildConfigField 'boolean', 'PLAY_BILLING_ENABLED', playBillingTest.toString()
+            buildConfigField 'String', 'PLAY_AUTO_TAP_PRODUCT', billingString('autoTapProductId')
+            buildConfigField 'String', 'PLAY_BILLING_KEY', billingString('playLicensePublicKey')
             // Install beside the production app without replacing its saved game.
             applicationIdSuffix ".dev"
             resValue "string", "admob_app_id", "ca-app-pub-3940256099942544~3347511713"
@@ -52,6 +65,11 @@ android {
     }
 }
 
+if (playBillingTest) {
+    android.sourceSets.debug.java.srcDir 'src/playBilling/java'
+    android.sourceSets.test.java.srcDir 'src/playBillingTest/java'
+    dependencies { debugImplementation 'com.android.billingclient:billing:8.3.0' }
+}
 apply from: 'release-signing.gradle'
 
 repositories {

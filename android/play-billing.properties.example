@@ -1,0 +1,3 @@
+# Copy locally only after a Play test product and policy review. Never add private keys.
+autoTapProductId=
+playLicensePublicKey=

@@ -303,3 +303,7 @@ npm run android:release
 ## 집 PC 동기화 검증 · 2026-10-14
 
 feat/ui-first-release/0.76.15 별도 작업 폴더에서 Node22 npm ci 성공, npm test783/783 통과(약117초), npm run build 성공. 실제 폰/결제/AAB/로컬 비공개 음원 완전성은 이번에 검증하지 않음. 서버 브랜치 변경 없음. 결제 준비 읽기 조사는 docs/PLAY_BILLING_READINESS_2026-10-14.md. 문서만 커밋·푸시하며 앱버전/정책번호 불변. 실제 결제 도입 시 정책 동기화 필요.
+
+## 0.76.16 서버 없는 Play 결제 시험 준비
+
+자동터치4,900원 영구 해금 승인 기준으로 구매/복원 네이티브 연결과 저장41 migration, 기존 테스트 보유 보존. opt-in debug 전용 Billing8.3.0, 일반/출시 빌드 제외. 상품/공개키 미설정 시 차단. 전체791/791·후속 결제 집중8/8·웹 빌드·Android debug 컴파일/단위2개 통과. 실제 결제·실기기·정책 승인·콘솔 상품 등록 미완료. [구현과 다음 단계](docs/PLAY_BILLING_IMPLEMENTATION.md). 서버 브랜치 변경 없음.
