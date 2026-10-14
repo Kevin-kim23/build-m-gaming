@@ -54,6 +54,7 @@ import { openRankGuide } from "./rank-guide.js";
 import "./detail.css";
 import "./home-actions.css";
 import "./equipment-list.css";
+import "./game-frame.css";
 import "./touch.css";
 import { hidePromotion } from "./promotion.js";
 import { createSettingsUI } from './settings-ui.js';

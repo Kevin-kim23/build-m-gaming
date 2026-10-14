@@ -59,6 +59,7 @@ test('one shared dialog shows exact product contents, clears acknowledgement and
 test('store renderer locks release, claimed and full inventories, with no unchanged text rewrites',()=>{
   const s=freshState(1000),root=fakeNode(),card=root.querySelector('[data-starter-pack]'),button=card.querySelector('[data-buy-starter]'),status=card.querySelector('[data-starter-status]');
   assert.match(storeMarkup(),/실제 결제는 아직 연결되지/);assert.doesNotMatch(storeMarkup(),/할인|마감|한정 수량|남은 시간/);
+  assert.ok(storeMarkup().indexOf('data-starter-pack')<storeMarkup().indexOf('data-home-auto-tap'),'starter pack is the first product');
   renderStore(s,root);assert.equal(button.disabled,true);assert.equal(button.textContent,'구매 준비 중');
   renderStore(s,root,{allowTestGrant:true});assert.equal(button.disabled,false);
   const writes=button.writes+status.writes;for(let i=0;i<60;i++)renderStore(s,root,{allowTestGrant:true});assert.equal(button.writes+status.writes,writes);

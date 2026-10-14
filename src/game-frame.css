@@ -1,0 +1,32 @@
+/* The phone-sized home and top-layer dialogs use one frame, even when the
+   desktop browser is much taller. CSS also follows resize/rotation/keyboard. */
+:root {
+  --game-frame-height: min(100dvh, 960px);
+  --game-frame-bottom: calc((100dvh - var(--game-frame-height)) / 2);
+}
+@media (min-width:600px) {
+  :root { --game-frame-height: min(calc(100dvh - 32px), 960px); }
+}
+.game { height:var(--game-frame-height); }
+#modal {
+  height:calc(var(--game-frame-height) * .92);
+  max-height:calc(var(--game-frame-height) * .92);
+  min-height:0;
+  margin:auto auto var(--game-frame-bottom);
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+#modal[data-category="store"] { min-height:0; }
+#detail-modal { max-height:calc(var(--game-frame-height) * .84); }
+#battle-modal,
+#offline-reward-modal,
+#personal-award-modal,
+#potion-ad-modal,
+#test-purchase-modal,
+dialog.access-dialog {
+  max-height:calc(var(--game-frame-height) - 32px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
