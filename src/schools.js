@@ -48,10 +48,11 @@ export function schoolOffer(state,id) {
     requirement:previous?`${previous.name} Lv.${previous.maxLevel} · ${requiredRank} 이상`:'골드를 모아 단계별로 건설·확장',
     effect:school.effects[max?level-1:level]};
 }
-// Honor ranks/units that were already available before schools existed.
+// Frozen pre-v9 compensation: today's power-only promotion must not grant extra
+// school levels to old saves that never unlocked staff sergeants back then.
 export function legacySchoolLevel(state) {
   const rank=rankForArmy(state);
-  if((state.staffSergeants??0)>0||rank>=RANKS.indexOf('소령')) return 2;
+  if((state.staffSergeants??0)>0||(rank>=RANKS.indexOf('소령')&&(state.sergeants??0)>=40)) return 2;
   if((state.sergeants??0)>0||rank>=RANKS.indexOf('소위')) return 1;
   return 0;
 }

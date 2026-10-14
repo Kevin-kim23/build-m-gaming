@@ -33,7 +33,7 @@ test('new marshal boundaries consolidate four commands and promotion follows act
     assert.ok(s.earnedAchievements.includes(id));assert.deepEqual(parseSave(serializeSave(s),T),s);
     s.equipment.artillery={level:1,count:1,deployed:true};
     assert.equal(createBattle(s,1,{equipment:['artillery']}).player.hq.id,id);
-    s.sergeants=299;assert.equal(RANKS[rankForArmy(s)],'대령');
+    s.sergeants=299;assert.equal(rankForArmy(s),RANKS.indexOf(rank)-1);
   }
   assert.equal(MAX_SOLDIERS,GALACTIC_GRAND_ALLIED_ARMY_SIZE*4);
 });

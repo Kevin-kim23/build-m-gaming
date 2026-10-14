@@ -19,7 +19,8 @@ test('rocket launcher previews only at colonel and requires actual brigadier ran
   s.soldiers=6000;
   assert.equal(equipmentPurchaseOffer(s,'rocketLauncher').visible,true);
   assert.equal(buyEquipment(s,T,'rocketLauncher').reason,'locked');
-  s.soldiers=20000;assert.equal(buyEquipment(s,T,'rocketLauncher').reason,'locked');
+  s.soldiers=9839;assert.equal(buyEquipment(s,T,'rocketLauncher').reason,'locked');
+  s.soldiers=10240;s.sergeants=0;
   s.sergeants=300;s.gold=EQUIPMENT.rocketLauncher.cost-1;
   assert.equal(buyEquipment(s,T,'rocketLauncher').reason,'gold');
   s.gold++;assert.equal(buyEquipment(s,T,'rocketLauncher').ok,true);assert.equal(s.gold,0);

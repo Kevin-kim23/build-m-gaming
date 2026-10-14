@@ -48,22 +48,17 @@ const state = (power, sergeants = 0) => ({
   sergeants,
   gold:100_000_000_000_000,
 });
-test("major requires both 640 strength and forty actual sergeants; later ranks cannot bypass it", () => {
-  for (const power of [640, 1280, 327680])
-    for (const n of [0, 39]) {
-      const s = state(power, n);
-      assert.equal(RANKS[rankForArmy(s)], "대위");
-      assert.equal(recruitOffer(s, "staffSergeant").locked, false);
-      assert.equal(buyEquipment(s, T, "tank").reason, "locked");
+test("major and later ranks use power without a sergeant headcount requirement", () => {
+  for (const [power,rank] of [[640,'소령'],[1280,'중령'],[327680,'대장']])
+    for (const n of [0,39]) {
+      const s=state(power,n);
+      assert.equal(RANKS[rankForArmy(s)],rank);
+      assert.equal(buyEquipment(s,T,'tank').ok,true);
     }
-  const s = state(640, 39),
-    result = recruit(s, T, "sergeant");
-  assert.equal(s.sergeants, 40);
-  assert.equal(result.promoted, true);
-  assert.equal(RANKS[result.rank], "소령");
-  assert.equal(promotionProgress(state(1000, 39)).ratio, 39 / 40);
-  assert.equal(RANKS[rankForArmy(state(639, 40))], "대위");
-  assert.equal(RANKS[rankForArmy(state(640, 40))], "소령");
+  const s=state(630,39),result=recruit(s,T,'sergeant');
+  assert.equal(result.promoted,true);assert.equal(RANKS[result.rank],'소령');
+  assert.equal(promotionProgress(state(1000,39)).ratio,1000/1280);
+  assert.equal(RANKS[rankForArmy(state(639,40))],'대위');
 });
 test("staff sergeants have independent prices, exact rewards and twenty strength", () => {
   const s = state(640, 40),

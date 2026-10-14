@@ -10,7 +10,7 @@ import { freshState, recruitOffer, enhancePersonalEquipment, unitCost, perSecond
 import { UNIT_LIST, unitAccess, armyPower } from '../src/units.js';
 import { SCHOOLS, schoolOffer } from '../src/schools.js';
 import { EQUIPMENT, equipmentStats, enhancementOffer, equipmentPurchaseOffer } from '../src/equipment.js';
-import { RANKS, LAST_RANK, rankForArmy, GENERAL_MIN_SOLDIERS, GENERAL_MIN_SERGEANTS } from '../src/ranks.js';
+import { RANKS, LAST_RANK, rankForArmy } from '../src/ranks.js';
 import { addMoney, subtractMoney, multiplyMoney, minMoney, MAX_GOLD } from '../src/money.js';
 import { prepareOfflineReward, claimOfflineReward } from '../src/offline-reward.js';
 import { campaignStages } from '../src/campaign.js';
@@ -87,12 +87,6 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
         apply:()=>(owned?upgradeFacility:buildFacility)(state,START+elapsed*1000,f.id)});
     }
     result.sort((a,b)=>a.score-b.score);
-    // After investing in income that repays within one offline interval, work on mandatory headcounts.
-    if(rank===RANKS.indexOf('대령')&&result[0]?.score>investmentHours*3600) {
-      const mandatory=result.filter(c=>c.kind==='unit'&&((c.id==='soldier'&&state.soldiers<GENERAL_MIN_SOLDIERS)||(c.id==='sergeant'&&state.sergeants<GENERAL_MIN_SERGEANTS)));
-      mandatory.sort((a,b)=>Number(a.cost)-Number(b.cost));
-      if(mandatory[0])return mandatory[0];
-    }
     // At late ranks, finish worthwhile income investments, then deliberately save
     // for power. Every tenth investment prioritizes power; ROI-only play buys excessive low ranks.
     if(rank>=RANKS.indexOf('은하단 준장')&&(actions%10===0||result[0]?.score>investmentHours*3600)){

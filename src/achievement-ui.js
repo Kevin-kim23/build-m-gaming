@@ -26,7 +26,7 @@ function writeHidden(hidden) {
 export function createAchievementUI(session, audio = null) {
   const list = document.querySelector('#medal-list');
   const count = document.querySelector('#medal-count');
-  const opener = document.querySelector('#open-achievements');
+  const opener = document.querySelector('#open-achievements') ?? document.querySelector('#sound');
   const shelf = document.querySelector('.medal-shelf');
   const toggle = document.querySelector('#toggle-medals');
   const dialog = document.querySelector('#achievement-modal');
@@ -37,7 +37,7 @@ export function createAchievementUI(session, audio = null) {
   const sameIds = ids => ids.length === shown.length && ids.every((id, index) => id === shown[index]);
   function renderList() {
     const scroll = dialog.scrollTop;
-    dialog.innerHTML = achievementListMarkup(session.state, selectedId, [...hiddenMedals]);
+    dialog.innerHTML = achievementListMarkup(session.state, selectedId, [...hiddenMedals], !!shelf);
     renderedPower = armyPower(session.state);
     renderedCampaign = session.state.campaignCleared ?? 0;
     dialog.scrollTop = scroll;
@@ -52,6 +52,7 @@ export function createAchievementUI(session, audio = null) {
   }
   // Rebuilds the home shelf only when the visible medal ids change, never on income ticks.
   function renderShelf(animate = true) {
+    if(!shelf)return false;
     const earned = session.state.earnedAchievements, visible = shelfMedals(earned, hiddenMedals);
     const hiddenCount = earned.length - visible.length;
     const label = `훈장 ${earned.length} / ${ACHIEVEMENTS.length}` + (hiddenCount ? ` · 숨김 ${hiddenCount}` : '');
@@ -86,14 +87,14 @@ export function createAchievementUI(session, audio = null) {
     toggle.textContent = hidden ? '보이기' : '숨기기';
     toggle.setAttribute('aria-expanded', String(!hidden));
   }
-  setHidden(readHidden());
-  toggle.addEventListener('click', () => {
+  if(shelf)setHidden(readHidden());
+  toggle?.addEventListener('click', () => {
     const hidden = !shelf.classList.contains('medals-hidden');
     setHidden(hidden);
     writeHidden(hidden);
   });
-  opener.addEventListener('click', () => open());
-  list.addEventListener('click', event => {
+  if(shelf)opener.addEventListener('click', () => open());
+  list?.addEventListener('click', event => {
     const button = event.target.closest('[data-medal]');
     if (button) open(button.dataset.medal, button);
   });
@@ -112,5 +113,5 @@ export function createAchievementUI(session, audio = null) {
     }
   });
   dialog.addEventListener('close', () => (returnFocus?.isConnected ? returnFocus : opener).focus());
-  return { sync };
+  return { sync, open };
 }

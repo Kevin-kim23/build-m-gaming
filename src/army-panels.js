@@ -40,6 +40,7 @@ export function createArmyPanels(session, audio, access) {
   let activePanel = 'shop', category = 'recruit', activeEquipment = 'artillery';
   let equipmentCategory = 'military', equipmentRank = -1;
   let catalogRank = -1, equipmentCatalogKey = '';
+  let returnFocus = null;
   const schools = Object.values(SCHOOLS);
   let schoolLevels = [];
   const state = () => session.state;
@@ -97,6 +98,7 @@ export function createArmyPanels(session, audio, access) {
     }
   }
   function openShop(nextCategory = category) {
+    if(!dialog.open)returnFocus=document.activeElement;
     category = SHOP_CATEGORIES.some(item => item.id === nextCategory) ? nextCategory : 'recruit';
     activePanel = 'shop';
     catalogRank = rankForArmy(state());
@@ -110,6 +112,7 @@ export function createArmyPanels(session, audio, access) {
     lockPanel();
   }
   function openEquipment(id = activeEquipment, nextCategory = equipmentCategory) {
+    if(!dialog.open)returnFocus=document.activeElement;
     equipmentCategory = nextCategory;
     equipmentRank = rankForArmy(state());
     equipmentLevels=state().personalLevels;
@@ -282,6 +285,18 @@ export function createArmyPanels(session, audio, access) {
     if (action === 'shop-category') { closeDetail(); openShop(data.category); }
     else if (action === 'manage-equipment') { closeDetail(); openEquipment(data.id, 'military'); }
   });
-  dialog.addEventListener('close', () => document.querySelector(activePanel === 'equipment' ? '#open-equipment' : '#open-shop').focus());
-  return { openShop, openEquipment, sync, syncAwards:personalAwards.sync };
+  function openItemOffer(id) {
+    openShop('items');
+    const card=id==='auto'?$('[data-home-auto-tap]'):$(`[data-potion="${id}"]`);
+    card?.scrollIntoView({block:'nearest'});
+    const button=card?.querySelector(id==='auto'?'[data-buy-home-auto]':'[data-potion-ad]');
+    if(button && !button.disabled)button.focus({preventScroll:true});
+    else {card?.setAttribute('tabindex','-1');card?.focus({preventScroll:true});}
+  }
+  const useHomeItem=id=>id==='auto'?homeAutoPurchase.toggle():potionController.use(id);
+  dialog.addEventListener('close', () => {
+    const fallback=document.querySelector(activePanel === 'equipment' ? '#open-equipment' : '#open-shop');
+    (returnFocus?.isConnected && returnFocus!==document.body?returnFocus:fallback).focus({preventScroll:true});
+  });
+  return { openShop, openEquipment, openItemOffer, useHomeItem, sync, syncAwards:personalAwards.sync };
 }

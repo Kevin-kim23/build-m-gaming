@@ -44,13 +44,13 @@ test("personal equipment is visible early and owned only at its award rank", () 
   assert.doesNotMatch(owned, /data-buy=|data-buy-equipment=|data-buy-bulk=|data-enhance/);
 });
 
-test("baton adds exactly one 100-soldier action without replacing one-unit recruitment", () => {
+test("baton adds four enlisted batch actions without replacing individual recruitment", () => {
   assert.doesNotMatch(markup(state(640), "recruit"), /data-buy-bulk|data-bulk-price/);
-  // Power cannot bypass the forty-sergeant promotion condition.
-  assert.doesNotMatch(markup(state(1280, 39), "recruit"), /data-buy-bulk/);
+  // Only power is required; a missing sergeant no longer suppresses the baton.
+  assert.match(markup(state(1280, 39), "recruit"), /data-buy-bulk/);
   const html = markup(state(1280), "recruit");
   assert.equal((html.match(/data-buy-bulk="soldier"/g) ?? []).length, 1);
-  assert.equal((html.match(/data-bulk-price/g) ?? []).length, 1);
+  assert.equal((html.match(/data-bulk-price/g) ?? []).length, 4);
   assert.match(html, /일반병 100명 모집/);
   for (const id of ["soldier", "sergeant", "staffSergeant"])
     assert.match(html, new RegExp(`data-buy="${id}"`));

@@ -27,7 +27,7 @@ test('nineteen facilities unlock in order from master sergeant; actual promotion
     const saved=serializeSave(unlocked);assert.equal(buildFacility(unlocked,T,f.id).reason,'owned');assert.equal(serializeSave(unlocked),saved);
   }
   const gated=army('준장');gated.sergeants=299;gated.soldiers+=10;
-  assert.equal(facilityOffer(gated,'operations').locked,true);
+  assert.equal(facilityOffer(gated,'operations').locked,false);
   assert.equal(facilityOffer(freshState(T),'kitchen').visible,true);
 });
 

@@ -1,0 +1,22 @@
+/* Viewport overlay: outside tap-zone, so button taps cannot award manual gold or scroll the map. */
+.field-tools {position:absolute;top:8px;right:8px;z-index:4;padding:0;max-width:calc(100% - 16px);pointer-events:none}
+.home-skills {display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;pointer-events:none}
+.field-tools .home-skill {pointer-events:auto;flex:0 0 52px;width:52px;height:70px;padding:4px 2px;display:flex;flex-direction:column;gap:2px;background:#253a30ed;box-shadow:0 2px 5px #14241d66;font-size:10px;line-height:11px}
+.field-tools .home-skill[hidden] {display:none}
+.field-tools .home-skill > span:last-child {white-space:nowrap}
+.field-tools .home-skill.skill-active {border-color:#ffe59a;background:#58633aee;box-shadow:0 0 7px #d6c57b66}
+.field-tools .home-skill:disabled {opacity:.78}
+.home-item-art {display:grid;place-items:center;width:30px;height:30px}
+.home-item-art svg {max-width:28px;height:30px}
+.home-item small {max-width:100%;overflow:hidden;text-overflow:ellipsis;font:700 10px/11px system-ui;color:#f5df9d;white-space:nowrap}
+.field-tools .sword-clock {margin-bottom:10px}
+.field-tools .home-skill [data-sword-time],.field-tools .home-skill [data-revolver-time] {bottom:-10px;font-size:10px}
+.home-tabs {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.home-tabs button,.home-tabs #open-shop {min-width:0;min-height:44px;margin:0;padding:5px 2px;gap:5px;font-size:12px}
+.home-tabs button > span {white-space:nowrap}
+.home-battle {display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;margin-top:6px;border:1px solid #ab9862;border-radius:5px;background:#514c2d;color:#f5e4ae;font-size:12px;cursor:pointer}
+.home-battle[hidden] {display:none}
+.home-battle small {font-size:10px}
+@media(max-width:350px) {
+  .home-tabs button,.home-tabs #open-shop {font-size:11px;gap:3px}
+}

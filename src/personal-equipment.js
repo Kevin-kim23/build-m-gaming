@@ -50,13 +50,19 @@ export function autoTouchStatus(state,now=Date.now()) {
   const active=owned&&elapsed<durationMs,remainingMs=Math.max(0,AUTO_TOUCH.cooldownMs-elapsed);
   return {owned,active,canUse:owned&&remainingMs===0,remainingMs,durationMs,activeMs:active?durationMs-elapsed:0};
 }
-export const BULK_RECRUIT = Object.freeze(Object.fromEntries([
+const BULK_RECRUIT_LEVELS = [
   'soldier','sergeant','staffSergeant','masterSergeant','sergeantMajor','lieutenant','firstLieutenant','captain','major','lieutenantColonel',
   'colonel','brigadierGeneral','majorGeneral','lieutenantGeneral','general',
   'juniorMarshal','minorMarshal','middleMarshal','grandMarshal','specialMarshal',
   ...GALACTIC_OFFICERS.map(unit=>unit.id),
   ...CONSTELLATION_OFFICERS.map(unit=>unit.id),
-].map((id,i)=>[id,Object.freeze({level:i+1})])));
+].map(id=>[id]);
+// Add to existing levels so purchased baton upgrades keep their original unlocks.
+BULK_RECRUIT_LEVELS[0].push('administrator','driver','medic');
+BULK_RECRUIT_LEVELS[4].push('warrantOfficer');
+export const BULK_RECRUIT = Object.freeze(Object.fromEntries(
+  BULK_RECRUIT_LEVELS.flatMap((ids,i)=>ids.map(id=>[id,Object.freeze({level:i+1})])),
+));
 export function bulkRecruitAccess(state,type) {
   const rule=BULK_RECRUIT[type];
   if(!rule)return {visible:false,unlocked:false,requirement:'일괄 모집 미지원'};

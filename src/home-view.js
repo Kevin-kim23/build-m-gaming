@@ -2,7 +2,7 @@ import { personalIcon } from './personal-art.js';
 import { generalRankBadge, marshalRankBadge, galacticRankBadge, rankBadgeInstance } from './rank-frame.js';
 import { RANK_DEFINITIONS } from "./ranks.js";
 import { APP_VERSION } from "./version.js";
-import { medalShelfMarkup } from "./achievement-markup.js";
+import { homeItemsMarkup } from "./home-quick-items.js";
 export const coin =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10l5 5v10l-5 5H7l-5-5V7z" fill="#d9b55d"/><path d="M8 5h8l3 3v8l-3 3H8l-3-3V8z" fill="#e8cd84"/><path d="M14 8h-4v8h4v-4h-2" fill="none" stroke="#8a6932" stroke-width="2"/></svg>';
 const shopIcon =
@@ -65,13 +65,12 @@ function fieldMarkup() {
     </span>
     <span class="pixel-corner bottom-right">
     </span>
-    </button></div><span id="home-auto-feedback" aria-hidden="true"></span><span id="revolver-feedback" aria-hidden="true"></span><span id="field-scroll-hint" class="field-scroll-hint" hidden>↔ 좌우로 밀어서 둘러보기</span></section>`;
+    </button></div>${fieldToolsMarkup()}<span id="home-auto-feedback" aria-hidden="true"></span><span id="revolver-feedback" aria-hidden="true"></span><span id="field-scroll-hint" class="field-scroll-hint" hidden>↔ 좌우로 밀어서 둘러보기</span></section>`;
 }
 
 function dockMarkup() {
   return `<section class="home-dock" aria-label="내 부대">
     <div class="coach" id="coach" role="status" aria-live="polite" hidden><p id="coach-text"></p><button type="button" id="coach-off" aria-label="안내 끄기">끄기</button></div>
-    ${fieldToolsMarkup()}
     <div class="promotion-line">
     <span id="next-rank">
     </span>
@@ -83,16 +82,17 @@ function dockMarkup() {
     </i>
     </div>
     <nav class="home-tabs" aria-label="부대 메뉴">
+    <button id="open-recruit"><span aria-hidden="true">♟</span><span>군대 모집</span></button>
+    <button id="open-facilities"><span aria-hidden="true">▥</span><span>시설</span></button>
+    <button id="open-equipment"><span aria-hidden="true">⚙</span><span>장비</span></button>
+    <button id="open-personal"><span aria-hidden="true">✦</span><span>개인장비</span></button>
     <button id="open-shop">${shopIcon}<span>상점</span>
     <i id="shop-dot" hidden>
     </i>
     </button>
-    <button id="open-equipment">
-    <span aria-hidden="true">⚙</span>
-    <span>장비</span>
-    </button>
-    <button id="open-battle" hidden><span aria-hidden="true">⚔</span><span>전투</span><small id="battle-lock-label"></small></button>
+    <button id="open-items"><span aria-hidden="true">⚗</span><span>아이템</span></button>
     </nav>
+    <button id="open-battle" class="home-battle" hidden><span aria-hidden="true">⚔</span><span>전투</span><small id="battle-lock-label"></small></button>
     </section>`;
 }
 
@@ -106,18 +106,18 @@ function footerMarkup() {
 }
 
 function fieldToolsMarkup() {
-  return '<section class="field-tools" aria-label="장군 장비" hidden>' +
-    '<div class="home-skills" role="group" aria-label="장군 스킬"><button class="home-skill home-sword" data-use-sword hidden><span class="sword-clock">' +
+  return '<section class="field-tools" aria-label="사용 아이템">' +
+    '<div class="home-skills" role="group" aria-label="사용 아이템">' + homeItemsMarkup() + '<button class="home-skill home-sword" data-use-sword hidden><span class="sword-clock">' +
     '<svg class="sword-clock-ring" viewBox="0 0 48 48" aria-hidden="true" focusable="false" hidden><circle class="sword-clock-track" cx="24" cy="24" r="21"/><circle data-sword-ring cx="24" cy="24" r="21" pathLength="100" stroke-dasharray="100 100" transform="rotate(-90 24 24)"/></svg>' +
     '<span data-sword-art>' + personalIcon('sword') + '</span><span data-sword-time hidden></span></span>' +
-    '<span data-sword-label>장군검 사용</span></button>' +
+    '<span data-sword-label>장군검</span></button>' +
     '<button class="home-skill home-revolver" data-use-revolver hidden><span class="sword-clock revolver-clock">' +
     '<svg class="sword-clock-ring" viewBox="0 0 48 48" aria-hidden="true" focusable="false" hidden><circle class="sword-clock-track" cx="24" cy="24" r="21"/><circle data-revolver-ring cx="24" cy="24" r="21" pathLength="100" stroke-dasharray="100 100" transform="rotate(-90 24 24)"/></svg>' +
-    '<span class="revolver-mini-art">' + personalIcon('revolver') + '</span><span data-revolver-time hidden></span></span><span data-revolver-label>리볼버 사용</span></button></div>' +
+    '<span class="revolver-mini-art">' + personalIcon('revolver') + '</span><span data-revolver-time hidden></span></span><span data-revolver-label>리볼버</span></button></div>' +
     '</section>';
 }
 export function homeMarkup(state) {
-  return `<main class="game">${headerMarkup(state)}<aside id="save-notice" class="save-notice" role="status" hidden><strong data-save-notice-title></strong><button type="button" id="review-save">저장 확인</button></aside>${medalShelfMarkup()}${fieldMarkup()}${dockMarkup()}${footerMarkup()}</main>`;
+  return `<main class="game">${headerMarkup(state)}<aside id="save-notice" class="save-notice" role="status" hidden><strong data-save-notice-title></strong><button type="button" id="review-save">저장 확인</button></aside>${fieldMarkup()}${dockMarkup()}${footerMarkup()}</main>`;
 }
 
 export function insignia(index) {

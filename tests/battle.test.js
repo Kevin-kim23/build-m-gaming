@@ -53,7 +53,7 @@ test("deployment is equipment only, limited by rank slots, and rejects unknown o
 
 test("slots: 3 at lieutenant colonel, +1 each at brigadier, lieutenant general and general", () => {
   assert.equal(battleSlots(army(1280)), 3);
-  assert.equal(battleSlots(army(20480)), 3);
+  assert.equal(battleSlots(army(20480)), 4);
   const slots = [327680, 655360, 1310720].map((p) => battleSlots({ ...army(p), soldiers: p - 10000 }));
   assert.ok(slots.every((n) => n >= 3 && n <= 6));
   const many = { ...army(327680), equipment: Object.fromEntries(Object.keys(EQUIPMENT).map((id) => [id, { level: 1, deployed: true }])) };

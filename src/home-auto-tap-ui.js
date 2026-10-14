@@ -2,7 +2,7 @@ import {grantTestHomeAutoTap,toggleHomeAutoTap} from './home-auto-tap-rules.js';
 import {fmtGold} from './format.js';
 import {reportError} from './diagnostics.js';
 
-const icon=`<svg viewBox="0 0 66 80" role="img" aria-label="자동터치 커서 · AUTO" shape-rendering="crispEdges">
+export const homeAutoTapIcon=`<svg viewBox="0 0 66 80" role="img" aria-label="자동터치 커서 · AUTO" shape-rendering="crispEdges">
   <path fill="#0c1917" d="M14 5h5l36 30v5H40l8 16-14 7-9-18-11 11z"/>
   <path fill="#9b8958" d="M17 8l34 29H36l9 18-9 4-10-20-9 10z"/>
   <path fill="#e9dfb4" d="M17 8l31 26H32l10 20-5 2-11-22-9 10z"/>
@@ -15,7 +15,7 @@ const icon=`<svg viewBox="0 0 66 80" role="img" aria-label="자동터치 커서 
 export const AUTO_TAP_TEST_GRANT=import.meta.env?.DEV===true;
 export function homeAutoTapMarkup(){
   return `<article class="potion-card auto-tap-card" aria-label="자동터치" data-home-auto-tap>
-    <div class="potion-heading"><div class="potion-art">${icon}</div><div><h3>자동터치</h3><strong>초당 2회 · 영구 보유</strong><p>홈에서 자동으로 골드를 모아요.</p><b data-home-auto-status></b></div></div>
+    <div class="potion-heading"><div class="potion-art">${homeAutoTapIcon}</div><div><h3>자동터치</h3><strong>초당 2회 · 영구 보유</strong><p>홈에서 자동으로 골드를 모아요.</p><b data-home-auto-status></b></div></div>
     <p class="potion-note">손가락 터치와 함께 사용할 수 있어요.<br>상점·전투·팝업·앱 종료 중에는 멈춥니다.</p>
     <div class="potion-actions"><button type="button" data-buy-home-auto disabled>구매 준비 중</button><button type="button" data-toggle-home-auto aria-pressed="false" disabled>자동터치 켜기</button></div>
     <p class="potion-note">기존 무료 지급 보유자는 계속 사용할 수 있어요.<br>신규 이용자는 유료 구매 예정 · 현재 구매와 계정 복원은 준비 중입니다.</p></article>`;

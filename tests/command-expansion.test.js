@@ -50,7 +50,7 @@ test('baton16..20 unlocks marshal batches with exact individual sums and indepen
     assert.equal(recruitOffer(s,u.id,100).reason,'locked');s.personalLevels.commandBaton++;
     const expected=Array.from({length:100},(_,n)=>exact(unitCost(n,u.id))).reduce((a,b)=>a+b,0n);
     assert.equal(exact(recruitOffer(s,u.id,100).cost),expected);assert.ok(expected<MAX_GOLD);
-    assert.match(personalLevelEffect('commandBaton',16+i),new RegExp(u.name+'까지'));
+    assert.match(personalLevelEffect('commandBaton',16+i),new RegExp(u.name+' 100명 모집'));
     assert.doesNotMatch(personalLevelEffect('commandBaton',16+i),/할인/);
     s.commandSchoolLevel=i;assert.equal(recruitOffer(s,u.id,100).reason,'locked');s.commandSchoolLevel=5;
     s.gold=expected-1n;assert.equal(recruit(s,T,u.id,100).reason,'gold');s.gold=expected;

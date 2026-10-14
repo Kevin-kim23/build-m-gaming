@@ -2,8 +2,13 @@
 export function guideRoute(step,context={}) {
   if(!step?.ready||context.blocked)return null;
   const route=(selector,text)=>({selector,text});
-  if(!context.panel)return route(step.panel==='shop'?'#open-shop':'#open-equipment',
-    step.panel==='shop'?'먼저 상점을 열어주세요.':'장비 메뉴에서 구매와 강화를 할 수 있습니다.');
+  if(!context.panel){
+    const home={recruit:['#open-recruit','군대 모집'],facilities:['#open-facilities','시설']};
+    const direct=step.panel==='shop'?home[step.category]:null;
+    if(direct)return route(direct[0],`${direct[1]} 메뉴를 열어주세요.`);
+    return route(step.panel==='shop'?'#open-shop':'#open-equipment',
+      step.panel==='shop'?'먼저 상점을 열어주세요.':'장비 메뉴에서 구매와 강화를 할 수 있습니다.');
+  }
   if(context.panel!==step.panel)return route(`[data-panel="${step.panel}"]`,step.panel==='shop'?'상점 탭을 선택해 주세요.':'장비 탭을 선택해 주세요.');
   if(step.panel==='shop'&&context.category!==step.category) {
     const name={recruit:'군대 모집',schools:'군사학교',facilities:'시설'}[step.category];

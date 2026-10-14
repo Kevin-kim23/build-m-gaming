@@ -6,7 +6,10 @@ import { BULK_RECRUIT, personalStatus } from './personal-equipment.js';
 import { personalUpgradeOffer, personalUpgradeStep } from './personal-enhancement.js';
 
 export function personalLevelEffect(id,level) {
-  if(id==='commandBaton')return `${UNITS[Object.keys(BULK_RECRUIT)[Math.min(level,Object.keys(BULK_RECRUIT).length)-1]].name}까지 병종별 100명 모집`;
+  if(id==='commandBaton'){
+    const names=Object.entries(BULK_RECRUIT).filter(([,rule])=>rule.level===level).map(([unit])=>UNITS[unit].name).join('·');
+    return `${names} 100명 모집${level>1?' · 이전 해금 유지':''}`;
+  }
   if(id==='generalSword')return `${(GENERAL_SWORD.durationMs+(level-1)*GENERAL_SWORD.durationStepMs)/1000}초 동안 터치 골드 2배`;
   if(id==='divisionFlag')return `장비 최대 ${10+level}강 해금`;
   if(id==='marshalGlaive')return `초당 골드 +${MARSHAL_GLAIVE.passiveBonusPercent+(level-1)*MARSHAL_GLAIVE.passiveBonusStep}% · 상시 적용`;

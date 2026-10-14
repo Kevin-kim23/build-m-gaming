@@ -22,12 +22,12 @@ test('legacy general ranks reset personal levels to one but retain active skill 
   }
   assert.equal(new Set(pictures).size,4);
 });
-test('each baton level adds exactly one supported 100-person button and keeps earlier ones',()=>{
+test('each baton level adds its supported batches and keeps earlier ones',()=>{
   const rules=Object.entries(BULK_RECRUIT);
   for(const [index,[id,rule]] of rules.entries()) {
     const s=army('대원수');s.constellationMarshals=64;s.gold=MAX_GOLD;s.personalLevels.commandBaton=rule.level;
     const html=shopMarkup(s,'',()=>'', 'recruit');
-    assert.equal((html.match(/data-buy-bulk=/g)||[]).length,index+1);
+    assert.equal((html.match(/data-buy-bulk=/g)||[]).length,rules.filter(([,r])=>r.level<=rule.level).length);
     for(const [earlier] of rules.slice(0,index+1))assert.match(html,new RegExp(`data-buy-bulk="${earlier}"`));
     assert.equal(recruitOffer(s,id,100).locked,false);
     assert.equal(recruitOffer(s,id,100).canBuy,recruitOffer(s,id,100).cost<=MAX_GOLD);

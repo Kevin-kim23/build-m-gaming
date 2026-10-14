@@ -1,5 +1,6 @@
 import { createHomeAutoTapRuntime, homeAutoTapHomeVisible } from './home-auto-tap.js';
 import { createHomeAutoTapFeedback } from './home-auto-tap-ui.js';
+import { createHomeItemControls } from './home-quick-items.js';
 import './home-auto-tap.css';
 import { createIncomeHud } from './income-hud.js';
 import { potionStatus } from './potions.js';
@@ -45,7 +46,7 @@ import { drawScene } from "./art.js";
 import { fieldSummary } from "./field-layout.js";
 import { ownedSchools } from "./field-schools.js";
 import {
-  LAST_RANK, GENERAL_RANK,
+  LAST_RANK,
   rankForArmy,
   promotionProgress,
 } from "./ranks.js";
@@ -55,6 +56,7 @@ import { createGuideUI } from "./guide-ui.js";
 import { createInfoPanel } from "./info-ui.js";
 import { openRankGuide } from "./rank-guide.js";
 import "./detail.css";
+import "./home-actions.css";
 import "./touch.css";
 import { hidePromotion } from "./promotion.js";
 import { createSettingsUI } from './settings-ui.js';
@@ -109,7 +111,7 @@ const armyPanels = createArmyPanels(session, gameAudio, accessUI);
 const achievementUI = createAchievementUI(session, gameAudio);
 const guideUI = createGuideUI();
 const infoUI = createInfoPanel(session);
-const settingsUI = createSettingsUI(session, infoUI, gameAudio, () => guideUI.resume(), accessUI);
+const settingsUI = createSettingsUI(session, infoUI, gameAudio, () => guideUI.resume(), accessUI, () => achievementUI.open());
 const offlineUI = createOfflineRewardUI(session,{showAd:createOfflineNativeAd({
   isActive:()=>session.active,requireConsent:()=>accessUI.ensureAds(),
   suspendAudio:()=>gameAudio.suspendForAd(),
@@ -144,6 +146,11 @@ const revolverFeedback=createHomeAutoTapFeedback($('#revolver-feedback'), '리�
 const homeAutoRuntime=createHomeAutoTapRuntime(session,{
   canRun:()=>lifecycle.canRun && homeAutoTapHomeVisible(document),
   onIncome:amount=>homeAutoFeedback.show(amount),
+});
+const homeItems=createHomeItemControls($('.field-tools'),{
+  state:()=>state,writable:()=>session.active && lifecycle.canRun,
+  use:id=>armyPanels.useHomeItem(id),openOffer:id=>armyPanels.openItemOffer(id),
+  onSuccess:()=>gameAudio.ui('equip',state.sound),
 });
 // Reset at both edges of a modal/guide pause, including very brief opens between clock ticks.
 document.addEventListener('toggle',event=>{
@@ -182,7 +189,6 @@ function update() {
     $("#promotion-fill").style.width = progress.ratio * 100 + "%";
     drawHomeField();
   }
-  $('.field-tools').hidden = r < GENERAL_RANK;
   const nextPassiveBoost=potionStatus(state,'blue').multiplier;
   if(nextPassiveBoost!==passiveBoost){
     passiveBoost=nextPassiveBoost;
@@ -196,6 +202,7 @@ function update() {
   zone.setAttribute("aria-label", "화면 터치해서 골드 " + tap + " 획득");
   syncSwordControls(document.querySelector('.field-tools'), state, session.active);
   syncRevolverControls(document.querySelector('.field-tools'), state, session.active);
+  homeItems.sync();
   $("#shop-dot").hidden = !(
     Object.keys(UNITS).some((id) => recruitOffer(state, id).canBuy) ||
     Object.keys(SCHOOLS).some(id=>schoolOffer(state,id).canBuy) ||
@@ -242,7 +249,11 @@ document.addEventListener('click', event => {
 });
 $("#open-ranks").onclick = () => openRankGuide(state, insignia);
 $("#open-shop").onclick = () => armyPanels.openShop();
-$("#open-equipment").onclick = () => armyPanels.openEquipment();
+$("#open-recruit").onclick = () => armyPanels.openShop('recruit');
+$("#open-facilities").onclick = () => armyPanels.openShop('facilities');
+$("#open-items").onclick = () => armyPanels.openShop('items');
+$("#open-equipment").onclick = () => armyPanels.openEquipment(undefined,'military');
+$("#open-personal").onclick = () => armyPanels.openEquipment(undefined,'personal');
 $("#open-battle").onclick = () => battleUI.open();
 // Android back button (the plugin only exists inside the app, so the browser version skips this).
 // Registered once at startup: popups close first, then a second press within two seconds leaves.

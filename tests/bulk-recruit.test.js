@@ -28,8 +28,8 @@ test("level one command baton is previewed at major and automatically owned from
   assert.deepEqual(commandBatonStatus(army(327680)), { visible: true, owned: true, level: 1 });
 });
 
-test("bulk recruitment cannot bypass rank or the forty-sergeant promotion requirement", () => {
-  for (const original of [army(640), army(1279), { ...army(327680), sergeants: 39 }]) {
+test("bulk recruitment still requires the lieutenant-colonel power threshold", () => {
+  for (const original of [army(640), army(1279)]) {
     const s = structuredClone(original), offer = recruitOffer(s, "soldier", 100);
     assert.equal(offer.locked, true);
     assert.equal(offer.reason, "locked");

@@ -76,7 +76,7 @@ export function unitAccess(state, unit) {
   const school=SCHOOL_ACCESS[unit.school],level=state[school?.field]??0;
   return {
     visible: !school?.previous || (state[school.previous]??0)>=5 || (state[unit.field]??0)>0,
-    unlocked: unit.recruitRankPower ? level>=unit.schoolLevel && armyPower(state)>=unit.recruitRankPower && (state.soldiers??0)>=5000 && (state.sergeants??0)>=300 : unit.unlockPower ? armyPower(state)>=unit.unlockPower : !unit.school || level >= unit.schoolLevel,
+    unlocked: unit.recruitRankPower ? level>=unit.schoolLevel && armyPower(state)>=unit.recruitRankPower : unit.unlockPower ? armyPower(state)>=unit.unlockPower : !unit.school || level >= unit.schoolLevel,
     requirement: unit.school ? `${school.name} Lv.${unit.schoolLevel}${unit.unlockRank ? ' · '+unit.unlockRank+' 이상 모집·학교 확장' : ''}` : unit.unlockRank ? `${unit.unlockRank} 이상 · 전력 ${unit.unlockPower}` : '기본 모집',
   };
 }

@@ -29,7 +29,7 @@ test('four supreme commands form one galactic command at the special marshal thr
  assert.equal(ACHIEVEMENTS.find(a=>a.id==='galacticCommand').title,'은하 연대장');
  assert.ok(result.achievements.includes('galacticCommand'));
  assert.deepEqual(reconcileAchievements(s),[]);
- s.sergeants=299;assert.equal(RANKS[rankForArmy(s)],'대령');
+ s.sergeants=299;assert.equal(RANKS[rankForArmy(s)],'대원수');
 });
 
 test('new highest power limit rejects one extra recruit without spending and restores exact money',()=>{

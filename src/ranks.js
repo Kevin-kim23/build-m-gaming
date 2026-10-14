@@ -14,9 +14,6 @@ import {
   GALACTIC_ALLIED_ARMY_SIZE, GALACTIC_GRAND_ALLIED_ARMY_SIZE,
 } from "./formations.js";
 import { armyPower } from "./units.js";
-export const GENERAL_MIN_SOLDIERS = 5_000;
-
-export const GENERAL_MIN_SERGEANTS = 300;
 
 // Approved game progression, independent of which grouped icons are on screen.
 export const RANK_DEFINITIONS = Object.freeze([
@@ -107,7 +104,7 @@ export const RANK_DEFINITIONS = Object.freeze([
   {
     name: "소령",
     required: COMPANY_SIZE * 2,
-    condition: "2개 중대 · 하사 40명",
+    condition: "2개 중대",
     kind: "field",
     marks: 1,
   },
@@ -128,7 +125,7 @@ export const RANK_DEFINITIONS = Object.freeze([
   {
     name: "준장",
     required: REGIMENT_SIZE * 2,
-    condition: `2개 연대 · 일반병 ${fmt(GENERAL_MIN_SOLDIERS)}명 · 하사 ${GENERAL_MIN_SERGEANTS}명`,
+    condition: "2개 연대",
     kind: "general",
     marks: 1,
   },
@@ -177,10 +174,7 @@ export function rankFor(count) {
 export const MAJOR_RANK = RANKS.indexOf("소령");
 export const GENERAL_RANK = RANKS.indexOf("준장");
 export function rankForArmy(s) {
-  const byPower = rankFor(armyPower(s));
-  return Math.min(byPower,
-    (s.sergeants ?? 0) < 40 ? MAJOR_RANK - 1 : LAST_RANK,
-    ((s.soldiers ?? 0) < GENERAL_MIN_SOLDIERS || (s.sergeants ?? 0) < GENERAL_MIN_SERGEANTS) ? GENERAL_RANK - 1 : LAST_RANK);
+  return rankFor(armyPower(s));
 }
 export function catalogVisible(s, unlockRank) {
   return rankForArmy(s) >= RANKS.indexOf(unlockRank) - 1;
@@ -191,22 +185,15 @@ export function promotionProgress(s) {
     next = RANK_DEFINITIONS[current + 1];
   if (!next)
     return { text: "총 전력 " + fmt(power), ratio: 1 };
-  const gated = current + 1 === MAJOR_RANK;
-  const generalGate = current + 1 === GENERAL_RANK;
   return {
     text:
       "전력 " +
       fmt(power) +
       " / " +
-      fmt(next.required) +
-      (gated ? " · 하사 " + (s.sergeants ?? 0) + " / 40명" : "") +
-      (generalGate ? ` · 일반병 ${fmt(s.soldiers ?? 0)} / ${fmt(GENERAL_MIN_SOLDIERS)}명 · 하사 ${fmt(s.sergeants ?? 0)} / ${GENERAL_MIN_SERGEANTS}명` : ""),
+      fmt(next.required),
     ratio: Math.min(
       1,
       Number(power) / Number(next.required),
-      gated ? (s.sergeants ?? 0) / 40 : 1,
-      generalGate ? (s.soldiers ?? 0) / GENERAL_MIN_SOLDIERS : 1,
-      generalGate ? (s.sergeants ?? 0) / GENERAL_MIN_SERGEANTS : 1,
     ),
   };
 }

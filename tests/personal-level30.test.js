@@ -23,7 +23,7 @@ test('baton26..30 replaces the old discounts with five new recruitment abilities
     assert.equal(bulkRecruitDiscountPercent(s),0);
     const sum=Array.from({length:100},(_,i)=>exact(unitCost(s.sergeants+i,'sergeant'))).reduce((a,b)=>a+b,0n);
     assert.equal(exact(recruitOffer(s,'sergeant',100).cost),sum);
-    assert.equal(Object.values(BULK_RECRUIT).filter(r=>r.level<=level).length,level);
+    assert.equal(Object.values(BULK_RECRUIT).filter(r=>r.level<=level).length,level+4);
   }
 });
 

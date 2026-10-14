@@ -23,7 +23,7 @@ test('paid baton level two adds sergeant batches but preserves soldier batches a
   s.ncoSchoolLevel=0;assert.equal(recruitOffer(s,'sergeant',100).reason,'locked');
   assert.match(recruitOffer(s,'sergeant',100).requirement,/부사관학교/);
   assert.equal(recruitOffer(s,'soldier',100).canBuy,true);
-  s.sergeants=39;assert.equal(commandBatonStatus(s).level,0);
+  s.sergeants=39;assert.equal(commandBatonStatus(s).level,2);
 });
 test('sergeant bulk prices are independent and exactly match 100 sequential recruits',()=>{
   const s=army(), singles=structuredClone(s), cost=sum(s.sergeants,'sergeant');
@@ -54,18 +54,15 @@ test('bulk sergeants accrue only old income and emit normal new income after pur
   assert.equal(recruit(s,T+1000,'sergeant',100).ok,true);
   assert.equal(s.gold,income);assert.equal(perSecond(s),income+7500);assert.equal(perTap(s),tap+60000);
 });
-test('general ranks require 5000 soldiers, 300 sergeants and the unchanged power threshold',()=>{
-  for(const [soldiers,sergeants,staffSergeants] of [[4999,300,20000],[5000,299,20000],[5000,300,0],[7239,300,0]]) {
-    const s={...army(soldiers),sergeants,staffSergeants};assert.equal(RANKS[rankForArmy(s)],'대령');
-    assert.equal(generalSwordStatus(s).owned,false);assert.ok(promotionProgress(s).ratio<1);
-    assert.match(promotionProgress(s).text,/5,000명 · 하사 .*300명/);
+test('general ranks require only their unchanged power threshold',()=>{
+  for(const soldiers of [0,4999,5000]){
+    const s={...army(soldiers),sergeants:0,staffSergeants:600};
+    assert.equal(RANKS[rankForArmy(s)],'준장');assert.equal(generalSwordStatus(s).owned,true);
+    assert.doesNotMatch(promotionProgress(s).text,/일반병|하사/);
   }
-  const s={...army(7239),sergeants:300},result=recruit(s,T);
-  assert.equal(result.promoted,true);assert.equal(RANKS[result.rank],'준장');assert.equal(s.soldiers,7240);
-  assert.equal(generalSwordStatus(s).owned,true);
-  assert.equal(RANKS[rankForArmy({...army(5000),sergeants:300,staffSergeants:112})],'준장');
-  assert.equal(RANKS[rankForArmy({...army(5000),sergeants:300,staffSergeants:624})],'소장');
-  s.sergeants=39;assert.equal(RANKS[rankForArmy(s)],'대위');
+  const s={...army(10239),sergeants:0},result=recruit(s,T);
+  assert.equal(result.promoted,true);assert.equal(RANKS[result.rank],'준장');
+  assert.equal(s.soldiers,10240);assert.equal(generalSwordStatus(s).owned,true);
 });
 test('sword is visible early, remains locked, and is granted at brigadier and explains its active skill',()=>{
   assert.match(markup(army(880),'personal'),/장군검/);
@@ -76,15 +73,15 @@ test('sword is visible early, remains locked, and is granted at brigadier and ex
   assert.deepEqual([perSecond(s),perTap(s)],stats);
   const recruits=markup(s,'recruit');
   for(const type of ['soldier','sergeant','staffSergeant'])assert.equal((recruits.match(new RegExp(`data-buy-bulk="${type}"`,'g'))??[]).length,1);
-  assert.equal((recruits.match(/data-bulk-price/g)??[]).length,3);
+  assert.equal((recruits.match(/data-bulk-price/g)??[]).length,6);
   assert.match(recruits,/data-buy-bulk="staffSergeant"/);
 });
 test('current saves retain assets and paid personal levels',()=>{
   const s=army(9999);s.staffSergeants=1000;s.equipment.helicopter={level:8,deployed:false,count:1};
   const loaded=parseSave(serializeSave(s),T);
   for(const field of ['soldiers','sergeants','staffSergeants','gold','equipment','ncoSchoolLevel'])assert.deepEqual(loaded[field],s[field]);
-  assert.equal(RANKS[rankForArmy(loaded)],'대령');assert.equal(commandBatonStatus(loaded).level,2);
-  assert.equal(generalSwordStatus(loaded).owned,false);
+  assert.equal(RANKS[rankForArmy(loaded)],'소장');assert.equal(commandBatonStatus(loaded).level,2);
+  assert.equal(generalSwordStatus(loaded).owned,true);
   loaded.soldiers=5000;loaded.sergeants=300;assert.equal(generalSwordStatus(parseSave(serializeSave(loaded),T)).owned,true);
   assert.ok(!Object.hasOwn(loaded,'generalSword'));assert.equal(loaded.version, SAVE_VERSION);
 });

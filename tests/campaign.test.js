@@ -12,7 +12,7 @@ import { createBattle } from '../src/battle.js';
 import {referenceArmy,simulateBattle} from '../tools/campaign-sim.mjs';
 import { recordBattleVictory } from '../src/battle-progress.js';
 import { fortressShieldClass,stageEnemyType,isFortress } from '../src/battle-balance.js';
-import { RANKS,rankForArmy,GENERAL_MIN_SOLDIERS } from '../src/ranks.js';
+import { RANKS,rankForArmy } from '../src/ranks.js';
 const T=1_800_000_000_000;
 test('wide landscape maps start centered on the next country after width clamping',()=>{
   for(const aspect of [3,3.8,5])for(const cleared of [20,40]){

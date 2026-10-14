@@ -33,7 +33,7 @@ test('four field armies form an army group, four groups form allied command, ran
     assert.ok(s.earnedAchievements.includes(id));
     assert.deepEqual(reconcileAchievements(s),[]);
     assert.deepEqual(parseSave(serializeSave(s),T),s);
-    s.sergeants=299;assert.equal(RANKS[rankForArmy(s)],'대령');
+    s.sergeants=299;assert.equal(rankForArmy(s),RANKS.indexOf(rank)-1);
   }
 });
 

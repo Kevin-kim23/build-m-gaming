@@ -45,7 +45,7 @@ test('officer academy needs both NCO level five and actual major general rank',(
   assert.equal(schoolOffer(s,'officer').visible,true);
   assert.equal(upgradeSchool(s,T,'officer').reason,'locked');
   s.soldiers=327680; s.sergeants=39;
-  assert.equal(upgradeSchool(s,T,'officer').reason,'locked');
+  assert.equal(schoolOffer(s,'officer').canBuy,true);
   s.soldiers=17480;s.sergeants=300;
   const before=s.gold; assert.equal(upgradeSchool(s,T,'officer').level,1);
   assert.equal(before-s.gold,1_500_000_000);
