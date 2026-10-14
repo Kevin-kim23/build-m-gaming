@@ -17,7 +17,7 @@ test('native launch hides the legacy icon and matches the studio video backgroun
 
 test('beta welcome sits with the title above the separate start prompt', () => {
   const html = read('index.html');
-  assert.match(html, /opening-lockup[\s\S]*opening-heading" aria-label="부대 키우기"><span>부대<\/span><span>키우기<\/span><\/span>\s*<span class="opening-welcome">- 베타테스터 여러분을 환영합니다 -<\/span>/);
+  assert.match(html, /opening-lockup[\s\S]*opening-heading" aria-label="부대 키우기"><span>부대<\/span><span>키우기<\/span><\/span>\s*<img class="opening-lettering"[^>]*>\s*<span class="opening-welcome">- 베타테스터 여러분을 환영합니다 -<\/span>/);
   assert.ok(html.indexOf('opening-welcome') < html.indexOf('opening-prompt'));
   assert.match(html, /id="opening-title" type="button"/);
 });

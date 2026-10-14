@@ -137,3 +137,9 @@
 @supports (font-size: 1cqw) {
   .opening-welcome { font-size: clamp(12px, min(3.7cqw, 3.5vh), 19px); }
 }
+
+/* Chosen original gold lettering; accessible text remains as the loading/error fallback. */
+.opening-lettering{display:none;width:clamp(150px,min(76vw,36vh),330px);max-width:88%;height:auto;justify-self:center;pointer-events:none}
+#opening.has-title-lettering .opening-heading{display:none}
+#opening.has-title-lettering .opening-lettering:not([hidden]){display:block}
+#opening.has-title-lettering .opening-lockup{top:12%;gap:clamp(6px,1vh,12px)}

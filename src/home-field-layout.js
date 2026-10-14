@@ -48,8 +48,8 @@ export function layoutHomeField(state,viewportWidth,viewportHeight) {
     const headquarters=world.army.find(item=>!UNITS[item.id]);
     const secondaryBottom=world.army.length>1&&headquarters?Math.max(...world.army.slice(1).map(item=>item.y+item.boxHeight))+gap:rowTop;
     const schoolHeightBudget=Math.max(1,rowTop+contentHeight-secondaryBottom-14);
-    const w=Math.max(1,Math.min(schoolHeightBudget*96/72,schoolWidth,38,headquarters?headquarters.width*.65:32,
-      headquarters?headquarters.height*.68*96/72:Infinity,Math.max(1,contentHeight-14)*96/72));
+    // A campus has a stable footprint, independent of the small early headquarters.
+    const w=Math.max(1,Math.min(schoolHeightBudget*96/72,schoolWidth));
     const h=w*72/96;
     world.schools=[{id:academy.artId,name:'사관학교',level:academy.artLevel,displayLevel:academy.level,
       x:schoolX+(schoolWidth-w)/2,y:Math.max(secondaryBottom,rowTop+(headquarters?headquarters.height-h:0)),width:w,height:h,

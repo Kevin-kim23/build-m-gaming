@@ -9,7 +9,7 @@ import { verifyAudioAssets } from '../tools/audio-assets.mjs';
 
 test('release contains exact approved logo and title artwork without additional audio', async () => {
   const root = new URL('../', import.meta.url);
-  assert.equal(OPENING_ASSETS.length, 3);
+  assert.equal(OPENING_ASSETS.length, 4);
   assert.deepEqual((await verifyOpeningAssets(root)).failures, []);
   assert.deepEqual((await verifyAudioAssets(root)).failures, []);
   const image = await readFile(new URL('public/opening/title-screen.webp', root));

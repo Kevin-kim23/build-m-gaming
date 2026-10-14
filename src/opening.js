@@ -9,6 +9,7 @@ export function createOpeningScreen({ root = document, onStart, onError, onState
   const video = root.querySelector('#opening-video');
   const title = root.querySelector('#opening-title');
   const art = root.querySelector('#opening-art');
+  const lettering = root.querySelector('.opening-lettering');
   const app = root.querySelector('#app');
   let stage = 'logo', active = false, attempt = 0;
   let watchdog = null, deadline = null, remaining = OPENING_MAX_PLAY_MS;
@@ -129,6 +130,20 @@ export function createOpeningScreen({ root = document, onStart, onError, onState
     onError?.('opening.image', new Error('Title illustration could not load'));
   });
   if (art.complete && art.naturalWidth === 0) art.hidden = true;
+  if(lettering){
+    const revealLettering=()=>{
+      const loaded=lettering.naturalWidth>0;
+      layer.classList.toggle('has-title-lettering',loaded);
+      lettering.hidden=!loaded;
+    };
+    listen(lettering,'load',revealLettering);
+    listen(lettering,'error',()=>{
+      lettering.hidden=true;layer.classList.toggle('has-title-lettering',false);
+      onError?.('opening.lettering',new Error('Title lettering could not load'));
+    });
+    if(lettering.complete)revealLettering();
+  }
+
   // A cached media failure may have happened before JavaScript was ready.
   if (video.error) showTitle();
   return { setActive, get stage() { return stage; } };

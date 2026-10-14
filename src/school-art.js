@@ -15,7 +15,7 @@ export function schoolIcon(id,level) {
     drawings.set(key,svg);return svg;
   }
   const officer=id==='officer'||id==='advanced';
-  const floors=officer?Math.min(5,3+Math.max(1,level)):Math.max(1,level), color=id==='advanced'?'#69778e':officer?'#788fa1':'#8e9b74';
+  const floors=officer?Math.min(5,3+Math.max(1,level)):Math.max(3,level), color=id==='advanced'?'#69778e':officer?'#788fa1':'#8e9b74';
   const top=54-floors*7;
   let windows='';
   for(let row=0;row<floors;row++) for(let col=0;col<4;col++)

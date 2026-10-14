@@ -234,3 +234,14 @@ test('Android back on either opening screen requests exit without starting or ac
     assert.equal(f.opening.stage, stage);
   }
 });
+
+test('chosen lettering loads independently and failed lettering retains usable text title',()=>{
+ const f=fixture(),lettering=f.node('.opening-lettering'),toggles=[];
+ f.node('#opening').classList.toggle=(...args)=>toggles.push(args);
+ lettering.naturalWidth=1402;lettering.emit('load');
+ assert.equal(lettering.hidden,false);assert.deepEqual(toggles.at(-1),['has-title-lettering',true]);
+ lettering.emit('error');assert.equal(lettering.hidden,true);
+ assert.deepEqual(toggles.at(-1),['has-title-lettering',false]);
+ f.opening.setActive(true);f.node('#opening-video').emit('ended');f.node('#opening-title').emit('click');
+ assert.equal(f.starts,1);assert.equal(lettering.listenerCount(),0);
+});

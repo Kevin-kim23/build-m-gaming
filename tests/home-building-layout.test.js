@@ -54,8 +54,8 @@ test('headquarters keeps exactly 70% of its former width and height for every fo
       if(school){
         const campus=world.schools[0];
         assert.ok(campus.x>width/2);
-        assert.ok(campus.width<headquarters.width&&campus.height<headquarters.height);
-        assert.ok(Math.abs(campus.y+campus.height-headquarters.y-headquarters.height)<1e-9);
+        assert.ok(campus.width<=width*.3);
+        assert.ok(Math.abs(campus.y-Math.max(headquarters.y,headquarters.y+headquarters.height-campus.height))<1e-9);
       }
     }
   }
@@ -109,3 +109,14 @@ test('condensing the home is presentation only and preserves all ownership and i
     assert.ok(campus.y+campus.boxHeight<=height);
   }
  });
+
+test('academy keeps the same readable footprint at early and late ranks',()=>{
+ for(const [width,height] of [[160,220],[180,250],[240,300]]){
+  const early=layoutHomeField(stateFor({soldiers:20,school:1}),width,height).schools[0];
+  for(const soldiers of [20,80,320,81920])for(const school of [1,5,10,15,30]){
+   const campus=layoutHomeField(stateFor({soldiers,school}),width,height).schools[0];
+   assert.equal(campus.width,early.width);assert.equal(campus.height,early.height);
+   assert.ok(campus.width>=width*.23);
+  }
+ }
+});
