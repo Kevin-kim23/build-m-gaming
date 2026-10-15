@@ -12,5 +12,5 @@ const dialog=document.createElement('dialog');dialog.setAttribute('aria-label','
 dialog.innerHTML='<p style="color:#b7c7c5;font:11px system-ui">판매 화면 미리보기 · 예시 가격 · 결제 불가</p><h2>상점</h2>'+storeMarkup();document.body.append(dialog);
 const price=won=>({configured:true,price:won.toLocaleString('ko-KR')+'원'});
 renderStore(freshState(),dialog,{allowTestGrant:false,billing:price(HOME_AUTO_TAP.priceWon),starterBilling:price(STARTER_PACK.priceWon)});
-for(const b of dialog.querySelectorAll('button')){b.disabled=true;b.setAttribute('aria-label',b.textContent+' · 미리보기에서는 결제 불가');}
+for(const b of dialog.querySelectorAll('button')){b.setAttribute('aria-label',b.textContent+' · 미리보기에서는 결제 불가');b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();});}
 dialog.style.cssText='width:calc(100% - 24px);max-width:390px;max-height:calc(100dvh - 24px);padding:16px;border:1px solid #718477;border-radius:12px;background:#26352f;color:#eee8d8;';dialog.showModal();

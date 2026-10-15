@@ -10,8 +10,8 @@ export function storeMarkup(){
     <div class="starter-promo-tag">특별 혜택 · 1회 구매!</div>
     <header><h3>스타터팩</h3></header>
     <div class="starter-showcase" aria-label="스타터팩 구성">${Object.values(POTIONS).map(p=>`<div class="starter-vial ${p.id}"><span class="starter-vial-art" aria-hidden="true">${potionIcon(p.id)}</span><strong>${p.shortName} ×${STARTER_PACK[p.id]}</strong></div>`).join('')}</div>
-    <strong class="starter-price" data-starter-price>${fmt(STARTER_PACK.priceWon)}<small>원 · 예정</small></strong>
-    <button type="button" data-buy-starter disabled>구매 준비 중</button>
+    <div class="product-purchase-row"><strong class="starter-price" data-starter-price>${fmt(STARTER_PACK.priceWon)}<small>원 · 예정</small></strong>
+    <button type="button" data-buy-starter disabled>구매 준비 중</button></div>
     <p data-starter-status role="status" hidden></p>
     <details class="store-purchase-help"><summary>구매·복원 안내</summary><p>자동터치 미포함 · 부스터는 아이템에서 직접 사용합니다.</p>
     <button type="button" data-restore-starter hidden disabled>구매 처리 다시 확인</button>

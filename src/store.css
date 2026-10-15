@@ -1,46 +1,42 @@
 
-.store-products{display:grid;gap:12px;padding-top:6px}
-.starter-pack,.store-products .auto-tap-card.potion-card{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:6px 9px;align-items:center;margin:0;padding:12px;border:1px solid #697579;border-radius:9px;background:linear-gradient(135deg,#304149,#222e35);color:#e5eae6;text-align:left;box-shadow:inset 0 1px #e4e8df10}
-.starter-pack{border-color:#9f895a;background:linear-gradient(135deg,#494b3c,#28363b)}
-.store-product-art{grid-column:1;grid-row:1/3;display:grid;place-items:center;width:48px;height:58px;background:#1b293060;border:1px solid #82928b40;border-radius:5px}
-.store-product-art svg{width:36px;height:48px;image-rendering:pixelated}
-.store-products header,.store-products .auto-product-name{grid-column:2;grid-row:1;display:block;padding:0;margin:0;min-width:0}
-.store-products h3,.store-products .auto-product-name h3{margin:0 0 4px;font-size:15px;color:#f0e7cc;text-shadow:none}
-.store-products header p{margin:0;font-size:11px;color:#c3cecc}.store-products header small{display:block;margin-top:4px;font-size:10px;color:#b2c3c5}
-.starter-rewards{grid-column:2/-1;grid-row:2;display:flex;gap:4px 10px;flex-wrap:wrap;font-size:10px;color:#ddd3b7}
-.starter-price,.store-products .auto-price{grid-column:3;grid-row:1;display:block;margin:0;font-size:15px;color:#ecd6a0;font-variant-numeric:tabular-nums;text-align:right}
+/* One product surface and one aligned purchase row for both items. */
+.store-products{display:grid;gap:14px;padding:6px 0}
+.store-products .starter-pack,.store-products .auto-tap-card.potion-card{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;margin:0;padding:16px;border:1px solid #52676e;border-radius:12px;background:linear-gradient(145deg,#30434b,#1b2d35);color:#e9ece5;box-shadow:inset 0 1px #bdced51a,0 4px 10px #101b212e;text-align:left}
+.store-products .starter-pack{border-color:#a58c53;background:radial-gradient(ellipse at 50% 25%,#8a805032,transparent 70%),linear-gradient(145deg,#354947,#1c3038 68%,#414437);gap:8px 12px}
+.starter-pack::before{content:"";position:absolute;inset:-60%;z-index:-1;pointer-events:none;background:linear-gradient(110deg,transparent 40%,#ffe9a319 49%,transparent 58%);animation:starter-sheen 7s ease-in-out infinite;animation-play-state:paused}
+.starter-promo-tag{grid-column:1/-1;justify-self:start;padding:3px 8px;border-left:2px solid #e3c57d;color:#eed798;background:#d5b76c12;font:800 11px/1.5 system-ui;animation:starter-glow 4s ease-in-out infinite;animation-play-state:paused}
+.store-products .starter-pack header{grid-column:1/-1;margin:0;padding:0}
+.store-products .starter-pack h3{margin:0;font-size:23px;letter-spacing:-.03em;color:#f8edce;text-shadow:0 2px #15262a}
+.starter-showcase{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:2px 0 4px}
+.starter-vial{display:grid;justify-items:center;gap:4px;padding:7px 2px 8px;border-bottom:1px solid #bd8e6c80;background:radial-gradient(ellipse at bottom,#ac6d4a24,transparent 75%);min-width:0}
+.starter-vial.blue{border-color:#79aeb980;background:radial-gradient(ellipse at bottom,#66b1c924,transparent 75%)}
+.starter-vial.max{border-color:#cfb76f;background:radial-gradient(ellipse at bottom,#e6be5430,transparent 75%)}
+.starter-vial-art{display:grid;place-items:center;height:60px;width:100%;animation:starter-hover 5s ease-in-out infinite;animation-play-state:paused}
+.starter-vial-art svg{height:60px;width:46px;filter:drop-shadow(0 3px 3px #07171c99)}
+.starter-vial.blue .starter-vial-art{animation-delay:-1.6s}.starter-vial.max .starter-vial-art{animation-delay:-3.2s}
+.starter-vial.max svg{filter:drop-shadow(0 3px 3px #0006) drop-shadow(0 0 5px #ffe19455)}
+.starter-vial strong{font-size:11px;line-height:1.5;white-space:nowrap;color:#e8dfc7}
+.store-product-art{grid-column:1;grid-row:1;display:grid;place-items:center;width:64px;height:64px;background:radial-gradient(ellipse,#b3c2b01c,transparent 70%)}
+.store-product-art svg{width:46px;height:58px;filter:drop-shadow(0 3px 2px #101d24);image-rendering:pixelated}
+.store-products .auto-product-name{grid-column:2;grid-row:1;align-self:center;display:block;margin:0;padding:0}
+.store-products .auto-product-name h3{margin:0;color:#f1ebd8;font-size:20px;letter-spacing:-.03em}
+.store-products .product-purchase-row{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(112px,1fr);gap:12px;align-items:center;padding-top:12px;border-top:1px solid #c5d5cc22}
+.store-products .starter-price,.store-products .auto-price{display:block;margin:0;font:800 20px/1.3 system-ui;color:#f1e4c2;text-align:left;font-variant-numeric:tabular-nums}
 .starter-price small{font-size:10px}
-.starter-pack>[data-buy-starter],.store-products .potion-actions{grid-column:2/-1;margin:0}
-.starter-pack>[data-buy-starter],.store-products .potion-actions button{min-height:36px;padding:5px 9px;border:1px solid #a18d60;border-radius:5px;background:#bca875;color:#202b2e;font-size:12px;font-weight:800;box-shadow:none;cursor:pointer}
-.store-products .potion-actions{display:flex;flex-wrap:wrap;gap:6px}.store-products .potion-actions button{flex:1;min-width:80px}
-.store-products button:disabled{background:#3b4d50;color:#b9c5c2;border-color:#5e7376;box-shadow:none;cursor:default}
-.store-products .store-purchase-help{grid-column:1/-1;border-top:1px solid #a4b9bb24;padding-top:7px;font-size:11px;color:#b8c7c6}
-.store-purchase-help summary{cursor:pointer;min-height:24px;line-height:24px}.store-purchase-help p{line-height:1.6;margin:6px 0}
-.store-purchase-help button{min-height:36px;border:1px solid #778b8b;border-radius:4px;background:#35464c;color:#e1e7df}
-.store-products .auto-owned-status{grid-column:2/-1;margin:0;font-size:11px;color:#b9d5c2}
+.store-products .potion-actions{display:grid;grid-template-columns:1fr;gap:6px;margin:0}
+.store-products .product-purchase-row button{width:100%;min-height:44px;margin:0;padding:8px;border:1px solid #d7c28e;border-radius:6px;background:linear-gradient(#e4cd97,#bf9f63);color:#202e32;font:800 13px/1.3 system-ui;box-shadow:inset 0 1px #fff1c866;cursor:pointer;white-space:nowrap}
+.store-products .product-purchase-row button:disabled{background:#405357;border-color:#60777b;color:#b7c7c7;box-shadow:none;cursor:default}
+.store-products .product-purchase-row button:focus-visible{outline:2px solid #fff0c5;outline-offset:2px}
+.store-products .store-purchase-help{grid-column:1/-1;margin:0;padding-top:0;font-size:11px;color:#b2c4c4;border:0;text-align:left}
+.store-purchase-help summary{width:fit-content;cursor:pointer;min-height:26px;line-height:26px}.store-purchase-help p{margin:7px 0;line-height:1.6}.store-purchase-help ul{padding-left:16px;line-height:1.7}
+.store-purchase-help button{min-height:40px;padding:8px 12px;border:1px solid #718b8c;border-radius:5px;background:#344a50;color:#e1e8df}
+.store-products .auto-owned-status,.starter-pack>[data-starter-status]{grid-column:1/-1;margin:0;font-size:11px;line-height:1.5;color:#c8d9b9}
 .store-products [hidden]{display:none!important}
 .max-offer{padding:12px;border:1px solid #c8a864;border-radius:12px;background:radial-gradient(ellipse at top,#bd933622,transparent)}
 .potion-card[data-potion="max"]{border-color:#d8b265;background:linear-gradient(140deg,#e8d5a222,#30291922)}
-@media(max-width:350px){.starter-pack,.store-products .auto-tap-card.potion-card{padding:9px;grid-template-columns:40px minmax(0,1fr) auto;gap:6px}.store-product-art{width:40px}.store-products h3{font-size:14px}.starter-price,.store-products .auto-price{font-size:13px}}
-
-.starter-pack>[data-starter-status]{grid-column:1/-1;margin:0;font-size:11px;color:#ead5a6}.store-purchase-help ul{padding-left:16px;line-height:1.7}
-
-/* Compact promotional poster: original gold atmosphere, fewer words, full width. */
-.store-products .starter-pack{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;padding:14px 12px;border:1px solid #c6aa67;border-radius:12px;isolation:isolate;overflow:hidden;text-align:center;background:radial-gradient(ellipse at 50% 35%,#70816a66,transparent 66%),linear-gradient(150deg,#263f45,#192e39 65%,#574a2c);box-shadow:inset 0 0 0 3px #e7ce7b15,0 3px 12px #10212a44}
-.starter-pack::before{content:"";position:absolute;inset:-60%;z-index:-1;pointer-events:none;background:linear-gradient(110deg,transparent 40%,#ffe9a31c 49%,transparent 58%);transform:translateX(-60%);animation:starter-sheen 7s ease-in-out infinite;animation-play-state:paused}
-.starter-promo-tag{grid-column:1/-1;justify-self:center;border:1px solid #e1c58270;border-radius:20px;padding:4px 13px;background:#bda15e22;color:#f3d892;font-size:11px;font-weight:800;letter-spacing:.04em;animation:starter-glow 4s ease-in-out infinite;animation-play-state:paused}
-.store-products .starter-pack header{grid-column:1/-1;grid-row:auto;padding:0}
-.store-products .starter-pack h3{font-size:23px;letter-spacing:.08em;margin:0;color:#fff1c8;text-shadow:0 2px #493d27}
-.starter-showcase{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:4px 8px 8px;background:radial-gradient(ellipse at 50% 100%,#dbb96633,transparent 68%)}
-.starter-vial{min-width:0;display:grid;justify-items:center;gap:3px}.starter-vial-art{display:grid;place-items:center;width:100%;height:68px;animation:starter-hover 5s ease-in-out infinite;animation-play-state:paused}.starter-vial-art svg{height:66px;width:48px;filter:drop-shadow(0 3px 3px #0006) drop-shadow(0 0 5px #edb37444)}
-.starter-vial.blue .starter-vial-art{animation-delay:-1.6s}.starter-vial.max .starter-vial-art{animation-delay:-3.2s}.starter-vial.max svg{filter:drop-shadow(0 3px 3px #0006) drop-shadow(0 0 6px #ffe19477)}
-.starter-vial strong{font-size:11px;color:#f5e3bc;white-space:nowrap}
-.store-products .starter-pack .starter-price{grid-row:auto;grid-column:1;align-self:center;text-align:center;font-size:19px;margin:0}
-.store-products .starter-pack>[data-buy-starter]{grid-column:2;min-height:40px;background:linear-gradient(#ead29a,#bc9856);border-color:#e2c282;color:#292f27;box-shadow:inset 0 1px #fff1c799}
-.store-products .starter-pack>[data-buy-starter]:disabled{background:#3b4d50;border-color:#687e7b;color:#b9c5c2;box-shadow:none}
-.starter-pack .store-purchase-help{text-align:left}
 dialog[open] .starter-pack::before,dialog[open] .starter-promo-tag,dialog[open] .starter-vial-art{animation-play-state:running}
 @keyframes starter-sheen{0%,35%{transform:translateX(-60%)}75%,100%{transform:translateX(60%)}}
-@keyframes starter-glow{0%,100%{box-shadow:0 0 0 #e6c37600}50%{box-shadow:0 0 12px #e6c37630}}
+@keyframes starter-glow{0%,100%{opacity:.85}50%{opacity:1}}
 @keyframes starter-hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 @media(prefers-reduced-motion:reduce){.starter-pack::before,.starter-promo-tag,.starter-vial-art{animation:none!important}}
+@media(max-width:350px){.store-products .starter-pack,.store-products .auto-tap-card.potion-card{padding:12px}.store-products .product-purchase-row{gap:8px;grid-template-columns:minmax(0,1fr) minmax(100px,1fr)}.store-products .starter-price,.store-products .auto-price{font-size:18px}}

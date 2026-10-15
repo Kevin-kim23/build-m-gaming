@@ -70,7 +70,7 @@ body:has(dialog[open]) .building-aura::before,body:has(dialog[open]) .building-a
 .home-item [data-item-status]{position:absolute;right:2px;bottom:2px;padding:1px 2px;background:#18262de6;border-radius:2px;font-size:10px;line-height:10px}
 .home-item [data-item-time]{position:absolute;top:47px;left:50%;transform:translateX(-50%);max-width:none;color:#26352c;text-shadow:0 1px #e1e7dc;font-size:10px;font-weight:800}
 .field-tools .sword-clock{margin:0;width:34px;height:34px}
-.field-tools .home-skill [data-sword-time],.field-tools .home-skill [data-revolver-time]{bottom:-17px;color:#26352c;text-shadow:0 1px #e1e7dc;white-space:nowrap}
+.field-tools .home-skill [data-sword-time],.field-tools .home-skill [data-revolver-time]{bottom:-17px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#26352c;text-shadow:0 1px #e1e7dc;white-space:nowrap}
 .home-tabs button,.home-tabs #open-shop{min-height:50px;border:1px solid #53666c;border-radius:7px;background:linear-gradient(155deg,#35464d,#26343b);color:#e2e9e6;box-shadow:inset 0 1px #c9dbdd16,0 2px 3px #101b202e;gap:4px}
 .home-tabs #open-shop{border-color:#a48d59;background:linear-gradient(145deg,#605b43,#474733);color:#f1e2b8}
 .home-tabs button:active,.home-tabs #open-shop:active{background:#475a60}
