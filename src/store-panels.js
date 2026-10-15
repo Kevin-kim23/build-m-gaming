@@ -7,6 +7,7 @@ import {billingPriceLabel} from './billing-price-label.js';
 
 export function storeMarkup(){
   return `<div class="store-products"><article class="starter-pack" data-starter-pack aria-label="스타터팩">
+    <span class="starter-sparks" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
     <div class="starter-promo-tag">특별혜택!</div>
     <header><h3>스타터팩</h3><span>1회 구매</span></header>
     <div class="starter-showcase" aria-label="스타터팩 구성">${Object.values(POTIONS).map(p=>`<div class="starter-vial ${p.id}"><span class="starter-vial-art" aria-hidden="true">${potionIcon(p.id)}</span><strong>${p.shortName} ×${STARTER_PACK[p.id]}</strong></div>`).join('')}</div>

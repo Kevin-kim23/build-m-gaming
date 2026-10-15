@@ -86,7 +86,7 @@ function dockMarkup() {
     <button id="open-equipment">${homeMenuIcon('equipment')}<span>군사 장비</span></button>
     <button id="open-shop">${homeMenuIcon('shop')}<span>상점</span></button>
     <button id="open-facilities">${homeMenuIcon('facilities')}<span>시설</span></button>
-    <button id="open-personal">${homeMenuIcon('personal')}<span>개인장비</span></button>
+    <button id="open-personal">${homeMenuIcon('personal')}<span>개인 장비</span></button>
     <button id="open-items">${homeMenuIcon('items')}<span>아이템</span></button>
     </nav>
     <button id="open-battle" class="home-battle" hidden>${homeMenuIcon('battle')}<span>전투</span><small id="battle-lock-label"></small></button>

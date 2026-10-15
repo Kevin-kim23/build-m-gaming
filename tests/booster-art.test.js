@@ -22,7 +22,7 @@ test('boosters keep inventory IDs and share accessible, self-contained artwork a
 });
 
 test('automatic touch uses a plain square cursor while preserving its accessible configured rate',()=>{
-  assert.equal(HOME_AUTO_TAP.tapsPerSecond,5);
+  assert.equal(HOME_AUTO_TAP.tapsPerSecond,10);
   assert.match(homeAutoTapIcon,/viewBox="0 0 48 48"/);
   assert.ok(homeAutoTapIcon.includes(`초당 ${HOME_AUTO_TAP.tapsPerSecond}회`));
   assert.doesNotMatch(homeAutoTapIcon,/<text/);

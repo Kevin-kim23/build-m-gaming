@@ -1,4 +1,4 @@
-const tapsPerSecond=5;
+const tapsPerSecond=10;
 export const HOME_AUTO_TAP=Object.freeze({priceWon:4900,tapsPerSecond,intervalMs:1000/tapsPerSecond,maxGapMs:1000});
 export const emptyHomeAutoTap=()=>({owned:false,enabled:false,source:null});
 export const validHomeAutoTap=(p,version=41)=>p && typeof p==='object' && !Array.isArray(p) &&

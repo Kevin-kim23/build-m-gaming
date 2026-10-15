@@ -54,7 +54,7 @@ export function shopMarkup(s, coin, insignia, category = "recruit") {
     : selected === "facilities" ? facilitiesMarkup(s) : selected === "items" ? potionsMarkup() : storeMarkup();
   return `<div class="sheet-grip"></div>
   <div class="shop-header"><div><small>${{recruit:"RECRUITMENT",facilities:"FACILITIES",items:"ITEMS",store:"STORE"}[selected]}</small><h2 id="modal-title">${screen.name}</h2></div><button id="close-shop" aria-label="${screen.name} 닫기">×</button></div>
-  <div class="shop-wallet"><span>보유 골드</span><strong>${coin}<b id="shop-gold"></b><small>G</small></strong></div>
+  ${selected === 'store' ? '' : `<div class="shop-wallet"><span>보유 골드</span><strong>${coin}<b id="shop-gold"></b><small>G</small></strong></div>`}
   <p class="shop-guide" id="shop-guide"></p>
   <p id="shop-message" role="status" aria-live="polite"></p>
   <div class="shop-category-content" data-shop-content="${selected}">${content}</div>`;

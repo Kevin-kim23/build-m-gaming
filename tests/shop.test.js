@@ -19,7 +19,7 @@ test("each shop destination has its own title and content without cross-category
     assert.equal(html.includes("data-school="), id === "recruit");
     assert.equal(html.includes("data-facility-action="), id === "facilities");
     assert.equal(html.includes("data-potion-ad="), id === "items");
-    for (const elementId of ["shop-gold", "modal-title", "shop-message", "close-shop"])
+    for (const elementId of ["modal-title", "shop-message", "close-shop"])
       assert.equal((html.match(new RegExp(`id="${elementId}"`, "g")) ?? []).length, 1);
     assert.equal(html.includes('data-unit="soldier"'), id === "recruit");
     assert.equal(html.includes('data-buy-equipment="artillery"'), id === "equipment");
@@ -29,6 +29,19 @@ test("each shop destination has its own title and content without cross-category
   }
   assert.match(markup(s), /data-shop-content="recruit"/);
   assert.doesNotMatch(markup(s, "recruit"), /<details[^>]*\sopen(?:\s|>)/);
+});
+
+test("cash store omits the gold wallet while gold-spending screens retain it", () => {
+  const s = state(1280);
+  const store = shopMarkup(s, '<span data-test-coin></span>', () => '', 'store');
+  assert.doesNotMatch(store, /shop-wallet|shop-gold|보유 골드|data-test-coin/);
+  for (const category of ['recruit', 'facilities', 'items']) {
+    const html = shopMarkup(s, '<span data-test-coin></span>', () => '', category);
+    assert.equal((html.match(/class="shop-wallet"/g) ?? []).length, 1);
+    assert.equal((html.match(/id="shop-gold"/g) ?? []).length, 1);
+    assert.match(html, /보유 골드/);
+    assert.match(html, /data-test-coin/);
+  }
 });
 
 test("personal equipment is visible early and owned only at its award rank", () => {

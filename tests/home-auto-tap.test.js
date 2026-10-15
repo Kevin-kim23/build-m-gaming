@@ -28,46 +28,46 @@ function fixture(initial=freshState(T)){
 }
 function owned(){const s=freshState(T);grantTestHomeAutoTap(s);return s;}
 
-test('permanent auto taps pay exactly five times a second, batching storage and never increasing manual statistics',()=>{
+test('permanent auto taps pay exactly ten times a second, batching storage and never increasing manual statistics',()=>{
   const f=fixture(owned()),initialReads=f.reads;
   f.runtime.tick();for(let i=0;i<100;i++){f.step(100);f.flushDue();}
-  assert.equal(HOME_AUTO_TAP.tapsPerSecond,5);assert.equal(HOME_AUTO_TAP.intervalMs,200);
-  assert.equal(f.session.state.gold,50);assert.equal(f.session.state.taps,0);assert.equal(f.effects.length,50);
+  assert.equal(HOME_AUTO_TAP.tapsPerSecond,10);assert.equal(HOME_AUTO_TAP.intervalMs,100);
+  assert.equal(f.session.state.gold,100);assert.equal(f.session.state.taps,0);assert.equal(f.effects.length,100);
   assert.equal(f.writes,4);assert.equal(f.reads,initialReads);
-  f.session.pause();assert.equal(parseSave(f.values.get(SAVE_KEY),T).gold,50);
+  f.session.pause();assert.equal(parseSave(f.values.get(SAVE_KEY),T).gold,100);
 });
 
-test('jitter preserves a 200ms remainder; long suspension and clock rollback never become a payout burst',()=>{
+test('jitter preserves a 100ms remainder; long suspension and clock rollback never become a payout burst',()=>{
   const f=fixture(owned());f.runtime.tick();
   for(const ms of [113,186,203,107,391])f.step(ms);
-  assert.equal(f.session.state.gold,5);
-  f.step(100000);assert.equal(f.session.state.gold,5);
-  f.step(199);assert.equal(f.session.state.gold,5);f.step(1);assert.equal(f.session.state.gold,6);
-  f.step(-100);assert.equal(f.session.state.gold,6);f.step(200);assert.equal(f.session.state.gold,7);
+  assert.equal(f.session.state.gold,10);
+  f.step(100000);assert.equal(f.session.state.gold,10);
+  f.step(99);assert.equal(f.session.state.gold,10);f.step(1);assert.equal(f.session.state.gold,11);
+  f.step(-100);assert.equal(f.session.state.gold,11);f.step(100);assert.equal(f.session.state.gold,12);
   f.session.pause();
 });
 
-test('a one-second stall settles at most five pulses while longer stalls discard pending elapsed time',()=>{
+test('a one-second stall settles at most ten pulses while longer stalls discard pending elapsed time',()=>{
   const f=fixture(owned());f.runtime.tick();
-  assert.equal(f.step(199),0);
-  assert.equal(f.step(1000),5);assert.equal(f.session.state.gold,5);
-  assert.equal(f.step(1),1);assert.equal(f.session.state.gold,6);
-  assert.equal(f.step(199),0);
-  assert.equal(f.step(1001),0);assert.equal(f.session.state.gold,6);
-  assert.equal(f.step(199),0);assert.equal(f.step(1),1);
-  assert.deepEqual(f.effects,[5,1,1]);
+  assert.equal(f.step(99),0);
+  assert.equal(f.step(1000),10);assert.equal(f.session.state.gold,10);
+  assert.equal(f.step(1),1);assert.equal(f.session.state.gold,11);
+  assert.equal(f.step(99),0);
+  assert.equal(f.step(1001),0);assert.equal(f.session.state.gold,11);
+  assert.equal(f.step(99),0);assert.equal(f.step(1),1);
+  assert.deepEqual(f.effects,[10,1,1]);
   f.session.pause();
 });
 
 test('home visibility, ownership, switch and session pause all stop automatic income; resume starts a fresh interval',()=>{
   const f=fixture();f.runtime.tick();f.step(200);assert.equal(f.session.state.gold,0);
-  f.session.change(grantTestHomeAutoTap);f.step(100);f.step(200);assert.equal(f.session.state.gold,1);
+  f.session.change(grantTestHomeAutoTap);f.step(100);f.step(100);assert.equal(f.session.state.gold,1);
   f.setVisible(false);f.step(100);f.step(5000);assert.equal(f.session.state.gold,1);
-  f.setVisible(true);f.step(100);f.step(199);assert.equal(f.session.state.gold,1);f.step(1);assert.equal(f.session.state.gold,2);
+  f.setVisible(true);f.step(100);f.step(99);assert.equal(f.session.state.gold,1);f.step(1);assert.equal(f.session.state.gold,2);
   f.session.change(toggleHomeAutoTap);f.step(100);f.step(1000);assert.equal(f.session.state.gold,2);
-  f.session.change(toggleHomeAutoTap);f.step(100);f.step(200);assert.equal(f.session.state.gold,3);
+  f.session.change(toggleHomeAutoTap);f.step(100);f.step(100);assert.equal(f.session.state.gold,3);
   f.session.pause();f.runtime.reset();f.step(8*3600000);f.session.start();f.runtime.tick();
-  assert.equal(f.session.state.gold,3);f.step(200);assert.equal(f.session.state.gold,4);f.session.pause();
+  assert.equal(f.session.state.gold,3);f.step(100);assert.equal(f.session.state.gold,4);f.session.pause();
 });
 
 test('all modal types and the guide block the home-only runner; unsupported popovers do not throw',()=>{
@@ -87,10 +87,10 @@ test('ten held fingers can all release while automatic taps run; drags do not pa
   f.runtime.tick();for(let id=1;id<=10;id++)zone.events.pointerdown(pointer(id));
   f.step(500);f.step(500);
   for(let id=1;id<=10;id++)zone.events.pointerup(pointer(id));
-  assert.equal(f.session.state.gold,15);assert.equal(f.session.state.taps,10);
+  assert.equal(f.session.state.gold,20);assert.equal(f.session.state.taps,10);
   zone.events.pointerdown(pointer(1));zone.events.pointermove({...pointer(1),clientX:150});zone.events.pointerup(pointer(1));
-  f.step(200);assert.equal(f.session.state.gold,16);
-  zone.events.pointerdown(pointer(2));zone.events.pointerup(pointer(2));assert.equal(f.session.state.gold,17);
+  f.step(100);assert.equal(f.session.state.gold,21);
+  zone.events.pointerdown(pointer(2));zone.events.pointerup(pointer(2));assert.equal(f.session.state.gold,22);
   f.session.pause();
 });
 
@@ -100,21 +100,21 @@ test('auto taps share red/sword multipliers, stay independent of blue passive an
   for(const id of ['red','blue']){grantPotion(a,id);usePotion(a,T,id);}
   const b=parseSave(serializeSave(a),T),base=exact(baseTapIncome(a));
   const p=basePassiveIncome(a);assert.ok(p>0);
-  for(let i=1;i<=5;i++)awardHomeAutoTaps(a,T+i*200,1);
+  for(let i=1;i<=10;i++)awardHomeAutoTaps(a,T+i*100,1);
   accrue(b,T+1000);
-  assert.equal(exact(a.gold)-exact(b.gold),base*20n);
+  assert.equal(exact(a.gold)-exact(b.gold),base*40n);
   assert.equal(a.autoTouchTicks,b.autoTouchTicks);assert.equal(a.taps,0);
   const before=exact(a.gold);toggleHomeAutoTap(a);assert.equal(awardHomeAutoTaps(a,T+1500,1),0);assert.equal(exact(a.gold),before);
 });
 
 test('auto rewards cross safe integers, cap at one gold remaining, round-trip exactly, reject invalid pulse counts',()=>{
   for(const gold of [Number.MAX_SAFE_INTEGER,MAX_GOLD-1n,MAX_GOLD]){
-    const s={...owned(),gold};const amount=awardHomeAutoTaps(s,T,5);
-    const expected=exact(gold)+5n>MAX_GOLD?MAX_GOLD:exact(gold)+5n;
+    const s={...owned(),gold};const amount=awardHomeAutoTaps(s,T,10);
+    const expected=exact(gold)+10n>MAX_GOLD?MAX_GOLD:exact(gold)+10n;
     assert.equal(exact(s.gold),expected);assert.equal(exact(amount),expected-exact(gold));
     assert.equal(exact(parseSave(serializeSave(s),T).gold),expected);
   }
-  const s=owned();for(const count of [-1,0,1.5,6,Infinity])assert.equal(awardHomeAutoTaps(s,T,count),0);
+  const s=owned();for(const count of [-1,0,1.5,11,Infinity])assert.equal(awardHomeAutoTaps(s,T,count),0);
   assert.equal(awardHomeAutoTaps(s,NaN,1),0);assert.equal(s.gold,0);
 });
 
@@ -161,4 +161,22 @@ test('release blocks new free grants while grandfathered ownership survives save
  grantTestHomeAutoTap(f.session.state);const restored=parseSave(serializeSave(f.session.state),T);
  assert.equal(restored.homeAutoTap.owned,true);assert.equal(restored.homeAutoTap.source,'test');
  assert.equal(toggleHomeAutoTap(restored).ok,true);assert.equal(restored.homeAutoTap.owned,true);f.session.pause();
+});
+
+test('the rate upgrade preserves existing Play entitlement and the off switch without changing the save format',()=>{
+  const old=freshState(T);
+  old.gold=Number.MAX_SAFE_INTEGER;
+  old.homeAutoTap={owned:true,enabled:false,source:'play'};
+  const restored=parseSave(serializeSave(old),T);
+  assert.equal(SAVE_KEY,'budae-kiugi-recruits-v3');assert.equal(SAVE_VERSION,42);
+  assert.deepEqual(restored.homeAutoTap,old.homeAutoTap);assert.equal(restored.gold,old.gold);
+  const f=fixture(restored);f.runtime.tick();f.step(1000);
+  assert.equal(f.session.state.gold,old.gold);
+  f.session.change(toggleHomeAutoTap);f.runtime.tick();
+  for(let i=0;i<10;i++)f.step(100);
+  assert.equal(exact(f.session.state.gold),BigInt(old.gold)+10n);
+  assert.deepEqual(f.session.state.homeAutoTap,{owned:true,enabled:true,source:'play'});
+  f.session.pause();
+  const saved=parseSave(f.values.get(SAVE_KEY),T);
+  assert.equal(exact(saved.gold),BigInt(old.gold)+10n);assert.deepEqual(saved.homeAutoTap,f.session.state.homeAutoTap);
 });

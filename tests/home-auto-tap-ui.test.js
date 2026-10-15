@@ -22,7 +22,7 @@ function fakeNode(){
 
 test('compact store keeps purchase controls and limits while the home offer retains its preview',()=>{
   const pitch=homeAutoTapPitch(),store=homeAutoTapMarkup(),offer=homeOfferMarkup('auto',{allowTestGrant:false}).body;
-  assert.ok(!store.includes(pitch));assert.ok(offer.includes(pitch));assert.match(store,/초당 5회 · 영구 해금/);assert.match(store,/<details class="store-purchase-help">/);
+  assert.ok(!store.includes(pitch));assert.ok(offer.includes(pitch));assert.match(store,/초당 10회 · 영구 해금/);assert.match(store,/<details class="store-purchase-help">/);
   assert.match(pitch,new RegExp(`초당 ${HOME_AUTO_TAP.tapsPerSecond}회`));
   assert.match(pitch,/상점·전투·팝업·앱 종료 중에는 멈춥니다/);
   assert.match(pitch,/작동 예시/);assert.doesNotMatch(pitch,/<button|<input|onclick|data-buy|data-detail-action/);
@@ -47,7 +47,7 @@ test('test purchase dialog confirms explicitly, cancels via Android back, and sa
 });
 
 test('item UI clearly shows free test, locks repurchase, toggles accessibly and avoids unchanged text writes',()=>{
-  assert.doesNotMatch(homeAutoTapMarkup(),/예정 가격/);assert.match(homeAutoTapMarkup(),/구매 준비 중/);assert.match(homeAutoTapMarkup(),/초당 5회/);
+  assert.doesNotMatch(homeAutoTapMarkup(),/예정 가격/);assert.match(homeAutoTapMarkup(),/구매 준비 중/);assert.match(homeAutoTapMarkup(),/초당 10회/);
   const s=freshState(1),root=fakeNode(),card=root.querySelector('[data-home-auto-tap]');
   renderHomeAutoTap(s,root);assert.equal(card.querySelector('[data-toggle-home-auto]').disabled,true);assert.equal(card.querySelector('[data-buy-home-auto]').disabled,true);
   assert.equal(card.querySelector('[data-toggle-home-auto]').hidden,true);
@@ -101,7 +101,7 @@ test('configured Play products show real supplied prices and purchase actions in
  assert.match(storeMarkup(),/특별혜택!/);assert.match(storeMarkup(),/1회 구매/);assert.doesNotMatch(storeMarkup(),/계정당/);
  assert.doesNotMatch(storeMarkup(),/data-starter-price|data-play-price/);
  const header=homeAutoTapMarkup().match(/<header[^>]*>([\s\S]*?)<\/header>/)[1];
- assert.doesNotMatch(header,/<p|<small/);assert.match(homeAutoTapMarkup(),/홈에서만 작동/);
+ assert.doesNotMatch(header,/<p|<small/);assert.match(header,/<h3>자동터치<\/h3><span class="auto-rate-label">초당 ×10!<\/span>/);assert.match(homeAutoTapMarkup(),/홈에서만 작동/);
 });
 
 test('shop prices preserve foreign currencies and lock purchases when Play has no usable price',()=>{
