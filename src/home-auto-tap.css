@@ -28,3 +28,14 @@ dialog[open] .auto-pitch-pointer,dialog[open] .auto-pitch-halo,dialog[open] .aut
 #revolver-feedback{right:auto;left:14px;top:38%;max-width:calc(100% - 28px);color:#ffd0a4}
 
 .auto-tap-card [hidden]{display:none}
+
+/* Promotion stays distinct from the compact store row. */
+.auto-pitch h3{font-family:"Black Han Sans",sans-serif;font-weight:400;line-height:1.25;letter-spacing:-.03em}
+.auto-pitch-scene{height:100px;max-width:250px;margin:14px auto 8px}
+.auto-pitch-pointer{left:38px;top:8px}
+.auto-pitch-pointer svg{width:72px;height:72px}
+.auto-pitch-word{position:absolute;left:115px;top:24px;color:#e9ce8a;font:900 31px/1 system-ui,sans-serif;letter-spacing:.03em}
+.auto-pitch-ring{left:51px;top:15px}
+.auto-pitch-gold{left:193px;top:6px}
+.auto-pitch-spec{color:#f0dfba;font-size:14px;font-weight:700;margin:8px 0 12px}
+.auto-pitch-spec span{padding:0 7px;color:#96b6be}

@@ -47,13 +47,13 @@ test('test purchase dialog confirms explicitly, cancels via Android back, and sa
 });
 
 test('item UI clearly shows free test, locks repurchase, toggles accessibly and avoids unchanged text writes',()=>{
-  assert.match(homeAutoTapMarkup(),/예정 가격 4,900원/);assert.match(homeAutoTapMarkup(),/구매 준비 중/);assert.match(homeAutoTapMarkup(),/초당 5회/);
+  assert.doesNotMatch(homeAutoTapMarkup(),/예정 가격/);assert.match(homeAutoTapMarkup(),/구매 준비 중/);assert.match(homeAutoTapMarkup(),/초당 5회/);
   const s=freshState(1),root=fakeNode(),card=root.querySelector('[data-home-auto-tap]');
   renderHomeAutoTap(s,root);assert.equal(card.querySelector('[data-toggle-home-auto]').disabled,true);assert.equal(card.querySelector('[data-buy-home-auto]').disabled,true);
   assert.equal(card.querySelector('[data-toggle-home-auto]').hidden,true);
   grantTestHomeAutoTap(s);renderHomeAutoTap(s,root);
   const buy=card.querySelector('[data-buy-home-auto]'),toggle=card.querySelector('[data-toggle-home-auto]');
-  assert.equal(buy.disabled,true);assert.equal(buy.textContent,'보유 중');
+  assert.equal(buy.disabled,true);assert.equal(buy.textContent,'보유 중');assert.equal(buy.hidden,true);
   assert.equal(toggle.disabled,false);assert.equal(toggle.attributes['aria-pressed'],'true');
   assert.equal(toggle.hidden,false);assert.equal(card.querySelector('[data-home-auto-status]').hidden,false);
   const writes=buy.writes+toggle.writes;for(let i=0;i<100;i++)renderHomeAutoTap(s,root);
@@ -93,12 +93,29 @@ test('renamed cyber knowledge room retains the stable pcRoom save/catalog identi
 test('configured Play products show real supplied prices and purchase actions instead of free-test labels',()=>{
  const root=fakeNode(),state=freshState(1);
  renderStore(state,root,{allowTestGrant:false,billing:{configured:true,price:'4,900원'},starterBilling:{configured:true,price:'5,900원'}});
- for(const [cardSelector,buttonSelector,priceSelector,expected] of [['[data-home-auto-tap]','[data-buy-home-auto]','[data-play-price]','4,900원'],['[data-starter-pack]','[data-buy-starter]','[data-starter-price]','5,900원']]){
+ for(const [cardSelector,buttonSelector,expected] of [['[data-home-auto-tap]','[data-buy-home-auto]','4,900₩'],['[data-starter-pack]','[data-buy-starter]','5,900₩']]){
   const card=root.querySelector(cardSelector),button=card.querySelector(buttonSelector);
-  assert.equal(button.textContent,'구매');assert.equal(button.disabled,false);
-  assert.equal(card.querySelector(priceSelector).textContent,expected);
+  assert.equal(button.textContent,expected);assert.equal(button.disabled,false);
+  assert.ok(button.attributes['aria-label'].includes(expected));assert.match(button.attributes['aria-label'],/구매/);
  }
- assert.match(storeMarkup(),/특별 혜택 · 1회 구매!/);assert.doesNotMatch(storeMarkup(),/계정당/);
+ assert.match(storeMarkup(),/특별혜택!/);assert.match(storeMarkup(),/1회 구매/);assert.doesNotMatch(storeMarkup(),/계정당/);
+ assert.doesNotMatch(storeMarkup(),/data-starter-price|data-play-price/);
  const header=homeAutoTapMarkup().match(/<header[^>]*>([\s\S]*?)<\/header>/)[1];
  assert.doesNotMatch(header,/<p|<small/);assert.match(homeAutoTapMarkup(),/홈에서만 작동/);
+});
+
+test('shop prices preserve foreign currencies and lock purchases when Play has no usable price',()=>{
+ const root=fakeNode(),state=freshState(1);
+ const auto=root.querySelector('[data-home-auto-tap]').querySelector('[data-buy-home-auto]');
+ const starter=root.querySelector('[data-starter-pack]').querySelector('[data-buy-starter]');
+ for(const price of ['',null,'   ']){
+  renderStore(state,root,{allowTestGrant:true,billing:{configured:true,price},starterBilling:{configured:true,price}});
+  assert.equal(auto.disabled,true);assert.equal(starter.disabled,true);
+  assert.equal(auto.textContent,'상품 확인 필요');assert.equal(starter.textContent,'상품 확인 필요');
+ }
+ renderStore(state,root,{billing:{configured:true,price:'US$4.99'},starterBilling:{configured:true,price:'€5.99'}});
+ assert.equal(auto.textContent,'US$4.99');assert.equal(starter.textContent,'€5.99');
+ assert.equal(auto.disabled,false);assert.equal(starter.disabled,false);
+ renderStore(state,root,{busy:true,billing:{configured:true,price:'₩4,900'},starterBilling:{configured:true,price:'₩5,900'}});
+ assert.equal(auto.disabled,true);assert.equal(starter.disabled,true);
 });

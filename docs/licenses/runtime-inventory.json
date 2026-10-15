@@ -928,5 +928,15 @@
         "http://www.apache.org/licenses/LICENSE-2.0.txt"
       ]
     ]
+  },
+  {
+    "coordinate": "Black Han Sans Regular",
+    "sha256": "31960809284026681774a8e52dc19ebcad26cf69b0ad9d560f288296fbb52739",
+    "licenses": [
+      [
+        "SIL Open Font License 1.1",
+        "https://github.com/google/fonts/blob/main/ofl/blackhansans/OFL.txt"
+      ]
+    ]
   }
 ]

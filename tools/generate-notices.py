@@ -90,6 +90,20 @@ for package in ('core', 'android', 'app'):
 for (name, key), owners in sorted(embedded.items()):
     entries.append({'name': name + ' (SDK 포함)', 'license': '포함 SDK: ' + ', '.join(sorted(owners)), 'textIds': [key]})
 
+# A local, unmodified font is part of the runtime too. Keep the complete upstream
+# copyright and OFL text visible in the in-app notices whenever they are rebuilt.
+font_folder = ROOT / 'public/fonts/black-han-sans'
+font_name = 'Black Han Sans Regular'
+font_license = 'SIL Open Font License 1.1'
+font_license_url = 'https://github.com/google/fonts/blob/main/ofl/blackhansans/OFL.txt'
+font_text = (font_folder / 'OFL.txt').read_text(encoding='utf-8')
+entries.append({'name': font_name, 'license': font_license, 'textIds': [add_text(font_text)]})
+inventory.append({
+    'coordinate': font_name,
+    'sha256': hashlib.sha256((font_folder / 'BlackHanSans-Regular.ttf').read_bytes()).hexdigest(),
+    'licenses': [(font_license, font_license_url)],
+})
+
 output = {'entries': entries, 'texts': texts}
 folder = ROOT / 'docs/licenses'
 folder.mkdir(parents=True, exist_ok=True)
