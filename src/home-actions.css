@@ -62,7 +62,7 @@ body:has(dialog[open]) .building-aura::before,body:has(dialog[open]) .building-a
 @media(prefers-reduced-motion:reduce){.building-aura::before,.building-aura::after{animation:none}}
 
 /* Compact image controls: the time label sits below the square, outside its border. */
-.home-skills{padding-bottom:18px;gap:6px;justify-content:flex-start}
+.home-skills{padding-bottom:18px;gap:6px;justify-content:flex-end}
 .field-tools .home-skill{position:relative;flex:0 0 44px;width:44px;min-width:44px;height:44px;padding:3px;border:1px solid #68787c;border-radius:6px;background:linear-gradient(#35454c,#233139);box-shadow:inset 0 1px #b9ced326,0 2px 3px #14202940;align-items:center;justify-content:center}
 .home-item-name,.field-tools [data-sword-label],.field-tools [data-revolver-label]{display:none}
 .home-item-art,.home-item-art svg{height:34px;width:30px}
@@ -78,3 +78,11 @@ body:has(dialog[open]) .building-aura::before,body:has(dialog[open]) .building-a
 .home-menu-icon svg{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
 .home-battle{min-height:46px;border-color:#596b70;background:linear-gradient(145deg,#32444b,#26353c);color:#dee6e3;font-weight:700}
 .home-battle .home-menu-icon{width:30px;height:30px;flex-basis:30px}
+
+/* Recessed metal frames keep the original pixel artwork legible at thumb size. */
+.field-tools .home-skill{border-color:#859596;background:linear-gradient(145deg,#5a6c71 0%,#34464c 18%,#1e2e35 80%);box-shadow:inset 0 1px #d1e2de66,inset 0 -2px #101f27,0 2px 3px #13232b66}
+.field-tools .home-skill::before{content:"";position:absolute;inset:3px;border:1px solid #a7bab52e;border-radius:3px;pointer-events:none}
+.home-item-art,.home-item-art svg{height:38px;width:34px}
+.home-item-art svg,.field-tools [data-sword-art],.field-tools .revolver-mini-art{filter:drop-shadow(0 1px 1px #07171c) drop-shadow(0 0 2px #bbddc533)}
+.field-tools .sword-clock{width:38px;height:38px}
+.field-tools .home-skill.skill-active{border-color:#d6c081;background:linear-gradient(145deg,#6f7654,#344b43);box-shadow:inset 0 1px #ecdcad88,inset 0 -2px #1c342c,0 0 5px #d5c47844}

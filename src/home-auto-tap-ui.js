@@ -21,11 +21,11 @@ export function homeAutoTapPitch(){
 export function homeAutoTapMarkup(){
   return `<article class="potion-card auto-tap-card" aria-label="자동터치" data-home-auto-tap>
     <div class="store-product-art" aria-hidden="true">${homeAutoTapIcon}</div>
-    <header class="auto-product-name"><h3>자동터치</h3><p>초당 ${HOME_AUTO_TAP.tapsPerSecond}회 · 영구 해금</p><small>홈에서 작동 · 다른 화면에서는 멈춤</small></header>
+    <header class="auto-product-name"><h3>자동터치</h3></header>
     <p class="auto-owned-status" data-home-auto-status role="status" hidden></p>
     <strong class="auto-price" data-play-price>예정 가격 ${fmt(HOME_AUTO_TAP.priceWon)}원</strong>
     <div class="potion-actions"><button type="button" data-buy-home-auto disabled>구매 준비 중</button><button type="button" data-restore-home-auto disabled hidden>구매 복원</button><button type="button" data-toggle-home-auto aria-pressed="false" disabled hidden>자동터치 켜기</button></div>
-    <details class="store-purchase-help"><summary>구매·복원 안내</summary><p class="potion-note" data-play-note>실제 결제는 아직 연결되지 않았어요. 개발 화면에서만 무료 테스트 지급을 받을 수 있어요.<br>현재 기기 기록에 보관하며 구매 복원은 준비 중입니다.</p></details></article>`;
+    <details class="store-purchase-help"><summary>구매·복원 안내</summary><p>초당 ${HOME_AUTO_TAP.tapsPerSecond}회 · 영구 해금. 홈에서만 작동하며 상점·전투·팝업·앱 종료 중에는 멈춥니다.</p><p class="potion-note" data-play-note>실제 결제는 아직 연결되지 않았어요. 개발 화면에서만 무료 테스트 지급을 받을 수 있어요.<br>현재 기기 기록에 보관하며 구매 복원은 준비 중입니다.</p></details></article>`;
 }
 export function renderHomeAutoTap(s,root,{busy=false,active=true,allowTestGrant=AUTO_TAP_TEST_GRANT,billing=null}={}){
   const card=root.querySelector('[data-home-auto-tap]');if(!card)return;
@@ -38,7 +38,7 @@ export function renderHomeAutoTap(s,root,{busy=false,active=true,allowTestGrant=
   if(toggle.hidden!==!owned)toggle.hidden=!owned;
   const play=billing?.configured===true;
   buy.disabled=owned||busy||!active||(play?!billing.price:!allowTestGrant);
-  text(buy,owned?'보유 중':play?(billing.price?'Google Play로 구매':'상품 확인 필요'):allowTestGrant?'개발용 테스트 지급':'구매 준비 중');
+  text(buy,owned?'보유 중':play?(billing.price?'구매':'상품 확인 필요'):allowTestGrant?'개발용 테스트 지급':'구매 준비 중');
   const restore=card.querySelector('[data-restore-home-auto]');
   if(restore){restore.hidden=!play;restore.disabled=busy||!active;}
   if(play){

@@ -24,3 +24,23 @@
 @media(max-width:350px){.starter-pack,.store-products .auto-tap-card.potion-card{padding:9px;grid-template-columns:40px minmax(0,1fr) auto;gap:6px}.store-product-art{width:40px}.store-products h3{font-size:14px}.starter-price,.store-products .auto-price{font-size:13px}}
 
 .starter-pack>[data-starter-status]{grid-column:1/-1;margin:0;font-size:11px;color:#ead5a6}.store-purchase-help ul{padding-left:16px;line-height:1.7}
+
+/* Compact promotional poster: original gold atmosphere, fewer words, full width. */
+.store-products .starter-pack{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;padding:14px 12px;border:1px solid #c6aa67;border-radius:12px;isolation:isolate;overflow:hidden;text-align:center;background:radial-gradient(ellipse at 50% 35%,#70816a66,transparent 66%),linear-gradient(150deg,#263f45,#192e39 65%,#574a2c);box-shadow:inset 0 0 0 3px #e7ce7b15,0 3px 12px #10212a44}
+.starter-pack::before{content:"";position:absolute;inset:-60%;z-index:-1;pointer-events:none;background:linear-gradient(110deg,transparent 40%,#ffe9a31c 49%,transparent 58%);transform:translateX(-60%);animation:starter-sheen 7s ease-in-out infinite;animation-play-state:paused}
+.starter-promo-tag{grid-column:1/-1;justify-self:center;border:1px solid #e1c58270;border-radius:20px;padding:4px 13px;background:#bda15e22;color:#f3d892;font-size:11px;font-weight:800;letter-spacing:.04em;animation:starter-glow 4s ease-in-out infinite;animation-play-state:paused}
+.store-products .starter-pack header{grid-column:1/-1;grid-row:auto;padding:0}
+.store-products .starter-pack h3{font-size:23px;letter-spacing:.08em;margin:0;color:#fff1c8;text-shadow:0 2px #493d27}
+.starter-showcase{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:4px 8px 8px;background:radial-gradient(ellipse at 50% 100%,#dbb96633,transparent 68%)}
+.starter-vial{min-width:0;display:grid;justify-items:center;gap:3px}.starter-vial-art{display:grid;place-items:center;width:100%;height:68px;animation:starter-hover 5s ease-in-out infinite;animation-play-state:paused}.starter-vial-art svg{height:66px;width:48px;filter:drop-shadow(0 3px 3px #0006) drop-shadow(0 0 5px #edb37444)}
+.starter-vial.blue .starter-vial-art{animation-delay:-1.6s}.starter-vial.max .starter-vial-art{animation-delay:-3.2s}.starter-vial.max svg{filter:drop-shadow(0 3px 3px #0006) drop-shadow(0 0 6px #ffe19477)}
+.starter-vial strong{font-size:11px;color:#f5e3bc;white-space:nowrap}
+.store-products .starter-pack .starter-price{grid-row:auto;grid-column:1;align-self:center;text-align:center;font-size:19px;margin:0}
+.store-products .starter-pack>[data-buy-starter]{grid-column:2;min-height:40px;background:linear-gradient(#ead29a,#bc9856);border-color:#e2c282;color:#292f27;box-shadow:inset 0 1px #fff1c799}
+.store-products .starter-pack>[data-buy-starter]:disabled{background:#3b4d50;border-color:#687e7b;color:#b9c5c2;box-shadow:none}
+.starter-pack .store-purchase-help{text-align:left}
+dialog[open] .starter-pack::before,dialog[open] .starter-promo-tag,dialog[open] .starter-vial-art{animation-play-state:running}
+@keyframes starter-sheen{0%,35%{transform:translateX(-60%)}75%,100%{transform:translateX(60%)}}
+@keyframes starter-glow{0%,100%{box-shadow:0 0 0 #e6c37600}50%{box-shadow:0 0 12px #e6c37630}}
+@keyframes starter-hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@media(prefers-reduced-motion:reduce){.starter-pack::before,.starter-promo-tag,.starter-vial-art{animation:none!important}}

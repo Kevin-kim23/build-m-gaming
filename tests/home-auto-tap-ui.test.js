@@ -1,3 +1,4 @@
+import {renderStore,storeMarkup} from '../src/store-panels.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState} from '../src/state.js';
@@ -87,4 +88,17 @@ test('every recruit gets its own existing insignia; enlisted specialists map to 
 
 test('renamed cyber knowledge room retains the stable pcRoom save/catalog identity',()=>{
   const f=FACILITIES.find(f=>f.id==='pcRoom');assert.equal(f.name,'사지방');assert.match(f.purpose,/사이버지식정보방/);
+});
+
+test('configured Play products show real supplied prices and purchase actions instead of free-test labels',()=>{
+ const root=fakeNode(),state=freshState(1);
+ renderStore(state,root,{allowTestGrant:false,billing:{configured:true,price:'4,900원'},starterBilling:{configured:true,price:'5,900원'}});
+ for(const [cardSelector,buttonSelector,priceSelector,expected] of [['[data-home-auto-tap]','[data-buy-home-auto]','[data-play-price]','4,900원'],['[data-starter-pack]','[data-buy-starter]','[data-starter-price]','5,900원']]){
+  const card=root.querySelector(cardSelector),button=card.querySelector(buttonSelector);
+  assert.equal(button.textContent,'구매');assert.equal(button.disabled,false);
+  assert.equal(card.querySelector(priceSelector).textContent,expected);
+ }
+ assert.match(storeMarkup(),/특별 혜택 · 1회 구매!/);assert.doesNotMatch(storeMarkup(),/계정당/);
+ const header=homeAutoTapMarkup().match(/<header[^>]*>([\s\S]*?)<\/header>/)[1];
+ assert.doesNotMatch(header,/<p|<small/);assert.match(homeAutoTapMarkup(),/홈에서만 작동/);
 });

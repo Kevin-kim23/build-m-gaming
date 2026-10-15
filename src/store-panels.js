@@ -7,9 +7,9 @@ import {fmt} from './format.js';
 
 export function storeMarkup(){
   return `<div class="store-products"><article class="starter-pack" data-starter-pack aria-label="스타터팩">
-    <div class="store-product-art starter-product-art" aria-hidden="true">${potionIcon('max')}</div>
-    <header><h3>스타터팩</h3><p>부스터 ${STARTER_PACK.red+STARTER_PACK.blue+STARTER_PACK.max}개 · 1회 구매</p></header>
-    <div class="starter-rewards">${Object.values(POTIONS).map(p=>`<span title="${p.name} · ${p.effect} · 1개당 ${p.durationLabel}">${p.shortName} ×${STARTER_PACK[p.id]}</span>`).join('')}</div>
+    <div class="starter-promo-tag">특별 혜택 · 1회 구매!</div>
+    <header><h3>스타터팩</h3></header>
+    <div class="starter-showcase" aria-label="스타터팩 구성">${Object.values(POTIONS).map(p=>`<div class="starter-vial ${p.id}"><span class="starter-vial-art" aria-hidden="true">${potionIcon(p.id)}</span><strong>${p.shortName} ×${STARTER_PACK[p.id]}</strong></div>`).join('')}</div>
     <strong class="starter-price" data-starter-price>${fmt(STARTER_PACK.priceWon)}<small>원 · 예정</small></strong>
     <button type="button" data-buy-starter disabled>구매 준비 중</button>
     <p data-starter-status role="status" hidden></p>
@@ -29,7 +29,7 @@ export function renderStore(s,root,{busy=false,active=true,allowTestGrant=STORE_
   status.hidden=!(claimed||full||!active);
   const play=starterBilling?.configured===true;
   button.disabled=claimed||full||busy||!active||(play?!starterBilling.price:!allowTestGrant);
-  const label=claimed?'수령 완료':play?(starterBilling.price?'Google Play로 구매':'상품 확인 필요'):allowTestGrant?'스타터팩 · 무료 테스트':'구매 준비 중';
+  const label=claimed?'수령 완료':play?(starterBilling.price?'구매':'상품 확인 필요'):allowTestGrant?'스타터팩 · 무료 테스트':'구매 준비 중';
   const note=claimed?'이 기기의 게임 기록에서 이미 받았어요.':full?'부스터 보관 한도를 확인해 주세요.':play?'구매창의 가격과 결제 계정을 확인하세요.':allowTestGrant?'개발용 무료 테스트 · 실제 결제 없음':'정식 결제 연결 전에는 구매할 수 없어요.';
   const restore=card.querySelector('[data-restore-starter]');
   if(restore){restore.hidden=!play;restore.disabled=busy||!active;}
