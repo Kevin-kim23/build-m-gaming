@@ -1,4 +1,4 @@
-@font-face{font-family:"Black Han Sans";src:url('/fonts/black-han-sans/BlackHanSans-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:"Black Han Sans";src:url('/fonts/black-han-sans/BlackHanSans-Regular.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap}
 /* The promotion is a poster. The permanent upgrade is a single compact row. */
 .store-products{display:grid;gap:16px;padding:12px 0 4px}
 dialog:has(.store-products){background:var(--ui-bg,#17262e);color:var(--ui-text,#f1efe5);border-color:var(--ui-line,#49616b)}

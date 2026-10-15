@@ -5,7 +5,8 @@
 
 ## 파일과 적용
 
-public/characters/ranks-1.png ~ ranks-5.png, 각 1536×1024 RGBA, 3열×2행.
+제작 당시 파일은 public/characters/ranks-1.png ~ ranks-5.png, 각 1536×1024 RGBA, 3열×2행.
+0.76.26부터 앱에서는 같은 해상도·RGBA를 보존한 `public/characters/ranks-1.webp` ~ `ranks-5.webp`를 사용한다. PNG 원본은 `assets/source-images/`에 보관한다. 변환·해시·크기는 `image-encodes.json`, 현재 캐릭터 배치는 `character-assets.json`을 따른다. 아래 제작 프롬프트와 권리 기록은 유지한다.
 이등병~은하 원수 30개 칸. 일반병·행정병·운전병·의무병 및 간부 모집 그림은 해당 원화를 공유.
 연병장·모집·상세에서 같은 캐시 사용. 계급 안내에서는 30계급 모두 표시.
 원본 알파를 그대로 복사하고 런타임에 칸별 알파 경계를 찾아 비율을 유지하여 표시. 최초 로드 후 192px 높이 캔버스를 캐시.

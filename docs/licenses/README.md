@@ -1,6 +1,6 @@
 # 배포 라이선스 고지
 
-설정 → 게임 정보 → 오픈소스 라이선스에서 인터넷 없이 볼 수 있습니다. `runtime-notices.json`을 앱 코드에 번들하며, 동일한 원문을 루트와 public의 THIRD_PARTY_NOTICES.txt에도 보관합니다. 별도 로컬 청크를 메뉴를 열 때만 읽으며, 목록과 원문을 나눠 긴 고지 전체를 한 번에 화면에 그리지 않습니다.
+설정 → 게임 정보 → 오픈소스 라이선스에서 인터넷 없이 볼 수 있습니다. `runtime-notices.json`의 전체 원문을 앱 코드에 번들하며, 사람이 읽는 동일한 원문은 저장소 루트의 `THIRD_PARTY_NOTICES.txt`에 보관합니다. 중복 배포를 피하기 위해 `public/THIRD_PARTY_NOTICES.txt` 사본은 두지 않습니다. 별도 로컬 청크를 메뉴를 열 때만 읽으며, 목록과 원문을 나눠 긴 고지 전체를 한 번에 화면에 그리지 않습니다.
 
 수동 화면 확인: `npx vite --config tools/license-qa.config.mjs` → http://127.0.0.1:4197/__licenses. 메모리 전용 세션으로 실제 게임 저장을 바꾸지 않습니다.
 

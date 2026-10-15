@@ -21,10 +21,10 @@
       "sha256": "7bb7898d43079cf691162ad91b0165e16791895059268b947fbf184235139471"
     },
     {
-      "path": "public/opening/title-lettering-gold.png",
-      "bytes": 1494289,
-      "sha256": "4268e1ad9576d220a56c7c3ed1bd7b103dae3aac673ce9ec50b83e6b31c0a028"
+      "path": "public/opening/title-lettering-gold.webp",
+      "bytes": 992020,
+      "sha256": "c29b475b4c8fff0652130797ed2e4c7f5b699074c8b9e851f97ae1d1d42d8c01"
     }
   ],
-  "letteringSource": "Built-in image_gen; user-selected candidate A, original gold two-line Korean lettering; PNG bytes retained"
+  "letteringSource": "Built-in image_gen; user-selected candidate A, original gold two-line Korean lettering; PNG bytes retained; 0.76.26 lossless WebP at identical resolution and RGBA, original PNG archived under assets/source-images"
 }

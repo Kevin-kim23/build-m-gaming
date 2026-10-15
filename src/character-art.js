@@ -14,7 +14,7 @@ export function characterIndex(id) {
 export function characterAtlas(index) {
   if (!Number.isInteger(index) || index < 0 || index >= RANKS.length) return null;
   if(index>=30)index-=5;
-  return {url:`${import.meta.env?.BASE_URL ?? '/'}characters/ranks-${Math.floor(index/6)+1}.png`, cell:index%6};
+  return {url:`${import.meta.env?.BASE_URL ?? '/'}characters/ranks-${Math.floor(index/6)+1}.webp`, cell:index%6};
 }
 function load(index) {
   if(index>=30)index-=5;

@@ -1,0 +1,66 @@
+{
+  "encoding": "lossless WebP, exact RGBA, original resolution",
+  "sourceCommit": "19ea10e",
+  "assets": [
+    {
+      "source": "assets/source-images/ranks-1.png",
+      "path": "public/characters/ranks-1.webp",
+      "width": 1536,
+      "height": 1024,
+      "sourceBytes": 1941083,
+      "bytes": 1317156,
+      "sourceSha256": "35cc6e80c6f4ed77514c24200080b58fae6eb0409c6804f8f933cb11ff2d61ae",
+      "sha256": "03207b678bba04797fb522c5e48d3280650a9c583231700fc16007295b2e8b93"
+    },
+    {
+      "source": "assets/source-images/ranks-2.png",
+      "path": "public/characters/ranks-2.webp",
+      "width": 1536,
+      "height": 1024,
+      "sourceBytes": 1845383,
+      "bytes": 1244628,
+      "sourceSha256": "d30d74de453460293394d7bf04ad5a6ddc06cb43907e9f88b0d68e95565cd1c3",
+      "sha256": "fa3a0a2fc9a4185f0e1225a54390e200c1f25fccfa49df575f6c8e88731c64fd"
+    },
+    {
+      "source": "assets/source-images/ranks-3.png",
+      "path": "public/characters/ranks-3.webp",
+      "width": 1536,
+      "height": 1024,
+      "sourceBytes": 1857052,
+      "bytes": 1299996,
+      "sourceSha256": "649885c05bd18835586ef72aa1879a481c1cc19eee2a1be42bc07c7e91a611c9",
+      "sha256": "9e2ff23dc45c937ed683cffc7814228715d437521ed4e65e5cee3f71accfe60f"
+    },
+    {
+      "source": "assets/source-images/ranks-4.png",
+      "path": "public/characters/ranks-4.webp",
+      "width": 1536,
+      "height": 1024,
+      "sourceBytes": 2124542,
+      "bytes": 1494002,
+      "sourceSha256": "f9eb1665dc9dc29ff83db442907836b0c9a4dbb9e4186a855bfc389346fee16a",
+      "sha256": "0f8deba1f1135ef95687989f66cc06f251947801eb39a30d8a81ae455ad2c60d"
+    },
+    {
+      "source": "assets/source-images/ranks-5.png",
+      "path": "public/characters/ranks-5.webp",
+      "width": 1536,
+      "height": 1024,
+      "sourceBytes": 2349563,
+      "bytes": 1662804,
+      "sourceSha256": "c8b7c3088f7a6e66604d2693bad921a1009c86ec8886ff66c36d66d6a7c91ab1",
+      "sha256": "be5fe2973257d5ab760b56a2e4c7e07a8c61354ec59fdcbfd4210709930e6852"
+    },
+    {
+      "source": "assets/source-images/title-lettering-gold.png",
+      "path": "public/opening/title-lettering-gold.webp",
+      "width": 1402,
+      "height": 1122,
+      "sourceBytes": 1494289,
+      "bytes": 992020,
+      "sourceSha256": "4268e1ad9576d220a56c7c3ed1bd7b103dae3aac673ce9ec50b83e6b31c0a028",
+      "sha256": "c29b475b4c8fff0652130797ed2e4c7f5b699074c8b9e851f97ae1d1d42d8c01"
+    }
+  ]
+}

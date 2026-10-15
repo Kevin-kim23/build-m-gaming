@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+const encodes=JSON.parse(readFileSync(new URL('../docs/image-encodes.json',import.meta.url)));
+const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 import {UNIT_LIST} from '../src/units.js';
 import {RANKS} from '../src/ranks.js';
 import {characterAtlas,characterIndex,drawCharacterPortrait,characterSprite} from '../src/character-art.js';
@@ -10,10 +13,18 @@ test('all35 ranks and every recruited unit map to packaged RGBA atlases without 
   const cells=new Set();
   for(let i=0;i<RANKS.length;i++) {
     const spec=characterAtlas(i);cells.add(`${spec.url}:${spec.cell}`);
-    const png=readFileSync(new URL('../public'+spec.url,import.meta.url));
-    assert.equal(png.toString('ascii',1,4),'PNG');
-    assert.equal(png.readUInt32BE(16),1536);assert.equal(png.readUInt32BE(20),1024);
-    assert.equal(png[25],6,'RGBA alpha must be retained');
+    const webp=readFileSync(new URL('../public'+spec.url,import.meta.url));
+    assert.equal(webp.toString('ascii',0,4),'RIFF');
+    assert.equal(webp.toString('ascii',8,12),'WEBP');
+    assert.equal(webp.toString('ascii',12,16),'VP8L','lossless encoding');
+    assert.equal(webp[20],0x2f);
+    const bits=webp.readUInt32LE(21);
+    assert.equal((bits & 0x3fff)+1,1536);
+    assert.equal(((bits >>> 14) & 0x3fff)+1,1024);
+    assert.equal((bits >>> 28) & 1,1,'alpha must be retained');
+    const manifest=encodes.assets.find(a=>a.path==='public'+spec.url);
+    assert.equal(hash(webp),manifest.sha256);
+    assert.equal(hash(readFileSync(new URL('../'+manifest.source,import.meta.url))),manifest.sourceSha256);
   }
   assert.equal(cells.size,30);
   assert.equal(new Set(UNIT_LIST.map(u=>characterIndex(u.id))).size,UNIT_LIST.length);

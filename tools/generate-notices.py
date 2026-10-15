@@ -90,7 +90,7 @@ for package in ('core', 'android', 'app'):
 for (name, key), owners in sorted(embedded.items()):
     entries.append({'name': name + ' (SDK 포함)', 'license': '포함 SDK: ' + ', '.join(sorted(owners)), 'textIds': [key]})
 
-# A local, unmodified font is part of the runtime too. Keep the complete upstream
+# A local, full-glyph WOFF2 font is part of the runtime too. Keep the complete upstream
 # copyright and OFL text visible in the in-app notices whenever they are rebuilt.
 font_folder = ROOT / 'public/fonts/black-han-sans'
 font_name = 'Black Han Sans Regular'
@@ -100,7 +100,7 @@ font_text = (font_folder / 'OFL.txt').read_text(encoding='utf-8')
 entries.append({'name': font_name, 'license': font_license, 'textIds': [add_text(font_text)]})
 inventory.append({
     'coordinate': font_name,
-    'sha256': hashlib.sha256((font_folder / 'BlackHanSans-Regular.ttf').read_bytes()).hexdigest(),
+    'sha256': hashlib.sha256((font_folder / 'BlackHanSans-Regular.woff2').read_bytes()).hexdigest(),
     'licenses': [(font_license, font_license_url)],
 })
 
@@ -112,6 +112,7 @@ folder.mkdir(parents=True, exist_ok=True)
 full = '부대 키우기 · Third-party notices\n배포 앱의 런타임 라이브러리 및 SDK 포함 고지. 개발 도구 제외.\n\n'
 full += '\n'.join(e['name'] + '\n' + e['license'] + '\n원문: ' + ', '.join(e['textIds']) + '\n' for e in entries)
 full += '\n'.join('\n========== ' + key + ' ==========\n' + text for key, text in texts.items())
-for path in ('THIRD_PARTY_NOTICES.txt', 'public/THIRD_PARTY_NOTICES.txt'):
-    (ROOT / path).write_text(full, encoding='utf-8')
+# The app displays the complete JSON bundle offline. Keep this readable source
+# copy outside public/ so Vite does not ship the same license texts twice.
+(ROOT / 'THIRD_PARTY_NOTICES.txt').write_text(full, encoding='utf-8')
 print(f'{len(entries)} entries, {len(texts)} distinct license texts, {len(inventory)} runtime artifacts')

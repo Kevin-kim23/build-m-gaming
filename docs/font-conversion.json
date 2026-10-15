@@ -1,0 +1,23 @@
+{
+  "source": "assets/source-fonts/black-han-sans/BlackHanSans-Regular.ttf",
+  "sourceSha256": "31960809284026681774a8e52dc19ebcad26cf69b0ad9d560f288296fbb52739",
+  "sourceBytes": 998424,
+  "output": "public/fonts/black-han-sans/BlackHanSans-Regular.woff2",
+  "outputSha256": "d74df563d0af150c2bee16f157a59852eff2da56c572ae710680000ad6400b10",
+  "outputBytes": 190720,
+  "glyphCount": 2734,
+  "unicodeCodepointCount": 2733,
+  "fullGlyphSet": true,
+  "removedEmptyTables": [
+    "DSIG (0 signatures)"
+  ],
+  "checks": [
+    "all rendering tables retained",
+    "all cmap tables exact",
+    "all glyph outlines exact",
+    "all glyph hinting exact",
+    "all advance widths and bearings exact",
+    "name, layout and sizing tables retained"
+  ],
+  "tool": "fonttools[woff]==4.67.0; Brotli==1.2.0"
+}

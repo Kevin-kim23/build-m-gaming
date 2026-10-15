@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>그림 압축 비교 · 저장 없는 검사</title>
+<style>
+@font-face{font-family:OriginalTitle;src:url('/assets/source-fonts/black-han-sans/BlackHanSans-Regular.ttf')}
+@font-face{font-family:PackedTitle;src:url('/fonts/black-han-sans/BlackHanSans-Regular.woff2')}
+.font-proof{font-size:28px;line-height:1.25;overflow-wrap:anywhere}.font-original{font-family:OriginalTitle}.font-packed{font-family:PackedTitle}
+body{margin:20px;background:#17262e;color:#f1efe5;font:16px/1.5 sans-serif}h1{font-size:23px}
+section{margin:20px 0;padding:14px;background:#253943}h2{font-size:17px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}img{width:100%;height:auto;background:#52616a}
+figure{margin:0}output{display:block;color:#a6ebaf}p{max-width:800px}
+</style>
+<h1>그림 무손실 압축 비교</h1><p>왼쪽은 원본 PNG, 오른쪽은 앱에 넣는 WebP입니다. 실제 게임 저장·광고·결제 기능을 실행하지 않습니다.</p>
+<section><h2>글꼴 전체 글자 보존 비교</h2><div class="font-proof font-original">특별혜택! 스타터팩<br>반복 터치를 자동으로.</div><div class="font-proof font-packed">특별혜택! 스타터팩<br>반복 터치를 자동으로.</div><output id="font-result">글꼴 확인 중</output></section><main></main>
+<script type="module">
+await Promise.all([document.fonts.load('28px OriginalTitle'),document.fonts.load('28px PackedTitle')]);
+const samples=['특별혜택! 스타터팩','반복 터치를 자동으로.'];
+const widths=font=>{const ctx=document.createElement('canvas').getContext('2d');ctx.font='28px '+font;return samples.map(text=>ctx.measureText(text).width);};
+document.querySelector('#font-result').textContent=JSON.stringify(widths('OriginalTitle'))===JSON.stringify(widths('PackedTitle'))?'PASS · 두 폰트 로딩 및 문구 너비 동일':'FAIL · 폰트 비교 불일치';
+const manifest=await fetch('/docs/image-encodes.json').then(r=>r.json());
+for(const asset of manifest.assets){
+ const section=document.createElement('section');
+ const heading=document.createElement('h2');heading.textContent=asset.path;
+ const pair=document.createElement('div');pair.className='pair';
+ const result=document.createElement('output');result.textContent='이미지 확인 중';
+ section.append(heading,pair,result);document.querySelector('main').append(section);
+ const images=[];
+ for(const [label,path]of [['원본',asset.source],['무손실 압축',asset.path.replace(/^public\//,'')]]){
+  const figure=document.createElement('figure'),caption=document.createElement('figcaption'),image=new Image();
+  caption.textContent=label;image.alt=label+' '+asset.path;image.src='/'+path;figure.append(caption,image);pair.append(figure);images.push(image);
+ }
+ try{
+  await Promise.all(images.map(image=>image.decode()));
+  const buffers=images.map(image=>{const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);return ctx.getImageData(0,0,canvas.width,canvas.height).data;});
+  const identical=images.every(image=>image.naturalWidth===asset.width&&image.naturalHeight===asset.height)&&buffers[0].every((v,i)=>v===buffers[1][i]);
+  let rawMax=0,alphaMax=0,compositeMax=0,different=0;
+  for(let i=0;i<buffers[0].length;i+=4){
+   const a=buffers[0][i+3],b=buffers[1][i+3];alphaMax=Math.max(alphaMax,Math.abs(a-b));
+   for(let c=0;c<3;c++){const left=buffers[0][i+c],right=buffers[1][i+c];rawMax=Math.max(rawMax,Math.abs(left-right));if(left!==right)different++;
+    for(const bg of [0,82,255])compositeMax=Math.max(compositeMax,Math.abs(Math.round((left*a+bg*(255-a))/255)-Math.round((right*b+bg*(255-b))/255)));
+   }
+  }
+  result.textContent=(identical?'PASS · 완전 동일':'비교')+' · 알파 차이 '+alphaMax+' · 합성색 최대차이 '+compositeMax+'/255 · 원시색 최대차이 '+rawMax+' · 다른 채널 '+different;
+ }catch(error){result.textContent='FAIL · '+error.message;console.error(error);}
+}
+</script></html>
