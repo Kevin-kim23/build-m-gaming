@@ -27,14 +27,14 @@ function panel({military=[],personal=[]}={}){
 }
 function withCanvas(run){const previous=globalThis.document;globalThis.document={createElement:element};try{return run();}finally{if(previous===undefined)delete globalThis.document;else globalThis.document=previous;}}
 
-test('military50 completes enhancement while lower flag caps remain explained in the list',()=>withCanvas(()=>{
+test('military50 completes enhancement while lower caps stay on the action without redundant status',()=>withCanvas(()=>{
   const s={...freshState(T),soldiers:50000,sergeants:300},root=panel({military:['tank']}),card=root.cards.get('tank');
   for(const level of [20,30,40,50]){
     s.personalLevels.divisionFlag=level-10;s.equipment.tank={level,count:1,deployed:true};
     renderEquipmentPanel(s,root,'tank');
     assert.equal(card.querySelector('[data-enhance-equipment]').disabled,true);
     assert.equal(card.querySelector('[data-enhance-equipment]').textContent,level===50?'최대 강화':'강화 한도');
-    if(level<50)assert.match(card.querySelector('[data-gear-status]').textContent,/사단기 강화/);
+    assert.doesNotMatch(card.querySelector('[data-gear-status]').textContent,/배치 중|사단기 강화/);
   }
 }));
 
@@ -65,7 +65,7 @@ test('list purchases preserve exact deficits, ownership, direct upgrades, scroll
   s.gold=MAX_GOLD;assert.equal(enhanceEquipment(s,T,'artillery').ok,true);
   assert.equal(setEquipmentDeployed(s,false,T,'artillery').ok,true);
   renderEquipmentPanel(s,root,'artillery');assert.equal(card.querySelector('[data-gear-level]').textContent,'Lv.1');
-  assert.equal(card.querySelector('[data-gear-status]').textContent,'보관 중');assert.ok(canvas.paintCount>firstPaint);
+  assert.equal(card.querySelector('[data-gear-status]').textContent,'');assert.ok(canvas.paintCount>firstPaint);
   assert.equal(up.disabled,false);assert.equal(root.scrollTop,430);
   renderEquipmentPanel(s,root,'artillery',{active:false});assert.equal(up.disabled,true);assert.equal(buy.disabled,true);
 }));

@@ -41,15 +41,17 @@ function overlaps(a,b) {
   return a.x<b.x+b.width-.01&&b.x<a.x+a.width-.01&&a.y<b.y+b.height-.01&&b.y<a.y+a.height-.01;
 }
 
-test('headquarters keeps exactly 70% of its former width and height for every formation and viewport',()=>{
+test('headquarters fills its column while preserving its aspect ratio and label space',()=>{
   const soldierCounts=FORMATIONS.filter(f=>!UNITS[f.id]&&Number.isSafeInteger(f.size)).map(f=>f.size);
   for(const soldiers of soldierCounts)for(const school of [0,1,15,30])for(const gear of [0,1,17]){
     const state=stateFor({soldiers,school,gear});
     for(const [width,height] of viewports){
       const old=previousHeadquartersSize(state,width,height,school),world=layoutHomeField(state,width,height);
       const headquarters=world.army[0];assert.equal(world.army.length,1);
-      assert.ok(Math.abs(headquarters.width-old.width*.7)<1e-9);
-      assert.ok(Math.abs(headquarters.height-old.height*.7)<1e-9);
+      assert.ok(headquarters.width<=width*.7);
+      assert.ok(headquarters.y+headquarters.boxHeight<=height);
+      assert.ok(Math.abs(headquarters.width/headquarters.height-old.width/old.height)<1e-9);
+
       assert.ok(headquarters.x+headquarters.width/2<width/2);
       if(school){
         const campus=world.schools[0];
@@ -119,4 +121,10 @@ test('academy keeps the same readable footprint at early and late ranks',()=>{
    assert.ok(campus.width>=width*.23);
   }
  }
+});
+
+test('phone headquarters grows beyond the old fixed sprite cap',()=>{
+ const soldiers=FORMATIONS.find(f=>f.id==='alliedArmy').size,s=stateFor({soldiers,school:14,gear:10});
+ const old=previousHeadquartersSize(s,206,300,14),main=layoutHomeField(s,206,300).army[0];
+ assert.ok(main.width>old.width*.7);
 });

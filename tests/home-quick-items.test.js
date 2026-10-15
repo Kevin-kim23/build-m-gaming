@@ -72,3 +72,14 @@ test('rank removal does not alter skill cooldowns or permit duplicate activation
   assert.equal(swordSkillStatus(s,T+30000).active,false);
   assert.equal(autoTouchStatus(s,T+60000).active,false);
 });
+
+test('empty max is hidden but its last active dose stays visible until expiration',()=>{
+ const s=freshState(T);
+ assert.equal(homeItemStatus(s,'max',T).hidden,true);
+ s.potions.max={count:1,startedAt:0,expiresAt:0};
+ assert.equal(homeItemStatus(s,'max',T).hidden,false);
+ s.potions.max={count:0,startedAt:T,expiresAt:T+60000};
+ assert.equal(homeItemStatus(s,'max',T+30000).hidden,false);
+ assert.equal(homeItemStatus(s,'max',T+60000).hidden,true);
+ assert.equal(homeItemStatus(s,'red',T).hidden,false);
+});

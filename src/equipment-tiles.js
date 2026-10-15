@@ -50,9 +50,7 @@ export function renderEquipmentStore(state,root,{active=true}={}) {
     let status,price;
     if(gun) {
       const max=upgrade.reason==='max';
-      status=gun.deployed?'배치 중':'보관 중';
-      if(max&&upgrade.limit<d.maxLevel)status+=' · 사단기 강화로 한도 확장';
-      else if(upgrade.reason==='gold')status+=` · ${fmtGoldCost(subtractMoney(upgrade.cost,state.gold))} G 부족`;
+      status=upgrade.reason==='gold'?`${fmtGoldCost(subtractMoney(upgrade.cost,state.gold))} G 부족`:'';
       price=max?`현재 한도 Lv.${upgrade.limit}`:`${fmtGoldCost(upgrade.cost)} G`;
       set(enhance,max?(gun.level>upgrade.limit?`Lv.${gun.level} 유지`:upgrade.limit===d.maxLevel?'최대 강화':'강화 한도'):`강화 → Lv.${gun.level+1}`);
       enhance.setAttribute('aria-label',max?`${d.name} 현재 강화 한도 ${upgrade.limit}강`:`${d.name} ${gun.level+1}강 강화 · ${price}`);

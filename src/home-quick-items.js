@@ -5,7 +5,7 @@ import {HOME_AUTO_TAP,homeAutoTapEnabled} from './home-auto-tap-rules.js';
 import {homeAutoTapIcon} from './home-auto-tap-ui.js';
 
 export function homeItemsMarkup() {
-  const potions=Object.values(POTIONS).map(p=>`<button type="button" class="home-skill home-item" data-home-item="${p.id}">
+  const potions=Object.values(POTIONS).map(p=>`<button type="button" class="home-skill home-item" data-home-item="${p.id}"${p.id==='max'?' hidden':''}>
     <span class="home-item-art" aria-hidden="true">${potionIcon(p.id)}</span><span class="home-item-name">${p.shortName}</span><small data-item-status></small><small data-item-time hidden></small></button>`).join('');
   return potions+`<button type="button" class="home-skill home-item" data-home-item="auto">
     <span class="home-item-art home-auto-art" aria-hidden="true">${homeAutoTapIcon}<b>×${HOME_AUTO_TAP.tapsPerSecond}</b></span><span class="home-item-name">자동터치</span><small data-item-status></small></button>`;
@@ -32,12 +32,12 @@ function compactTime(ms) {
 export function homeItemStatus(state,id,now=Date.now()) {
   if(id==='auto') {
     const owned=!!state.homeAutoTap?.owned,active=homeAutoTapEnabled(state);
-    return {active,action:owned?'toggle':'offer',label:active?'ON':owned?'OFF':'구매 안내',
+    return {active,action:owned?'toggle':'offer',label:active?'ON':owned?'OFF':'+',
       aria:owned?`자동터치 ${active?'끄기':'켜기'} · 초당 ${HOME_AUTO_TAP.tapsPerSecond}회`:`자동터치 구매 안내 · 초당 ${HOME_AUTO_TAP.tapsPerSecond}회`};
   }
   const p=potionStatus(state,id,now);
-  return {active:p.active,time:p.active?compactTime(p.remainingMs):'',action:p.count?'use':'offer',
-    label:p.count?compactCount(p.count):p.definition.ad?'광고 보기':'스타터팩',
+  return {hidden:id==='max'&&!p.count&&!p.active,active:p.active,time:p.active?compactTime(p.remainingMs):'',action:p.count?'use':'offer',
+    label:p.count?compactCount(p.count):p.definition.ad?'광고':'팩',
     aria:`${p.definition.name} · ${p.active?'사용 중 '+potionTimeLabel(p.remainingMs)+' 남음 · ':''}보유 ${p.count}개 · ${p.count?'사용':p.definition.ad?'광고 획득 안내':'스타터팩 안내'}`};
 }
 
@@ -52,6 +52,7 @@ export function createHomeItemControls(root,{state,writable,use,openOffer,onSucc
   return {sync(now=Date.now()){
     for(const button of buttons){
       const status=homeItemStatus(state(),button.dataset.homeItem,now);
+      button.hidden=!!status.hidden;
       button.disabled=!writable();button.classList.toggle('skill-active',status.active);
       if(button.getAttribute('aria-label')!==status.aria)button.setAttribute('aria-label',status.aria);
       if(button.getAttribute('title')!==status.aria)button.setAttribute('title',status.aria);

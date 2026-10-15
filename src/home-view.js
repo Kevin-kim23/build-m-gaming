@@ -89,7 +89,7 @@ function dockMarkup() {
     <button id="open-personal">${homeMenuIcon('personal')}<span>개인장비</span></button>
     <button id="open-items">${homeMenuIcon('items')}<span>아이템</span></button>
     </nav>
-    <button id="open-battle" class="home-battle" hidden><span aria-hidden="true">⚔</span><span>전투</span><small id="battle-lock-label"></small></button>
+    <button id="open-battle" class="home-battle" hidden>${homeMenuIcon('battle')}<span>전투</span><small id="battle-lock-label"></small></button>
     </section>`;
 }
 

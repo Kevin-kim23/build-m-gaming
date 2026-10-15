@@ -7,15 +7,17 @@ import {fmt} from './format.js';
 
 export function storeMarkup(){
   return `<div class="store-products"><article class="starter-pack" data-starter-pack aria-label="스타터팩">
-    <div class="starter-ribbon"><span>성장 지원</span><small>현재 기기 기록당 1회</small></div>
-    <header><small>STARTER PACK</small><h3>시작을 든든하게</h3><p>성장의 순간을 금빛으로!</p></header>
-    <div class="starter-rewards">${Object.values(POTIONS).map(p=>`<div class="starter-reward ${p.id}"><div class="starter-potion">${potionIcon(p.id)}<b>×${STARTER_PACK[p.id]}</b></div><strong>${p.name}</strong><span>${p.effect}</span><small>1개당 ${p.durationLabel}</small></div>`).join('')}</div>
-    <p class="starter-summary">부스터 총 ${STARTER_PACK.red+STARTER_PACK.blue+STARTER_PACK.max}개 · 자동터치 미포함</p>
-    <div class="starter-price"><span>가격</span><strong data-starter-price>${fmt(STARTER_PACK.priceWon)}<small>원 · 예정</small></strong></div>
+    <div class="store-product-art starter-product-art" aria-hidden="true">${potionIcon('max')}</div>
+    <header><h3>스타터팩</h3><p>부스터 ${STARTER_PACK.red+STARTER_PACK.blue+STARTER_PACK.max}개 · 1회 구매</p></header>
+    <div class="starter-rewards">${Object.values(POTIONS).map(p=>`<span title="${p.name} · ${p.effect} · 1개당 ${p.durationLabel}">${p.shortName} ×${STARTER_PACK[p.id]}</span>`).join('')}</div>
+    <strong class="starter-price" data-starter-price>${fmt(STARTER_PACK.priceWon)}<small>원 · 예정</small></strong>
     <button type="button" data-buy-starter disabled>구매 준비 중</button>
+    <p data-starter-status role="status" hidden></p>
+    <details class="store-purchase-help"><summary>구매·복원 안내</summary><p>자동터치 미포함 · 부스터는 아이템에서 직접 사용합니다.</p>
     <button type="button" data-restore-starter hidden disabled>구매 처리 다시 확인</button>
-    <p data-starter-status role="status"></p>
+    <ul>${Object.values(POTIONS).map(p=>`<li>${p.name} ×${STARTER_PACK[p.id]} · ${p.effect} · 1개당 ${p.durationLabel}</li>`).join('')}</ul>
     <p class="potion-note" data-starter-note>부스터는 아이템에서 직접 사용해요.<br>실제 결제는 아직 연결되지 않았어요. 개발 화면에서만 무료 테스트 지급을 받을 수 있어요.</p>
+    </details>
   </article>${homeAutoTapMarkup()}</div>`;
 }
 export function renderStore(s,root,{busy=false,active=true,allowTestGrant=STORE_TEST_GRANT,billing=null,starterBilling=null}={}){
@@ -24,6 +26,7 @@ export function renderStore(s,root,{busy=false,active=true,allowTestGrant=STORE_
   const claimed=s.starterPack?.claimed===true;
   const full=Object.keys(POTIONS).some(id=>(s.potions?.[id]?.count??0)>POTION_COUNT_LIMIT-STARTER_PACK[id]);
   const button=card.querySelector('[data-buy-starter]'),status=card.querySelector('[data-starter-status]');
+  status.hidden=!(claimed||full||!active);
   const play=starterBilling?.configured===true;
   button.disabled=claimed||full||busy||!active||(play?!starterBilling.price:!allowTestGrant);
   const label=claimed?'수령 완료':play?(starterBilling.price?'Google Play로 구매':'상품 확인 필요'):allowTestGrant?'스타터팩 · 무료 테스트':'구매 준비 중';

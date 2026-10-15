@@ -19,9 +19,9 @@ function fakeNode(){
     querySelector(s){if(!children.has(s))children.set(s,fakeNode());return children.get(s);},click(){return listeners.click?.();}};
 }
 
-test('store and standalone offer share an inert preview while retaining explicit purchase controls and limits',()=>{
+test('compact store keeps purchase controls and limits while the home offer retains its preview',()=>{
   const pitch=homeAutoTapPitch(),store=homeAutoTapMarkup(),offer=homeOfferMarkup('auto',{allowTestGrant:false}).body;
-  assert.ok(store.includes(pitch));assert.ok(offer.includes(pitch));
+  assert.ok(!store.includes(pitch));assert.ok(offer.includes(pitch));assert.match(store,/초당 5회 · 영구 해금/);assert.match(store,/<details class="store-purchase-help">/);
   assert.match(pitch,new RegExp(`초당 ${HOME_AUTO_TAP.tapsPerSecond}회`));
   assert.match(pitch,/상점·전투·팝업·앱 종료 중에는 멈춥니다/);
   assert.match(pitch,/작동 예시/);assert.doesNotMatch(pitch,/<button|<input|onclick|data-buy|data-detail-action/);

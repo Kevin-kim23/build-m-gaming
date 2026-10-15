@@ -60,3 +60,21 @@
 @keyframes building-orbit{to{transform:rotate(360deg)}}
 body:has(dialog[open]) .building-aura::before,body:has(dialog[open]) .building-aura::after{animation-play-state:paused}
 @media(prefers-reduced-motion:reduce){.building-aura::before,.building-aura::after{animation:none}}
+
+/* Compact image controls: the time label sits below the square, outside its border. */
+.home-skills{padding-bottom:18px;gap:6px;justify-content:flex-start}
+.field-tools .home-skill{position:relative;flex:0 0 44px;width:44px;min-width:44px;height:44px;padding:3px;border:1px solid #68787c;border-radius:6px;background:linear-gradient(#35454c,#233139);box-shadow:inset 0 1px #b9ced326,0 2px 3px #14202940;align-items:center;justify-content:center}
+.home-item-name,.field-tools [data-sword-label],.field-tools [data-revolver-label]{display:none}
+.home-item-art,.home-item-art svg{height:34px;width:30px}
+.home-auto-art{width:36px}.home-auto-art b{display:none}
+.home-item [data-item-status]{position:absolute;right:2px;bottom:2px;padding:1px 2px;background:#18262de6;border-radius:2px;font-size:10px;line-height:10px}
+.home-item [data-item-time]{position:absolute;top:47px;left:50%;transform:translateX(-50%);max-width:none;color:#26352c;text-shadow:0 1px #e1e7dc;font-size:10px;font-weight:800}
+.field-tools .sword-clock{margin:0;width:34px;height:34px}
+.field-tools .home-skill [data-sword-time],.field-tools .home-skill [data-revolver-time]{bottom:-17px;color:#26352c;text-shadow:0 1px #e1e7dc;white-space:nowrap}
+.home-tabs button,.home-tabs #open-shop{min-height:50px;border:1px solid #53666c;border-radius:7px;background:linear-gradient(155deg,#35464d,#26343b);color:#e2e9e6;box-shadow:inset 0 1px #c9dbdd16,0 2px 3px #101b202e;gap:4px}
+.home-tabs #open-shop{border-color:#a48d59;background:linear-gradient(145deg,#605b43,#474733);color:#f1e2b8}
+.home-tabs button:active,.home-tabs #open-shop:active{background:#475a60}
+.home-tabs button .home-menu-icon,.home-battle .home-menu-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:36px;filter:drop-shadow(0 2px 1px #111c22aa)}
+.home-menu-icon svg{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.home-battle{min-height:46px;border-color:#596b70;background:linear-gradient(145deg,#32444b,#26353c);color:#dee6e3;font-weight:700}
+.home-battle .home-menu-icon{width:30px;height:30px;flex-basis:30px}
