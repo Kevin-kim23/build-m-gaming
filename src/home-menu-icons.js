@@ -60,14 +60,18 @@ const facilities=miniature((r,p)=>{
 });
 
 const personal=miniature((r,p)=>{
-  // Helmet plus one upright sword: personal gear, not another battle icon.
-  p('M31 4h5v3h3v15h-3v8h-5v-8h-3V7h3z','ink');
-  r(32,7,3,15,'shine');r(35,9,2,12,'steel');r(32,22,3,7,'light');r(28,28,12,4,'ink');r(29,28,10,2,'brass');
-  r(32,32,5,9,'ink');r(33,32,3,7,'wood');r(33,33,3,1,'gold');r(33,36,3,1,'brass');r(31,40,7,3,'brass');
-  p('M10 17h6v-3h7v3h5v4h3v16H6V23h4z','ink');
-  r(10,23,18,12,'steel');r(13,19,12,5,'steel');r(16,16,6,6,'light');r(10,24,3,10,'light');r(24,24,4,10,'shadow');
-  r(7,33,24,5,'ink');r(9,33,20,2,'light');r(12,36,14,6,'ink');r(14,37,2,4,'steel');r(24,37,2,4,'steel');
-  r(18,23,4,6,'brass');r(17,24,6,3,'gold');r(7,41,22,3,'ink');
+  // A sidearm separates personal equipment from battle's crossed blades.
+  // Long barrel, visible cylinder and warm grip retain the game's revolver materials.
+  p('M4 10h23V7h8v3h5v6h3v9h-5v5l5 12H27l-2-9h-8v-8H4z','ink');
+  r(6,12,22,9,'steel');r(6,12,22,2,'light');r(6,19,18,2,'shadow');r(5,9,5,3,'ink');r(6,9,3,1,'light');
+  r(5,13,2,7,'shadow');r(8,16,14,2,'light');r(9,18,13,1,'shadow');
+  r(27,10,11,12,'steel');r(28,10,7,2,'light');r(37,15,4,8,'shadow');r(35,20,5,5,'steel');
+  r(23,13,12,12,'ink');r(25,14,8,9,'steel');r(25,14,8,2,'light');
+  r(25,17,2,4,'shadow');r(30,17,2,4,'shadow');r(27,22,4,1,'brass');
+  r(30,6,7,4,'ink');r(32,7,4,2,'steel');r(35,8,3,3,'light');
+  p('M27 24h10v6l4 10H29l-3-11z','wood');p('M28 25h3l2 14h-3z','brass');
+  r(31,27,6,2,'#ad8d58');r(32,31,6,2,'#665b44');r(33,35,6,2,'#665b44');r(29,40,12,2,'ink');r(30,39,10,2,'brass');
+  p('M19 25h7v7h-7z','brass');p('M21 25h3v5h-3z','ink');r(23,25,2,3,'light');
 });
 
 const items=miniature((r,p)=>{

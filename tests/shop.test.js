@@ -53,8 +53,12 @@ test("personal equipment is visible early and owned only at its award rank", () 
   assert.match(locked, /중령 진급 시 자동 지급/);
   assert.doesNotMatch(locked, /class="personal-recruit-link"/);
   const owned = markup(state(1280), "personal");
-  assert.match(owned, /보유 중 · 중령 진급 보상/);
-  assert.match(owned, /Lv\.1/);
+  const baton=owned.match(/<article[^>]+data-personal-equipment="commandBaton"[\s\S]*?<\/article>/)[0];
+  assert.match(baton, /class="personal-item equipment-list-card"/);
+  assert.match(baton, /현재 · 의무병까지 100명 모집/);
+  assert.match(baton, /Lv\.1/);
+  assert.doesNotMatch(baton,/중령 진급 시 자동 지급|획득 후/);
+  assert.match(personalDetailMarkup(state(1280), "commandBaton").body,/보유 중 · 중령 진급 보상/);
   assert.doesNotMatch(owned, /class="personal-recruit-link" data-shop-category="recruit"/);
   assert.match(personalDetailMarkup(state(1280), "commandBaton").body, /골드는 별도로 지불/);
   assert.doesNotMatch(owned, /data-buy=|data-buy-equipment=|data-buy-bulk=/);

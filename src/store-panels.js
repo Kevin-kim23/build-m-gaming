@@ -10,8 +10,8 @@ export function storeMarkup(){
     <span class="starter-sparks" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
     <div class="starter-promo-tag">특별혜택!</div>
     <header><h3>스타터팩</h3><span>1회 구매</span></header>
-    <div class="starter-showcase" aria-label="스타터팩 구성">${Object.values(POTIONS).map(p=>`<div class="starter-vial ${p.id}"><span class="starter-vial-art" aria-hidden="true">${potionIcon(p.id)}</span><strong>${p.shortName} ×${STARTER_PACK[p.id]}</strong></div>`).join('')}</div>
-    <div class="product-purchase-row"><span class="starter-contents-label">부스터 3종 세트</span><button type="button" data-buy-starter disabled>구매 준비 중</button></div>
+    <div class="starter-showcase" aria-label="스타터팩 구성">${Object.values(POTIONS).map(p=>`<div class="starter-vial ${p.id}"><span class="starter-vial-art" aria-hidden="true">${potionIcon(p.id)}</span><strong>${p.shortName}<span>${STARTER_PACK[p.id]}개</span></strong></div>`).join('')}</div>
+    <div class="product-purchase-row"><span class="starter-contents-label">부스터 3종<br><small>아이템에서 사용</small></span><button type="button" data-buy-starter disabled>구매 준비 중</button></div>
     <p data-starter-status role="status" hidden></p>
     <details class="store-purchase-help"><summary>구매·복원 안내</summary><p>자동터치 미포함 · 부스터는 아이템에서 직접 사용합니다.</p>
     <button type="button" data-restore-starter hidden disabled>구매 처리 다시 확인</button>

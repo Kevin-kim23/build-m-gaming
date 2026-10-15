@@ -12,6 +12,8 @@ import {recruitRank,recruitRankMarkup} from '../src/recruit-rank.js';
 import {UNITS} from '../src/units.js';
 import {insignia} from '../src/home-view.js';
 import {FACILITIES} from '../src/facility-catalog.js';
+import {STARTER_PACK} from '../src/starter-pack.js';
+import {POTIONS} from '../src/potions.js';
 function fakeNode(){
   const listeners={},children=new Map(),attributes={};let content='',writes=0;
   return {listeners,attributes,disabled:false,
@@ -23,7 +25,7 @@ function fakeNode(){
 test('compact store keeps purchase controls and limits while the home offer retains its preview',()=>{
   const pitch=homeAutoTapPitch(),store=homeAutoTapMarkup(),offer=homeOfferMarkup('auto',{allowTestGrant:false}).body;
   assert.ok(!store.includes(pitch));assert.ok(offer.includes(pitch));assert.match(store,/초당 10회 · 영구 해금/);assert.match(store,/<details class="store-purchase-help">/);
-  assert.match(pitch,new RegExp(`초당 ${HOME_AUTO_TAP.tapsPerSecond}회`));
+  assert.match(pitch,new RegExp(`${HOME_AUTO_TAP.tapsPerSecond}회/초`));
   assert.match(pitch,/상점·전투·팝업·앱 종료 중에는 멈춥니다/);
   assert.match(pitch,/작동 예시/);assert.doesNotMatch(pitch,/<button|<input|onclick|data-buy|data-detail-action/);
   assert.equal((store.match(/data-buy-home-auto/g)||[]).length,1);
@@ -101,7 +103,7 @@ test('configured Play products show real supplied prices and purchase actions in
  assert.match(storeMarkup(),/특별혜택!/);assert.match(storeMarkup(),/1회 구매/);assert.doesNotMatch(storeMarkup(),/계정당/);
  assert.doesNotMatch(storeMarkup(),/data-starter-price|data-play-price/);
  const header=homeAutoTapMarkup().match(/<header[^>]*>([\s\S]*?)<\/header>/)[1];
- assert.doesNotMatch(header,/<p|<small/);assert.match(header,/<h3>자동터치<\/h3><span class="auto-rate-label">초당 ×10!<\/span>/);assert.match(homeAutoTapMarkup(),/홈에서만 작동/);
+ assert.doesNotMatch(header,/<p|<small/);assert.match(header,/<h3>자동터치<\/h3><span class="auto-rate-label">10회\/초<\/span>/);assert.match(header,/홈 전용 · 영구/);assert.match(homeAutoTapMarkup(),/홈에서만 작동/);
 });
 
 test('shop prices preserve foreign currencies and lock purchases when Play has no usable price',()=>{
@@ -118,4 +120,18 @@ test('shop prices preserve foreign currencies and lock purchases when Play has n
  assert.equal(auto.disabled,false);assert.equal(starter.disabled,false);
  renderStore(state,root,{busy:true,billing:{configured:true,price:'₩4,900'},starterBilling:{configured:true,price:'₩5,900'}});
  assert.equal(auto.disabled,true);assert.equal(starter.disabled,true);
+});
+
+test('purchase rows expose the automatic-tap scope and starter quantities without opening help',()=>{
+ const auto=homeAutoTapMarkup().split('<details')[0];
+ assert.match(auto,new RegExp(`${HOME_AUTO_TAP.tapsPerSecond}회/초`));
+ assert.match(auto,/홈 전용 · 영구/);
+ assert.doesNotMatch(auto,/초당 ×/);
+ const starter=storeMarkup().split('<details')[0];
+ for(const potion of Object.values(POTIONS)){
+  assert.ok(starter.includes(`<strong>${potion.shortName}<span>${STARTER_PACK[potion.id]}개</span></strong>`));
+ }
+ assert.match(starter,/아이템에서 사용/);
+ assert.match(starter,/data-buy-starter/);
+ assert.doesNotMatch(starter,/계정당|자동터치 포함/);
 });

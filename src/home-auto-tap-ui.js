@@ -14,14 +14,14 @@ export function homeAutoTapPitch(){
     <div class="auto-pitch-tag"><span>한 번 구매 · 영구 해금</span></div>
     <h3>반복 터치를<br><em>자동으로.</em></h3>
     <div class="auto-pitch-scene" aria-hidden="true"><span class="auto-pitch-halo"></span><span class="auto-pitch-ring"></span><span class="auto-pitch-pointer">${homeAutoTapIcon}</span><span class="auto-pitch-word">AUTO</span><span class="auto-pitch-gold">+ G</span><small>작동 예시</small></div>
-    <p class="auto-pitch-spec">초당 ${HOME_AUTO_TAP.tapsPerSecond}회 <span>·</span> 원할 때 ON / OFF</p>
-    <p class="auto-pitch-limit">홈 화면에서만 작동해요.<br>상점·전투·팝업·앱 종료 중에는 멈춥니다.</p>
+    <p class="auto-pitch-spec">${HOME_AUTO_TAP.tapsPerSecond}회/초 <span>·</span> 홈 전용 · 영구</p>
+    <p class="auto-pitch-limit">홈에서 원할 때 켜고 끌 수 있어요.<br>상점·전투·팝업·앱 종료 중에는 멈춥니다.</p>
   </div>`;
 }
 export function homeAutoTapMarkup(){
   return `<article class="potion-card auto-tap-card" aria-label="자동터치" data-home-auto-tap>
     <div class="auto-product-row"><div class="store-product-art" aria-hidden="true">${homeAutoTapIcon}</div>
-    <header class="auto-product-name"><h3>자동터치</h3><span class="auto-rate-label">초당 ×${HOME_AUTO_TAP.tapsPerSecond}!</span></header>
+    <header class="auto-product-name"><h3>자동터치</h3><span class="auto-rate-label">${HOME_AUTO_TAP.tapsPerSecond}회/초</span><span class="auto-product-scope">홈 전용 · 영구</span></header>
     <div class="auto-product-action"><button type="button" data-buy-home-auto disabled>구매 준비 중</button><button type="button" data-toggle-home-auto aria-pressed="false" disabled hidden>자동터치 켜기</button></div></div>
     <details class="store-purchase-help"><summary>구매·복원 안내</summary><p class="auto-owned-status" data-home-auto-status role="status" hidden></p><button type="button" data-restore-home-auto disabled hidden>구매 복원</button><p>초당 ${HOME_AUTO_TAP.tapsPerSecond}회 · 영구 해금. 홈에서만 작동하며 상점·전투·팝업·앱 종료 중에는 멈춥니다.</p><p class="potion-note" data-play-note>실제 결제는 아직 연결되지 않았어요. 개발 화면에서만 무료 테스트 지급을 받을 수 있어요.<br>현재 기기 기록에 보관하며 구매 복원은 준비 중입니다.</p></details></article>`;
 }

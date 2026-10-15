@@ -3,7 +3,7 @@ import {freshState,SAVE_KEY} from '../src/state.js';
 import {serializeSave} from '../src/money.js';
 import {FORMATIONS} from '../src/formations.js';
 import {EQUIPMENT} from '../src/equipment.js';
-if(location.origin!=='http://127.0.0.1:4217')throw Error('Separate QA origin required');
+if(!['http://127.0.0.1:4217','http://127.0.0.1:4225'].includes(location.origin))throw Error('Separate QA origin required');
 document.querySelector('#fixture').addEventListener('click',()=>{
  const s={...freshState(),soldiers:FORMATIONS.find(f=>f.id==='alliedArmy').size,gold:100000000000000000000n,ncoSchoolLevel:5,officerSchoolLevel:5,advancedSchoolLevel:4,campaignCleared:20,fieldTheme:'concrete'};
  for(const id of Object.keys(s.personalLevels))s.personalLevels[id]=10;

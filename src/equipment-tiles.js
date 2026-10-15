@@ -14,6 +14,7 @@ export const equipmentRole = (id) => EQUIPMENT[id]?.role ?? (id === 'transport' 
   : id === 'fighter' ? '항공 타격 · 적 본부 자동 공격' : '화력 지원 · 적 본부 자동 공격');
 
 const statLabels=new Map();
+const upgradeLabels=new Map();
 export function equipmentListStats(id,level=0) {
   const key=`${id}:${level}`;
   if(statLabels.has(key))return statLabels.get(key);
@@ -21,17 +22,28 @@ export function equipmentListStats(id,level=0) {
   const text=`초당 ${fmtGold(stats.passive)} G · 터치당 ${fmtGold(stats.tap)} G · 전투력 ${compactGuidePower(BigInt(equipmentCombatPower(id,level)))}`;
   statLabels.set(key,text);return text;
 }
+// Preview uses the same exact income rules as the transaction, per equipment unit.
+// It is cached by level so live balance updates do not recalculate the quote text.
+export function equipmentListUpgrade(id,level) {
+  const key=`${id}:${level}`;
+  if(upgradeLabels.has(key))return upgradeLabels.get(key);
+  const current=equipmentStats(level,id);
+  if(level===EQUIPMENT[id].maxLevel)return '';
+  const next=equipmentStats(level+1,id);
+  const text=`다음 강화 · 초당 +${fmtGold(subtractMoney(next.passive,current.passive))} G · 터치 +${fmtGold(subtractMoney(next.tap,current.tap))} G`;
+  upgradeLabels.set(key,text);return text;
+}
 function equipmentTile(d) {
   return `<article class="equip-tile equipment-list-card" data-equipment="${d.id}" aria-label="${d.name}">
     <div class="equipment-list-art"><canvas data-gun-preview width="220" height="124" role="img" aria-label="${d.name}"></canvas></div>
-    <div class="equipment-list-info"><h3>${d.name} <small data-gear-level></small></h3><p class="equipment-list-stats" data-gear-stats title="장비 1대의 기본 능력 · 시설·개인장비·부스터 보너스 제외"></p><p data-gear-status></p></div>
+    <div class="equipment-list-info"><h3>${d.name} <small data-gear-level></small></h3><p class="equipment-list-stats" data-gear-stats title="장비 1대의 기본 능력 · 시설·개인장비·부스터 보너스 제외"></p><p class="equipment-list-next" data-gear-next title="장비 1대의 기본 골드 증가량 · 보너스 제외"></p><p class="equipment-list-status" data-gear-status></p></div>
     <button type="button" class="equipment-list-detail" data-detail-equipment="${d.id}" aria-label="${d.name} 상세보기"><span aria-hidden="true">ⓘ</span></button>
     <div class="equipment-list-action"><button type="button" class="buy" data-buy-equipment="${d.id}">구매</button><button type="button" class="buy" data-enhance-equipment="${d.id}" hidden>강화</button><small data-gear-price></small></div>
   </article>`;
 }
 export function equipmentStoreMarkup(state) {
   const items=visibleEquipment(state);
-  return items.length?`<section class="equipment-list">${items.map(equipmentTile).join('')}</section>`:'<p class="equipment-empty">공개된 장비가 없습니다.</p>';
+  return items.length?`<p class="strength-note">장비 1대 기준 · 수입 보너스 제외</p><section class="equipment-list">${items.map(equipmentTile).join('')}</section>`:'<p class="equipment-empty">공개된 장비가 없습니다.</p>';
 }
 const set=(node,value)=>{if(node&&node.textContent!==value)node.textContent=value;};
 
@@ -47,6 +59,7 @@ export function renderEquipmentStore(state,root,{active=true}={}) {
     card.classList.toggle('locked',!gun&&purchase.locked);
     set(q('[data-gear-level]'),gun?`Lv.${gun.level}`:'미보유');
     set(q('[data-gear-stats]'),equipmentListStats(id,gun?.level??0));
+    set(q('[data-gear-next]'),gun&&upgrade.reason!=='max'?equipmentListUpgrade(id,gun.level):'');
     let status,price;
     if(gun) {
       const max=upgrade.reason==='max';

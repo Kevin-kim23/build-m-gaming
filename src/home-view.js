@@ -47,9 +47,16 @@ function goldMarkup() {
 }
 
 function incomeMarkup() {
-  return `<div class="income-lines" aria-label="골드 수입과 증가 효과" title="표시된 골드에 효과가 이미 포함되어 있습니다. 시설·점령·개인장비는 순차 적용되며, 장비 수입 효과는 배치한 군사 장비에만 적용됩니다.">
-    <div class="income-line"><span class="income-rate">초당 <b id="passive-rate"></b></span><small id="passive-effects" class="income-effects" hidden></small><small id="passive-potion-effect" class="income-skill" hidden></small></div>
-    <div class="income-line"><span class="income-rate">터치 <b id="tap-rate"></b></span><small id="tap-effects" class="income-effects" hidden></small><small id="tap-sword-effect" class="income-skill" hidden></small><small id="tap-potion-effect" class="income-skill" hidden></small></div>
+  return `<div class="income-lines" aria-label="골드 수입과 증가 효과">
+    <div class="income-line"><span class="income-rate">초당 수입 <b id="passive-rate"></b></span></div>
+    <div class="income-line"><span class="income-rate">터치 수입 <b id="tap-rate"></b></span></div>
+    <details class="income-details"><summary aria-label="수입 효과 자세히">ⓘ</summary>
+      <div class="income-detail-body"><strong>수입에 포함된 효과</strong>
+        <div><b>초당</b><small id="passive-effects" class="income-effects" hidden></small><small id="passive-potion-effect" class="income-skill" hidden></small></div>
+        <div><b>터치</b><small id="tap-effects" class="income-effects" hidden></small><small id="tap-sword-effect" class="income-skill" hidden></small><small id="tap-potion-effect" class="income-skill" hidden></small></div>
+        <p>표시 수입에는 효과가 이미 포함돼요. 시설·점령·개인장비는 순차 적용되며, 군사 장비 효과는 배치한 장비에만 적용돼요.</p>
+      </div>
+    </details>
     </div>`;
 }
 

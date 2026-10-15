@@ -1,8 +1,7 @@
 .facility-grid.equipment-list{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
 .facility-art{display:block;max-width:100%;height:auto}
 .facility-card .equipment-list-art svg{width:64px;height:auto;max-height:76px}
-.facility-card .equipment-list-action{padding-top:30px;justify-content:center}
-.facility-card .equipment-list-info .facility-current{color:#f3dda4;font-weight:700}
+.facility-card .equipment-list-info .facility-current{color:var(--ui-text,#f1efe5);font-weight:400}
 .facility-card.locked .facility-art{filter:grayscale(1);opacity:.6}
 .field-school .facility-art{width:100%;height:100%}
 #modal[data-category="facilities"]{overflow-anchor:none}

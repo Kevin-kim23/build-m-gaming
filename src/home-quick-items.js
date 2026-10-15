@@ -8,7 +8,7 @@ export function homeItemsMarkup() {
   const potions=Object.values(POTIONS).map(p=>`<button type="button" class="home-skill home-item" data-home-item="${p.id}"${p.id==='max'?' hidden':''}>
     <span class="home-item-art" aria-hidden="true">${potionIcon(p.id)}</span><span class="home-item-name">${p.shortName}</span><small data-item-status></small><small data-item-time hidden></small></button>`).join('');
   return potions+`<button type="button" class="home-skill home-item" data-home-item="auto">
-    <span class="home-item-art home-auto-art" aria-hidden="true">${homeAutoTapIcon}<b>×${HOME_AUTO_TAP.tapsPerSecond}</b></span><span class="home-item-name">자동터치</span><small data-item-status></small></button>`;
+    <span class="home-item-art home-auto-art" aria-hidden="true">${homeAutoTapIcon}<b>${HOME_AUTO_TAP.tapsPerSecond}회/초</b></span><span class="home-item-name">AUTO</span><small data-item-status></small></button>`;
 }
 
 // Fit the small home controls without hiding digits behind an ellipsis. Exact
@@ -33,7 +33,7 @@ export function homeItemStatus(state,id,now=Date.now()) {
   if(id==='auto') {
     const owned=!!state.homeAutoTap?.owned,active=homeAutoTapEnabled(state);
     return {active,action:owned?'toggle':'offer',label:active?'ON':owned?'OFF':'+',
-      aria:owned?`자동터치 ${active?'끄기':'켜기'} · 초당 ${HOME_AUTO_TAP.tapsPerSecond}회`:`자동터치 구매 안내 · 초당 ${HOME_AUTO_TAP.tapsPerSecond}회`};
+      aria:owned?`자동터치 ${active?'끄기':'켜기'} · ${HOME_AUTO_TAP.tapsPerSecond}회/초`:`자동터치 구매 안내 · ${HOME_AUTO_TAP.tapsPerSecond}회/초`};
   }
   const p=potionStatus(state,id,now);
   return {hidden:id==='max'&&!p.count&&!p.active,active:p.active,time:p.active?compactTime(p.remainingMs):'',action:p.count?'use':'offer',

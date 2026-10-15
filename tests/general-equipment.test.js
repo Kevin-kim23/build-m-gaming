@@ -69,7 +69,11 @@ test('sword is visible early, remains locked, and is granted at brigadier and ex
   const locked=markup(army(),'personal');assert.match(locked,/장군검/);assert.match(locked,/준장 진급 시 자동 지급/);
   assert.match(locked,/Lv.2/);assert.match(personalDetailMarkup(army(),'commandBaton').body,/하사 100명 한 번에 모집/);
   const s={...army(10000),sergeants:300};s.personalLevels.commandBaton=3;const stats=[perSecond(s),perTap(s)],owned=markup(s,'personal');
-  assert.match(owned,/보유 중 · 준장 진급 보상/);assert.match(personalDetailMarkup(s,'generalSword').body,/30초 동안 터치 골드 2배/);
+  const sword=owned.match(/<article[^>]+data-personal-equipment="generalSword"[\s\S]*?<\/article>/)[0];
+  assert.match(sword,/class="personal-item equipment-list-card"/);
+  assert.match(sword,/Lv\.1/);assert.match(sword,/현재 · 30초 동안 터치 골드 2배/);
+  assert.match(personalDetailMarkup(s,'generalSword').body,/보유 중 · 준장 진급 보상/);
+  assert.match(personalDetailMarkup(s,'generalSword').body,/30초 동안 터치 골드 2배/);
   assert.deepEqual([perSecond(s),perTap(s)],stats);
   const recruits=markup(s,'recruit');
   for(const type of ['soldier','sergeant','staffSergeant'])assert.equal((recruits.match(new RegExp(`data-buy-bulk="${type}"`,'g'))??[]).length,1);

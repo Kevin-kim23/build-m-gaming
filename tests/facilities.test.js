@@ -107,7 +107,7 @@ test('shop shows all facilities; buttons track affordability and ownership',()=>
   assert.match(html,/facility-grid equipment-list/);
   assert.match(html,/equipment-list-info[\s\S]*data-facility-effect/);
   assert.match(html,/equipment-list-action[\s\S]*data-facility-action="kitchen"[\s\S]*data-facility-price/);
-  const nodes=new Map(),card={classList:{toggle(){}},querySelector(selector){if(!nodes.has(selector))nodes.set(selector,{textContent:'',disabled:false,dataset:{},innerHTML:''});return nodes.get(selector);}};
+  const nodes=new Map(),card={classList:{toggle(){}},querySelector(selector){if(!nodes.has(selector))nodes.set(selector,{textContent:'',disabled:false,dataset:{},innerHTML:'',setAttribute(k,v){this[k]=v;}});return nodes.get(selector);}};
   const root={querySelector(selector){return selector==='[data-facility="kitchen"]'?card:null;}};
   renderFacilities(s,root);assert.equal(nodes.get('[data-facility-action]').disabled,true);assert.match(facilityDetailMarkup(s,'kitchen').body,/1 G 부족/);
   s.gold++;renderFacilities(s,root);assert.equal(nodes.get('[data-facility-action]').disabled,false);
@@ -121,9 +121,10 @@ test('facility sprites are original cached distinct geometry without embedded ex
   for(const f of FACILITIES){assert.equal(facilityIcon(f.id),facilityIcon(f.id));assert.match(facilityIcon(f.id),/viewBox="0 0 96 72"/);assert.doesNotMatch(facilityIcon(f.id),/href=|<image|script/);}
 });
 
-test('facility descriptions and next effects appear only in details, including locked and max states',()=>{
+test('facility lists preview their benefit while full descriptions remain in details',()=>{
  const s=army('상사');const list=facilitiesMarkup(s);
- assert.doesNotMatch(list,/data-facility-next|facility-purpose|확정 강화|보너스는 합산/);
+ assert.match(list,/data-facility-next/);
+ assert.doesNotMatch(list,/facility-purpose|확정 강화|보너스는 합산/);
  for(const f of FACILITIES){assert.ok(!list.includes(f.purpose));assert.match(facilityDetailMarkup(s,f.id).body,new RegExp(f.purpose));}
  assert.match(list,/data-detail-facility="kitchen"/);
  assert.match(facilityDetailMarkup(s,'kitchen').body,/미보유 · 효과 없음[\s\S]*건설 후 · Lv.1/);

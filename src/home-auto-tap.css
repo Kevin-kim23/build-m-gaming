@@ -7,7 +7,7 @@
 .auto-tap-card .auto-owned-status{margin:10px 0 4px;font-size:12px;color:#b9e2cc;min-height:19px}.auto-tap-card .auto-price{display:block;margin:8px 0 14px;font-size:20px;line-height:1.5;font-variant-numeric:tabular-nums;color:#f5dfab}.auto-tap-card .potion-actions{grid-template-columns:1fr;gap:8px}.auto-tap-card [data-buy-home-auto]{min-height:48px;border:1px solid #fff0bd;border-radius:9px;background:linear-gradient(#ffe8ad,#d9b86f);color:#2c3023;font-size:14px;box-shadow:0 3px 0 #79643d}.auto-tap-card [data-toggle-home-auto]{min-height:44px;border:1px solid #6d9484;background:#314b40;color:#dfebdb}.auto-tap-card [data-buy-home-auto]:disabled,.auto-tap-card [data-toggle-home-auto]:disabled{opacity:1;background:#334840;border-color:#5c7062;color:#b1c1b8;box-shadow:none;cursor:default}.auto-tap-card .potion-note{color:#b6c6be;text-align:left;margin-bottom:0}.auto-tap-card button:focus-visible{outline:3px solid #fff3c4;outline-offset:3px}
 /* CSS-only illustration: no synthetic input, timers, or income. Paused unless a
    containing dialog is open; reduced-motion users see the still illustration. */
-.auto-pitch-pointer{animation:auto-pitch-press 4.8s ease-in-out infinite paused}.auto-pitch-halo{animation:auto-pitch-glow 4.8s ease-in-out infinite paused}.auto-pitch-ring{animation:auto-pitch-ripple 4.8s ease-out infinite paused}.auto-pitch-gold{animation:auto-pitch-gain 4.8s ease-out infinite paused}
+.auto-pitch-pointer{animation:auto-pitch-press 4.8s ease-in-out 1 both paused}.auto-pitch-halo{animation:auto-pitch-glow 4.8s ease-in-out 1 both paused}.auto-pitch-ring{animation:auto-pitch-ripple 4.8s ease-out 1 both paused}.auto-pitch-gold{animation:auto-pitch-gain 4.8s ease-out 1 both paused}
 dialog[open] .auto-pitch-pointer,dialog[open] .auto-pitch-halo,dialog[open] .auto-pitch-ring,dialog[open] .auto-pitch-gold{animation-play-state:running}
 @keyframes auto-pitch-press{0%,35%,65%,100%{transform:translateY(0) scale(1)}45%,50%{transform:translateY(4px) scale(.95)}}
 @keyframes auto-pitch-glow{0%,100%{opacity:.4}50%{opacity:.85}}
@@ -37,5 +37,6 @@ dialog[open] .auto-pitch-pointer,dialog[open] .auto-pitch-halo,dialog[open] .aut
 .auto-pitch-word{position:absolute;left:115px;top:24px;color:#e9ce8a;font:900 31px/1 system-ui,sans-serif;letter-spacing:.03em}
 .auto-pitch-ring{left:51px;top:15px}
 .auto-pitch-gold{left:193px;top:6px}
-.auto-pitch-spec{color:#f0dfba;font-size:14px;font-weight:700;margin:8px 0 12px}
+.auto-pitch-spec{color:var(--ui-text,#f1efe5);font-size:14px;font-weight:700;margin:8px 0 12px;line-height:1.6}
 .auto-pitch-spec span{padding:0 7px;color:#96b6be}
+.auto-pitch-limit{color:var(--ui-muted,#b6c2c5);font-size:12px}
