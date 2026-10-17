@@ -11,7 +11,7 @@ export const offlineRewardMarkup = () => `<dialog id="offline-reward-modal" aria
   <strong class="offline-gold" data-offline-gold></strong>
   <p class="offline-cap" data-offline-cap hidden>보유 골드 한도까지 받을 수 있어요.</p>
   <div class="offline-actions">
-    <button type="button" data-offline-double><span class="offline-ad-label"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="4"/><path d="m10 8 6 4-6 4z"/></svg><span data-offline-double-label>광고 보고 2배 받기</span></span><strong data-offline-double-amount></strong></button>
+    <button type="button" data-offline-double><span class="offline-ad-label"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="4"/><path d="m10 8 6 4-6 4z"/></svg><span data-offline-double-label>광고 보고 2배 받기</span></span></button>
     <button type="button" data-offline-claim><span>그냥 받기</span><strong data-offline-normal></strong></button>
   </div>
   <p class="offline-message" data-offline-message role="status" aria-live="polite"></p>
@@ -48,11 +48,11 @@ export function createOfflineRewardUI(session, {root=document,showAd}={}) {
     text('[data-offline-gold]',fmtGold(preview.normal)+' G');
     find('[data-offline-gold]').title=fmt(preview.normal)+' G';
     text('[data-offline-normal]','+'+fmtGold(preview.normal)+' G');
-    text('[data-offline-double-amount]','총 '+fmtGold(preview.doubled)+' G');
     text('[data-offline-double-label]',controller.busy ? '광고 확인 중…' : preview.capped ? '광고 보고 추가 받기' : '광고 보고 2배 받기');
     find('[data-offline-double]').title='광고 시청 완료 후 총 '+fmt(preview.doubled)+' G 지급';
     find('[data-offline-double]').hidden=preview.bonus<=0;
     find('[data-offline-cap]').hidden=!preview.capped;
+    text('[data-offline-cap]',preview.bonus>0 ? '보유 한도까지 · 광고 보상 총 '+fmtGold(preview.doubled)+' G' : '보유 골드 한도까지 받을 수 있어요.');
     if(controller.busy)text('[data-offline-message]','');
     for(const selector of ['[data-offline-claim]','[data-offline-double]'])find(selector).disabled=controller.busy;
     if (!dialog.open) dialog.showModal();

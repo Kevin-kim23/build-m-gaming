@@ -38,7 +38,9 @@ test('return popup shows earned gold, normal receipt persists and repeated click
   assert.equal(f.node('[data-offline-time]').textContent,'1시간 수익');
   assert.equal(f.node('[data-offline-gold]').textContent,'10,800 G');
   assert.equal(f.node('[data-offline-normal]').textContent,'+10,800 G');
-  assert.equal(f.node('[data-offline-double-amount]').textContent,'총 21,600 G');
+  assert.doesNotMatch(f.markup,/data-offline-double-amount/);
+  assert.equal(f.node('[data-offline-double]').title,'광고 시청 완료 후 총 21,600 G 지급');
+  assert.equal(f.node('[data-offline-cap]').hidden,true);
   assert.equal(f.node('[data-offline-double-label]').textContent,'광고 보고 2배 받기');
   await f.node('[data-offline-claim]').click();
   assert.equal(f.session.state.gold,10800);assert.equal(f.dialog.open,false);
@@ -107,7 +109,7 @@ test('a partly capped bonus states the actual total without promising twice the 
   f.ui.sync();
   assert.equal(f.node('[data-offline-gold]').textContent,'100 G');
   assert.equal(f.node('[data-offline-double-label]').textContent,'광고 보고 추가 받기');
-  assert.equal(f.node('[data-offline-double-amount]').textContent,'총 150 G');
+  assert.equal(f.node('[data-offline-cap]').textContent,'보유 한도까지 · 광고 보상 총 150 G');
   assert.equal(f.node('[data-offline-double]').title,'광고 시청 완료 후 총 150 G 지급');
   assert.equal(f.node('[data-offline-double]').hidden,false);
   assert.equal(f.node('[data-offline-cap]').hidden,false);
