@@ -1,0 +1,28 @@
+/* Manual-tap feedback only. The HUD's font size and layout never animate. */
+.hud { grid-template-columns:minmax(0,1fr) max-content auto; }
+.rank,.rank > div { min-width:0; }
+.rank-mark { flex-shrink:0; }
+.rank h1 { white-space:normal; word-break:keep-all; }
+#gold { display:inline-block; transform-origin:center center; }
+.gold-counter > div { column-gap:8px; }
+.tap-impact {
+  position:absolute; z-index:3; width:44px; height:44px; margin:-22px 0 0 -22px;
+  border:2px solid #f4d58e; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle,#ffecc233 0 16%,transparent 65%);
+  box-shadow:0 0 9px #e6bf6255,inset 0 0 7px #ffe2a044;
+  animation:tap-impact .26s ease-out both;
+}
+.tap-impact::before,.tap-impact::after {
+  content:''; position:absolute; top:18px; left:18px; width:4px; height:4px;
+  background:#fff0bd; box-shadow:0 -25px #e6bf62,0 25px #e6bf62;
+}
+.tap-impact::after { transform:rotate(90deg); }
+@keyframes tap-impact {
+  from { transform:scale(.4); opacity:.85; }
+  to { transform:scale(1.15); opacity:0; }
+}
+.gold-float.gold-float-still { animation:none; transform:translateX(-50%); }
+@media(prefers-reduced-motion:reduce) {
+  .tap-impact { display:none; }
+  .gold-float { animation:none; transform:translateX(-50%); }
+}

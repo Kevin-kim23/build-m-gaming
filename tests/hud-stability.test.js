@@ -10,13 +10,14 @@ test('wallet font sizing does not grow when 25억 9,000만 rolls over to 26억 1
   assert.doesNotMatch(read('src/main.js'),/goldLabel\.length/);
   assert.doesNotMatch(read('src/tap-feedback.js'),/offsetWidth|classList\.(add|remove)\("pop"\)/);
 });
-test('rapid taps cancel previous color feedback without forced wallet layout or scaling',()=>{
+test('manual taps give a bounded wallet punch, cancel older feedback and avoid forced wallet layout',()=>{
   const doc=globalThis.document,timer=globalThis.setTimeout;
   let reads=0,cancelled=0,animations=0;
   globalThis.document={createElement:()=>({style:{},remove(){}})};
   globalThis.setTimeout=()=>1;
   const gold={get offsetWidth(){throw Error('forced layout');},animate(frames){
-    animations++;assert.ok(frames.every(f=>!('transform' in f)));return {cancel(){cancelled++;}};
+    animations++;assert.equal(frames[0].transform,'scale(1.12)');
+    assert.equal(frames.at(-1).transform,'scale(1)');return {cancel(){cancelled++;}};
   }};
   const zone={getBoundingClientRect(){reads++;return {width:320,height:400,left:0,top:0};},querySelectorAll:()=>[],appendChild(){}};
   try {for(let i=0;i<20;i++)tapFeedback(zone,gold,{detail:1,clientX:100,clientY:100},1);
