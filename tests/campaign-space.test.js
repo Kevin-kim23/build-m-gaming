@@ -42,11 +42,12 @@ test('continent navigation shows four nations, locked entry, direct crossing and
   assert.match(before,/data-continent="aetherion"[^>]*disabled/);
   const space=campaignMarkup({campaignCleared:80});
   assert.match(space,/에테리온 대륙/);assert.match(space,/data-map-theme="space"/);
-  assert.equal((space.match(/class="nation-tab /g)??[]).length,4);assert.doesNotMatch(space,/coast-serdin/);
-  const earth=campaignMarkup({campaignCleared:160},null,null,null,'astera');
-  assert.match(earth,/아스테라 대륙/);assert.match(earth,/4\/4 점령/);assert.doesNotMatch(earth,/coast-elysia/);
-  assert.match(campaignMarkup({campaignCleared:80},'norgard',80),/data-country="elysia"[^>]*>.*다음 대륙 · 에테리온/);
-  assert.match(campaignMarkup({campaignCleared:80},'elysia',81),/data-country="norgard"[^>]*>.*이전 대륙 · 아스테라/);
+  assert.equal((space.match(/class="road-stop /g)??[]).length,80);assert.doesNotMatch(space,/coast-serdin/);
+  assert.match(space,/class="road-stop frontier[^"]*" data-region="81"/);
+  const earth=campaignMarkup({campaignCleared:160},null,null,'astera');
+  assert.match(earth,/아스테라 대륙/);assert.match(earth,/80 \/ 80 점령/);assert.doesNotMatch(earth,/coast-elysia/);
+  assert.doesNotMatch(campaignMarkup({campaignCleared:80},'norgard',80),/data-continent="aetherion"[^>]*disabled/,'crossing to the next continent is one tab away');
+  assert.doesNotMatch(campaignMarkup({campaignCleared:80},'elysia',81),/data-continent="astera"[^>]*disabled/,'the previous continent stays open for replays');
   for(const aspect of [.5,1,3]){
     const cam=campaignHomeCamera(80,aspect,'aetherion');
     assert.ok(Math.abs(cam.y+cam.height/2-COUNTRIES[4].label[1])<1 || cam.height>1500);
