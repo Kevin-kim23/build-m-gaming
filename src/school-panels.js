@@ -34,6 +34,7 @@ export function renderSchools(state,root) {
     :offer.reason==='gold'?`${fmtGoldCost(subtractMoney(offer.cost,state.gold))} G 부족`:`${view.level?'Lv.'+view.nextLevel+' 확장':'건설'} · ${offer.effect}`;
   if(button.textContent!==label)button.textContent=label;
   button.disabled=!offer.canBuy;
+  card.classList.toggle('is-max',offer.reason==='max');
   const price=card.querySelector('[data-school-price]'),value=offer.reason==='max'?'—':fmtGoldCost(offer.cost)+' G';
   if(price.textContent!==value)price.textContent=value;
 }

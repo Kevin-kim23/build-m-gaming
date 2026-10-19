@@ -21,7 +21,9 @@ export function renderPotions(state,root,{busy=false,busyItem=null,active=true,n
     const loading=card.querySelector('[data-potion-loading]'),hidden=!(busy&&busyItem===p.id);
     if(loading && loading.hidden!==hidden)loading.hidden=hidden;
     text(card.querySelector('[data-potion-count]'),`보유 ${fmt(status.count)}개`);
-    text(card.querySelector('[data-potion-time]'),status.active?`사용 중 · ${potionTimeLabel(status.remainingMs)} 남음`:'사용 대기');
+    const time=card.querySelector('[data-potion-time]');
+    text(time,status.active?`사용 중 · ${potionTimeLabel(status.remainingMs)} 남음`:'사용 대기');
+    if(time.classList && time.classList.contains('active')!==status.active)time.classList.toggle('active',status.active);
     const ad=card.querySelector('[data-potion-ad]');if(ad)ad.disabled=busy||!active||status.count>=POTION_COUNT_LIMIT;
     card.querySelector('[data-potion-use]').disabled=busy||!active||!status.canUse;
   }

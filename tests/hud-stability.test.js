@@ -4,9 +4,9 @@ import { readFileSync } from 'node:fs';
 import { fmtGold } from '../src/format.js';
 import { tapFeedback } from '../src/tap-feedback.js';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
-test('wallet font sizing does not grow when 25억 9,000만 rolls over to 26억 100만',()=>{
-  assert.equal(fmtGold(2590000000),'25억 9,000만');
-  assert.equal(fmtGold(2601000000),'26억 100만');
+test('wallet font sizing does not grow when 25.9억 rolls over to 26억',()=>{
+  assert.equal(fmtGold(2590000000),'25.9억');
+  assert.equal(fmtGold(2601000000),'26억');
   assert.doesNotMatch(read('src/main.js'),/goldLabel\.length/);
   assert.doesNotMatch(read('src/tap-feedback.js'),/offsetWidth|classList\.(add|remove)\("pop"\)/);
 });

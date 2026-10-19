@@ -1,0 +1,56 @@
+/* Compact UI pass (0.76.50): one-line rows, one emphasis colour, fewer labels.
+   Gold = primary action, outline = secondary action, dashed = not available right now. */
+*:focus:not(:focus-visible){outline:none}
+
+/* Home: no level tags on the field, promotion text inside the bar, ad state as a small dot. */
+.field-equipment-level{display:none}
+.hud .hud-promotion .promotion-line{display:none}
+.home-item small.is-ad{position:absolute;top:4px;right:4px;width:8px;height:8px;padding:0;border-radius:50%;background:#e6c27a;font-size:0;line-height:0}
+
+/* Recruitment: one row per unit (portrait | name·income·price | 1명 / 100명). */
+#modal .recruit-grid{grid-template-columns:minmax(0,1fr);gap:7px}
+#modal .recruit-tile{display:grid;grid-template-columns:44px minmax(0,1fr) 76px;grid-template-areas:"v h b" "v s b" "v p b";column-gap:10px;row-gap:1px;align-items:center;min-height:0;padding:8px 10px;text-align:left}
+#modal .recruit-tile .tile-visual{grid-area:v;position:relative;width:44px;height:52px;min-height:0;margin:0}
+#modal .recruit-tile .tile-visual canvas{width:44px;height:auto}
+#modal .recruit-tile .recruit-rank-badge,#modal .recruit-tile .tile-role,#modal .recruit-tile .tile-owned,#modal .recruit-tile .tile-price-bulk{display:none}
+#modal .recruit-tile .tile-detail{position:absolute;top:-4px;left:-4px;width:32px;height:32px;padding:0;border:0;background:transparent;color:transparent;font-size:0}
+#modal .recruit-tile .tile-detail::after{content:"i";display:grid;place-items:center;width:16px;height:16px;margin:2px;border:1px solid #b6c2c5;border-radius:50%;background:#17262e;color:#f1efe5;font:italic 800 11px/1 Georgia,serif}
+#modal .recruit-tile h3{grid-area:h;margin:0;font-size:15px}
+#modal .recruit-tile .tile-stats{grid-area:s;display:flex;flex-direction:row;flex-wrap:wrap;gap:0 8px;margin:0;font-size:12px}
+#modal .recruit-tile .tile-stats span{display:inline-flex;gap:3px;margin:0}
+#modal .recruit-tile .tile-price{grid-area:p;justify-content:flex-start;margin:0;padding:0;border:0;text-align:left;font-size:12px}
+#modal .recruit-tile .tile-price::before{content:"1명 ";font-weight:400;color:#b6c2c5}
+#modal .recruit-tile .tile-buttons{grid-area:b;display:flex;flex-direction:column;gap:4px;margin:0}
+#modal .recruit-tile .tile-buttons .buy{min-height:34px;padding:2px;font-size:12px}
+#modal .recruit-tile .tile-buttons .bulk-buy:enabled{background:transparent;border:1px solid #d7b77b;color:#eed29d}
+#modal .recruit-tile .tile-hint:empty{display:none}
+#modal .recruit-tile .tile-hint{grid-column:1/-1;margin:2px 0 0;font-size:11px}
+
+/* Academy at max level collapses to its heading. */
+#modal .school-card.is-max .school-requirement,#modal .school-card.is-max .school-upgrade-row{display:none}
+#modal .school-card.is-max{padding-block:8px}
+
+/* Items: one row per booster, actions stacked on the right. */
+#modal .potion-card:not(.auto-tap-card){display:grid;grid-template-columns:minmax(0,1fr) 126px;gap:6px 10px;align-items:center;padding:9px 10px}
+#modal .potion-card:not(.auto-tap-card) .potion-heading{grid-column:1;display:flex;gap:10px;align-items:center}
+#modal .potion-card:not(.auto-tap-card) .potion-heading>div:last-child{display:flex;flex-direction:column;gap:1px}
+#modal .potion-card:not(.auto-tap-card) .potion-heading .potion-art{width:40px;height:48px;flex:none}
+#modal .potion-card:not(.auto-tap-card) .potion-heading h3{margin:0;font-size:14px}
+#modal .potion-card:not(.auto-tap-card) .potion-heading p{display:none}
+#modal .potion-card:not(.auto-tap-card) .potion-duration:not(.active){display:none}
+#modal .potion-card:not(.auto-tap-card) .potion-actions{grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:4px;margin:0}
+#modal .potion-card:not(.auto-tap-card) .potion-actions button{min-height:36px;padding:2px 4px;font-size:12px}
+#modal .potion-actions button:disabled,#modal .tile-buttons .buy:disabled,#modal .school-upgrade-row .buy:disabled{background:transparent;border:1px dashed #5d7380;color:#9fb4be;box-shadow:none}
+
+/* Equipment note is implied by the row; rank table in 3 columns so names do not break mid-word. */
+#modal .strength-note{display:none}
+.rank-guide .rank-steps,.rank-guide .formation-guide-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+#modal .potion-card:not(.auto-tap-card) .potion-heading strong{word-break:keep-all}
+@media(max-width:350px){
+  #modal .potion-card:not(.auto-tap-card){grid-template-columns:minmax(0,1fr) 118px;gap:6px 8px;padding:8px}
+  #modal .potion-card:not(.auto-tap-card) .potion-heading{gap:7px}
+  #modal .potion-card:not(.auto-tap-card) .potion-heading .potion-art{width:30px;height:38px;overflow:hidden}
+  #modal .potion-card:not(.auto-tap-card) .potion-heading .potion-art svg{width:100%;height:100%}
+  #modal .potion-card:not(.auto-tap-card) .potion-heading strong{font-size:11.5px}
+  #modal .recruit-tile{grid-template-columns:40px minmax(0,1fr) 70px;column-gap:8px}
+}

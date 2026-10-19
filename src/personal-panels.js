@@ -48,7 +48,7 @@ export function personalMarkup(state) {
     return `<article class="personal-item${status.owned?'':' locked'} equipment-list-card" data-personal-equipment="${item.id}">
       <div class="equipment-list-art" data-personal-art data-level="${status.level||1}">${personalIcon(item.icon,status.level||1)}</div>
       <div class="equipment-list-info"><h3>${item.name} <small>Lv.${status.level||1}</small></h3><p class="personal-list-effect" data-personal-effect>${preview.effect}</p><p class="equipment-list-next" data-personal-next>${preview.next}</p><p class="equipment-list-status" data-personal-status>${status.owned?'':'🔒 '+item.unlockRank+' 진급 시 자동 지급'}</p></div>
-      <button type="button" class="equipment-list-detail" data-detail-personal="${item.id}" aria-label="${item.name} 상세보기"><span aria-hidden="true">ⓘ</span></button>
+      <button type="button" class="equipment-list-detail" data-detail-personal="${item.id}" aria-label="${item.name} 상세보기"><span aria-hidden="true">i</span></button>
       <div class="equipment-list-action"><button type="button" class="buy" data-enhance-personal="${item.id}"${offer.canUpgrade?'':' disabled'}>${!status.owned?'🔒 잠금':offer.reason==='max'?'최대 강화':`강화 → Lv.${status.level+1}`}</button><small data-personal-price>${offer.cost===null?(status.owned?'최대 레벨 달성':item.unlockRank+' 진급 보상'):fmtGoldCost(offer.cost)+' G'}</small></div></article>`;
   }).join('');
   return `<section class="equipment-list">${cards}</section>`;

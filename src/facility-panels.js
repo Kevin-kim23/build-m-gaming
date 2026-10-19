@@ -33,7 +33,7 @@ export function facilitiesMarkup(state) {
         <p class="equipment-list-next" data-facility-next>${preview.next}</p>
         <p class="equipment-list-status" data-facility-status>${preview.status}</p>
         </div>
-        <button type="button" class="equipment-list-detail" data-detail-facility="${f.id}" aria-label="${f.name} 상세보기"><span aria-hidden="true">ⓘ</span></button>
+        <button type="button" class="equipment-list-detail" data-detail-facility="${f.id}" aria-label="${f.name} 상세보기"><span aria-hidden="true">i</span></button>
         <div class="equipment-list-action"><button class="buy" type="button" data-facility-action="${f.id}" aria-label="${f.name} ${p.button}${p.max?'':' · '+fmtGoldCost(p.offer.cost)+' G'}" ${p.canAct?'':'disabled'}><span data-facility-button>${p.button}</span></button><small data-facility-price>${p.max?'':fmtGoldCost(p.offer.cost)+' G'}</small></div></article>`;
     }).join('')}</div>`;
 }

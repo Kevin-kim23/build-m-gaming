@@ -12,7 +12,6 @@
 .road-backdrop { display:flex; flex-direction:column-reverse; overflow:hidden; opacity:.8; }
 .road-symbol { position:absolute; width:0; height:0; }
 .road-tile { display:block; flex:none; width:100%; aspect-ratio:2/5; }
-.road-tile.flip { transform:scaleY(-1); }
 .road-path polyline { fill:none; stroke:#f3ead0; stroke-width:7; stroke-dasharray:2 10; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; opacity:.7; }
 .road-path polyline.reached { stroke:#e6c27a; stroke-dasharray:none; stroke-width:8; opacity:.95; }
 .road-stop { position:absolute; transform:translate(-50%,-50%); width:42px; height:42px; padding:0; border-radius:50%; border:3px solid #c8d1c3; background:#1d2b23; box-shadow:0 3px 0 #0008,0 5px 10px #0005; display:grid; place-items:center; z-index:1; color:#f2f2e8; cursor:pointer; }

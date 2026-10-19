@@ -50,17 +50,17 @@ test('high gold is stored as canonical decimal text, malformed or rounded amount
   assert.equal(parseSave(JSON.stringify(old),T).gold,old.gold);
 });
 
-test('prices and balances format through 해 using two units without rounding purchases',()=>{
+test('prices and balances format through 자 using one unit without rounding purchases',()=>{
   for(const [n,wallet,cost] of [
-    [9_999_999_999_999_999n,'9,999조 9,999억','1경'],
-    [10_000_000_000_000_001n,'1경','1경 1조'],
-    [12_345_678_901_234_567n,'1경 2,345조','1경 2,346조'],
-    [LEGACY_MAX_GOLD-1n,'999경 9,999조','1,000경'],[LEGACY_MAX_GOLD,'1,000경','1,000경'],
-    [10n**20n-1n,'9,999경 9,999조','1해'],[10n**20n,'1해','1해'],
-    [10n**20n+1n,'1해','1해 1경'],[123_456_789_012_345_678_901n,'1해 2,345경','1해 2,346경'],
-    [MAX_GOLD-1n,'999자 9,999해','1,000자'],[MAX_GOLD,'1,000자','1,000자'],
+    [9_999_999_999_999_999n,'9,999조','1경'],
+    [10_000_000_000_000_001n,'1경','1.1경'],
+    [12_345_678_901_234_567n,'1.2경','1.3경'],
+    [LEGACY_MAX_GOLD-1n,'999경','1,000경'],[LEGACY_MAX_GOLD,'1,000경','1,000경'],
+    [10n**20n-1n,'9,999경','1해'],[10n**20n,'1해','1해'],
+    [10n**20n+1n,'1해','1.1해'],[123_456_789_012_345_678_901n,'1.2해','1.3해'],
+    [MAX_GOLD-1n,'999자','1,000자'],[MAX_GOLD,'1,000자','1,000자'],
   ]){assert.equal(fmtGold(n),wallet);assert.equal(fmtGoldCost(n),cost);}
-  const parseLabel=label=>[...label.matchAll(/([\d,]+)(자|해|경|조|억|만)/g)].reduce((sum,[,digits,unit])=>sum+BigInt(digits.replaceAll(',',''))*{자:10n**24n,해:10n**20n,경:10n**16n,조:10n**12n,억:10n**8n,만:10n**4n}[unit],0n);
+  const parseLabel=label=>[...label.matchAll(/([\d,]+)(?:\.(\d))?(자|해|경|조|억|만)/g)].reduce((sum,[,digits,tenth='0',unit])=>{const u={자:10n**24n,해:10n**20n,경:10n**16n,조:10n**12n,억:10n**8n,만:10n**4n}[unit];return sum+BigInt(digits.replaceAll(',',''))*u+BigInt(tenth)*u/10n;},0n);
   for(let i=1n;i<=1000n;i++) {
     const n=(MAX_GOLD/1000n)*i-17n;
     assert.ok(parseLabel(fmtGold(n))<=n);assert.ok(parseLabel(fmtGoldCost(n))>=n);

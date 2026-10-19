@@ -100,7 +100,7 @@ test('configured Play products show real supplied prices and purchase actions in
   assert.equal(button.textContent,expected);assert.equal(button.disabled,false);
   assert.ok(button.attributes['aria-label'].includes(expected));assert.match(button.attributes['aria-label'],/구매/);
  }
- assert.match(storeMarkup(),/특별혜택!/);assert.match(storeMarkup(),/1회 한정!/);assert.doesNotMatch(storeMarkup(),/계정당/);
+ assert.doesNotMatch(storeMarkup(),/특별혜택!/,'one emphasis only');assert.match(storeMarkup(),/1회 한정!/);assert.doesNotMatch(storeMarkup(),/계정당/);
  assert.doesNotMatch(storeMarkup(),/data-starter-price|data-play-price/);
  const header=homeAutoTapMarkup().match(/<header[^>]*>([\s\S]*?)<\/header>/)[1];
  assert.doesNotMatch(header,/<p|<small/);assert.match(header,/<h3>자동터치<\/h3><span class="auto-rate-label">10회\/초<\/span>/);assert.match(header,/홈 전용 · 영구/);assert.match(homeAutoTapMarkup(),/홈에서만 작동/);
