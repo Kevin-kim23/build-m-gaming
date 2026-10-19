@@ -24,7 +24,8 @@ test('erebus has40 original sequential regions, two contiguous nations and safe 
  const countries=COUNTRIES.filter(c=>c.continentId==='erebus');assert.equal(countries.length,2);
  for(const c of countries){const regions=countryRegions(c.id);assert.equal(regions.length,20);for(const r of regions)assert.ok(inside(r.point,c.polygon));}
  const s=referenceArmy(campaignStages[179]);s.campaignCleared=160;
- const html=campaignMarkup(s,null,null,null,'erebus');assert.match(html,/루브리온/);assert.match(html,/모르드라스/);
+ const html=campaignMarkup(s,null,null,'erebus');assert.match(html,/에레보스 대륙/);assert.equal((html.match(/class="road-stop /g)??[]).length,40);
+ assert.match(html,/class="road-stop frontier[^"]*" data-region="161"/);
  assert.match(campaignMarkup({...s,campaignCleared:180},'mordrath',181),/장기 도전 지역/);
  assert.ok(exact(campaignStages[199].recommendedPower)<=MAX_ARMY_POWER);
 });

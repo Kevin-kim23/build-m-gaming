@@ -103,15 +103,16 @@ test('camera bounds prevent empty-ocean traps at desktop and phone aspect ratios
     }
   }
 });
-test('region UI exposes all twenty regions, lock reasons, replay, next-country and correct capital information',()=>{
+test('the conquest road exposes every stage of the continent, lock reasons, replay and correct capital information',()=>{
   for(const c of COUNTRIES){
     const state={...army(c.powers[19]),campaignCleared:c.lastStage-1};
-    const html=campaignMarkup(state,c.id,c.lastStage);
-    assert.equal((html.match(/class="region-hit /g)??[]).length,20);
-    assert.match(html,new RegExp(campaignStages[c.lastStage-1].name));assert.match(html,/최종 수도전/);assert.match(html,/전투 시작/);
+    const html=campaignMarkup(state,c.id,c.lastStage),total=c.continentId==='erebus'?40:80;
+    assert.equal((html.match(/class="road-stop /g)??[]).length,total);
+    assert.match(html,new RegExp(`class="road-stop frontier capital selected" data-region="${c.lastStage}"`));
+    assert.match(html,new RegExp(campaignStages[c.lastStage-1].name));assert.match(html,/최종 수도전/);assert.match(html,/data-stage="[0-9]+"[^>]*>출격</);
     assert.doesNotMatch(html,/undefined|NaN/);
-    for(const control of ['data-world','data-locate'])assert.ok(html.includes(control));
-    assert.ok(!html.includes('data-zoom')&&!html.includes('data-pan'));
+    assert.ok(html.includes('data-locate'));
+    assert.ok(!html.includes('data-zoom')&&!html.includes('data-pan')&&!html.includes('data-world'));
   }
 });
 
@@ -125,36 +126,29 @@ test('higher-rank support and air gear remain usable when replaying the first ca
   }
 });
 
-test('completed country maps offer a direct northern route only to the next unlocked country',()=>{
+test('finishing a nation continues on the same road, and the last nation of a continent unlocks the next continent tab',()=>{
   for(const c of COUNTRIES){
-    assert.doesNotMatch(campaignMarkup({campaignCleared:c.lastStage-1},c.id,c.lastStage),/class="atlas-next-country"/);
+    const unfinished=campaignMarkup({...army(81920),campaignCleared:c.lastStage-1},c.id,c.firstStage);
     const completed=campaignMarkup({...army(81920),campaignCleared:c.lastStage},c.id,c.firstStage);
-    if(c.index<COUNTRIES.length-1){
-      const next=COUNTRIES[c.index+1];
-      assert.match(completed,new RegExp('class="atlas-next-country" data-country="'+next.id+'"'));
-      assert.match(completed,new RegExp(c.continentId===next.continentId?'다음 나라 · '+next.name:'다음 대륙 · '+(next.continentId==='erebus'?'에레보스':'에테리온')));
-      assert.ok(completed.indexOf('class="atlas-next-country"')<completed.indexOf('class="atlas-window"'));
-      assert.match(completed,/다시 도전/);
-    }else assert.doesNotMatch(completed,/class="atlas-next-country"/);
-  }
-  assert.doesNotMatch(campaignMarkup({campaignCleared:80}),/class="atlas-next-country"/);
-});
-
-test('upper countries provide a southern route to the conquered previous country, including while unfinished',()=>{
-  for(const c of COUNTRIES){
-    for(const cleared of [c.firstStage-1,c.lastStage]){
-      const html=campaignMarkup({...army(81920),campaignCleared:cleared},c.id,c.firstStage);
-      const route=html.match(/<button class="atlas-previous-country"[^>]*>[\s\S]*?<\/button>/)?.[0];
-      if(c.index===0){assert.equal(route,undefined);continue;}
-      const previous=COUNTRIES[c.index-1];
-      assert.ok(route,`${c.id} after ${cleared} clears needs a return route`);
-      assert.ok(route.includes(`data-country="${previous.id}"`));
-      assert.ok(route.includes(c.continentId===previous.continentId?`이전 나라 · ${previous.name}`:'이전 대륙 · '+(previous.continentId==='aetherion'?'에테리온':'아스테라')));
-      assert.ok(html.indexOf(route)>html.indexOf('</svg>\n  <div class="atlas-compass"'));
+    assert.match(completed,/다시 출격/);
+    const next=COUNTRIES[c.index+1];
+    if(!next)continue;
+    if(next.continentId===c.continentId){
+      assert.match(completed,new RegExp(`class="road-stop frontier[^"]*" data-region="${next.firstStage}"`),`${next.id} opens on the same road`);
+      assert.match(unfinished,new RegExp(`class="road-stop locked[^"]*" data-region="${next.firstStage}"`));
+    }else{
+      assert.match(unfinished,new RegExp(`data-continent="${next.continentId}"[^>]*disabled`));
+      assert.doesNotMatch(completed,new RegExp(`data-continent="${next.continentId}"[^>]*disabled`));
     }
   }
-  assert.ok(!campaignMarkup({campaignCleared:80}).includes('class="atlas-previous-country"'));
-  assert.ok(!campaignMarkup({campaignCleared:19},'veloc',21).includes('class="atlas-previous-country"'));
+});
+
+test('earlier nations stay reachable on the road for replays, including while the current nation is unfinished',()=>{
+  for(const c of COUNTRIES.filter(c=>c.index%4!==0&&c.continentId!=='erebus'||c.id==='mordrath')){
+    const previous=COUNTRIES[c.index-1];
+    const html=campaignMarkup({...army(81920),campaignCleared:c.firstStage-1},c.id,c.firstStage);
+    assert.match(html,new RegExp(`class="road-stop occupied capital" data-region="${previous.lastStage}"`),`${previous.id} capital replay from ${c.id}`);
+  }
 });
 
 test('country capitals connect colonel, lieutenant general, minor marshal and special marshal',()=>{

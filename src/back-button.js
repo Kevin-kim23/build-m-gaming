@@ -13,7 +13,7 @@ export const BACK_LAYERS = Object.freeze([
   Object.freeze({ selector: '#personal-award-modal', close: '[data-personal-award-close]' }),
   Object.freeze({ selector: '.promotion-layer', close: '[data-dismiss-promotion]' }),
   Object.freeze({ selector: '#detail-modal', close: '[data-detail-close]' }),
-  Object.freeze({ selector: '#battle-modal', close: '[data-battle-close]' }),
+  Object.freeze({ selector: '#battle-modal', close: '[data-back-first], [data-battle-close]' }),
   Object.freeze({ selector: '#loot-shop', close: '[data-loot-close]' }),
   Object.freeze({ selector: '#achievement-modal', close: '#close-achievements' }),
   Object.freeze({ selector: '#modal', close: '#close-shop, #close-equipment' }),
@@ -26,7 +26,10 @@ export function createBackHandler({ root = document, now = Date.now, hint, exit 
       const dialog = root.querySelector(layer.selector);
       if (!dialog?.open) continue;
       hintedAt = -Infinity;
-      dialog.querySelector(layer.close)?.click();
+      const button = dialog.querySelector(layer.close);
+      button?.click();
+      // A step back inside the popup (출격 편성 → road) keeps the popup open.
+      if (button?.hasAttribute?.('data-back-first')) return 'back';
       if (dialog.open) dialog.close();
       return 'closed';
     }

@@ -153,3 +153,12 @@ test('Android Back returns from required consent to age without closing the gate
   assert.equal(handler(),'exit','the existing two-press exit behavior is retained at age entry');
   assert.equal(exits,1);
 });
+
+test('inside the battle popup, back on the loadout screen steps back to the road instead of closing', () => {
+  let backs = 0, closes = 0;
+  const backButton = { click() { backs++; }, hasAttribute: (name) => name === 'data-back-first' };
+  const dialog = { open: true, querySelector: (selector) => selector === '[data-back-first], [data-battle-close]' ? backButton : null, close() { closes++; dialog.open = false; } };
+  const handler = createBackHandler({ root: { querySelector: (selector) => selector === '#battle-modal' ? dialog : null }, now: () => 0, hint() {}, exit() {} });
+  assert.equal(handler(), 'back');
+  assert.deepEqual([backs, closes, dialog.open], [1, 0, true]);
+});
