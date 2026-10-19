@@ -1,0 +1,41 @@
+/* 전투 화면 개선(0.76.52): 한 줄 헤더(T1), 위쪽 기지 체력 줄(H1 색 단계), 더 긴 전장, 차오르는 카드(D1), 10칸 마나. */
+#battle-field { aspect-ratio:360/520; }
+.battle-header.battle-hud { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.battle-hud .battle-stage-chip { flex:none; padding:2px 8px; border-radius:99px; background:#26363e; color:#c7d3c0; font-size:11px; font-weight:800; letter-spacing:.5px; }
+.battle-hud h2 { flex:1; min-width:0; margin:0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.battle-hud > b { flex:none; }
+
+.battle-hp-strip { display:grid; gap:4px; margin:0 0 6px; }
+.battle-hp-strip .base-hp { position:static; left:auto; top:auto; width:auto; display:grid; grid-template-columns:minmax(0,74px) minmax(0,1fr) 58px; align-items:center; gap:6px; text-align:left; }
+.battle-hp-strip .base-hp small { margin:0; font-size:11px; color:#c7d3c0; text-shadow:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.battle-hp-strip .base-hp b { margin:0; font-size:11px; text-align:right; text-shadow:none; }
+.battle-hp-strip .base-hp-bar { height:9px; border-width:1px; box-shadow:none; }
+.battle-hp-strip .base-hp.player[data-tone="ok"] .base-hp-bar i { background:linear-gradient(90deg,#3fae86,#5fd0b0); }
+.battle-hp-strip .base-hp.enemy[data-tone="ok"] .base-hp-bar i { background:linear-gradient(90deg,#b8443d,#e2675e); }
+.battle-hp-strip .base-hp[data-tone="mid"] .base-hp-bar i { background:linear-gradient(90deg,#c99a45,#e6c27a); }
+.battle-hp-strip .base-hp[data-tone="low"] .base-hp-bar i { background:linear-gradient(90deg,#a3302a,#ff6b5e); }
+.base-float { font-size:22px; }
+.base-float.enemy { top:6%; } .base-float.player { top:84%; }
+.lane-hit { top:16%; bottom:14%; }
+
+.battle-pause-actions { display:flex; gap:8px; margin-top:10px; }
+.battle-pause-actions[hidden] { display:none; }
+.battle-pause-actions .info-btn { flex:0 0 48px; }
+
+/* Cards: grey while waiting, a blue fill rises with mana/cooldown, gold edge when ready. No status text. */
+.battle-cards .deploy-card { overflow:hidden; }
+.battle-cards .deploy-card .card-fill { position:absolute; inset:auto 0 0 0; height:0; background:linear-gradient(#7fc0ff1f,#3d86d659); border-top:2px solid #7fc0ffcc; pointer-events:none; transition:height .2s linear; }
+.battle-cards .deploy-card:not(:disabled) .card-fill { display:none; }
+.battle-cards button.deploy-card:disabled { opacity:1; filter:none; }
+.battle-cards .deploy-card:disabled .card-art { filter:grayscale(1) brightness(.6); }
+.battle-cards .deploy-card:disabled b { color:#9aa79e; }
+.battle-cards button.deploy-card:not(:disabled) { border-color:#e6c27a; box-shadow:0 0 0 2px #e6c27a55, 0 0 10px #e6c27a66; }
+.battle-mana-bar { position:relative; }
+.battle-mana-bar::after { content:""; position:absolute; inset:0; background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),#16212c calc(10% - 2px) 10%); pointer-events:none; }
+@media (prefers-reduced-motion: reduce) { .battle-cards .deploy-card .card-fill { transition:none; } }
+/* The field keeps its 360:520 shape but never pushes the cards off a short phone:
+   its width is capped by the height left after the header, HP strip, mana bar and cards (~300px). */
+.in-battle .battle-arena { width:min(100%, calc((var(--game-frame-height, 100dvh) - 300px) * 360 / 520)); margin-inline:auto; }
+/* Pause menu: continue is the big primary action; info and exit sit below it as smaller secondary buttons. */
+.battle-overlay:not(.result) #battle-resume { width:100%; }
+.battle-pause-actions button { padding:9px 10px; font-size:12px !important; }

@@ -1,5 +1,5 @@
 import { campaignBonusPercent, regionIncomePercent } from "./campaign-rewards.js";
-import { STAGES, battleAccess, defaultLoadout, normalizeLoadout, createBattle, advanceBattle, deploy, battleSlots, BATTLE_RULES } from './battle.js';
+import { STAGES, battleAccess, defaultLoadout, normalizeLoadout, createBattle, advanceBattle, deploy, battleSlots, BATTLE_RULES, UNIT_TRAITS } from './battle.js';
 import { recordBattleVictory } from './battle-progress.js';
 import { drawLane, LANE_CENTERS, LANE_CANVAS } from './lane-art.js';
 import { unitSprite } from './unit-sprites.js';
@@ -15,6 +15,7 @@ import './campaign.css';
 import './campaign-road.css';
 import './loadout-deck.css';
 import './battle-result.css';
+import './battle-hud.css';
 import { createCampaignMap } from './campaign-map.js';
 import { loadoutMarkup } from './loadout-view.js';
 import { freshDeckView, deckAction } from './loadout-deck.js';
@@ -154,7 +155,8 @@ export function createBattleUI(session, audio = null) {
     text(`#battle-${side}-hp`, battleNumber(hq.hp));
     const fill = $(`#base-hp-${side}-fill`), width = `${(frac * 100).toFixed(1)}%`;
     if (fill && fill.style.width !== width) fill.style.width = width;
-    const box = $(`#base-hp-${side}`); if (box) box.classList.toggle('low', frac <= 0.25);
+    const box = $(`#base-hp-${side}`), tone = frac > 0.5 ? 'ok' : frac > 0.25 ? 'mid' : 'low';
+    if (box && box.dataset.tone !== tone) { box.dataset.tone = tone; box.classList.toggle('low', tone === 'low'); }
   }
   // 새로 일어난 일에 반응: 기지 피격(번쩍임·흔들림·숫자·진동·소리), 출격·사격·폭발 소리.
   function react() {
@@ -164,7 +166,7 @@ export function createBattleUI(session, audio = null) {
       if (drop > 0) {
         fx.flash[side] = now; fx.accum[side] += drop;
         if (side === 'player') { fx.shakeAt = now; sound('hit', 220); haptic(30); }
-        if (now - fx.lastFloat[side] > 320) { floatNumber(side, fx.accum[side]); fx.accum[side] = 0; fx.lastFloat[side] = now; }
+        if (now - fx.lastFloat[side] > 700) { floatNumber(side, fx.accum[side]); fx.accum[side] = 0; fx.lastFloat[side] = now; }
       }
     }
     fx.prevHp = hp;
@@ -207,6 +209,10 @@ export function createBattleUI(session, audio = null) {
       if (!button) continue;
       const wait = Math.max(0, Math.ceil((card.readyMs - battle.elapsedMs) / 1000)), afford = battle.mana >= card.cost;
       text(`[data-deploy-cost="${card.id}"]`, wait ? `${wait}초` : afford ? '출격!' : '마나 부족');
+      // 카드가 아래에서 차오른다: 재출격 대기와 마나 중 더 늦은 쪽의 진행도(글자 대신 모양으로).
+      const cooldown = UNIT_TRAITS[card.id]?.cooldownMs || 1, progress = Math.min(1 - Math.max(0, card.readyMs - battle.elapsedMs) / cooldown, battle.mana / card.cost);
+      const fillNode = $(`[data-card-fill="${card.id}"]`), height = `${Math.round(Math.max(0, Math.min(1, progress)) * 50) * 2}%`;
+      if (fillNode && fillNode.style.height !== height) fillNode.style.height = height;
       const ready = wait === 0 && afford && battle.status === 'running' && !paused;
       if (button.disabled === ready) button.disabled = !ready;
       if (!ready && selected === card.id) selected = null;
@@ -268,6 +274,7 @@ export function createBattleUI(session, audio = null) {
     $('#battle-resume').hidden = result;
     $('#battle-resume').disabled = !session.active;
     $('#battle-result-actions').hidden = !result;
+    const pauseActions = $('#battle-pause-actions'); if (pauseActions) pauseActions.hidden = result;
     $('#battle-pause').disabled = result;
     dialog.querySelectorAll('[data-deploy],[data-lane]').forEach(button => { button.disabled = true; });
   }

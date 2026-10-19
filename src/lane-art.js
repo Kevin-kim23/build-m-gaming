@@ -1,16 +1,18 @@
 import { artSurface, brush, ART_SCALE } from './pixel-detail.js';
 import { unitSprite, baseSprite, SPRITE_SIZE } from './unit-sprites.js';
-import { drawWeaponShot, weaponRecoil, drawHeadquartersDestruction, drawSupportPulse } from './weapon-fx.js';
+import { drawWeaponShot, weaponRecoil, drawHeadquartersDestruction, drawSupportPulse, WEAPON_FX } from './weapon-fx.js';
 import { BATTLE_RULES } from './battle-balance.js';
+import { COUNTRIES, CONTINENTS } from './campaign.js';
+import { roadBackdropCanvas, TILE_W, TILE_H } from './road-backdrop.js';
 
 
 // 세로 레인 전장 그림(위에서 본 모습): 위쪽이 적 기지, 아래쪽이 우리 기지, 레인 3개가 위아래로 뻗는다.
 // 정적인 배경·기지는 한 번 그려 캐시하고, 움직이는 것(장비·효과·체력 막대)만 매 프레임 그린다.
 // 이름표·숫자는 화면의 HTML에서 표시한다(캔버스에 글자를 넣지 않는다).
-export const LANE_CANVAS = Object.freeze({ width: 360, height: 440 });
+export const LANE_CANVAS = Object.freeze({ width: 360, height: 520 });
 const W = LANE_CANVAS.width, H = LANE_CANVAS.height;
 export const LANE_CENTERS = Object.freeze([66, 180, 294]);
-const Y_FRONT = 322, Y_BACK = 112; // 레인 위치 0(우리 기지 앞) ~ 1000(적 기지 앞)이 화면에서 차지하는 세로 범위
+const Y_FRONT = 402, Y_BACK = 112; // 레인 위치 0(우리 기지 앞) ~ 1000(적 기지 앞)이 화면에서 차지하는 세로 범위
 export const laneY = (pos) => Y_FRONT - (pos / BATTLE_RULES.laneLength) * (Y_FRONT - Y_BACK);
 const scenes = new Map();
 
@@ -25,8 +27,23 @@ const THEMES = Object.freeze({
   norgard: { ground: '#dfeaee', alt: '#eef5f7', road: '#b7c5cd', edge: '#8aa0ac', tuft: '#ffffff', deco: '#9bb4c0' },
 });
 
+const continentTheme = countryId => CONTINENTS.find(c => c.id === COUNTRIES.find(k => k.id === countryId)?.continentId)?.theme ?? 'earth';
+// 전장 바닥: 진격 로드와 같은 대륙 그림(작전 지형도·항법도·심연 균열)을 깔고 레인 3개만 어둡게 표시한다.
+function themedScene(theme) {
+  const tile = roadBackdropCanvas(theme); if (!tile) return null;
+  const canvas = artSurface(W, H), c = canvas.getContext('2d'), th = TILE_H * W / TILE_W;
+  for (let y = H - th; y > -th; y -= th) c.drawImage(tile, 0, Math.round(y), W, Math.ceil(th) + 1);
+  for (const x of LANE_CENTERS) {
+    c.fillStyle = 'rgba(8,12,10,.34)'; c.fillRect(x - 44, 0, 88, H);
+    c.fillStyle = 'rgba(255,255,255,.14)'; c.fillRect(x - 44, 0, 1, H); c.fillRect(x + 43, 0, 1, H);
+    c.fillStyle = 'rgba(255,255,255,.22)'; for (let y = 20; y < H; y += 26) c.fillRect(x - 1, y, 2, 12);
+  }
+  return canvas;
+}
 function scene(countryId) {
-  if (scenes.has(countryId)) return scenes.get(countryId);
+  const key = continentTheme(countryId);
+  if (scenes.has(key)) return scenes.get(key);
+  const themed = themedScene(key); if (themed) { scenes.set(key, themed); return themed; }
   const t = THEMES[countryId] ?? THEMES.serdin, canvas = artSurface(W, H), c = canvas.getContext('2d'), r = brush(c);
   let seed = 11;
   const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
@@ -42,7 +59,7 @@ function scene(countryId) {
     const s = 7 + Math.floor(rand() * 6);
     r(x - s / 2 + 2, y + 2, s, s, '#00000026'); r(x - s / 2, y, s, s, t.deco); r(x - s / 2 + 1, y + 1, s - 3, s - 3, t.alt);
   }
-  scenes.set(countryId, canvas); return canvas;
+  scenes.set(key, canvas); return canvas;
 }
 
 function drawScaled(c, image, cx, cy, width) {
@@ -55,7 +72,71 @@ function drawBases(c, view) {
     const art=baseSprite(army.hq.id,side);
     drawScaled(c,art,W/2,y,Math.min(220,104*art.width/art.height,art.width/ART_SCALE*1.2));
     if(side==='enemy'&&army.fortress){c.strokeStyle='#d7b579';c.lineWidth=2;c.strokeRect(68,7,224,96);}
+    drawTurrets(c,view,side,y);
   }
+}
+// 기지 양옆 방어 포탑: 마지막 포탑 사격 대상 쪽으로 포신을 돌리고, 쏜 직후 반동·섬광을 보인다.
+const TURRET_X = Object.freeze([W / 2 - 104, W / 2 + 104]);
+const TURRET_COLOR = Object.freeze({ player: '#9fe8ff', enemy: '#ffb08a' });
+const turretSlot = f => f.lane === 1 ? f.at % 2 : f.lane === 0 ? 0 : 1;
+const turretY = side => side === 'enemy' ? 56 : H - 52;
+function lastTurretShot(view, side) {
+  let last = null;
+  for (const f of view.fx) if (f.kind === 'shot' && f.id === 'turret' && f.side === side && (!last || f.at > last.at)) last = f;
+  return last;
+}
+function drawTurrets(c, view, side, y) {
+  const shot = lastTurretShot(view, side), age = shot ? view.elapsed - shot.at : Infinity;
+  TURRET_X.forEach((x, slot) => {
+    const aiming = shot && turretSlot(shot) === slot && age < 1500;
+    const angle = aiming ? Math.atan2(laneY(shot.to) - y, LANE_CENTERS[shot.lane] - x) : side === 'enemy' ? Math.PI / 2 : -Math.PI / 2;
+    const kick = aiming && age < 150 ? Math.sin(age / 150 * Math.PI) * 3 : 0;
+    c.fillStyle = '#00000040'; c.beginPath(); c.ellipse(x + 2, y + 4, 13, 7, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#3b4642'; c.beginPath(); c.arc(x, y, 11, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#5d6b64'; c.beginPath(); c.arc(x, y, 8, 0, Math.PI * 2); c.fill();
+    c.save(); c.translate(x, y); c.rotate(angle);
+    c.fillStyle = '#26302c'; c.fillRect(4 - kick, -2.5, 15, 5); c.fillStyle = '#8a9a92'; c.fillRect(4 - kick, -1, 14, 2);
+    c.restore();
+    c.fillStyle = TURRET_COLOR[side]; c.fillRect(x - 2, y - 2, 4, 4);
+    if (aiming && age < 90) {
+      const mx = x + Math.cos(angle) * 20, my = y + Math.sin(angle) * 20, g = c.createRadialGradient(mx, my, 0, mx, my, 10);
+      g.addColorStop(0, '#fffbe8'); g.addColorStop(.5, TURRET_COLOR[side]); g.addColorStop(1, 'rgba(255,255,255,0)');
+      c.globalAlpha = 1 - age / 90; c.fillStyle = g; c.beginPath(); c.arc(mx, my, 10, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
+    }
+  });
+}
+// 포탑 탄: 포구에서 목표까지 빛나는 탄이 날아가고 맞으면 작은 폭발.
+function drawTurretShot(c, f, age) {
+  const y0 = turretY(f.side), x0 = TURRET_X[turretSlot(f)], x1 = LANE_CENTERS[f.lane], y1 = laneY(f.to), color = TURRET_COLOR[f.side], travel = 160;
+  if (age < travel) {
+    const t = age / travel, px = x0 + (x1 - x0) * t, py = y0 + (y1 - y0) * t, tx = x0 + (x1 - x0) * Math.max(0, t - .18), ty = y0 + (y1 - y0) * Math.max(0, t - .18);
+    c.strokeStyle = color; c.lineWidth = 3; c.globalAlpha = .45; c.beginPath(); c.moveTo(tx, ty); c.lineTo(px, py); c.stroke();
+    c.globalAlpha = 1; c.fillStyle = '#fffbe8'; c.fillRect(Math.round(px - 2), Math.round(py - 2), 4, 4);
+  } else impact(c, x1, y1, age - travel, color, 12);
+}
+// 명중 섬광: 밝은 빛 + 퍼지는 파편(발사·명중 손맛 강화).
+function impact(c, x, y, age, color, size) {
+  const life = 260; if (age < 0 || age > life) return;
+  const t = age / life, g = c.createRadialGradient(x, y, 0, x, y, size * (1 + t));
+  g.addColorStop(0, 'rgba(255,250,225,.95)'); g.addColorStop(.45, color); g.addColorStop(1, 'rgba(255,255,255,0)');
+  c.globalAlpha = 1 - t; c.fillStyle = g; c.beginPath(); c.arc(x, y, size * (1 + t), 0, Math.PI * 2); c.fill();
+  for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2 + i, d = size * (.6 + t * 1.6); c.fillStyle = i % 2 ? color : '#fff3c4'; c.fillRect(Math.round(x + Math.cos(a) * d), Math.round(y + Math.sin(a) * d), 2, 2); }
+  c.globalAlpha = 1;
+}
+// 장비 둘레 진영색 외곽선(아군 청록·적 빨강): 장비·진영·강화 단계별로 한 번만 만들어 캐시한다.
+const TEAM_OUTLINE = Object.freeze({ player: '#35c29a', enemy: '#e0564b' });
+const outlines = new Map();
+function teamSprite(id, side, level) {
+  const key = `${id}:${side}:${level}`; if (outlines.has(key)) return outlines.get(key);
+  const base = unitSprite(id, side, level), pad = Math.max(2, Math.round(base.width * .045));
+  const out = document.createElement('canvas'); out.width = base.width + pad * 2; out.height = base.height + pad * 2;
+  const tint = document.createElement('canvas'); tint.width = base.width; tint.height = base.height;
+  const t = tint.getContext('2d'); t.drawImage(base, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = TEAM_OUTLINE[side]; t.fillRect(0, 0, base.width, base.height);
+  const c = out.getContext('2d');
+  for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1], [-1, 1], [1, -1]]) c.drawImage(tint, pad + dx * pad, pad + dy * pad);
+  c.drawImage(base, pad, pad);
+  const sprite = { canvas: out, grow: out.width / base.width };
+  outlines.set(key, sprite); return sprite;
 }
 
 // 기지 위 연기·불꽃: 체력이 반 이하면 연기, 1/4 이하면 불꽃이 올라온다(경과 시간으로 움직여 상태 저장이 필요 없음).
@@ -66,10 +147,14 @@ function drawBaseDamage(c, view) {
     const n = frac > 0.25 ? 3 : 6;
     for (let i = 0; i < n; i++) {
       const phase = ((view.elapsed / 900 + i * 0.37) % 1), x = W / 2 - 56 + i * (112 / n) + Math.sin(i * 5 + view.elapsed / 500) * 4;
-      c.globalAlpha = (1 - phase) * 0.7;
-      c.fillStyle = frac > 0.25 ? '#555049' : (i % 2 ? '#ff9c3a' : '#ffd36a');
-      const size = 5 + phase * 8;
-      c.fillRect(Math.round(x - size / 2), Math.round(y0 - phase * 30 - size / 2), Math.round(size), Math.round(size));
+      const size = 7 + phase * 12, py = y0 - phase * 34;
+      c.globalAlpha = (1 - phase) * 0.6; c.fillStyle = '#4c4843';
+      c.beginPath(); c.arc(x, py, size / 2, 0, Math.PI * 2); c.fill();
+      if (frac <= 0.25 && i % 2 === 0) {
+        const fy = y0 + 10 - phase * 8, g = c.createRadialGradient(x, fy, 0, x, fy, 9);
+        g.addColorStop(0, '#fff2b0'); g.addColorStop(.5, '#ff8a2a'); g.addColorStop(1, 'rgba(255,60,20,0)');
+        c.globalAlpha = 0.9 - phase * 0.4; c.fillStyle = g; c.beginPath(); c.arc(x, fy, 9, 0, Math.PI * 2); c.fill();
+      }
     }
     c.globalAlpha = 1;
   }
@@ -97,8 +182,11 @@ function drawFx(c, view) {
     if (age < 0 || age > 600) continue;
     c.save();
     const lx = LANE_CENTERS[f.lane ?? 1];
-    if (f.kind === 'shot') {
-      drawWeaponShot(c,f,age,lx,laneY(f.from),f.to>=1000?56:f.to<=0?H-52:laneY(f.to));
+    if (f.kind === 'shot' && f.id === 'turret') drawTurretShot(c, f, age);
+    else if (f.kind === 'shot') {
+      const y0 = laneY(f.from), y1 = f.to>=1000?56:f.to<=0?H-52:laneY(f.to), p = WEAPON_FX[f.id] ?? WEAPON_FX.artillery;
+      drawWeaponShot(c,f,age,lx,y0,y1);
+      impact(c, lx, y1, age - p.travel, p.color, 10);
     } else if (f.kind === 'strike') {
       drawWeaponShot(c,f,age,W/2,f.side==='enemy'?56:H-52,f.side==='enemy'?H-52:56);
     } else if (f.kind === 'death') {
@@ -136,10 +224,12 @@ export function drawLane(canvas, view) {
     const cx = LANE_CENTERS[u.lane] + ((u.uid % 3) - 1) * 13, cy = laneY(u.x) + recoil*u.dir + (air ? Math.sin(view.elapsed / 180 + u.uid) * 2 - 6 : 0);
     c.save(); c.translate(Math.round(cx), Math.round(cy));
     if (u.side === 'enemy') c.rotate(Math.PI);
-    c.drawImage(unitSprite(u.id, u.side, u.level), Math.round(-w / 2), Math.round(-h / 2), Math.round(w), Math.round(h));
+    const ts = teamSprite(u.id, u.side, u.level), ow = w * ts.grow, oh = h * ts.grow;
+    c.drawImage(ts.canvas, Math.round(-ow / 2), Math.round(-oh / 2), Math.round(ow), Math.round(oh));
     c.restore();
     if(u.kind==='heal'&&u.lastShotMs>=0)drawSupportPulse(c,view.elapsed-u.lastShotMs,cx,cy+5);
     const bar = 22, frac = Math.max(0, Math.min(1, u.hp / u.maxHp)), by = Math.round(cy - h / 2 - 5);
+    if (frac >= 1) continue;   // 체력바는 맞은 장비에만
     c.fillStyle = '#10181499'; c.fillRect(Math.round(cx - bar / 2), by, bar, 3);
     c.fillStyle = frac > 0.5 ? '#9be08f' : frac > 0.25 ? '#e8d27a' : '#e8998a'; c.fillRect(Math.round(cx - bar / 2), by, Math.round(bar * frac), 3);
   }
