@@ -6,6 +6,14 @@ if(location.origin!=='http://127.0.0.1:4233')throw Error('Isolated loot QA origi
 const frame=document.querySelector('iframe');
 const reopen=document.createElement('button');reopen.textContent='현재 기록 다시 열기';document.querySelector('nav').append(reopen);
 reopen.onclick=()=>{frame.src='/';};
+for(const [label,width,height] of [['320×568',320,568],['390×780',390,780],['430×900',430,900]]){
+ const button=document.createElement('button');button.textContent=label;document.querySelector('nav').append(button);
+ button.onclick=()=>{frame.style.width=`${width}px`;frame.style.height=`${height}px`;frame.style.maxHeight='none';};
+}
+for(const amount of [105,0,1000000000]){
+ const button=document.createElement('button');button.textContent=`승리 표시 ${amount}`;document.querySelector('nav').append(button);
+ button.onclick=()=>{frame.src=`/tools/loot-result-qa.html?amount=${amount}`;};
+}
 document.querySelectorAll('[data-width]').forEach(b=>b.onclick=()=>frame.style.width=`min(${b.dataset.width}px,100%)`);
 document.querySelectorAll('[data-fixture]').forEach(b=>b.onclick=async()=>{
  // Let the previous game finish saving before replacing synthetic QA data.

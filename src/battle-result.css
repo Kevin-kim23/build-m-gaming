@@ -1,0 +1,20 @@
+/* Awarded loot is a single visual reward. Long counts can wrap on small phones. */
+#battle-modal .battle-loot-reward {
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  width:min(100%,330px); margin:18px auto 14px; padding:16px;
+  border:1px solid #b89959; border-radius:14px;
+  background:radial-gradient(ellipse at 18% 50%,#e5bc5720,transparent 64%),linear-gradient(135deg,#363b28,#202c23);
+  box-shadow:inset 0 1px 0 #fff0be20,0 5px 18px #0003;
+}
+#battle-modal .battle-loot-art { flex:0 0 74px; display:block; filter:drop-shadow(0 4px 3px #0005); }
+#battle-modal .battle-loot-art svg { display:block; width:100%; height:auto; max-height:80px; image-rendering:pixelated; }
+#battle-modal .battle-loot-caption { display:grid; gap:4px; min-width:0; text-align:left; }
+#battle-modal .battle-loot-label { color:#dcc893; font-size:12px; font-weight:600; letter-spacing:.06em; }
+#battle-modal [data-result-loot-amount] { color:#ffe7ac; font-size:clamp(18px,5vw,25px); line-height:1.25; font-weight:800; font-variant-numeric:tabular-nums; word-break:keep-all; overflow-wrap:anywhere; }
+#battle-modal .battle-loot-reward.is-empty { margin:10px auto; padding:10px; border-color:#64705d; background:#263127; box-shadow:none; }
+#battle-modal .battle-loot-reward.is-empty .battle-loot-caption { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px; }
+#battle-modal .battle-loot-reward.is-empty [data-result-loot-amount] { color:#c1cbb6; font-size:14px; font-weight:600; }
+@media (max-width:350px) {
+  #battle-modal .battle-loot-reward { gap:10px; padding:12px; }
+  #battle-modal .battle-loot-art { flex-basis:58px; }
+}

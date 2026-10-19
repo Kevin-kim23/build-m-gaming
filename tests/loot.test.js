@@ -104,6 +104,6 @@ test('supplies survive save failure without double grant on retry and reload',()
  fail=false;session.flush();session.pause();session.start();assert.equal(session.state.potions.blue.count,1);assert.equal(supplyStatus(session.state,'scout',T+DAY).ready,0);session.pause();
 });
 test('shop has five accessible portraits, fixed ownership and transparent schedules',()=>{
- const html=lootShopMarkup();for(const o of OPERATIVES){assert.ok(html.includes(o.name));assert.ok(html.includes(o.effect));assert.match(operativeIcon(o.id),/viewBox="0 0 64 80"/);}
+ const html=lootShopMarkup();for(const o of OPERATIVES){assert.ok(html.includes(o.name));assert.ok(html.includes(o.effect));assert.match(operativeIcon(o.id),/viewBox="0 0 96 112"/);}
  assert.match(html,/종류별 1명/);assert.match(html,/최대 3회분/);assert.equal(supplyTime(DAY),'24시간');
 });

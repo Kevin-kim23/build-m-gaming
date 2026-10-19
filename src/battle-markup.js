@@ -5,6 +5,7 @@ import { FORMATIONS } from './formations.js';
 import { fmt } from './format.js';
 import {battleRewardMarkup} from './battle-reward-view.js';
 import {STAR_FAST_MS,CAPITAL_STAR_FAST_MS} from './campaign-rewards.js';
+import { battleLootMarkup } from './battle-result-view.js';
 
 // 전투 화면은 글을 최소로 둡니다(클래시 로얄처럼). 설명은 모두 "상세보기"(ⓘ) 팝업(battleDetailMarkup)에 있습니다.
 const infoButton = '<button class="info-btn" data-battle-info aria-label="상세보기">ⓘ</button>';
@@ -42,7 +43,7 @@ export function battlefieldMarkup(battle) {
     <div class="base-hp enemy" id="base-hp-enemy" role="img" aria-label="적 ${battle.enemy.hq.name} 체력"><small>${battle.enemy.hq.name}${battle.enemy.fortress?' · 수도 본부':''}</small><div class="base-hp-bar"><i id="base-hp-enemy-fill"></i></div><b id="battle-enemy-hp"></b></div>
     <div class="base-hp player" id="base-hp-player" role="img" aria-label="우리 ${battle.player.hq.name} 체력"><small>${battle.player.hq.name}</small><div class="base-hp-bar"><i id="base-hp-player-fill"></i></div><b id="battle-player-hp"></b></div>
     <div class="lane-picks" id="lane-picks">${["왼쪽", "가운데", "오른쪽"].map((name, i) => `<button class="lane-hit" data-lane="${i}" aria-label="${name} 레인에 출격" disabled><span>${name}</span></button>`).join("")}</div>
-    <div class="battle-overlay" id="battle-overlay" hidden><div><small id="battle-result-tag"></small><h3 id="battle-result-title"></h3><p class="battle-stars" id="battle-result-stars" aria-live="polite"></p><p class="battle-loot" id="battle-result-loot"></p><p id="battle-result-copy"></p><button class="battle-primary" id="battle-resume">전투 계속</button><div id="battle-result-actions" hidden><button class="battle-primary" data-battle-next hidden>다음 지역</button><button data-battle-retry>다시 도전</button><button data-battle-back>작전 지도</button></div></div></div></div>
+    <div class="battle-overlay" id="battle-overlay" hidden><div><small id="battle-result-tag"></small><h3 id="battle-result-title"></h3><p class="battle-stars" id="battle-result-stars" aria-live="polite"></p>${battleLootMarkup()}<p id="battle-result-copy"></p><button class="battle-primary" id="battle-resume">전투 계속</button><div id="battle-result-actions" hidden><button class="battle-primary" data-battle-next hidden>다음 지역</button><button data-battle-retry>다시 도전</button><button data-battle-back>작전 지도</button></div></div></div></div>
     <div class="battle-mana"><span aria-hidden="true">💧</span><div class="battle-mana-bar"><i id="battle-mana-fill"></i></div><b id="battle-mana-text">0</b></div>
     <div class="battle-cards" id="battle-cards" style="--cards:${battle.deck.length}">${battle.deck.map((g) => `<button class="deploy-card" data-deploy="${g.id}" aria-pressed="false" aria-label="${EQUIPMENT[g.id].name} 카드, 마나 ${g.cost}" disabled><i class="card-cost">${g.cost}</i><canvas class="card-art" data-card-art="${g.id}" data-level="${g.level}" width="112" height="136" aria-hidden="true"></canvas><b>${EQUIPMENT[g.id].name}</b><small data-deploy-cost="${g.id}">마나 ${g.cost}</small></button>`).join('')}</div>
     `;

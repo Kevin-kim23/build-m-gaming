@@ -169,7 +169,6 @@
 .battle-overlay.result h3 { font-size:38px; margin:6px 0; }
 .battle-stars { font-size:34px !important; letter-spacing:8px !important; color:#ffd36a !important; min-height:40px; margin:6px 0; }
 .battle-stars.pop { animation:star-pop .7s cubic-bezier(.2,1.6,.4,1) both; }
-.battle-loot { font-size:22px !important; font-weight:700; color:#ffe08a !important; margin:4px 0 8px; }
 .battle-overlay #battle-result-actions { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
 .battle-overlay #battle-result-actions button[hidden] { display:none; }
 @keyframes hp-low { from { box-shadow:0 0 0 #ff4a3a00; } to { box-shadow:0 0 10px #ff4a3a; } }

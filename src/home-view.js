@@ -104,7 +104,10 @@ function dockMarkup() {
     <button id="open-personal">${homeMenuIcon('personal')}<span>개인 장비</span></button>
     <button id="open-items">${homeMenuIcon('items')}<span>아이템</span></button>
     </nav>
-    <div class="home-expeditions"><button id="open-loot" class="home-battle"><span class="home-menu-icon">${lootIcon()}</span><span>전리품 상점<small data-home-loot>0 보유</small></span></button><button id="open-battle" class="home-battle" hidden>${homeMenuIcon('battle')}<span>전투</span><small id="battle-lock-label"></small></button></div>
+    <div class="home-expeditions">
+      <button id="open-loot" class="home-battle"><span class="home-menu-icon">${lootIcon()}</span><span class="home-expedition-label">전리품 상점</span></button>
+      <button id="open-battle" class="home-battle" hidden>${homeMenuIcon('battle')}<span class="home-expedition-label">전투<small id="battle-lock-label"></small></span></button>
+    </div>
     </section>`;
 }
 

@@ -22,3 +22,10 @@ test('military equipment guide names the actual home destination after rename',(
   assert.match(guideRoute(step).text,/군사 장비/);
   assert.match(guideRoute(step,{panel:'shop',category:'recruit'}).text,/군사 장비/);
 });
+
+test('home keeps loot balance inside the shop rather than crowding its navigation button',()=>{
+  const html=homeMarkup({});
+  const button=html.match(/<button id="open-loot"[\s\S]*?<\/button>/)[0];
+  assert.match(button,/전리품 상점/);assert.match(button,/<svg/);
+  assert.doesNotMatch(button,/보유|data-home-loot|<small/);
+});
