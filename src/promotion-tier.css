@@ -15,7 +15,7 @@
 .promotion-continue:focus-visible { outline:2px solid #f4dca1; outline-offset:4px; }
 
 /* Field officers get layered metal feathers, a moving highlight and an orbit. */
-.promotion-field .promotion-wing { top:calc(18px + var(--medal-size) * .34); width:49%; transform:translateY(-71%); }
+.promotion-field .promotion-wing { top:calc(18px + var(--medal-size) * .52); width:49%; transform:translateY(-71%); }
 .promotion-field .promotion-wing.left { left:-1%; }
 .promotion-field .promotion-wing.right { right:-1%; transform:translateY(-71%) scaleX(-1); }
 .promotion-field .promotion-wing svg { animation:field-wing-unfold var(--promotion-duration) ease-out both; filter:drop-shadow(0 3px 1px #49341a) drop-shadow(0 0 8px #e2c37140); }
