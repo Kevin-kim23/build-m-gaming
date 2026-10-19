@@ -28,6 +28,7 @@ import { EQUIPMENT, equipmentOf, visibleEquipment } from './equipment.js';
 import { equipmentPanelMarkup, renderEquipmentPanel } from './equipment-panels.js';
 import { drawEquipment } from './equipment-art.js';
 import { SHOP_CATEGORIES, shopMarkup } from './shop.js';
+import { renderRecruitPromotion } from './panel-header.js';
 import { drawFormationPortrait } from './art.js';
 import { showPromotion } from './promotion.js';
 import { openDetail, closeDetail, onDetailAction } from './detail-popup.js';
@@ -83,7 +84,7 @@ export function createArmyPanels(session, audio, access) {
   }
   function updateShop() {
     const s = state(), rank = rankForArmy(s);
-    if (catalogRank !== rank || catalogBaton!==commandBatonStatus(s).level || schools.some((school,i)=>schoolLevels[i] !== (s[school.field]??0))) { openShop(); return; }
+    if (catalogRank !== rank || catalogBaton!==commandBatonStatus(s).level || schools.some((school,i)=>schoolLevels[i] !== (s[school.field]??0))) { openShop(category,true); return; }
     text('#shop-gold', fmtGold(s.gold));
     // Shared lesson text; the spotlight owns highlighting the exact live control.
     const guide = currentGuide(s);
@@ -95,6 +96,7 @@ export function createArmyPanels(session, audio, access) {
     }
     if (category === 'store') renderStore(s,dialog,{busy:storePurchase.busy,active:session.active,billing:billing.info,starterBilling:starterBilling.info});
     if (category !== 'recruit') return;
+    renderRecruitPromotion(s,dialog);
     for (const unit of Object.values(UNITS)) {
       const card = $(`[data-unit="${unit.id}"]`);
       if (!card) continue;
@@ -113,7 +115,8 @@ export function createArmyPanels(session, audio, access) {
       bulkButton.disabled = !offer.canBuy;
     }
   }
-  function openShop(nextCategory = category) {
+  function openShop(nextCategory = category,preserveScroll=false) {
+    const scrollTop=preserveScroll&&dialog.open?dialog.scrollTop:0;
     if(!dialog.open)returnFocus=document.activeElement;
     category = SHOP_CATEGORIES.some(item => item.id === nextCategory) ? nextCategory : 'recruit';
     activePanel = 'shop';
@@ -126,7 +129,7 @@ export function createArmyPanels(session, audio, access) {
     if (!dialog.open) dialog.showModal();
     updateShop();
     dialog.querySelectorAll('[data-portrait]').forEach(c => drawFormationPortrait(c, c.dataset.portrait));
-    dialog.scrollTop = 0;
+    dialog.scrollTop = scrollTop;
     lockPanel();
   }
   function openEquipment(id = activeEquipment, nextCategory = equipmentCategory, preserveScroll=false) {
@@ -284,8 +287,8 @@ export function createArmyPanels(session, audio, access) {
     else if (button.dataset.detailSchool) openDetail(schoolDetailMarkup(state(), button.dataset.detailSchool));
     else if (button.dataset.detailEquipment) showEquipmentDetail(button.dataset.detailEquipment);
     else if (button.dataset.detailPersonal) personalUI.open(button.dataset.detailPersonal);
-    else if (button.dataset.buy) buyUnit(button.dataset.buy);
-    else if (button.dataset.buyBulk) buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount);
+    else if (button.dataset.buy) atCurrentPosition(()=>buyUnit(button.dataset.buy));
+    else if (button.dataset.buyBulk) atCurrentPosition(()=>buyUnit(button.dataset.buyBulk, COMMAND_BATON.recruitAmount));
     else if (button.dataset.buyEquipment) atCurrentPosition(()=>purchaseGun(button.dataset.buyEquipment));
     else if (button.dataset.enhanceEquipment) atCurrentPosition(()=>upgradeGun(button.dataset.enhanceEquipment));
     else if (button.dataset.enhancePersonal) {
@@ -304,7 +307,7 @@ export function createArmyPanels(session, audio, access) {
       }
       });
     }
-    else if (button.dataset.upgradeSchool) buildSchool(button.dataset.upgradeSchool);
+    else if (button.dataset.upgradeSchool) atCurrentPosition(()=>buildSchool(button.dataset.upgradeSchool));
     else if (button.dataset.manageEquipment) openEquipment(button.dataset.manageEquipment, 'military');
   });
   onDetailAction((action, data) => {

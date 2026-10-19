@@ -209,5 +209,26 @@
 
 /* Keep the close control reachable in long, independent lists. */
 #modal .shop-header { position:sticky; top:0; z-index:3; padding:10px 0; background:#263126; }
+#modal .panel-sticky-head { position:sticky; top:0; z-index:4; padding-bottom:8px; margin-bottom:12px; background:var(--ui-bg,#263126); border-bottom:1px solid var(--ui-line,#506051); box-shadow:0 5px 8px -7px #0009; }
+#modal .panel-sticky-head .shop-header { position:static; padding:6px 0; gap:8px; }
+#modal .panel-sticky-head .shop-header h2 { margin:0; }
+#modal .panel-sticky-head .shop-header button { flex:none; width:44px; height:44px; }
+#modal .panel-sticky-head .shop-wallet { margin:0; padding:5px 0 0; gap:8px; border:0; min-height:28px; }
+#modal .panel-sticky-head .shop-wallet>span { flex:none; }
+#modal .panel-sticky-head .shop-wallet strong { min-width:0; gap:5px; text-align:right; overflow-wrap:anywhere; }
+#modal .panel-sticky-head .shop-wallet strong svg { flex:none; }
+#modal .tile-buttons .bulk-buy:not(:disabled) { background:#edbd8b; color:#30271f; border:1px solid #ffd6aa; box-shadow:0 1px 3px #110e0826; font-weight:700; }
+@media (hover:hover) {
+  #modal .tile-buttons .bulk-buy:not(:disabled):hover { background:#f5cca3; }
+}
+.recruit-promotion { padding:3px 0 5px; }
+.recruit-promotion-line { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:2px 8px; margin-bottom:5px; color:var(--ui-muted,#bbc7b9); font:12px/1.4 var(--ui-font,sans-serif); }
+.recruit-promotion-line strong { font-weight:500; font-size:11px; overflow-wrap:anywhere; }
+.recruit-promotion-track { position:relative; height:18px; overflow:hidden; border:1px solid var(--ui-line,#506051); border-radius:6px; background:#0f2029; }
+.recruit-promotion-track i { display:block; height:100%; background:linear-gradient(90deg,#477ca5,#78adce); }
+.recruit-promotion-track i[data-tone="green"] { background:linear-gradient(90deg,#4c886b,#8cba91); }
+.recruit-promotion-track i[data-tone="orange"] { background:linear-gradient(90deg,#b07b42,#d6a366); }
+.recruit-promotion-track i[data-tone="red"] { background:linear-gradient(90deg,#a75f65,#cf8b8a); }
+.recruit-promotion-track>span { position:absolute; inset:0; text-align:center; color:#fff; text-shadow:0 1px 2px #07151e,0 0 3px #07151e; font:700 11px/16px var(--ui-font,sans-serif); font-variant-numeric:tabular-nums; }
 #modal[data-category="store"] { min-height:240px; }
 #shop-guide:empty, #shop-message:empty, #equipment-message:empty { display:none; }
