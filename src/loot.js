@@ -51,7 +51,13 @@ export function recruitOperative(s,id,now=Date.now()) {
   if((s.loot?.balance??0)<o.price)return {ok:false,reason:'loot'};
   // Caller settles income first, so the new offline cap cannot apply retroactively.
   s.loot.balance-=o.price;
-  s.loot.operatives[id]={hiredAt:clock,settledAt:clock,stock:0,enabled:true};
+  s.loot.operatives[id]={hiredAt:clock,settledAt:clock,stock:o.period?1:0,enabled:true};
+  // Use the same capped delivery path. A full inventory keeps the welcome supply
+  // in stock, and the normal schedule remains anchored to the hiring time.
+  if(o.period){
+    const delivery=claimSupply(s,id,clock);
+    return {ok:true,id,potion:o.potion,amount:delivery.ok?delivery.amount:0,pendingSupply:s.loot.operatives[id].stock};
+  }
   return {ok:true,id};
 }
 export function supplyStatus(s,id,now=Date.now()) {

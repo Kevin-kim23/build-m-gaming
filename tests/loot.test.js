@@ -14,7 +14,7 @@ import {recordBattleVictory} from '../src/battle-progress.js';
 import {replayRemaining,campaignBonusPercent} from '../src/campaign-rewards.js';
 import {battleRewardPreview,battleRewardMarkup} from '../src/battle-reward-view.js';
 import {STAGES} from '../src/battle.js';
-import {lootShopMarkup,supplyTime} from '../src/loot-ui.js';
+import {lootShopMarkup,supplyTime,supplyCountdown} from '../src/loot-ui.js';
 import {operativeIcon} from '../src/operative-art.js';
 const T=1800000000000,DAY=86400000;
 function hire(id){const s=freshState(T);s.loot.balance=10000;assert.equal(recruitOperative(s,id,T).ok,true);return s;}
@@ -65,7 +65,7 @@ test('supplies start at hire, cap at three and retain their anchored schedule af
  assert.equal(supplyStatus(s,id,T+period-1).ready,0);assert.equal(claimSupply(s,id,T).ok,false);
  assert.equal(supplyStatus(s,id,T+period*10+1000).ready,3);
  s.lastAccrual=T+period*10+1000;assert.equal(claimSupply(s,id,s.lastAccrual).amount,3);
- assert.equal(s.potions[o.potion].count,3);assert.equal(claimSupply(s,id,s.lastAccrual).ok,false);
+ assert.equal(s.potions[o.potion].count,4);assert.equal(claimSupply(s,id,s.lastAccrual).ok,false);
  assert.equal(supplyStatus(s,id,s.lastAccrual).remainingMs,period-1000);
  const loaded=parseSave(serializeSave(s),s.lastAccrual);assert.ok(loaded);assert.equal(supplyStatus(loaded,id,T).ready,0);
  assert.equal(supplyStatus(loaded,id,T+11*period).ready,1);
@@ -99,11 +99,45 @@ test('duty yields one independent home pulse, stacks with paid ten and cannot ca
 test('supplies survive save failure without double grant on retry and reload',()=>{
  const initial=hire('scout'),values=new Map([[SAVE_KEY,serializeSave(initial)]]);let fail=false;
  const session=createGameSession({storage:{getItem:k=>values.get(k)??null,setItem(k,v){if(fail)throw Error('test quota');values.set(k,v);}},now:()=>T+DAY,setTimer:()=>1,clearTimer:()=>{}});
- session.start();fail=true;session.change(s=>claimSupply(s,'scout',T+DAY));assert.equal(session.state.potions.blue.count,1);
+ session.start();fail=true;session.change(s=>claimSupply(s,'scout',T+DAY));assert.equal(session.state.potions.blue.count,2);
  assert.equal(session.change(s=>claimSupply(s,'scout',T+DAY)).ok,false);
- fail=false;session.flush();session.pause();session.start();assert.equal(session.state.potions.blue.count,1);assert.equal(supplyStatus(session.state,'scout',T+DAY).ready,0);session.pause();
+ fail=false;session.flush();session.pause();session.start();assert.equal(session.state.potions.blue.count,2);assert.equal(supplyStatus(session.state,'scout',T+DAY).ready,0);session.pause();
 });
 test('shop has five accessible portraits, fixed ownership and transparent schedules',()=>{
  const html=lootShopMarkup();for(const o of OPERATIVES){assert.ok(html.includes(o.name));assert.ok(html.includes(o.effect));assert.match(operativeIcon(o.id),/viewBox="0 0 96 112"/);}
- assert.match(html,/종류별 1명/);assert.match(html,/최대 3회분/);assert.equal(supplyTime(DAY),'24시간');
+ assert.match(html,/종류별 1명/);assert.match(html,/최대 3회분/);assert.equal(supplyTime(DAY),'24시간');assert.equal(supplyCountdown(DAY),'24:00');assert.equal(supplyCountdown(3*DAY),'72:00');assert.equal(supplyCountdown(DAY-60000),'23:59');assert.equal(supplyCountdown(1),'00:01');
+});
+
+test('first recruitment immediately grants one booster and starts its normal supply clock',()=>{
+ for(const o of OPERATIVES.filter(o=>o.period)){
+  const s=freshState(T);s.loot.balance=10000;s.potions[o.potion].count=7;
+  const result=recruitOperative(s,o.id,T);
+  assert.equal(result.amount,1);assert.equal(s.potions[o.potion].count,8);
+  assert.equal(supplyStatus(s,o.id,T).ready,0);assert.equal(supplyStatus(s,o.id,T).remainingMs,o.period);
+  const loaded=parseSave(serializeSave(s),T);assert.ok(loaded);
+  assert.equal(recruitOperative(loaded,o.id,T).reason,'owned');assert.equal(loaded.potions[o.potion].count,8);
+  assert.equal(claimSupply(loaded,o.id,T).ok,false);
+  loaded.lastAccrual=T+o.period;assert.equal(claimSupply(loaded,o.id,T+o.period).amount,1);
+  assert.equal(loaded.potions[o.potion].count,9);
+ }
+});
+test('first booster stays in supply stock if the item inventory is full',()=>{
+ const s=freshState(T);s.loot.balance=900;s.potions.blue.count=POTION_COUNT_LIMIT;
+ const result=recruitOperative(s,'scout',T);assert.equal(result.ok,true);assert.equal(result.pendingSupply,1);
+ assert.equal(s.loot.operatives.scout.stock,1);assert.equal(s.potions.blue.count,POTION_COUNT_LIMIT);
+ const loaded=parseSave(serializeSave(s),T);assert.ok(loaded);loaded.potions.blue.count--;
+ assert.equal(claimSupply(loaded,'scout',T).amount,1);assert.equal(claimSupply(loaded,'scout',T).ok,false);
+});
+test('a failed first recruitment grants no booster and an older owned record gets no extra on load',()=>{
+ const s=freshState(T);const before=serializeSave(s);assert.equal(recruitOperative(s,'scout',T).ok,false);assert.equal(serializeSave(s),before);
+ s.loot.balance=900;recruitOperative(s,'scout',T);s.potions.blue.count=0;
+ const loaded=parseSave(serializeSave(s),T);assert.equal(loaded.potions.blue.count,0);assert.equal(loaded.loot.operatives.scout.stock,0);
+});
+
+test('first recruitment saved after a storage retry cannot duplicate its welcome booster',()=>{
+ const initial=freshState(T);initial.loot.balance=900;const values=new Map([[SAVE_KEY,serializeSave(initial)]]);let fail=false;
+ const session=createGameSession({storage:{getItem:k=>values.get(k)??null,setItem(k,v){if(fail)throw Error('quota');values.set(k,v);}},now:()=>T,setTimer:()=>1,clearTimer:()=>{}});
+ session.start();fail=true;assert.equal(session.change(s=>recruitOperative(s,'scout',T)).amount,1);
+ assert.equal(session.change(s=>recruitOperative(s,'scout',T)).reason,'owned');
+ fail=false;session.flush();session.pause();session.start();assert.equal(session.state.potions.blue.count,1);assert.equal(session.state.loot.balance,0);session.pause();
 });

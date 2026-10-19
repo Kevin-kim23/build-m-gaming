@@ -32,3 +32,5 @@
 .loot-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-top:1px solid #425761;flex:none;background:#20343e}.loot-footer span{font-size:11px;line-height:16px;color:#b5c5ca;word-break:keep-all}.loot-footer button{min-height:42px;padding:8px 16px;border:1px solid #637d87;background:#354f5c;border-radius:10px;color:#f3f0e7;white-space:nowrap}
 #loot-shop button:focus-visible,#loot-shop summary:focus-visible{outline:2px solid #f2d58b;outline-offset:2px}
 @media(max-width:350px){.operative-card{grid-template-columns:80px minmax(0,1fr);gap:8px 10px;padding:10px}.operative-portrait{width:80px;height:98px}.operative-portrait svg{width:80px;height:94px}.operative-info h3{font-size:16px}.operative-info p{font-size:11px}.loot-scroll{padding-inline:10px}.loot-head{padding:12px}.loot-head h2{font-size:20px}.loot-wallet{padding:8px 12px}.loot-wallet strong{font-size:20px}}
+
+.operative-info h3 .operative-timer{color:#d4e9ed;background:#294952;border-color:#62838e66;font-variant-numeric:tabular-nums;white-space:nowrap}
