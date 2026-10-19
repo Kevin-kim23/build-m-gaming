@@ -46,3 +46,12 @@ test('the chosen deck view shows six slots with the locked one marked and toggle
   assert.match(open, /class="card-pop"[^>]*>.*data-act="use".*data-act="cancel"/s);
   assert.doesNotMatch(open, /공격 \d|체력 \d/);
 });
+
+test('the conquest road climbs one stage per step with no place names on the map', async () => {
+  const {STAGE_CANDIDATES} = await import('../tools/ux-candidates/stage-candidates.js');
+  const html = STAGE_CANDIDATES.find(c => c.id === '2').render(SAMPLE.current);
+  const tops = [...html.matchAll(/class="climb-node[^"]*" style="left:[\d.]+%;top:(\d+)px" data-pick="(\d+)"/g)].map(m => [Number(m[2]), Number(m[1])]);
+  assert.equal(tops.length, 80);
+  for (let i = 1; i < tops.length; i++) assert.ok(tops[i][1] < tops[i - 1][1], `stage ${tops[i][0]} sits above ${tops[i - 1][0]}`);
+  for (const name of ['세르딘', '벨로크', '이스트라', '노르가드']) assert.ok(!html.slice(html.indexOf('climb-canvas'), html.indexOf('phone-footer')).includes(name), `${name} hidden on the map`);
+});
