@@ -1,4 +1,5 @@
 import { homeMenuIcon } from './home-menu-icons.js';
+import { lootIcon } from './operative-art.js';
 import { personalIcon } from './personal-art.js';
 import { generalRankBadge, marshalRankBadge, galacticRankBadge, rankBadgeInstance } from './rank-frame.js';
 import { RANK_DEFINITIONS } from "./ranks.js";
@@ -103,7 +104,7 @@ function dockMarkup() {
     <button id="open-personal">${homeMenuIcon('personal')}<span>개인 장비</span></button>
     <button id="open-items">${homeMenuIcon('items')}<span>아이템</span></button>
     </nav>
-    <button id="open-battle" class="home-battle" hidden>${homeMenuIcon('battle')}<span>전투</span><small id="battle-lock-label"></small></button>
+    <div class="home-expeditions"><button id="open-loot" class="home-battle"><span class="home-menu-icon">${lootIcon()}</span><span>전리품 상점<small data-home-loot>0 보유</small></span></button><button id="open-battle" class="home-battle" hidden>${homeMenuIcon('battle')}<span>전투</span><small id="battle-lock-label"></small></button></div>
     </section>`;
 }
 

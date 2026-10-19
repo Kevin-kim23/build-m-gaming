@@ -1,3 +1,4 @@
+import {legacyLoot} from '../src/loot.js';
 import { LEGACY_MAX_GOLD } from '../src/money.js';
 import { serializeLegacySave } from './legacy-save-fixture.js';
 import test from 'node:test';
@@ -55,7 +56,7 @@ test('v29 preserves earned levels, exact wallet, equipment and running windows; 
   old.offlineReward={id:T-2000,durationMs:3600000,amount:12345678901234567n};
   reconcileAchievements(old);
   const restored=parseSave(serializeLegacySave(old),T);
-  assert.deepEqual(restored,{...old,version:SAVE_VERSION});
+  assert.deepEqual(restored,{...old,version:SAVE_VERSION,loot:legacyLoot(old.campaignCleared)});
   for(const id of Object.keys(restored.personalLevels))restored.personalLevels[id]=20;
   restored.equipment.tank.level=30;restored.swordDurationMs=220000;restored.autoTouchDurationMs=250000;
   assert.deepEqual(parseSave(serializeSave(restored),T),restored);

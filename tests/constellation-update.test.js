@@ -12,7 +12,7 @@ import {equipmentCombatStats,equipmentCombatPower,UNIT_TRAITS,CLASS_BEATS} from 
 import {EQUIPMENT} from '../src/equipment.js';
 import {chooseEnemyDeployment} from '../src/battle-ai.js';
 import {recordBattleVictory} from '../src/battle-progress.js';
-import {fixedStageGold,replayRemaining,rewardDay} from '../src/campaign-rewards.js';
+import {replayRemaining,rewardDay} from '../src/campaign-rewards.js';
 import {galacticRankBadge} from '../src/rank-frame.js';
 import {schoolIcon} from '../src/school-art.js';
 import {layoutFieldArmy} from '../src/field-layout.js';
@@ -72,11 +72,11 @@ test('enemy counters the threatened lane but cannot spend absent mana or ignore 
 });
 test('fixed first clear and ten global daily replays persist across reload and clock rollback',()=>{
  const s={...freshState(T),soldiers:320};s.equipment.artillery={level:0,count:1,deployed:true};const win=id=>({stageId:id,status:'victory',elapsedMs:100000,enemy:{hq:{hp:0}},player:{hq:{hp:100,maxHp:100}}});
- assert.equal(recordBattleVictory(s,win(1),T).gold,fixedStageGold(1));assert.equal(recordBattleVictory(s,win(2),T).firstClear,true);
- for(let i=0;i<10;i++)assert.ok(recordBattleVictory(s,win(i%2+1),T).gold>0);
- assert.equal(replayRemaining(s,T),0);assert.equal(recordBattleVictory(s,win(1),T).gold,0);
+ assert.equal(recordBattleVictory(s,win(1),T).loot,100);assert.equal(recordBattleVictory(s,win(2),T).firstClear,true);
+ for(let i=0;i<10;i++)assert.ok(recordBattleVictory(s,win(i%2+1),T).loot>0);
+ assert.equal(replayRemaining(s,T),0);assert.equal(recordBattleVictory(s,win(1),T).loot,0);
  const copy=parseSave(serializeSave(s),T);assert.equal(replayRemaining(copy,T),0);assert.equal(replayRemaining(copy,T-86400000),0);
- assert.equal(replayRemaining(copy,T+86400000),10);assert.ok(recordBattleVictory(copy,win(2),T+86400000).gold>0);assert.equal(copy.replayRewardCount,1);
+ assert.equal(replayRemaining(copy,T+86400000),10);assert.ok(recordBattleVictory(copy,win(2),T+86400000).loot>0);assert.equal(copy.replayRewardCount,1);
  assert.equal(rewardDay(Date.UTC(2026,9,10,15)),rewardDay(Date.UTC(2026,9,10,14,59,59))+1);
 });
 test('five new obsidian ruby rank badges and academy levels have resolved SVG IDs',()=>{

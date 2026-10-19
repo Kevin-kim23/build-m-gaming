@@ -1,3 +1,4 @@
+import {legacyLoot} from '../src/loot.js';
 import { LEGACY_MAX_GOLD } from '../src/money.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -52,7 +53,8 @@ test('version27 preserves assets, stars, paid upgrades, active skills and pendin
  reconcileAchievements(s);s.earnedAchievements=s.earnedAchievements.filter(id=>id!=='galacticCommand');
  const loaded=parseSave(serializeSave(s),T);
  assert.equal(SAVE_KEY,'budae-kiugi-recruits-v3');assert.equal(loaded.version,SAVE_VERSION);
- for(const field of Object.keys(s).filter(k=>!['version','earnedAchievements','campaignStars'].includes(k)))assert.deepEqual(loaded[field],s[field],field);
+ for(const field of Object.keys(s).filter(k=>!['version','earnedAchievements','campaignStars','loot'].includes(k)))assert.deepEqual(loaded[field],s[field],field);
+ assert.deepEqual(loaded.loot,legacyLoot(s.campaignCleared));
  assert.deepEqual(loaded.campaignStars.slice(0,80),s.campaignStars);
  assert.ok(loaded.campaignStars.slice(80).every(stars=>stars===0));
  assert.deepEqual(loaded.earnedAchievements,[...s.earnedAchievements,'galacticCommand']);

@@ -55,7 +55,7 @@ test('a finishing strike records its reward immediately, before visual impact an
   const before=structuredClone(battle),timing=effects.headquartersDestructionTiming(battle);
   assert.equal(effects.headquartersDestructionFrame(timing,0),null);
   const reward=recordBattleVictory(state,battle,state.lastAccrual);
-  assert.equal(reward.ok,true);assert.equal(state.campaignCleared,160);assert.ok(state.gold>0);
+  assert.equal(reward.ok,true);assert.equal(state.campaignCleared,160);assert.ok(state.loot.balance>0);
   assert.deepEqual(battle,before);
 });
 

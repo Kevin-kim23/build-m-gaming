@@ -46,9 +46,9 @@ test('native errors are redacted, browser and unconfigured builds cannot call pu
   let calls=0;const disabled=createPlayBilling(f.session,{native:()=>false,bridge:{getProduct:()=>{calls++;}}});await disabled.prepare();await disabled.buy();assert.equal(calls,0);
 });
 test('save41 roundtrip Play entitlement, migration40 preserves tester ownership and big money',()=>{
-  assert.equal(SAVE_VERSION,42);assert.equal(SAVE_KEY,'budae-kiugi-recruits-v3');
+  assert.equal(SAVE_VERSION,freshState(1000).version);assert.equal(SAVE_KEY,'budae-kiugi-recruits-v3');
   const old=freshState(1000);old.version=40;old.gold=MAX_GOLD;old.homeAutoTap={owned:true,enabled:false,source:'test'};
-  const migrated=parseSave(serializeSave(old),1000);assert.equal(migrated.version,42);assert.deepEqual(migrated.homeAutoTap,old.homeAutoTap);assert.equal(migrated.gold,MAX_GOLD);
+  const migrated=parseSave(serializeSave(old),1000);assert.equal(migrated.version,freshState(1000).version);assert.deepEqual(migrated.homeAutoTap,old.homeAutoTap);assert.equal(migrated.gold,MAX_GOLD);
   old.homeAutoTap.source='play';assert.equal(parseSave(serializeSave(old),1000),null);
   const current=freshState(1000);reconcilePlayAutoTap(current,true);assert.equal(parseSave(serializeSave(current),1000).homeAutoTap.source,'play');
 });

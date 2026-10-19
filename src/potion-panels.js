@@ -9,7 +9,7 @@ export function potionsMarkup() {
   return `<div class="potion-list">${Object.values(POTIONS).map(p=>`<article class="potion-card" data-potion="${p.id}" aria-label="${p.name}">
     <div class="potion-heading"><div class="potion-art">${potionIcon(p.id)}</div><div><h3>${p.name}</h3><strong>${p.effect}</strong><p>${p.durationLabel} 지속</p><b data-potion-count></b></div></div>
     <p class="potion-duration" data-potion-time></p>
-    <div class="potion-actions">${p.ad?`<button type="button" data-potion-ad="${p.id}" aria-label="${p.name} 광고보기">광고 보고 1개 받기</button>`:`<span class="potion-note">스타터팩에서 획득</span>`}<button type="button" data-potion-use="${p.id}" aria-label="${p.name} 사용">부스터 사용</button></div>
+    <div class="potion-actions">${p.ad?`<button type="button" data-potion-ad="${p.id}" aria-label="${p.name} 광고보기">광고 보고 1개 받기</button>`:`<span class="potion-note">스타터팩 · 특수공작원 보급</span>`}<button type="button" data-potion-use="${p.id}" aria-label="${p.name} 사용">부스터 사용</button></div>
     <p class="potion-ad-loading" data-potion-loading role="status" aria-live="polite" hidden><span class="potion-ad-spinner" aria-hidden="true"></span><span>광고가 곧 재생되어요!</span></p>
   </article>`).join('')}</div><p class="potion-note">보상 조건 완료 시 선택한 부스터 1개 · Google AdMob 보상형 광고<br>Android 앱에서 이용할 수 있으며 인터넷 연결이 필요합니다.<br>같은 부스터는 시간만 연장됩니다. 서로 다른 효과는 곱해집니다. 맥스 부스터는 광고로 얻을 수 없습니다.<br>게임을 꺼도 시간이 흐릅니다. 터치 부스터는 장군검과 함께 쓰면 4배입니다.</p>`;
 }

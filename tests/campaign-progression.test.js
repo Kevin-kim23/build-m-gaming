@@ -1,4 +1,4 @@
-import {fixedStageGold} from '../src/campaign-rewards.js';
+import {stageLoot,MAX_LOOT} from '../src/loot.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState,perSecond,parseSave} from '../src/game.js';
@@ -7,7 +7,7 @@ import {campaignDifficulty,CAMPAIGN_MILESTONES} from '../src/campaign-progressio
 import {EQUIPMENT,equipmentLevelLimit} from '../src/equipment.js';
 import {RANKS,rankForArmy} from '../src/ranks.js';
 import {referenceArmy,simulateBattle} from '../tools/campaign-sim.mjs';
-import {battleGoldReward,battleRewardSeconds,battleStars} from '../src/campaign-rewards.js';
+import {battleStars} from '../src/campaign-rewards.js';
 import {battleRewardPreview} from '../src/battle-reward-view.js';
 import {recordBattleVictory} from '../src/battle-progress.js';
 import {MAX_GOLD,serializeSave,exact} from '../src/money.js';
@@ -57,26 +57,21 @@ test('not deploying cannot conquer any capital and the final capital resists a p
   assert.notEqual(simulateBattle(referenceArmy(final,{power:final.recommendedPower/16}),80).status,'victory');
 });
 
-test('capital first-clear quotes are fixed and replay pays five percent',()=>{
-  assert.equal(battleRewardSeconds(true,1),900);assert.equal(battleRewardSeconds(true,20),3600);
-  assert.equal(battleRewardSeconds(false,20),30);
+test('capital first-clear quotes match settlement and replay pays twenty percent',()=>{
   const s=referenceArmy(STAGES[19]);s.gold=0;
   const quote=battleRewardPreview(s,STAGES[19]),first=recordBattleVictory(s,win(20),T);
-  assert.equal(first.gold,quote.gold);assert.equal(first.gold,fixedStageGold(20));
+  assert.equal(first.loot,quote.loot);assert.equal(first.loot,stageLoot(20));assert.equal(s.gold,0);
   const before=s.campaignCleared,replay=recordBattleVictory(s,win(20),T);
-  assert.equal(replay.firstClear,false);assert.equal(replay.gold,Math.floor(fixedStageGold(20)*.05));assert.equal(s.campaignCleared,before);
+  assert.equal(replay.firstClear,false);assert.equal(replay.loot,stageLoot(20,false));assert.equal(s.campaignCleared,before);
   assert.equal(parseSave(serializeSave(s),T).campaignCleared,20);
 });
 
-test('reward arithmetic, star bonuses and the wallet limit stay exact above safe numbers',()=>{
-  for(const rate of [1,Number.MAX_SAFE_INTEGER-1,Number.MAX_SAFE_INTEGER,9007199254740993n,MAX_GOLD-1n]){
-    for(const id of [1,20,80])for(const stars of [1,2,3]){
-      const expected=exact(fixedStageGold(id));
-      assert.equal(exact(battleGoldReward(rate,true,0,stars,id)),expected>MAX_GOLD?MAX_GOLD:expected);
-      assert.equal(battleGoldReward(rate,true,MAX_GOLD-1n,stars,id),1);
-    }
+test('loot quote is independent of gold and star count; capital star thresholds remain unchanged',()=>{
+  for(const gold of [1,Number.MAX_SAFE_INTEGER,9007199254740993n,MAX_GOLD]){
+    const s=referenceArmy(STAGES[19]);s.gold=gold;
+    assert.equal(battleRewardPreview(s,STAGES[19]).loot,stageLoot(20));
   }
-  for(const id of [0,201,2.5,'20'])assert.throws(()=>battleRewardSeconds(true,id),RangeError);
+  for(const id of [0,201,2.5,'20'])assert.throws(()=>stageLoot(id),RangeError);
   const battle={...win(20),elapsedMs:120000,player:{hq:{hp:100,maxHp:100}}};
   assert.equal(battleStars(battle),3);assert.equal(battleStars({...battle,elapsedMs:120001}),2);
   assert.equal(battleStars({...battle,stageId:19}),2);

@@ -1,3 +1,4 @@
+import {legacyLoot} from '../src/loot.js';
 import {serializeLegacySave} from './legacy-save-fixture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -33,7 +34,7 @@ test('v34 preserves all levels and active windows; v35 round-trips new maxima an
   s.equipment.tank={level:30,count:1,deployed:true};
   s.swordActivatedAt=T;s.swordDurationMs=220000;s.autoTouchActivatedAt=T;s.autoTouchDurationMs=250000;
   reconcileAchievements(s);
-  const loaded=parseSave(serializeLegacySave(s),T);assert.deepEqual(loaded,{...s,version:SAVE_VERSION});
+  const loaded=parseSave(serializeLegacySave(s),T);assert.deepEqual(loaded,{...s,version:SAVE_VERSION,loot:legacyLoot(s.campaignCleared)});
   for(const patch of [{personalLevels:{...s.personalLevels,commandBaton:21}},
     {equipment:{...s.equipment,tank:{level:31,count:1,deployed:true}}},
     {swordDurationMs:230000},{autoTouchDurationMs:260000}])assert.equal(parseSave(serializeSave({...s,...patch}),T),null);

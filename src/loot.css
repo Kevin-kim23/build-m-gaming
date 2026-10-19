@@ -1,0 +1,25 @@
+.home-dock .home-expeditions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.home-dock .home-expeditions:has(#open-battle[hidden]){grid-template-columns:1fr}
+.home-dock .home-expeditions .home-battle{margin:0;min-height:48px;height:auto;padding:4px 6px;gap:5px;flex-wrap:wrap}
+.home-dock #open-loot .home-menu-icon{width:25px;height:25px;flex-basis:25px}
+.home-dock #open-loot>span:last-child{display:flex;flex-direction:column;gap:2px;text-align:left}
+.home-dock #open-loot small{font-size:10px;color:#d4c196;line-height:12px;overflow-wrap:anywhere}
+.home-dock #open-loot.supplies-ready{border-color:#d0b078;box-shadow:inset 0 -2px #d0b078}
+#loot-shop{box-sizing:border-box;width:min(440px,calc(100% - 24px));max-height:calc(var(--game-frame-height,100dvh) - 32px);padding:0;border:1px solid #6c7470;border-radius:18px;background:#192b34;color:#f3f0e7;overflow:hidden;font-family:var(--ui-font,system-ui,sans-serif)}
+#loot-shop[open]{display:flex;flex-direction:column}
+#loot-shop::backdrop{background:#07131bcc}
+.loot-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 18px 12px;flex:none}
+.loot-head small{font-size:11px;color:#c4b68d}.loot-head h2{font-size:23px;margin:4px 0 0;letter-spacing:-.5px}
+.loot-head button{width:40px;height:40px;border:1px solid #52636a;background:#2b414c;color:#e4e8e5;border-radius:12px;font-size:24px}
+.loot-wallet{display:flex;align-items:center;gap:8px;margin:0 16px 8px;padding:10px 12px;border:1px solid #8a7752;border-radius:12px;background:#34403d;flex:none;font-size:12px;color:#dfd8c5}
+.loot-wallet svg{width:28px;height:28px}.loot-wallet strong{margin-left:auto;font-size:22px;color:#f3d28d;font-variant-numeric:tabular-nums}
+.loot-scroll{min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 16px 10px;scrollbar-width:none}.loot-scroll::-webkit-scrollbar{display:none}
+.loot-intro,.loot-notice{font-size:11px;line-height:1.7;color:#b9c6c8;margin:4px 0 12px}.loot-notice{padding:8px 2px;margin:0}
+.operative-card{display:grid;grid-template-columns:68px minmax(0,1fr);gap:8px 12px;margin-bottom:10px;padding:12px;border:1px solid #465d65;border-radius:14px;background:#263c47;box-shadow:inset 0 1px #ffffff08}
+.operative-portrait{width:68px;height:86px;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 80%,#a0b6ae18,transparent 70%);border-bottom:2px solid var(--operative-color)}
+.operative-portrait svg{width:64px;height:80px;image-rendering:pixelated}.operative-info{min-width:0;align-self:center}.operative-info h3{font-size:16px;margin:0 0 6px;color:#f1eee3}.operative-info h3 small{margin-left:6px;padding:2px 5px;background:#405651;color:#c5dccd;border-radius:4px;font-size:10px}.operative-info p{font-size:12px;line-height:1.5;margin:0;color:var(--operative-color)}
+.operative-info details{margin-top:6px;font-size:11px;color:#b8c5c9}.operative-info details p{font-size:11px;color:#c1cecf;margin-top:6px}.operative-info summary{cursor:pointer;padding:3px 0}
+.operative-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.operative-actions small{flex:1;min-width:94px;font-size:11px;line-height:1.5;color:#b8c8cc}.operative-actions button{min-height:42px;padding:8px 10px;border:1px solid #c0a568;border-radius:9px;background:#ddc387;color:#253538;font-size:12px;font-weight:800;cursor:pointer}.operative-actions button:disabled{background:#31454e;border-color:#52646b;color:#a7b6bc;cursor:default}
+.loot-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-top:1px solid #425761;flex:none;background:#20343e}.loot-footer span{font-size:11px;color:#aebfc5}.loot-footer button{min-height:42px;padding:8px 16px;border:1px solid #637d87;background:#354f5c;border-radius:10px;color:#f3f0e7;white-space:nowrap}
+#loot-shop button:focus-visible,#loot-shop summary:focus-visible{outline:2px solid #f2d58b;outline-offset:2px}
+@media(max-width:340px){.operative-card{padding:10px;gap:8px;grid-template-columns:56px minmax(0,1fr)}.operative-portrait{width:56px}.operative-portrait svg{width:56px}.operative-info h3{font-size:15px}.operative-info p{font-size:11px}.loot-scroll{padding-left:10px;padding-right:10px}.loot-head{padding:12px}.loot-head h2{font-size:21px}}

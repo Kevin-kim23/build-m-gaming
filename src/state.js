@@ -1,3 +1,4 @@
+import { emptyLoot } from './loot.js';
 import {CONSTELLATION_OFFICERS,CONSTELLATION_NAMES,CONSTELLATION_POWERS} from './constellation-officers.js';
 import { emptyHomeAutoTap } from './home-auto-tap-rules.js';
 import { emptyStarterPack } from './starter-pack.js';
@@ -13,7 +14,7 @@ import { GENERAL_SWORD, AUTO_TOUCH, emptyPersonalLevels } from './personal-catal
 import { emptyEquipment } from './equipment.js';
 
 // Shared defaults and limits have no dependency on game actions or save parsing.
-export const SAVE_VERSION = 42;
+export const SAVE_VERSION = 43;
 // 지역마다 지금까지 받은 최고 별(0~3). 두 대륙의 지역 수는 공통 상수와 테스트로 동기화한다.
 export { CAMPAIGN_STAGE_COUNT };
 export const SAVE_KEY = "budae-kiugi-recruits-v3";
@@ -25,6 +26,7 @@ export const MAX_ARMY_POWER = CONSTELLATION_POWERS.at(-1) * 4n;
 export function freshState(now = Date.now()) {
   return {
     version: SAVE_VERSION,
+    loot: emptyLoot(),
     potions: emptyPotions(),
     homeAutoTap: emptyHomeAutoTap(),
     starterPack: emptyStarterPack(),

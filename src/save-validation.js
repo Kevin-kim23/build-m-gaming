@@ -1,3 +1,4 @@
+import { validLoot } from './loot.js';
 import {CONSTELLATION_OFFICERS} from './constellation-officers.js';
 import { COMMAND_OFFICERS } from './command-officers.js';
 import { GALACTIC_OFFICERS } from './galactic-officers.js';
@@ -18,7 +19,7 @@ import { validAchievementIds } from './achievements.js';
 import { validEquipment } from './equipment.js';
 import { FIELD_THEMES } from './field-theme.js';
 import { MAX_SOLDIERS, MAX_ARMY_POWER, SAVE_VERSION, CAMPAIGN_STAGE_COUNT } from './state.js';
-import { MAX_OFFLINE_MS, OFFLINE_POPUP_MS } from './offline-rules.js';
+import { MAX_OFFLINE_MS, offlineLimitMs, OFFLINE_POPUP_MS } from './offline-rules.js';
 
 // Only fixed codes and known field names leave the parser, never stored values or JSON snippets.
 export class SaveValidationError extends Error {
@@ -42,6 +43,7 @@ export function validateSave(s) {
     requireSave(integer(s.replayRewardDay,2000000),'replayRewardDay');requireSave(integer(s.replayRewardCount,10),'replayRewardCount');
   }
   requireSave(typeof s.sound === 'boolean', 'sound');
+  if(s.version>=43)requireSave(validLoot(s.loot,s.lastAccrual),'loot');
   if(s.version>=39)requireSave(validStarterPack(s.starterPack,s.version),'starterPack');
   if(s.version>=33)requireSave(validHomeAutoTap(s.homeAutoTap,s.version),'homeAutoTap');
   if(s.version>=32)requireSave(validPotions(s.potions,s.version),'potions');
@@ -63,7 +65,7 @@ export function validateSave(s) {
   if (s.version >= 23) {
     const reward = s.offlineReward;
     requireSave(reward === null || (reward && typeof reward === 'object' && !Array.isArray(reward) &&
-      integer(reward.id, s.lastAccrual) && integer(reward.durationMs, MAX_OFFLINE_MS) &&
+      integer(reward.id, s.lastAccrual) && integer(reward.durationMs, s.version>=43?offlineLimitMs(s):MAX_OFFLINE_MS) &&
       reward.durationMs >= OFFLINE_POPUP_MS && parseGold(reward.amount, s.version) !== null &&
       parseGold(reward.amount, s.version) > 0), 'offlineReward');
   }

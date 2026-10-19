@@ -270,8 +270,9 @@ export function createBattleUI(session, audio = null) {
       const result = session.change(s => recordBattleVictory(s, battle));
       if (result?.ok) {
         stars = '★'.repeat(result.stars) + '☆'.repeat(3 - result.stars) + (result.newBest && !result.firstClear ? ' 신기록!' : '');
-        loot = `+${fmtGold(result.gold)} G`;
+        loot = `전리품 +${fmtGold(result.loot)}`;
         const bits = [];
+        if(!result.loot)bits.push('오늘 재전투 보상 횟수 또는 전리품 보유 한도를 확인해 주세요.');
         if (result.firstClear) bits.push(stageId % 80 === 0 ? '대륙 정복 완료!' : stageId % 20 === 0 ? `${COUNTRIES[Math.floor(stageId / 20)-1].name} 점령!` : '지역 점령!', `초당 수입 +${regionIncomePercent(stageId)}%`);
         if (result.achievements?.length) bits.push(`훈장 ${result.achievements.map(id => ACHIEVEMENTS.find(a => a.id === id).title).join(', ')}`);
         if (result.firstClear && stageId % 20 === 0 && stageId < STAGES.length) audio?.ui?.('unlock',session.state.sound);

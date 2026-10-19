@@ -28,7 +28,7 @@ export function battleDetailMarkup(state, stage) {
       <p>적 출격(레인 3곳 중 예고 없이): ${[...new Set(type.pool)].map((id) => `${EQUIPMENT[id].name}(${CLASS_NAMES[GEAR_CLASS[id]]})`).join(' · ')}</p>
       ${shield ? `<p>요새 수도 · 방어 장갑: ${CLASS_NAMES[shield]} 장비의 기지 피해 -40% · 기지가 더 단단하고 포탑이 강합니다</p>` : ''}
       <p>${type.intro?'첫 출격은 견인포로 충분해요. 카드를 고르고 적이 다가오는 레인에 출격하세요.':`상성: 공중 &gt; 기갑 &gt; 화력 &gt; 공중 · 이 지역은 ${CLASS_NAMES[type.counter]} 장비가 유리`}</p></section>
-      <section class="detail-section"><h3>전투 보상</h3>${battleRewardMarkup(state,stage)}<p>지역별 고정 골드를 받습니다. 재전투는 최초 보상의5%, 한국시간 하루 합산10회입니다. 이후에도 전투와 별 기록 갱신은 가능합니다. 점령 효과는 중복되지 않아요. 골드 상한에서는 실제 지급액이 줄어듭니다.</p><p>승리 1별 · ${(stage.capital?CAPITAL_STAR_FAST_MS:STAR_FAST_MS)/1000}초 이내 또는 기지 체력 50% 이상이면 2별 · 둘 다 달성하면 3별. 별은 공략 기록이며 골드 배율은 없습니다.</p></section>
+      <section class="detail-section"><h3>전투 보상</h3>${battleRewardMarkup(state,stage)}<p>승리하면 전리품을 받아 특별 대원을 영입할 수 있어요. 재전투는 최초 보상의20%, 한국시간 하루 합산10회입니다. 이후에도 전투와 별 기록 갱신은 가능합니다. 점령 초당 수입은 유지되며 중복되지 않아요. 전리품 보유 상한에서는 실제 지급액이 줄어듭니다.</p><p>승리 1별 · ${(stage.capital?CAPITAL_STAR_FAST_MS:STAR_FAST_MS)/1000}초 이내 또는 기지 체력 50% 이상이면 2별 · 둘 다 달성하면 3별. 별은 공략 기록이며 전리품 배율은 없습니다.</p></section>
       <section class="detail-section"><h3>전투 방법</h3>
       <p>마나가 차면 장비 카드를 레인(왼쪽·가운데·오른쪽)으로 끌어다 놓아 출격시킵니다. 장비는 그 레인을 따라 적 기지로 전진하며, 같은 레인의 적과 자동으로 싸웁니다.</p>
       <p>병력은 본부 체력과 포탑에 반영됩니다. 장비 공격력·체력은 종류와 강화로만 결정됩니다. 장비는 소모되지 않으며 홈 배치 설정은 유지돼요. ${BATTLE_RULES.maxDurationMs / 60_000}분 안에 적 기지를 부수지 못하면 무승부입니다.</p></section>

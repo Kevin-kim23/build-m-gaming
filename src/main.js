@@ -1,4 +1,5 @@
 import { createHomeAutoTapRuntime, homeAutoTapHomeVisible } from './home-auto-tap.js';
+import { createLootShop } from './loot-ui.js';
 import { createHomeAutoTapFeedback } from './home-auto-tap-ui.js';
 import { createHomeItemControls } from './home-quick-items.js';
 import './home-auto-tap.css';
@@ -57,6 +58,7 @@ import "./equipment-list.css";
 import "./game-frame.css";
 import "./home-menu.css";
 import "./ui-theme.css";
+import './loot.css';
 import "./tap-feedback.css";
 import "./touch.css";
 import { hidePromotion } from "./promotion.js";
@@ -109,6 +111,7 @@ const accessUI=createAccessUI({onExit:()=>{
   else showToast('이 창을 닫으면 종료됩니다. 동의 전에는 게임이 시작되지 않습니다.');
 }});
 const armyPanels = createArmyPanels(session, gameAudio, accessUI);
+const lootShop = createLootShop(session,{onSuccess:()=>gameAudio.ui('equip',state.sound),notify:showToast});
 const achievementUI = createAchievementUI(session, gameAudio);
 const guideUI = createGuideUI();
 const infoUI = createInfoPanel(session);
@@ -219,6 +222,7 @@ function update() {
   battleUI.sync();
   if (lifecycle.started) guideUI.sync(state, session.active && lifecycle.canRun);
   armyPanels.sync();
+  lootShop.sync();
   if (lifecycle.started) {
     offlineUI.sync();
     armyPanels.syncAwards();
@@ -256,6 +260,7 @@ $("#open-items").onclick = () => armyPanels.openShop('items');
 $("#open-equipment").onclick = () => armyPanels.openEquipment(undefined,'military');
 $("#open-personal").onclick = () => armyPanels.openEquipment(undefined,'personal');
 $("#open-battle").onclick = () => battleUI.open();
+$("#open-loot").onclick = () => lootShop.open();
 // Android back button (the plugin only exists inside the app, so the browser version skips this).
 // Registered once at startup: popups close first, then a second press within two seconds leaves.
 if (Capacitor.isNativePlatform()) {

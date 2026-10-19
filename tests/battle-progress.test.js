@@ -1,4 +1,4 @@
-import {fixedStageGold} from '../src/campaign-rewards.js';
+import {stageLoot,MAX_LOOT} from '../src/loot.js';
 import { CAMPAIGN_STAGE_COUNT } from '../src/campaign-constants.js';
 import { SAVE_VERSION } from '../src/state.js';
 import { test } from 'node:test';
@@ -24,13 +24,14 @@ function win(state, stage = 1) {
   return battle;
 }
 
-test('a real victory records progress, its medal and the loot gold without changing troops', () => {
+test('a real victory records progress, its medal and the loot currency without changing troops', () => {
   const state = army(), before = structuredClone(state), battle = win(state);
   const result = recordBattleVictory(state, battle);
-  assert.deepEqual({ ...result, gold: undefined, stars: undefined }, { ok: true, firstClear: true, gold: undefined, stars: undefined, newBest: true, achievements: ['firstVictory'] });
+  assert.deepEqual({ ...result, loot: undefined, stars: undefined }, { ok: true, firstClear: true, loot: undefined, stars: undefined, newBest: true, achievements: ['firstVictory'] });
   assert.ok(result.stars >= 1 && result.stars <= 3);
-  assert.equal(state.gold, before.gold + result.gold);
-  assert.deepEqual({ ...state, gold: 0 }, { ...before, gold: 0, campaignCleared: 1, campaignStars: [result.stars, ...Array(CAMPAIGN_STAGE_COUNT-1).fill(0)], earnedAchievements: [...before.earnedAchievements, 'firstVictory'] });
+  assert.equal(state.gold, before.gold);
+  assert.deepEqual({ ...state, gold: 0 }, { ...before, gold: 0, loot:state.loot, campaignCleared: 1, campaignStars: [result.stars, ...Array(CAMPAIGN_STAGE_COUNT-1).fill(0)], earnedAchievements: [...before.earnedAchievements, 'firstVictory'] });
+  assert.equal(state.loot.balance,before.loot.balance+result.loot);
   assert.equal(battle.enemy.hq.hp, 0);
   assert.ok(battle.player.hq.hp > 0);
 });
@@ -55,10 +56,10 @@ test('replayed victories are idempotent and stage progress cannot skip ahead or 
   assert.equal(recordBattleVictory(state, { ...first, stageId: 3 }).reason, 'sequence');
   assert.equal(state.campaignCleared, 0);
   recordBattleVictory(state, first);
-  assert.deepEqual({ ...recordBattleVictory(state, first), gold: 0, stars: 0 }, { ok: true, firstClear: false, gold: 0, stars: 0, newBest: false, achievements: [] });
+  assert.deepEqual({ ...recordBattleVictory(state, first), loot: 0, stars: 0 }, { ok: true, firstClear: false, loot: 0, stars: 0, newBest: false, achievements: [] });
   recordBattleVictory(state, win(state, 2));
   assert.equal(state.campaignCleared, 2);
-  assert.deepEqual({ ...recordBattleVictory(state, first), gold: 0, stars: 0 }, { ok: true, firstClear: false, gold: 0, stars: 0, newBest: false, achievements: [] });
+  assert.deepEqual({ ...recordBattleVictory(state, first), loot: 0, stars: 0 }, { ok: true, firstClear: false, loot: 0, stars: 0, newBest: false, achievements: [] });
   assert.equal(state.campaignCleared, 2);
 });
 
@@ -101,7 +102,7 @@ test('victory transaction immediately saves progress with a valid prior backup a
   assert.ok(saved.earnedAchievements.includes('firstVictory'));
   assert.ok(!backup.earnedAchievements.includes('firstVictory'));
   assert.equal(backup.campaignCleared, 0);
-  assert.equal(saved.gold, backup.gold + result.gold); // 전리품 골드가 저장에 반영됨
+  assert.equal(saved.loot.balance, backup.loot.balance + result.loot); // 전리품이 저장에 반영됨
   h.session.pause(); h.session.start();
   assert.equal(h.session.state.campaignCleared, 1);
   h.session.pause();
@@ -117,39 +118,29 @@ test('failed victory save preserves pending progress and retries without duplica
   h.storage.fail = false;
   assert.equal(h.session.flush(), true);
   assert.equal(parseSave(h.values.get(SAVE_KEY), T).campaignCleared, 1);
-  const gold = h.session.state.gold;
+  const loot = h.session.state.loot.balance;
   const replay = h.session.change((state) => recordBattleVictory(state, victory));
   assert.equal(replay.firstClear, false);
-  assert.equal(h.session.state.gold, gold + replay.gold);
+  assert.equal(h.session.state.loot.balance, loot + replay.loot);
   h.session.pause();
 });
 
-test('battle loot is fixed on first clear, five percent on replay, and respects the gold cap', async () => {
-  const { battleGoldReward } = await import('../src/campaign-rewards.js');
-  const { MAX_GOLD } = await import('../src/money.js');
-  assert.equal(battleGoldReward(10, true), fixedStageGold(1));
-  assert.equal(battleGoldReward(10, false), Math.floor(fixedStageGold(1)*.05));
-  assert.equal(battleGoldReward(10, true, MAX_GOLD - 5n), 5);
-  assert.equal(battleGoldReward(Number.MAX_SAFE_INTEGER, true),fixedStageGold(1));
-  const state = army(), first = win(state, 1);
-  const r1 = recordBattleVictory(state, first), g1 = state.gold;
-  const r2 = recordBattleVictory(state, win(state, 1));
-  assert.equal(r2.firstClear, false);
-  assert.ok(r1.gold > r2.gold && r2.gold > 0 && state.gold === g1 + r2.gold);
+test('battle loot is fixed on first clear, twenty percent on replay, and respects its own cap', () => {
+  assert.equal(stageLoot(1),100);assert.equal(stageLoot(1,false),20);
+  const state=army(),first=win(state,1);
+  const r1=recordBattleVictory(state,first),l1=state.loot.balance,g1=state.gold;
+  const r2=recordBattleVictory(state,win(state,1));
+  assert.equal(r2.firstClear,false);assert.ok(r1.loot>r2.loot&&r2.loot>0);
+  assert.equal(state.loot.balance,l1+r2.loot);assert.equal(state.gold,g1);
+  state.loot.balance=MAX_LOOT-1;assert.equal(recordBattleVictory(state,win(state,1)).loot,1);
 });
 
-test('stars: 1 for any win, 2 for fast OR healthy HQ, 3 for both; they do not multiply gold', async () => {
-  const { battleStars, battleGoldReward } = await import('../src/campaign-rewards.js');
-  const b = (elapsedMs, hp, status = 'victory') => ({ status, elapsedMs, player: { hq: { hp, maxHp: 100 } } });
-  assert.equal(battleStars(b(100000, 49)), 1);
-  assert.equal(battleStars(b(75000, 49)), 2);
-  assert.equal(battleStars(b(100000, 50)), 2);
-  assert.equal(battleStars(b(75000, 50)), 3);
-  assert.equal(battleStars(b(10000, 100, 'defeat')), 0);
-  assert.equal(battleGoldReward(10, true, 0, 1), fixedStageGold(1));
-  assert.equal(battleGoldReward(10, true, 0, 2), fixedStageGold(1));
-  assert.equal(battleGoldReward(10, true, 0, 3), fixedStageGold(1));
-  assert.equal(battleGoldReward(10, false, 0, 3), Math.floor(fixedStageGold(1)*.05));
+test('stars record speed and HQ survival without multiplying loot', () => {
+  const state=army(),victory=win(state);
+  const first=recordBattleVictory(state,{...victory,elapsedMs:150000,player:{...victory.player,hq:{hp:1,maxHp:100}}});
+  assert.equal(first.stars,1);assert.equal(first.loot,stageLoot(1));
+  const replay=recordBattleVictory(state,{...victory,elapsedMs:10000,player:{...victory.player,hq:{hp:100,maxHp:100}}});
+  assert.equal(replay.stars,3);assert.equal(replay.loot,stageLoot(1,false));
 });
 
 test('the best star per region is saved, never lowered, and shown only for conquered regions', async () => {

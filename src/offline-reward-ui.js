@@ -1,13 +1,13 @@
 import { fmt, fmtGold } from './format.js';
 import { MAX_GOLD, minMoney, subtractMoney, multiplyMoney } from './money.js';
 import { createOfflineRewardController } from './offline-reward-controller.js';
-import { MAX_OFFLINE_MS } from './offline-rules.js';
+import { MAX_OFFLINE_MS, offlineLimitMs } from './offline-rules.js';
 import { coin } from './home-view.js';
 
 export const offlineRewardMarkup = () => `<dialog id="offline-reward-modal" aria-labelledby="offline-title" aria-describedby="offline-description">
   <div class="offline-head"><h2 id="offline-title">방치 수익</h2><button type="button" data-offline-close aria-label="보상 나중에 받기">×</button></div>
   <div class="offline-treasure" aria-hidden="true"><i>${coin}</i><i>${coin}</i><i>${coin}</i></div>
-  <p id="offline-description" class="offline-time"><span data-offline-time></span> · 최대 ${MAX_OFFLINE_MS / 3600000}시간</p>
+  <p id="offline-description" class="offline-time"><span data-offline-time></span> · <span data-offline-limit>최대 ${MAX_OFFLINE_MS / 3600000}시간</span></p>
   <strong class="offline-gold" data-offline-gold></strong>
   <p class="offline-cap" data-offline-cap hidden>보유 골드 한도까지 받을 수 있어요.</p>
   <div class="offline-actions">
@@ -45,6 +45,7 @@ export function createOfflineRewardUI(session, {root=document,showAd}={}) {
     const minutes=Math.floor(reward.durationMs/60000),hours=Math.floor(minutes/60);
     const preview=offlineRewardPreview(reward,session.state.gold);
     text('[data-offline-time]',`${hours}시간${minutes%60 ? ' '+minutes%60+'분' : ''} 수익`);
+    text('[data-offline-limit]',`최대 ${offlineLimitMs(session.state)/3600000}시간`);
     text('[data-offline-gold]',fmtGold(preview.normal)+' G');
     find('[data-offline-gold]').title=fmt(preview.normal)+' G';
     text('[data-offline-normal]','+'+fmtGold(preview.normal)+' G');

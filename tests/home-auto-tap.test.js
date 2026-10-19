@@ -163,12 +163,12 @@ test('release blocks new free grants while grandfathered ownership survives save
  assert.equal(toggleHomeAutoTap(restored).ok,true);assert.equal(restored.homeAutoTap.owned,true);f.session.pause();
 });
 
-test('the rate upgrade preserves existing Play entitlement and the off switch without changing the save format',()=>{
+test('the rate upgrade preserves existing Play entitlement and the off switch through save migration',()=>{
   const old=freshState(T);
   old.gold=Number.MAX_SAFE_INTEGER;
   old.homeAutoTap={owned:true,enabled:false,source:'play'};
   const restored=parseSave(serializeSave(old),T);
-  assert.equal(SAVE_KEY,'budae-kiugi-recruits-v3');assert.equal(SAVE_VERSION,42);
+  assert.equal(SAVE_KEY,'budae-kiugi-recruits-v3');assert.equal(restored.version,SAVE_VERSION);
   assert.deepEqual(restored.homeAutoTap,old.homeAutoTap);assert.equal(restored.gold,old.gold);
   const f=fixture(restored);f.runtime.tick();f.step(1000);
   assert.equal(f.session.state.gold,old.gold);

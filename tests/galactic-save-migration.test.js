@@ -1,3 +1,4 @@
+import {legacyLoot} from '../src/loot.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, SAVE_KEY, SAVE_VERSION } from '../src/state.js';
@@ -36,13 +37,13 @@ test('actual version33 save preserves all prior progression, exact gold and gran
   assert.ok(loaded);
   assert.equal(SAVE_KEY,'budae-kiugi-recruits-v3');
   assert.equal(loaded.version,SAVE_VERSION);
-  assert.equal(loaded.galacticSchoolLevel,0);
+  assert.equal(loaded.galacticSchoolLevel,0);assert.deepEqual(loaded.loot,legacyLoot(old.campaignCleared));
   for(const unit of GALACTIC_OFFICERS)assert.equal(loaded[unit.field],0);
   assert.equal(loaded.campaignStars.length,200);
   assert.deepEqual(loaded.campaignStars.slice(0,80),old.campaignStars);
   assert.deepEqual(loaded.campaignStars.slice(80),Array(120).fill(0));
   for(const [key,value] of Object.entries(old))
-    if(!['version','equipment','campaignStars','potions'].includes(key))assert.deepEqual(loaded[key],value,key);
+    if(!['version','equipment','campaignStars','potions','loot'].includes(key))assert.deepEqual(loaded[key],value,key);
   for(const item of Object.values(EQUIPMENT))
     assert.deepEqual(loaded.equipment[item.id],item.introducedVersion>=34?null:old.equipment[item.id]);
   assert.deepEqual(loaded.potions.red,old.potions.red);assert.deepEqual(loaded.potions.blue,old.potions.blue);assert.equal(loaded.potions.max.count,0);

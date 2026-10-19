@@ -1,4 +1,4 @@
-import {fixedStageGold} from '../src/campaign-rewards.js';
+import {stageLoot} from '../src/loot.js';
 import { SAVE_VERSION } from '../src/state.js';
 import { serializeSave } from '../src/money.js';
 import test from 'node:test';
@@ -39,13 +39,13 @@ test('first victory settles the old rate, then pays a fixed quote; replays pay f
   const s=state(),old=perSecond(s);
   assert.equal(recordBattleVictory(s,victory(1),T+1000).firstClear,true);
   const updated=perSecond(s);assert.equal(updated,old+Math.floor(old/100));
-  assert.equal(s.gold,old+fixedStageGold(1));assert.equal(s.campaignCleared,1); // 정산 후 15분치 전리품
+  assert.equal(s.gold,old);assert.equal(s.loot.balance,stageLoot(1));assert.equal(s.campaignCleared,1); // 이전 수입 정산 + 별도 전리품
   const g1=s.gold;
   assert.equal(recordBattleVictory(s,victory(1),T+2000).firstClear,false);
-  assert.equal(s.gold,g1+updated+Math.floor(fixedStageGold(1)*.05));assert.equal(s.campaignCleared,1); // 1초 수입 + 재도전 30초치
+  assert.equal(s.gold,g1+updated);assert.equal(s.loot.balance,stageLoot(1)+stageLoot(1,false));assert.equal(s.campaignCleared,1); // 1초 수입 + 별도 재도전 전리품
   const g2=s.gold;
   assert.equal(recordBattleVictory(s,victory(2),T+2000).firstClear,true);
-  assert.ok(s.gold>g2);assert.equal(campaignBonusPercent(s),2);
+  assert.equal(s.gold,g2);assert.equal(campaignBonusPercent(s),2);
 });
 test('defeats and out-of-order victories cannot grant income or conquest progress',()=>{
   const s=state(),before=structuredClone(s);

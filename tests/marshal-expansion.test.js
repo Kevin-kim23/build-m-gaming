@@ -1,3 +1,4 @@
+import {legacyLoot} from '../src/loot.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState, MAX_SOLDIERS, SAVE_KEY, SAVE_VERSION } from '../src/state.js';
@@ -44,7 +45,7 @@ test('version 20 keeps paid gear, exact money, troops, skills and campaign when 
       swordActivatedAt:T-1000,swordDurationMs:120000,autoTouchActivatedAt:T-900,autoTouchDurationMs:150000,autoTouchTicks:3};
     for(const id of Object.keys(s.personalLevels))s.personalLevels[id]=10;
     for(const [i,id] of Object.keys(EQUIPMENT).entries())s.equipment[id]={level:20,count:1,deployed:i<4};
-    const expected=structuredClone(s);
+    const expected=structuredClone(s);expected.loot=legacyLoot(s.campaignCleared);
     for(const item of Object.values(PERSONAL_EQUIPMENT))if(item.introducedVersion>20)expected.personalLevels[item.id]=1;
     for(const item of Object.values(EQUIPMENT))if((item.introducedVersion??0)>20)expected.equipment[item.id]=null;
     const loaded=parseSave(serializeSave(s),T);

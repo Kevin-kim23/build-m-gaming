@@ -43,7 +43,7 @@ test('save42 accepts Play starter; save41 test grants migrate and invalid older 
   const s=freshState(1000);s.starterPack={claimed:true,source:'play'};
   assert.equal(parseSave(serializeSave(s),1000).starterPack.source,'play');
   s.version=41;assert.equal(parseSave(serializeSave(s),1000),null);s.starterPack.source='test';s.gold=MAX_GOLD;
-  const restored=parseSave(serializeSave(s),1000);assert.equal(restored.version,42);assert.equal(restored.gold,MAX_GOLD);assert.equal(restored.starterPack.source,'test');
+  const restored=parseSave(serializeSave(s),1000);assert.equal(restored.version,freshState(1000).version);assert.equal(restored.gold,MAX_GOLD);assert.equal(restored.starterPack.source,'test');
 });
 test('shared lock blocks another product while purchase is in flight',async()=>{
   const lock={busy:true};let calls=0;const s={state:freshState(1000),active:true};

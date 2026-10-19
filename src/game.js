@@ -25,7 +25,7 @@ export { UNITS, armyPower } from "./units.js";
 export { RANKS, RANK_REQUIREMENTS, rankFor } from "./ranks.js";
 export { SAVE_KEY, LEGACY_KEY, MAX_SOLDIERS, freshState } from './state.js';
 import { MAX_SOLDIERS,MAX_ARMY_POWER } from './state.js';
-import { MAX_OFFLINE_MS } from './offline-rules.js';
+import { offlineLimitMs } from './offline-rules.js';
 export { MAX_OFFLINE_MS } from './offline-rules.js';
 export const baseTapIncome = s => withPersonalIncome(s,withFacilityIncome(s,addMoney(addMoney(1,troopIncome(s,'tap')),withPersonalEquipmentIncome(s,equipmentIncome(s).tap)),'tap'),'tap');
 export const perTap = (s, now = Date.now()) => multiplyMoney(baseTapIncome(s),swordSkillStatus(s,now).multiplier*potionMultiplier(s,'tap',now));
@@ -103,7 +103,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
   };
 }
 export function accrue(s, now = Date.now(), onAutoTouchIncome) {
-  const elapsed = Math.min(MAX_OFFLINE_MS, Math.max(0, Math.floor(now - s.lastAccrual)));
+  const elapsed = Math.min(offlineLimitMs(s), Math.max(0, Math.floor(now - s.lastAccrual)));
   if (!elapsed) return 0;
   // Split at the potion boundary, including capped offline time, without per-second loops.
   const weightedMs=passivePotionTime(s,s.lastAccrual,s.lastAccrual+elapsed);
