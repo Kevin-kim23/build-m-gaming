@@ -37,6 +37,7 @@ export function detailMarkup({ kicker = '', title, body }) {
 // Returns the dialog so callers can draw canvases inside it after opening.
 export function openDetail(content,{preserveScroll=false}={}) {
   const node = ensureDialog();
+  node.setAttribute('data-layout', content.layout ?? 'default');
   const scrollTop=preserveScroll&&node.open?node.scrollTop:0;
   node.innerHTML = detailMarkup(content);
   if (!node.open) node.showModal();

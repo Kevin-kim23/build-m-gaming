@@ -4,10 +4,9 @@ import './settings.css';
 import {showAdPrivacyOptions} from './potion-ad.js';
 import {reportError} from './diagnostics.js';
 
-export function settingsMarkup(state) {
-  const slider = (key, title, value) => `<label class="volume-setting" for="${key}"><span>${title}</span><output id="${key}-value" for="${key}">${Math.round(value * 100)}%</output><input id="${key}" data-volume="${key}" type="range" min="0" max="100" step="1" value="${Math.round(value * 100)}"></label>`;
-  return { kicker: '부대 키우기', title: '설정', body: `<section class="sound-settings" aria-label="소리 설정">${slider('sfxVolume', '효과음', state.sfxVolume)}${slider('musicVolume', '배경음', state.musicVolume)}<p>0%로 낮추면 소리가 꺼집니다.</p></section><div class="settings-links"><button data-detail-action="settings-achievements">도전과제 · 훈장 <span>›</span></button><button data-detail-action="settings-guide">남은 가이드 다시 보기 <span>›</span></button><button data-detail-action="settings-info">게임 정보 <span>›</span></button><button data-detail-action="settings-privacy">개인정보처리방침 <span>›</span></button><button data-detail-action="settings-terms">서비스 이용약관 <span>›</span></button><button data-detail-action="settings-ad-choice">광고 이용 선택 · 동의 철회 <span>›</span></button><button data-detail-action="settings-ad-privacy">Google 광고 개인정보 설정 <span>›</span></button><p data-ad-privacy-status role="status"></p></div>` };
-}
+import {settingsMarkup,adSettingsMarkup,policySettingsMarkup} from './preferences-markup.js';
+import './preferences-ui.css';
+export {settingsMarkup};
 
 export function createSettingsUI(session, infoUI, audio, resumeGuide=()=>{}, access, showAchievements=()=>{}) {
   function show() {
@@ -29,6 +28,9 @@ export function createSettingsUI(session, infoUI, audio, resumeGuide=()=>{}, acc
     });
   }
   onDetailAction(async action => {
+    if(action==='settings-ad-menu')openDetail(adSettingsMarkup());
+    if(action==='settings-policy-menu')openDetail(policySettingsMarkup());
+    if(action==='settings-policy-back')openDetail(policySettingsMarkup());
     if(action==='settings-terms')access?.showTerms();
     if(action==='settings-ad-choice')await access?.chooseAds();
     if(action === 'settings-ad-privacy') {
@@ -41,7 +43,7 @@ export function createSettingsUI(session, infoUI, audio, resumeGuide=()=>{}, acc
     if (action === 'settings-guide') { closeDetail(); resumeGuide(); }
     if (action === 'settings-achievements') { closeDetail(); showAchievements(); }
     if (action === 'settings-info') infoUI.show();
-    if (action === 'settings-privacy') openDetail(privacyPolicyMarkup());
+    if (action === 'settings-privacy') {const policy=privacyPolicyMarkup();openDetail({...policy,layout:'preferences',body:policy.body+'<button type="button" class="preference-back" data-detail-action="settings-policy-back">약관 · 개인정보로 돌아가기</button>'});}
     if (action === 'settings-back') show();
   });
   return { show };

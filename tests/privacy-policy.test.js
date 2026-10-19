@@ -2,14 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { privacyPolicyMarkup, privacyPolicyMarkdown, POLICY_SECTIONS, FICTION_NOTICE, POLICY_DATE } from '../src/privacy-policy.js';
-import { infoPanelMarkup } from '../src/info-panel.js';
+import { infoPanelMarkup, gameAboutMarkup } from '../src/info-panel.js';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const base = { version: '0.55.0', platform: 'android', status: 's', saveVersion: 23, report: 'R', entries: [] };
 
-test('the info screen shows the fiction notice and a button to open the privacy policy', () => {
+test('game info keeps privacy reachable and moves the complete fiction notice into its about detail', () => {
   const { body } = infoPanelMarkup(base);
-  assert.ok(body.includes(FICTION_NOTICE));
+  assert.match(body, /data-detail-action="open-game-about"/);
+  assert.ok(gameAboutMarkup().body.includes(FICTION_NOTICE));
   assert.match(body, /data-detail-action="open-privacy"/);
 });
 

@@ -2,7 +2,8 @@ import { licenseListMarkup, licenseDetailMarkup } from './license-panel.js';
 import { Capacitor } from '@capacitor/core';
 import { APP_VERSION } from './version.js';
 import { errorLog, formatReport } from './error-log.js';
-import { infoPanelMarkup } from './info-panel.js';
+import './preferences-ui.css';
+import { infoPanelMarkup, diagnosticsPanelMarkup, gameAboutMarkup } from './info-panel.js';
 import { privacyPolicyMarkup } from './privacy-policy.js';
 import { openDetail, onDetailAction } from './detail-popup.js';
 import { reportError } from './diagnostics.js';
@@ -26,11 +27,14 @@ export function createInfoPanel(session) {
     });
     return info;
   }
-  const show = () => openDetail(infoPanelMarkup(snapshot()));
+  const show = () => openDetail(infoPanelMarkup({
+    version: APP_VERSION, status: session.status, saveNotice: session.saveNotice,
+  }));
+  const showDiagnostics = () => openDetail(diagnosticsPanelMarkup(snapshot()));
   let notices;
   async function showLicenses() {
     if (!notices) {
-      const dialog = openDetail({title:'오픈소스 라이선스', body:'<p>앱에 포함된 고지를 불러오고 있어요.</p>'});
+      const dialog = openDetail({layout:'preferences',title:'오픈소스 라이선스', body:'<p>앱에 포함된 고지를 불러오고 있어요.</p>'});
       const loadingTitle = dialog.querySelector('#detail-title');
       try {
         // Packaged local chunk: no external request and no large startup parse.
@@ -38,32 +42,44 @@ export function createInfoPanel(session) {
       } catch (error) {
         reportError('info.licenses', error);
         if (dialog.open && dialog.querySelector('#detail-title') === loadingTitle)
-          openDetail({title:'오픈소스 라이선스', body:'<p>고지를 열지 못했어요. 다시 시도해 주세요.</p><button type="button" class="detail-link" data-detail-action="open-licenses">다시 열기</button>'});
+          openDetail({layout:'preferences',title:'오픈소스 라이선스', body:'<p>고지를 열지 못했어요. 다시 시도해 주세요.</p><button type="button" class="detail-link" data-detail-action="open-licenses">다시 열기</button>'});
         return;
       }
       if (!dialog.open || dialog.querySelector('#detail-title') !== loadingTitle) return;
     }
-    openDetail(licenseListMarkup(notices));
+    openDetail({...licenseListMarkup(notices),layout:'preferences'});
   }
   async function copy(dialog) {
     const area = dialog.querySelector('#error-report'), status = dialog.querySelector('[data-copy-status]');
+    const report = dialog.querySelector('.info-report');
+    const isCurrent = () => dialog.open && dialog.querySelector('#error-report') === area;
+    if (!area || !status || !report || !isCurrent()) return;
     let copied = false;
     try {
       await navigator.clipboard.writeText(area.value);
       copied = true;
     } catch (error) {
       reportError('info.copy', error);
-      try { area.select(); copied = document.execCommand('copy'); } catch (fallback) { reportError('info.copyFallback', fallback); }
+      // Clipboard permission may finish after the user has left this detail.
+      if (!isCurrent()) return;
+      try {
+        area.select();
+        if (!isCurrent()) return;
+        copied = document.execCommand('copy');
+      } catch (fallback) { reportError('info.copyFallback', fallback); }
     }
+    if (!isCurrent()) return;
     status.textContent = copied ? '복사했어요. 문의할 때 붙여넣어 주세요.' : '자동 복사가 안 돼요. "복사할 내용 보기"를 열어 글을 길게 눌러 복사해 주세요.';
-    if (!copied) dialog.querySelector('.info-report').open = true;
+    if (!copied) report.open = true;
   }
   onDetailAction((action, data, dialog) => {
-    if (action === 'copy-error-log') copy(dialog);
-    else if (action === 'clear-error-log') { errorLog.clear(); show(); }
-    else if (action === 'open-privacy') openDetail(privacyPolicyMarkup());
+    if (action === 'open-diagnostics') showDiagnostics();
+    else if (action === 'open-game-about') openDetail(gameAboutMarkup());
+    else if (action === 'copy-error-log') copy(dialog);
+    else if (action === 'clear-error-log') { errorLog.clear(); showDiagnostics(); }
+    else if (action === 'open-privacy') {const policy=privacyPolicyMarkup();openDetail({...policy,layout:'preferences',body:policy.body+'<button type="button" class="preference-back" data-detail-action="back-info">게임 정보로 돌아가기</button>'});}
     else if (action === 'open-licenses') showLicenses();
-    else if (action === 'license-entry' && notices) openDetail(licenseDetailMarkup(notices, Number(data.licenseIndex)));
+    else if (action === 'license-entry' && notices) openDetail({...licenseDetailMarkup(notices, Number(data.licenseIndex)),layout:'preferences'});
     else if (action === 'back-info') show();
     else if (action === 'retry-save') { session.retryLoad(); show(); }
   });
