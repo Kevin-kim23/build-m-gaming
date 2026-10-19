@@ -116,7 +116,7 @@ test('the map shows each conquered region\'s best stars and the selected region\
 
 test('battle symbols are drawn SVGs while controls retain their names and result transitions clear old stars',()=>{
   const state=army({campaignCleared:3,campaignStars:[3,1,0]});
-  const views=[stagesMarkup(state),stagesMarkup(state,'serdin',2),loadoutMarkup(state,STAGES[2],{...freshDeckView(['artillery']),picked:'artillery',info:'artillery',swap:true}),
+  const views=[stagesMarkup(state),stagesMarkup(state,'serdin',2),loadoutMarkup(state,STAGES[2],{...freshDeckView(['artillery']),picked:'artillery',swap:true}),
     battlefieldMarkup(createBattle(state,1)),battleDetailMarkup(state,STAGES[6]).body];
   for(const view of views)assert.doesNotMatch(view,/[\p{Extended_Pictographic}\p{Emoji_Presentation}★☆✓▲▼✦◈◎ⓘ↑↓→‹]/u);
   assert.match(views[3],/aria-label="일시정지"><svg[^>]*data-battle-icon="pause"/);
