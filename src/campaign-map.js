@@ -1,6 +1,6 @@
 import { campaignBonusPercent } from './campaign-rewards.js';
 import { COUNTRIES,CONTINENTS,continentForProgress,countryProgress,campaignStages } from './campaign.js';
-import { mapDefs,oceanArt,countryLand } from './campaign-art.js';
+import { paintRoadBackdrop } from './road-backdrop.js';
 import { battleAccess } from './battle.js';
 import { stageTagsMarkup } from './quick-deck.js';
 import { fmt } from './format.js';
@@ -19,19 +19,6 @@ const continentOf = (countryId, continentId, cleared) => {
 export const continentStages = continent => campaignStages.filter(s => s.continentId === continent.id);
 // The stage a continent or country opens on: the next one to play, kept inside that range.
 export function focusStage(cleared, first, last) { return Math.min(last, Math.max(first, cleared + 1)); }
-// The continent map is drawn once as a symbol and tiled upright up the road at its natural width,
-// instead of one map blown up to the road's full height.
-const backdropCache = new Map();
-function backdrop(continent, height) {
-  if (!backdropCache.has(continent.id)) {
-    const lands = COUNTRIES.filter(c => c.continentId === continent.id).map(countryLand).join('');
-    backdropCache.set(continent.id, `${mapDefs(continent.id)}${oceanArt(continent.theme)}${lands}`);
-  }
-  const box = `0 0 ${continent.width} ${continent.height}`, id = `road-map-${continent.id}`;
-  const tiles = Math.ceil(height / (280 * continent.height / continent.width)) + 1;
-  return `<div class="road-backdrop" aria-hidden="true"><svg class="road-symbol" width="0" height="0"><symbol id="${id}" viewBox="${box}">${backdropCache.get(continent.id)}</symbol></svg>${
-    Array.from({length: tiles}, (_, i) => `<svg class="road-tile" viewBox="${box}" preserveAspectRatio="xMidYMid slice"><use href="#${id}"/></svg>`).join('')}</div>`;
-}
 function roadNode(state, stage, index, count, selectedId) {
   const cleared = state.campaignCleared ?? 0, done = stage.id <= cleared, next = stage.id === cleared + 1;
   const {x, y} = roadPoint(index, count), status = done ? 'occupied' : next ? 'frontier' : 'locked';
@@ -53,7 +40,7 @@ export function campaignMarkup(state,countryId=null,selectedId=null,continentId=
   <div class="road-progress"><span class="road-bar" aria-hidden="true"><i style="width:${continentCleared/count*100}%"></i></span><b>${continentCleared} / ${count} 점령 · 수입 +${campaignBonusPercent(state)}%</b></div>
   <div class="road-frame" data-map-theme="${continent.theme}"><div class="road-window" tabindex="0" aria-label="${continent.name} 진격 로드: 위로 스크롤하면 다음 스테이지">
     <div class="road-canvas" style="height:${roadHeight(count)}px">
-      ${backdrop(continent, roadHeight(count))}
+      <div class="road-backdrop" data-road-theme="${continent.theme}" aria-hidden="true"></div>
       <svg class="road-path" viewBox="0 0 100 ${roadHeight(count)}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${path.join(' ')}"/><polyline class="reached" points="${path.slice(0,reached).join(' ')}"/></svg>
       ${stages.map((s,i)=>roadNode(state,s,i,count,selected?.id)).join('')}
     </div></div><button type="button" class="road-locate" data-locate aria-label="현재 위치로 이동">${battleIcon('locate')}</button></div>
@@ -75,6 +62,7 @@ export function createCampaignMap(dialog,getState){
     const keep=road()?.scrollTop;
     dialog.innerHTML=campaignMarkup(getState(),countryId,selectedId,continentId);
     dialog.classList.add('in-campaign');dialog.classList.toggle('space-campaign',continentId!=='astera');dialog.classList.remove('in-battle');
+    paintRoadBackdrop(dialog,dialog.querySelector('.road-backdrop')?.dataset.roadTheme);
     if(center||keep===undefined)centerOn(selectedId);else road().scrollTop=keep;
   }
   function openContinent(id){
