@@ -31,3 +31,18 @@ test('removing and quick-adding never exceed the limit and dropping replaces a f
   assert.equal(s.deck[0], 'carrier');
   assert.equal(dropOnSlot(s, 'carrier', 1), false);
 });
+
+test('the chosen deck view shows six slots with the locked one marked and toggles gear power with (i)', async () => {
+  const {DECK_CANDIDATES} = await import('../tools/ux-candidates/deck-candidates.js');
+  const s = freshDeckState();
+  const classic = DECK_CANDIDATES.find(c => c.id === 'A').render(s);
+  assert.equal((classic.match(/class="slot-locked"/g) ?? []).length, SAMPLE.maxSlots - SAMPLE.slots);
+  assert.equal(SAMPLE.maxSlots, 6);
+  assert.doesNotMatch(classic, /cls-(air|armor|support|firepower)[^"]*"[^>]*style/);
+  press(s, {info: 'tank'});
+  assert.match(DECK_CANDIDATES.find(c => c.id === 'A').render(s), /전투력/);
+  press(s, {collect: 'fighter'});
+  const open = DECK_CANDIDATES.find(c => c.id === 'A').render(s);
+  assert.match(open, /class="card-pop"[^>]*>.*data-act="use".*data-act="cancel"/s);
+  assert.doesNotMatch(open, /공격 \d|체력 \d/);
+});
