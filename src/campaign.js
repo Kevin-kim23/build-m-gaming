@@ -36,9 +36,17 @@ export function countryProgress(state,id){
   const cleared=state.campaignCleared??0;
   return {country,unlocked:cleared>=country.firstStage-1,cleared:Math.max(0,Math.min(REGIONS_PER_COUNTRY,cleared-country.firstStage+1)),complete:cleared>=country.lastStage};
 }
-export const campaignStages=Object.freeze(COUNTRIES.flatMap(country=>country.powers.map((power,i)=>Object.freeze({
-  id:country.firstStage+i,countryId:country.id,continentId:country.continentId,theme:country.theme,region:i+1,name:country.names[i],enemyName:country.name,
-  recommendedPower:power,recommendedRank:RANKS[rankFor(power)],
-  capital:i===19,formationId:FORMATIONS.find(f=>f.size<=power).id,
-  ...campaignDifficulty(country.firstStage+i),
-}))));
+export const campaignStages=Object.freeze(COUNTRIES.flatMap(country=>{
+ const continent=CONTINENTS.find(entry=>entry.id===country.continentId);
+ return country.powers.map((power,i)=>{
+  const id=country.firstStage+i,continentStage=id-continent.firstStage+1;
+  return Object.freeze({
+   id,countryId:country.id,continentId:country.continentId,theme:country.theme,region:i+1,continentStage,
+   name:`${continent.name} 스테이지 ${continentStage}`,shortName:`스테이지 ${continentStage}`,
+   regionName:country.names[i],enemyName:country.name,
+   recommendedPower:power,recommendedRank:RANKS[rankFor(power)],
+   capital:i===19,formationId:FORMATIONS.find(f=>f.size<=power).id,
+   ...campaignDifficulty(id),
+  });
+ });
+}));

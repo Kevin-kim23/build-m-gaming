@@ -100,7 +100,7 @@ test('configured Play products show real supplied prices and purchase actions in
   assert.equal(button.textContent,expected);assert.equal(button.disabled,false);
   assert.ok(button.attributes['aria-label'].includes(expected));assert.match(button.attributes['aria-label'],/구매/);
  }
- assert.match(storeMarkup(),/성장 지원 패키지/);assert.match(storeMarkup(),/1회 구매/);assert.doesNotMatch(storeMarkup(),/계정당/);
+ assert.match(storeMarkup(),/특별혜택!/);assert.match(storeMarkup(),/1회 한정!/);assert.doesNotMatch(storeMarkup(),/계정당/);
  assert.doesNotMatch(storeMarkup(),/data-starter-price|data-play-price/);
  const header=homeAutoTapMarkup().match(/<header[^>]*>([\s\S]*?)<\/header>/)[1];
  assert.doesNotMatch(header,/<p|<small/);assert.match(header,/<h3>자동터치<\/h3><span class="auto-rate-label">10회\/초<\/span>/);assert.match(header,/홈 전용 · 영구/);assert.match(homeAutoTapMarkup(),/홈에서만 작동/);
@@ -131,26 +131,22 @@ test('purchase rows expose the automatic-tap scope and starter quantities withou
  for(const potion of Object.values(POTIONS)){
   assert.ok(starter.includes(`<strong>${potion.shortName}<span>${STARTER_PACK[potion.id]}개</span></strong>`));
  }
- assert.match(starter,/아이템에서 직접 사용/);
+ assert.match(starter,/아이템에서 사용/);
  assert.match(starter,/data-buy-starter/);
  assert.doesNotMatch(starter,/계정당|자동터치 포함/);
 });
 
-test('store shows catalog benefits, use limits and ownership before purchase/help without inventing urgency',()=>{
+test('compact store retains the local one-time limit and clear max duration/multipliers from the real catalog',()=>{
  const markup=storeMarkup(),starter=markup.split('<details')[0],auto=homeAutoTapMarkup().split('<details')[0];
  assert.ok(markup.indexOf('data-starter-pack')<markup.indexOf('data-home-auto-tap'));
- const total=Object.values(POTIONS).reduce((sum,p)=>sum+STARTER_PACK[p.id],0);
- assert.ok(starter.includes(`총 ${total}개`));
- for(const potion of Object.values(POTIONS)){
-  const card=starter.split(`class="starter-vial ${potion.id}"`)[1].split('starter-vial-duration')[0];
-  if(potion.tapMultiplier>1)assert.ok(card.includes(`터치 <b>${potion.tapMultiplier}배</b>`));
-  if(potion.passiveMultiplier>1)assert.ok(card.includes(`초당 <b>${potion.passiveMultiplier}배</b>`));
-  assert.ok(starter.includes(`1개당 ${potion.durationLabel}`));
- }
- assert.ok(starter.indexOf('자동터치 미포함')<starter.indexOf('data-buy-starter'));
- assert.match(auto,/손가락 터치와 함께/);assert.match(auto,/상점·전투·팝업·앱 종료 중에는 멈춥니다/);
- assert.ok(auto.indexOf('홈에서만 작동')<auto.indexOf('data-buy-home-auto'));
- assert.match(auto,/data-home-auto-status role="status" hidden/);
+ assert.match(starter,/<span class="starter-limit-badge">1회 한정!<\/span>/);
+ assert.match(starter,/현재 기기 기록에서 1회 · 자동터치 미포함/);
+ assert.ok(starter.includes(`<strong>${POTIONS.max.durationLabel} 동안</strong>`));
+ assert.ok(starter.includes(`터치 골드 <b>${POTIONS.max.tapMultiplier}X</b>`));
+ assert.ok(starter.includes(`초당 골드 <b>${POTIONS.max.passiveMultiplier}X</b>`));
+ assert.doesNotMatch(starter,/starter-lead|starter-vial-effect/);
+ assert.doesNotMatch(auto,/auto-store-tag|auto-store-benefits|auto-store-lead/);
+ assert.match(auto,/홈 전용 · 영구/);
  assert.doesNotMatch(markup,/기간 한정|오늘만|마감|남은 수량|판매 1위|할인|정가/);
  assert.equal((markup.match(/data-buy-starter/g)||[]).length,1);
  assert.equal((markup.match(/data-buy-home-auto/g)||[]).length,1);

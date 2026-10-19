@@ -22,7 +22,6 @@
 .field-wing-feather { transform-origin:150px 95px; animation:field-feather-reveal 950ms var(--feather-delay) cubic-bezier(.16,.75,.25,1) both; }
 .field-wing-shine { stroke-dasharray:15 190; animation:field-wing-shine 1.8s .3s ease-out both; }
 .promotion-field .promotion-medal { background:linear-gradient(140deg,#fff0bd,#b79b5b 30%,#42584a 45%,#192d27); border-color:#fff0b8; }
-.promotion-field .promotion-eyebrow { color:#f3d895; letter-spacing:4px; }
 .promotion-field .promotion-halo { background:radial-gradient(circle,#f2d18255 0,#caa65f18 45%,transparent 70%); }
 .field-promotion-orbit { position:absolute; z-index:0; width:56%; aspect-ratio:1; top:4px; left:22%; border:1px solid #ecd49655; border-radius:50%; box-shadow:0 0 0 7px #e0c77f0b,0 0 0 14px #e0c77f09; animation:field-promotion-orbit 2.5s .05s ease-out both; }
 @keyframes field-wing-unfold { 0%{opacity:0;transform:rotate(38deg) scaleX(.08)} 24%{opacity:1;transform:rotate(-9deg) scaleX(1.04)} 40%,76%{opacity:1;transform:rotate(0) scaleX(1)} 100%{opacity:0;transform:rotate(-3deg) scaleX(1.03)} }

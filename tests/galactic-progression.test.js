@@ -69,7 +69,8 @@ test('galactic headquarters and complete special marshal ceremony work through s
  const battle=createBattle(s,1,{equipment:['carrier']});
  assert.equal(battle.player.hq.id,'galacticCommand');assert.ok(Number.isFinite(battle.player.hq.maxHp));
  const rank=rankForArmy(s),p=promotionProfile(rank),html=generalPromotionMarkup(rank,p);
- assert.equal(p.generalTier,9);assert.match(html,/특전원수/);assert.match(html,/은하연대/);
+ assert.equal(p.generalTier,9);assert.match(html,/특전원수/);assert.match(html,/진급을 명합니다/);
+ assert.doesNotMatch(html,/general-caption|은하연대/);
  assert.doesNotMatch(html,/undefined|NaN/);
 });
 

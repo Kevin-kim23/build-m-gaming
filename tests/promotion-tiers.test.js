@@ -7,6 +7,31 @@ import { generalRankBadge } from '../src/rank-frame.js';
 import { fieldOfficerWing } from '../src/promotion-wing-art.js';
 import { insignia } from '../src/home-view.js';
 
+test('all promotion tiers keep the rank and skip control without decorative captions',()=>{
+  for (const [rank,definition] of RANK_DEFINITIONS.entries()) {
+    const html=promotionMarkup(rank,insignia);
+    assert.ok(html.includes(definition.name),`${definition.name}: rank stays visible`);
+    assert.match(html,/진급/);
+    assert.match(html,/data-dismiss-promotion/);
+    assert.doesNotMatch(html,/class="(?:promotion-eyebrow|promotion-caption|general-eyebrow|general-honor|general-caption)"/);
+    assert.doesNotMatch(html,/GENERAL OFFICER|GALACTIC OFFICER|FIELD OFFICER|PROMOTION|더 큰 부대를 향하여|루비빛 별|새로운 지휘/);
+  }
+});
+
+test('warrant promotion and standalone gallery share a visible gold diamond without depending on the home HUD',()=>{
+  const html=promotionMarkup(RANKS.indexOf('준위'),insignia);
+  assert.match(html,/<span class="insignia warrant"><i><\/i><\/span>/);
+  const css=readFileSync(new URL('../src/style.css',import.meta.url),'utf8');
+  const sharedRule=css.match(/\.insignia\.warrant i\s*\{([^}]+)\}/)?.[1];
+  assert.ok(sharedRule,'warrant badge dimensions must be in the common rank styles used by the gallery');
+  assert.ok(Number(sharedRule.match(/\bwidth:\s*(\d+)px/)?.[1])>0);
+  assert.ok(Number(sharedRule.match(/\bheight:\s*(\d+)px/)?.[1])>0);
+  assert.match(sharedRule,/background:\s*#f3cc57/);
+  assert.match(sharedRule,/clip-path:\s*polygon/);
+  const hud=readFileSync(new URL('../src/hud.css',import.meta.url),'utf8');
+  assert.doesNotMatch(hud,/\.insignia\.warrant i/,'the shared badge must not have a competing HUD-only definition');
+});
+
 test('target rank chooses a plain badge, original wings, enhanced field wings, or general ceremony', () => {
   for (const [rank, definition] of RANK_DEFINITIONS.entries()) {
     const p = promotionProfile(rank), html = promotionMarkup(rank, insignia);

@@ -32,9 +32,8 @@ export function promotionMarkup(rank, insignia, p = promotionProfile(rank)) {
     ${enhanced ? '<div class="field-promotion-orbit" aria-hidden="true"></div>' : ''}
     <div class="promotion-wing left">${enhanced ? fieldOfficerWing(marks, 'left') : wing}</div><div class="promotion-wing right">${enhanced ? fieldOfficerWing(marks, 'right') : wing}</div>
     <div class="promotion-sparks" aria-hidden="true">${Array.from({ length: p.sparks }, (_, i) => `<i style="--angle:${(i / p.sparks) * 360}deg;--distance:${72 + (i % 3) * 15}px;--delay:${(i % 4) * 0.08}s"></i>`).join('')}</div>
-    <p class="promotion-eyebrow">${enhanced ? 'FIELD OFFICER' : 'PROMOTION'}</p>
     <div class="promotion-medal" aria-hidden="true">${insignia(rank)}</div>
-    <p class="promotion-announcement">${RANKS[rank]} 진급!</p><p class="promotion-caption">더 큰 부대를 향하여</p>${skipButton}
+    <p class="promotion-announcement">${RANKS[rank]} 진급!</p>${skipButton}
   </div>`;
 }
 let layer, timer, dismissKey;

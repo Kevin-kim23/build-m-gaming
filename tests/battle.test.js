@@ -4,8 +4,8 @@ import { freshState } from "../src/game.js";
 import { EQUIPMENT } from "../src/equipment.js";
 import {
   BATTLE_RULES, STAGES, UNIT_TRAITS, battleAccess, defaultLoadout, normalizeLoadout,
-  createBattle, advanceBattle, deploy, battleSlots, equipmentCombatStats, matchupMultiplier, stageEnemyType,
-  classMatchup, fortressShieldClass, isFortress, enemyLane,
+  createBattle, advanceBattle, deploy, battleSlots, equipmentCombatStats, stageEnemyType,
+  isFortress, enemyLane,
 } from "../src/battle.js";
 import { enemyStack } from "../src/battle-balance.js";
 import { quietBattle, until, deployNow, play } from "./lane-helpers.js";
@@ -124,17 +124,11 @@ test("units march toward the enemy base, stop to fire at the nearest foe in rang
   assert.ok(fought.enemy.units[0].hp < 1e9, "the tank shoots the enemy unit before moving past it");
 });
 
-test("class triangle: air beats armor, armor beats firepower, firepower beats air; stronger in later countries", () => {
-  assert.equal(classMatchup("air", "armor", 1), 1.3); assert.equal(classMatchup("armor", "air", 1), 0.8);
-  assert.equal(classMatchup("armor", "firepower", 1), 1.3); assert.equal(classMatchup("firepower", "armor", 1), 0.8);
-  assert.equal(classMatchup("firepower", "air", 1), 1.3); assert.equal(classMatchup("air", "firepower", 1), 0.8);
-  assert.equal(classMatchup("armor", "armor", 1), 1); assert.equal(classMatchup("support", "armor", 1), 1);
-  assert.deepEqual([1, 21, 41, 61].map((id) => classMatchup("air", "armor", id)), [1.3, 1.4, 1.5, 1.6]);
+test("enemy army themes still rotate between armored, artillery and air units", () => {
   assert.deepEqual([22, 23, 24, 25].map((id) => stageEnemyType(id).id), ["armored", "artilleryNest", "airWing", "armored"]);
-  assert.equal(matchupMultiplier(22, "helicopter"), 1.4); assert.equal(matchupMultiplier(22, "artillery"), 0.7);
 });
 
-test("one shot from the counter class deals x1.3 and from the wrong class x0.8 against an armored target", () => {
+test("a shot deals its equipment damage to an armored target without class bonuses or penalties", () => {
   const state = army(81920); state.equipment.helicopter = { level: 3, count: 1, deployed: true };
   const firstShot = (id) => {
     let b = deployNow(quietBattle(state, 1, [id]), id);
@@ -144,8 +138,8 @@ test("one shot from the counter class deals x1.3 and from the wrong class x0.8 a
     return { dealt: 1e12 - b.enemy.units[0].hp, unitDamage: u.damage };
   };
   const air = firstShot("helicopter"), fire = firstShot("artillery");
-  assert.ok(Math.abs(air.dealt - air.unitDamage * 1.3) < 1e-3);
-  assert.ok(Math.abs(fire.dealt - fire.unitDamage * 0.8) < 1e-3);
+  assert.ok(Math.abs(air.dealt - air.unitDamage) < 1e-3);
+  assert.ok(Math.abs(fire.dealt - fire.unitDamage) < 1e-3);
 });
 
 test("enemy sends its stage-type pool over time with stage stats", () => {
@@ -168,21 +162,18 @@ test("base turrets shoot units that come close; fortress turrets are stronger", 
   assert.ok(d.player.units[0].hp < 1e12 || d.status !== "running");
 });
 
-test("capital fortress: harder base, a visible fortress marker, and the counter class does less to the base", () => {
+test("capital fortress retains its base HP and visible fortress marker", () => {
   for (const stage of STAGES.filter((s) => s.capital)) {
-    const before = STAGES[stage.id - 2];
     assert.ok(stage.hqPower>0);
-    const shield = fortressShieldClass(stage.id); assert.equal(shield, stageEnemyType(stage.id).counter);
     assert.equal(isFortress(stage.id), true);
   }
-  assert.equal(fortressShieldClass(19), null);
   const s = army(); s.equipment.tank = { level: 3, count: 1, deployed: true };
   let b = createBattle(s, 20, { equipment: ["tank"] });
   assert.equal(b.enemy.fortress, "serdin");
   b = advanceBattle(advanceBattle(b, 50), 50);
   assert.equal(b.enemy.fortress, "serdin");
   assert.equal(createBattle(s, 19, { equipment: ["tank"] }).enemy.fortress, null);
-  // 이 지역(포병 진지)을 잡는 정석은 기갑 → 요새 기지는 기갑 피해를 40% 덜 받는다.
+  // Direct strikes still damage capital headquarters.
   const strike = (id) => { const t = army(); t.equipment[id] = { level: 3, count: 1, deployed: true }; const q = quietBattle(t, 20, [id]); q.enemy.hq.hp = q.enemy.hq.maxHp = 1e12; return 1e12 - deployNow(q, id).enemy.hq.hp; };
   const t = army(); t.equipment.icbm = { level: 3, count: 1, deployed: true };
   assert.equal(strike("icbm") > 0, true);

@@ -4,11 +4,10 @@ import { FORMATIONS } from "./formations.js";
 import { armyPower } from "./units.js";
 import { RANKS, rankForArmy } from "./ranks.js";
 import {
-  BATTLE_RULES, STAGES, UNIT_TRAITS, FORTRESS_SHIELD, equipmentCombatStats, classMatchup,
-  CLASS_BEATS, stageEnemyType, fortressShieldClass, isFortress, GEAR_CLASS, CLASS_NAMES, matchupMultiplier, enemyStack, enemyWeaponModifier,
+  BATTLE_RULES, STAGES, UNIT_TRAITS, equipmentCombatStats, stageEnemyType, isFortress,
 } from "./battle-balance.js";
-export { BATTLE_RULES, STAGES, UNIT_TRAITS, equipmentCombatStats, matchupMultiplier, stageEnemyType,
-  GEAR_CLASS, CLASS_NAMES, fortressShieldClass, isFortress, classMatchup } from "./battle-balance.js";
+export { BATTLE_RULES, STAGES, UNIT_TRAITS, equipmentCombatStats, stageEnemyType,
+  GEAR_CLASS, CLASS_NAMES, isFortress } from "./battle-balance.js";
 const equipmentIds=Object.freeze(Object.keys(EQUIPMENT));
 
 // 가로 전장 전투 규칙(순수 함수). 화면 코드는 battle-ui.js / lane-art.js 쪽에 있다.
@@ -26,15 +25,16 @@ export function battleSlots(state) {
   return 3 + ["준장", "중장", "대장"].filter((name) => rank >= RANKS.indexOf(name)).length;
 }
 
-// 기본 출전: 보유 장비 중 초당 공격력이 센 순서로 빈 칸을 채우되, 이 지역 적을 상대로 유리한 분류를 앞에 둔다.
-export function defaultLoadout(state, stageId = 0) {
+// 기본 출전: 보유 장비의 실제 공격·회복 속도로 빈 칸을 채운다.
+export function defaultLoadout(state) {
   const power = armyPower(state);
   const score = (id) => {
     const c = equipmentCombatStats(id, state.equipment[id].level, power, equipmentCount(state, id));
-    return ((c.damage || c.healing || 1) / c.intervalMs) * (stageId ? matchupMultiplier(stageId, id) : 1);
+    return (c.damage || c.healing || 1) / c.intervalMs;
   };
-  const ranked = equipmentIds.filter((id) => state.equipment?.[id]).sort((a, b) => score(b) - score(a));
-  return normalizeLoadout(state, { equipment: ranked.slice(0, battleSlots(state)) });
+  const ranked = equipmentIds.filter((id) => state.equipment?.[id])
+    .map(id=>({id,score:score(id)})).sort((a,b)=>b.score-a.score);
+  return normalizeLoadout(state, { equipment: ranked.slice(0, battleSlots(state)).map(entry=>entry.id) });
 }
 
 // 모르는 장비·중복·미보유 장비는 걸러내고, 칸 수를 넘으면 앞에서부터 자른다.
@@ -75,7 +75,7 @@ export function createBattle(state, stageId, input) {
   const power = Number(armyPower(state)), formation = FORMATIONS.find((f) => f.size <= power);
   const enemyFormation = FORMATIONS.find((f) => f.id === stage.formationId);
   return {
-    stageId, stageName: stage.name, enemyName: stage.enemyName, countryId: stage.countryId, status: "running",
+    stageId, stageNumber: stage.continentStage, stageName: stage.name, enemyName: stage.enemyName, countryId: stage.countryId, status: "running",
     elapsedMs: 0, remainderMs: 0, mana: BATTLE_RULES.manaStart, nextUid: 1, fx: [],
     deck: loadout.equipment.map((id) => ({
       id, level: state.equipment[id].level, count:1, cost: UNIT_TRAITS[id].cost, readyMs: 0,
@@ -106,8 +106,7 @@ export function deploy(battle, gearId, lane = 1) {
   c.readyMs = next.elapsedMs + UNIT_TRAITS[gearId].cooldownMs;
   const unit = makeUnit(next, "player", gearId, c.level, c.count, next.player.power, 1, true, 1, lane);
   if (unit.kind === "strike") {
-    const shield = fortressShieldClass(next.stageId) === unit.cls && next.enemy.fortress ? FORTRESS_SHIELD : 1;
-    next.enemy.hq.hp = Math.max(0, next.enemy.hq.hp - unit.damage * BATTLE_RULES.strikeMultiplier * shield);
+    next.enemy.hq.hp = Math.max(0, next.enemy.hq.hp - unit.damage * BATTLE_RULES.strikeMultiplier);
     next.fx.push({ at: next.elapsedMs, kind: "strike", side: "player", id: gearId, x: BATTLE_RULES.laneLength });
     finish(next);
   } else { next.player.units.push(unit); next.fx.push({ at: next.elapsedMs, kind: "spawn", side: "player", id: gearId, lane, from: unit.x }); }
@@ -126,7 +125,7 @@ function finish(b) {
 export const enemyLane = (stageId, n) => (Math.imul((stageId * 7919 + n * 104729) >>> 0, 2654435761) >>> 16) % BATTLE_RULES.lanes;
 
 function spawnEnemy(b, stage) {
-  const type=stageEnemyType(b.stageId),choice=chooseEnemyDeployment(b,type.pool,UNIT_TRAITS,CLASS_BEATS);
+  const type=stageEnemyType(b.stageId),choice=chooseEnemyDeployment(b,type.pool,UNIT_TRAITS);
   if(!choice){b.enemy.nextSpawnMs=b.elapsedMs+500;return;}
   const {id,lane}=choice;b.enemy.mana-=UNIT_TRAITS[id].cost;b.enemy.ready[id]=b.elapsedMs+UNIT_TRAITS[id].cooldownMs;
   b.enemy.units.push(makeUnit(b, "enemy", id, stage.recommendedLevel, 1, stage.enemyPower, 0.55, true, .55, lane));
@@ -159,18 +158,17 @@ function step(b, stage) {
         continue;
       }
       let target = null, best = u.range + 1, priority=-Infinity;
-      for (const f of foes) { if (f.lane !== u.lane) continue; const d = Math.abs(f.x - u.x); if(d<=u.range){const score=side==='enemy'?enemyTargetScore(u,f,d,CLASS_BEATS):-d;if(score>priority){priority=score;best=d;target=f;}} }
+      for (const f of foes) { if (f.lane !== u.lane) continue; const d = Math.abs(f.x - u.x); if(d<=u.range){const score=side==='enemy'?enemyTargetScore(u,f,d):-d;if(score>priority){priority=score;best=d;target=f;}} }
       const baseDist = Math.abs(baseX - u.x);
       if (!target && baseDist <= u.range) target = "base";
       if (!target) { u.x += u.dir * u.speed * dt; continue; }
       if (now < u.nextShotMs) continue;
       u.nextShotMs = now + u.intervalMs; u.lastShotMs = now;
       if (target === "base") {
-        const shield = side === "player" && b.enemy.fortress && fortressShieldClass(b.stageId) === u.cls ? FORTRESS_SHIELD : 1;
-        if (side === "player") toEnemyBase += u.damage * shield; else toPlayerBase += u.damage;
+        if (side === "player") toEnemyBase += u.damage; else toPlayerBase += u.damage;
         b.fx.push({ at: now, kind: "shot", side, id: u.id, lane: u.lane, from: u.x, to: baseX });
       } else {
-        damage.set(target, (damage.get(target) ?? 0) + u.damage * classMatchup(u.cls, target.cls, b.stageId));
+        damage.set(target, (damage.get(target) ?? 0) + u.damage);
         b.fx.push({ at: now, kind: "shot", side, id: u.id, lane: u.lane, from: u.x, to: target.x });
       }
     }

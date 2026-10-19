@@ -82,13 +82,13 @@ test('battlefield is minimal: canvas, base HP over each base, mana bar and deplo
 
 test('capital detail shows the fortress warning; the deck row only shows a chip; ordinary regions have neither', () => {
   const state = army({ campaignCleared: 19, equipment: { artillery: { level: 3, deployed: true } } });
-  assert.match(stageTagsMarkup(STAGES[19]), /class="chip bad">요새 · 기갑 약화/);
-  assert.match(battleDetailMarkup(state, STAGES[19]).body, /기지 피해 -40%/);
+  assert.match(stageTagsMarkup(STAGES[19]), /class="chip">수도 요새/);
+  assert.match(battleDetailMarkup(state, STAGES[19]).body, /체력이 높은 기지와 강한 포탑/);
   assert.doesNotMatch(stageTagsMarkup(STAGES[0]), /요새/);
   assert.doesNotMatch(battleDetailMarkup(state, STAGES[0]).body, /요새 수도/);
 });
 
-test('deck cards are pictures with name and mana badge, marked advantageous or disadvantaged for the region', () => {
+test('deck cards show pictures, name, mana and role without category advantage markers', () => {
   const state = army({ soldiers: 2, sergeants: 128, equipment: { artillery: { level: 3, deployed: true }, tank: { level: 5, deployed: true } } });
   const markup = quickDeckMarkup(state, STAGES[6], ['tank']);
   assert.equal((markup.match(/data-card-art=/g) ?? []).length, 2);
@@ -96,8 +96,8 @@ test('deck cards are pictures with name and mana badge, marked advantageous or d
   assert.match(markup, /class="card-cost"[^>]*>24</);
   assert.match(inputTag(markup, 'data-battle-gear', 'tank'), /\bchecked\b/);
   assert.doesNotMatch(inputTag(markup, 'data-battle-gear', 'artillery'), /\bchecked\b/);
-  assert.match(markup, /gear-tile mini bad/);
-  assert.match(markup, /<span class="sr-only"> · 불리<\/span>/);
+  assert.match(markup, /gear-tile mini"/);
+  assert.doesNotMatch(markup, /유리|불리|gear-tile mini (bad|good)/);
   assert.match(quickDeckMarkup(army({ equipment: {} }), STAGES[0], []), /보유한 장비가 없어요/);
 });
 

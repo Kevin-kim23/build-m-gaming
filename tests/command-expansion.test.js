@@ -71,7 +71,8 @@ test('four galaxies promote to five-star deputy commander and award the galactic
   assert.deepEqual(groupArmy(s).map(f=>[f.id,f.count]),[['galacticGroupCommand',1]]);
   assert.match(medalSvg('galacticGroupCommand'),/data-galactic-group-emblem/);
   const ceremony=generalPromotionMarkup(result.rank,promotionProfile(result.rank));
-  assert.match(ceremony,/백색 별 다섯/);assert.doesNotMatch(ceremony,/undefined|NaN/);
+  assert.match(ceremony,/부사령관/);assert.match(ceremony,/진급을 명합니다/);
+  assert.doesNotMatch(ceremony,/general-caption|백색 별 다섯|undefined|NaN/);
   s.equipment.artillery={level:0,count:1,deployed:true};
   assert.equal(createBattle(s,1).player.hq.id,'galacticGroupCommand');
 });

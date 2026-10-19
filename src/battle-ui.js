@@ -24,7 +24,7 @@ import { headquartersDestructionTiming, headquartersDestructionFrame } from './w
 export function createBattleUI(session, audio = null) {
   const dialog = document.querySelector('#battle-modal');
   const $ = (selector) => dialog.querySelector(selector);
-  // 지도 아래 출전 덱: 지역을 바꾸면 그 지역 상성에 맞춘 기본 덱을 다시 고르고, 같은 지역 안에서는 고른 덱을 유지한다.
+  // 지도 아래 출전 덱: 지역을 바꾸면 보유 장비 기준 기본 덱을 고르고, 같은 지역 안에서는 고른 덱을 유지한다.
   function deckFor(id) {
     const state = session.state;
     loadout = normalizeLoadout(state, loadout && loadoutStage === id ? loadout : defaultLoadout(state, id));

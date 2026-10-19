@@ -8,7 +8,7 @@ import {recruit,recruitOffer,upgradeSchool} from '../src/game.js';
 import {schoolOffer} from '../src/schools.js';
 import {parseSave} from '../src/save.js';
 import {exact,MAX_GOLD,GALACTIC_MAX_GOLD,serializeSave} from '../src/money.js';
-import {equipmentCombatStats,equipmentCombatPower,UNIT_TRAITS,CLASS_BEATS} from '../src/battle-balance.js';
+import {equipmentCombatStats,equipmentCombatPower,UNIT_TRAITS} from '../src/battle-balance.js';
 import {EQUIPMENT} from '../src/equipment.js';
 import {chooseEnemyDeployment} from '../src/battle-ai.js';
 import {recordBattleVictory} from '../src/battle-progress.js';
@@ -64,11 +64,11 @@ test('all 17 weapons gain combat power at every level and never scale with recru
   if(level)assert.ok(equipmentCombatPower(id,level)>equipmentCombatPower(id,level-1),`${id}+${level}`);
  }
 });
-test('enemy counters the threatened lane but cannot spend absent mana or ignore cooldown',()=>{
+test('enemy defends the threatened lane but cannot spend absent mana or ignore cooldown',()=>{
  const b={elapsedMs:20000,stageId:20,player:{units:[{lane:2,cls:'armor',damage:100,intervalMs:1000,hp:100,x:800}]},enemy:{units:[],spawned:0,mana:100,ready:{}}};
- assert.deepEqual(chooseEnemyDeployment(b,['tank','helicopter'],UNIT_TRAITS,CLASS_BEATS),{id:'helicopter',lane:2});
- b.enemy.ready.helicopter=30000;assert.equal(chooseEnemyDeployment(b,['tank','helicopter'],UNIT_TRAITS,CLASS_BEATS).id,'tank');
- b.enemy.mana=0;assert.equal(chooseEnemyDeployment(b,['tank','helicopter'],UNIT_TRAITS,CLASS_BEATS),null);
+ assert.deepEqual(chooseEnemyDeployment(b,['tank','helicopter'],UNIT_TRAITS),{id:'tank',lane:2});
+ b.enemy.ready.tank=30000;assert.equal(chooseEnemyDeployment(b,['tank','helicopter'],UNIT_TRAITS).id,'helicopter');
+ b.enemy.mana=0;assert.equal(chooseEnemyDeployment(b,['tank','helicopter'],UNIT_TRAITS),null);
 });
 test('fixed first clear and ten global daily replays persist across reload and clock rollback',()=>{
  const s={...freshState(T),soldiers:320};s.equipment.artillery={level:0,count:1,deployed:true};const win=id=>({stageId:id,status:'victory',elapsedMs:100000,enemy:{hq:{hp:0}},player:{hq:{hp:100,maxHp:100}}});

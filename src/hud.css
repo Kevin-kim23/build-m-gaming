@@ -5,7 +5,6 @@
 }
 /* Capacitor SystemBars supplies native insets; browsers fall back to CSS safe areas. */
 .game { padding-top: var(--app-safe-top); }
-.insignia.warrant i { width:7px; height:10px; background:#f3cc57; clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%); }
 .hud {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;

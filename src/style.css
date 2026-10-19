@@ -866,6 +866,12 @@ footer {
   height: 6px;
   clip-path: polygon(0 0, 50% 52%, 100% 0, 100% 40%, 50% 100%, 0 40%);
 }
+.insignia.warrant i {
+  width: 7px;
+  height: 10px;
+  background: #f3cc57;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
 .insignia.officer i {
   width: 7px;
   height: 10px;
@@ -1144,14 +1150,6 @@ footer {
   animation: promotion-reveal var(--promotion-duration) ease-out both;
   pointer-events: none;
 }
-.promotion-eyebrow {
-  font:
-    11px Consolas,
-    monospace;
-  letter-spacing: 4px;
-  color: #d2c18e;
-  margin: 0 0 17px;
-}
 .promotion-medal {
   position: relative;
   z-index: 2;
@@ -1175,12 +1173,6 @@ footer {
   letter-spacing: 2px;
   text-shadow: 0 0 16px #e9c56a66;
   margin: 20px 0 8px;
-}
-.promotion-caption {
-  font-size: 10px;
-  color: #c7c9aa;
-  letter-spacing: 2px;
-  margin: 0;
 }
 .promotion-wing {
   position: absolute;

@@ -11,7 +11,7 @@ import { EQUIPMENT } from '../src/equipment.js';
 import { createBattle } from '../src/battle.js';
 import {referenceArmy,simulateBattle} from '../tools/campaign-sim.mjs';
 import { recordBattleVictory } from '../src/battle-progress.js';
-import { fortressShieldClass,stageEnemyType,isFortress } from '../src/battle-balance.js';
+import { isFortress } from '../src/battle-balance.js';
 import { RANKS,rankForArmy } from '../src/ranks.js';
 const T=1_800_000_000_000;
 test('wide landscape maps start centered on the next country after width clamping',()=>{
@@ -63,10 +63,12 @@ test('every recommended force can win by deploying available equipment to defend
 test('first capital targets colonel strength without hard power gates; preparation and investment matter',()=>{
   const ordinary=simulate(army(5120),20);assert.equal(ordinary.status,'victory');
   assert.ok(ordinary.elapsedMs>=60000&&ordinary.elapsedMs<=120000);
-  for(const power of [640,1280])assert.notEqual(simulate(army(power),20).status,'victory');
+  for(const power of [640,1280])assert.notEqual(simulate(army(power,3),20).status,'victory');
   assert.ok(simulate(army(3840),20).elapsedMs>=ordinary.elapsedMs);
   const early=simulate(army(2560),20);
-  assert.notEqual(early.status,'victory');assert.ok(early.elapsedMs>=ordinary.elapsedMs);
+  assert.ok(early.elapsedMs>=ordinary.elapsedMs);
+  // Removing category resistance allows a sufficiently enhanced early army to clear slowly.
+  assert.equal(simulate(army(1280,6),20).status,'victory');
   assert.notEqual(simulate(army(81920),20,'none').status,'victory');
   // Higher investment can intentionally beat the recommendation early.
   assert.equal(simulate(army(5120,10),20).status,'victory');
@@ -106,7 +108,7 @@ test('region UI exposes all twenty regions, lock reasons, replay, next-country a
     const state={...army(c.powers[19]),campaignCleared:c.lastStage-1};
     const html=campaignMarkup(state,c.id,c.lastStage);
     assert.equal((html.match(/class="region-hit /g)??[]).length,20);
-    assert.match(html,new RegExp(c.names[19]));assert.match(html,/최종 수도전/);assert.match(html,/전투 시작/);
+    assert.match(html,new RegExp(campaignStages[c.lastStage-1].name));assert.match(html,/최종 수도전/);assert.match(html,/전투 시작/);
     assert.doesNotMatch(html,/undefined|NaN/);
     for(const control of ['data-world','data-locate'])assert.ok(html.includes(control));
     assert.ok(!html.includes('data-zoom')&&!html.includes('data-pan'));
@@ -169,12 +171,10 @@ test('strategy matters: never sending equipment cannot take any capital fortress
     assert.notEqual(simulate(state,stage.id,'none').status,'victory',stage.name);
   }
 });
-test('capital fortresses are tougher than the region before them and shield one gear class',()=>{
+test('capital fortresses retain their existing headquarters and twenty-stage cadence',()=>{
   for(const stage of campaignStages.filter(s=>s.capital)){
-    const before=campaignStages[stage.id-2];
     assert.ok(stage.hqPower>0);
-    const shield=fortressShieldClass(stage.id);assert.ok(['armor','air','firepower'].includes(shield));
-    assert.equal(shield,stageEnemyType(stage.id).counter,'the usual counter does less to the fortress base');
+    assert.equal(isFortress(stage.id),true);
   }
-  assert.equal(fortressShieldClass(19),null);assert.equal(isFortress(20),true);assert.equal(isFortress(21),false);
+  assert.equal(isFortress(19),false);assert.equal(isFortress(20),true);assert.equal(isFortress(21),false);
 });

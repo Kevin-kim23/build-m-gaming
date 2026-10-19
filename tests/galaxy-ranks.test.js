@@ -68,8 +68,9 @@ test('all five galaxy promotions retain bilateral salutes and use purple crests 
     const rank = RANKS.indexOf(name), profile = promotionProfile(rank);
     assert.equal(profile.generalTier, 11 + i);
     const markup = promotionMarkup(rank, insignia, profile);
-    assert.match(markup, /GALACTIC OFFICER/);
-    assert.match(markup, /은하 장성 진급/);
+    assert.ok(markup.includes(`<h2>${name}<span>진급을 명합니다</span></h2>`));
+    assert.match(markup, /data-dismiss-promotion/);
+    assert.doesNotMatch(markup, /GALACTIC OFFICER|은하 장성 진급|general-(?:eyebrow|honor|caption)/);
     assert.match(markup, /general-salute left/);
     assert.match(markup, /general-salute right/);
     assert.doesNotMatch(markup, /undefined|NaN/);
