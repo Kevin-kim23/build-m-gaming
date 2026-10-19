@@ -20,9 +20,12 @@ export function battleAccess(state) {
 }
 
 // 출전 장비 칸: 대위 3칸, 준장 4칸, 중장 5칸, 대장 이상 6칸.
+// 출전 칸: 기본 3칸 + 아래 계급마다 1칸(최대 6칸).
+export const EXTRA_SLOT_RANKS = Object.freeze(["준장", "중장", "대장"]);
+export const MAX_BATTLE_SLOTS = 3 + EXTRA_SLOT_RANKS.length;
 export function battleSlots(state) {
   const rank = rankForArmy(state);
-  return 3 + ["준장", "중장", "대장"].filter((name) => rank >= RANKS.indexOf(name)).length;
+  return 3 + EXTRA_SLOT_RANKS.filter((name) => rank >= RANKS.indexOf(name)).length;
 }
 
 // 기본 출전: 보유 장비의 실제 공격·회복 속도로 빈 칸을 채운다.

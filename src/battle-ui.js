@@ -13,9 +13,12 @@ import { EQUIPMENT } from './equipment.js';
 import './battle.css';
 import './campaign.css';
 import './campaign-road.css';
+import './loadout-deck.css';
 import './battle-result.css';
 import { createCampaignMap } from './campaign-map.js';
 import { loadoutMarkup } from './loadout-view.js';
+import { freshDeckView, deckAction } from './loadout-deck.js';
+import { drawEquipment } from './equipment-art.js';
 import { COUNTRIES } from './campaign.js';
 import { ACHIEVEMENTS } from './achievements.js';
 import { createBattleAudioEvents } from './battle-audio-events.js';
@@ -34,7 +37,7 @@ export function createBattleUI(session, audio = null) {
     return loadout.equipment;
   }
   const campaignMap = createCampaignMap(dialog,()=>session.state);
-  let mode = 'stages', stageId = 1, loadout = null, loadoutStage = 0, battle = null;
+  let mode = 'stages', stageId = 1, loadout = null, loadoutStage = 0, battle = null, deckView = null;
   let raf = 0, lastFrame = 0, paused = false, finalized = false, selected = null, drag = null, suppressClick = false;
   let stagesKey = '';
   let ending = null;
@@ -63,6 +66,8 @@ export function createBattleUI(session, audio = null) {
       ctx.imageSmoothingEnabled = false; ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(unitSprite(canvas.dataset.cardArt, 'player', Number(canvas.dataset.level) || 0), 0, 0, canvas.width, canvas.height);
     });
+    // 출격 편성 카드: 장비 탭과 같은 장비 그림(drawEquipment가 그림을 캐시한다).
+    dialog.querySelectorAll('canvas[data-gear-art]').forEach(canvas => drawEquipment(canvas, Number(canvas.dataset.level) || 0, canvas.dataset.gearArt));
   }
   function stop() { cancelAnimationFrame(raf); raf = 0; lastFrame = 0; }
   function close() {
@@ -88,14 +93,29 @@ export function createBattleUI(session, audio = null) {
     const state = session.state, stage = STAGES.find(s => s.id === id);
     if (!battleAccess(state).unlocked || id > (state.campaignCleared ?? 0) + 1 || !stage) return;
     endDrag(); stop(); ending = null; battle = null; mode = 'loadout'; stageId = id;
-    dialog.innerHTML = loadoutMarkup(state, stage, deckFor(id));
-    paintCardArt();
+    deckView = freshDeckView(deckFor(id));
     dialog.classList.remove('in-battle'); dialog.scrollTop = 0;
-    sync();
+    renderLoadout();
+  }
+  // 카드를 누를 때만 다시 그린다(스크롤 위치 유지, 열린 사용·닫기 창이 보이게).
+  function renderLoadout() {
+    const keep = dialog.scrollTop, stage = STAGES.find(s => s.id === stageId);
+    dialog.innerHTML = loadoutMarkup(session.state, stage, deckView);
+    paintCardArt(); dialog.scrollTop = keep; sync();
+    $('.deck-pop')?.scrollIntoView?.({ block: 'nearest' });
+  }
+  function deckTap(target) {
+    const d = target.dataset;
+    const action = d.deckAct ? { type: d.deckAct } : d.deckInfo ? { type: 'info', id: d.deckInfo }
+      : d.deckCard ? { type: 'card', id: d.deckCard } : d.deckSlot !== undefined ? { type: 'slot' } : null;
+    if (!action) return false;
+    deckView = deckAction(session.state, deckView, action);
+    loadout = normalizeLoadout(session.state, { equipment: deckView.deck }); loadoutStage = stageId;   // 고른 덱 기억
+    renderLoadout(); return true;
   }
   function selection() {
     const raw = {equipment: []};
-    dialog.querySelectorAll('[data-battle-gear]:checked').forEach(input => raw.equipment.push(input.dataset.battleGear));
+    raw.equipment.push(...(deckView?.deck ?? []));
     return normalizeLoadout(session.state, raw);
   }
   // 지도에서 시작(체크한 덱) 또는 결과 화면에서 다시/다음(주어진 덱)으로 바로 전투를 시작한다.
@@ -327,7 +347,9 @@ export function createBattleUI(session, audio = null) {
   dialog.addEventListener('click', event => {
     const target = event.target.closest('button,[data-country],[data-region],[data-continent]');
     if (suppressClick && target?.dataset?.deploy) { suppressClick = false; return; }
+    if (!target && mode === 'loadout' && deckView?.picked) { deckView = deckAction(session.state, deckView, { type: 'close' }); renderLoadout(); return; }
     if (!target || target.disabled || target.getAttribute('aria-disabled')==='true') return;
+    if (mode === 'loadout' && deckTap(target)) return;
     if (mode==='stages' && campaignMap.handle(target)) { paintCardArt(); sync(); return; }
     if (target.hasAttribute('data-battle-close')) close();
     else if (target.hasAttribute('data-stage')) showLoadout(Number(target.dataset.stage));
@@ -340,17 +362,6 @@ export function createBattleUI(session, audio = null) {
     else if (target.dataset.lane !== undefined) sortie(Number(target.dataset.lane));
     else if (target.id === 'battle-pause') suspend();
     else if (target.id === 'battle-resume') resume();
-  });
-  // 출전 칸 수를 넘겨 체크하면 방금 체크한 장비를 되돌리고 안내한다.
-  dialog.addEventListener('change', event => {
-    if (mode !== 'loadout' || !event.target.matches('[data-battle-gear]')) return;
-    const limit = battleSlots(session.state);
-    if (dialog.querySelectorAll('[data-battle-gear]:checked').length > limit) {
-      event.target.checked = false;
-      text('#battle-message', `출전 장비는 최대 ${limit}칸까지예요. 다른 장비를 먼저 해제하세요.`);
-    } else text('#battle-message', '');
-    text('#battle-slot-count', `${dialog.querySelectorAll('[data-battle-gear]:checked').length} / ${limit}`);
-    loadout = selection(); loadoutStage = stageId;   // 고른 덱을 기억(같은 스테이지를 다시 열어도 유지)
   });
   // 카드를 끌어 레인에 놓기(클래시 로얄 방식). 거의 안 움직이면 '카드 선택 → 레인 터치'로 동작한다.
   function laneAt(event) {

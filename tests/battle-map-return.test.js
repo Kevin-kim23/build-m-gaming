@@ -11,7 +11,7 @@ function controller(){
   const dialog={open:false,classList:classes,scrollTop:0,
     showModal(){this.open=true;},addEventListener(name,fn){listeners[name]=fn;},
     querySelector(selector){if(selector==='#battle-canvas')return null;if(!nodes.has(selector))nodes.set(selector,node());return nodes.get(selector);},
-    querySelectorAll(selector){return selector==='[data-battle-gear]:checked'?[{dataset:{battleGear:'icbm'}}]:[];},
+    querySelectorAll(){return [];},
   };
   const map={countryId:'norgard',stop(){},handle(){return false;},show(id,stageId=null){shown.push(id);focused.push(stageId);if(id)this.countryId=id;}};
   const deps={
@@ -19,7 +19,7 @@ function controller(){
     createCampaignMap:()=>map,createBattleAudioEvents:()=>({reset(){}}),
     battleAccess:()=>({visible:true,unlocked:true}),normalizeLoadout:(_s,input)=>input??{equipment:['icbm']},defaultLoadout:()=>({equipment:['icbm']}),
     createBattle:(_s,id)=>({stageId:id,countryId:STAGES[id-1].countryId,status:'running',deck:[]}),
-    battlefieldMarkup:()=>'',loadoutMarkup:()=>'',UNITS:{},EQUIPMENT:{},requestAnimationFrame:()=>1,cancelAnimationFrame(){},
+    battlefieldMarkup:()=>'',loadoutMarkup:()=>'',freshDeckView:deck=>({deck:[...deck],picked:null,swap:false,info:null,message:''}),deckAction:(_s,view)=>view,drawEquipment(){},UNITS:{},EQUIPMENT:{},requestAnimationFrame:()=>1,cancelAnimationFrame(){},
     performance:{now:()=>100},matchMedia:()=>({matches:true}),reportError(_area,error){throw error;},
   };
   const source=readFileSync(new URL('../src/battle-ui.js',import.meta.url),'utf8').replace(/^import .*;\r?$/gm,'').replace('export function createBattleUI','function createBattleUI');

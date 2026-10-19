@@ -1,0 +1,53 @@
+/* 출격 편성 · 클래식 카드 덱. Every card shares one colour (no class matchups). */
+.deck-board { display:flex; flex-direction:column; gap:8px; }
+.deck-board .brief-deck-head { flex-wrap:wrap; gap:4px; }
+.deck-board .brief-deck-head b { font-variant-numeric:tabular-nums; }
+.deck-max { margin-left:6px; font-size:11px; color:#9eae93; }
+.deck-avg { display:inline-flex; align-items:center; gap:4px; color:#9fcbf5; font-weight:700; }
+.deck-avg svg { width:14px; height:14px; }
+.deck-swap { display:flex; align-items:center; gap:6px; margin:0; padding:8px 10px; border-radius:8px; background:#3a3220; color:#edd49b; font-weight:700; font-size:13px; }
+.deck-swap svg { width:16px; height:16px; }
+.deck-slots { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px 8px; padding:10px; border-radius:10px; background:#141c17; border:1px solid #45573f; }
+.deck-collection { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px 8px; padding-top:4px; }
+.deck-list-title { margin:6px 0 0; font-size:13px; color:#dec88c; }
+.deck-list-title small { color:#9eae93; font-weight:400; }
+.deck-cell { position:relative; min-width:0; }
+.deck-cell.is-open { z-index:20; }
+.deck-card { position:relative; width:100%; min-width:0; aspect-ratio:3/4; display:grid; grid-template-rows:1fr auto auto; align-items:center; justify-items:center; gap:2px; padding:14px 3px 5px; border-radius:9px; border:2px solid #5d6f58; background:linear-gradient(170deg,#2c3a30,#141c17 72%); box-shadow:inset 0 2px 0 #ffffff14; color:#e9ecd2; }
+.deck-card.is-selected { outline:3px solid #edd49b; outline-offset:1px; transform:translateY(-2px); }
+.deck-art { display:grid; place-items:center; width:100%; }
+.deck-art canvas { width:100%; height:auto; image-rendering:pixelated; }
+.deck-level { font-size:10px; font-weight:800; line-height:1.5; padding:0 5px; border-radius:4px; background:#3a4a3f; color:#e9ecd2; }
+.deck-name { font-size:11px; font-weight:700; line-height:1.2; text-align:center; word-break:keep-all; overflow-wrap:anywhere; }
+.deck-mana { position:absolute; top:-7px; left:-7px; z-index:2; min-width:26px; height:26px; padding:0 4px; box-sizing:border-box; display:grid; place-items:center; border-radius:13px; background:#2f7fd0; border:2px solid #cfe6ff; color:#fff; font:800 12px/1 system-ui; font-style:normal; font-variant-numeric:tabular-nums; }
+.deck-info { position:absolute; top:-7px; right:-7px; z-index:3; width:28px; height:28px; padding:0; display:grid; place-items:center; border-radius:50%; border:2px solid #d8dccf; background:#2b3a31; color:#eef1e8; }
+#battle-modal .deck-info { font:italic 800 14px/1 Georgia, serif; }
+
+.deck-info[aria-pressed=true] { background:#edd49b; border-color:#fff3cf; color:#2a1e08; }
+.deck-power { position:absolute; inset:14px 4px 4px; z-index:2; display:grid; place-content:center; gap:2px; text-align:center; border-radius:7px; background:#0d1410eb; }
+.deck-power small { font-size:10px; color:#aebf9e; }
+.deck-power b { font-size:15px; color:#edd49b; font-variant-numeric:tabular-nums; }
+.deck-card.locked { display:grid; place-items:center; align-content:center; gap:4px; padding:6px; border-style:dashed; border-color:#45573f; background:#101712; color:#8d9a86; text-align:center; }
+.deck-card.locked svg { width:18px; height:18px; opacity:.7; }
+.deck-card.locked small { font-size:10px; }
+.deck-slot-empty { aspect-ratio:3/4; border-radius:9px; border:2px dashed #5d6f58; background:#101712; color:#8d9a86; font-size:26px; }
+.deck-slot-locked { aspect-ratio:3/4; display:grid; place-content:center; justify-items:center; gap:4px; border-radius:9px; border:2px dashed #3b4a40; background:repeating-linear-gradient(135deg,#0f1612 0 8px,#131c17 8px 16px); color:#8d9a86; text-align:center; }
+.deck-slot-locked svg { width:18px; height:18px; }
+.deck-slot-locked small { font-size:10px; line-height:1.3; }
+/* Use / close sits right under the tapped card. */
+.deck-pop { position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%); display:flex; gap:6px; padding:6px; border-radius:10px; background:#2b3a31; border:1px solid #b08a45; box-shadow:0 8px 20px #000a; white-space:nowrap; }
+.deck-pop::before { content:""; position:absolute; top:-7px; left:50%; width:12px; height:12px; background:#2b3a31; border-left:1px solid #b08a45; border-top:1px solid #b08a45; transform:translateX(-50%) rotate(45deg); }
+.deck-pop button { min-width:60px; min-height:40px; border-radius:8px; border:1px solid #5d6f58; background:#1d2820; color:#e9ecd2; font-weight:800; }
+.deck-pop .primary { border:0; background:linear-gradient(#f2d48e,#c99a45); color:#2a1e08; }
+.deck-collection .deck-cell:nth-child(4n+1) .deck-pop, .deck-slots .deck-cell:nth-child(3n+1) .deck-pop { left:0; transform:none; }
+.deck-collection .deck-cell:nth-child(4n+1) .deck-pop::before, .deck-slots .deck-cell:nth-child(3n+1) .deck-pop::before { left:24px; }
+.deck-collection .deck-cell:nth-child(4n) .deck-pop, .deck-slots .deck-cell:nth-child(3n) .deck-pop { left:auto; right:0; transform:none; }
+.deck-collection .deck-cell:nth-child(4n) .deck-pop::before, .deck-slots .deck-cell:nth-child(3n) .deck-pop::before { left:auto; right:20px; transform:rotate(45deg); }
+[data-wiggle] { animation:deck-wiggle .3s ease-in-out infinite alternate; }
+@keyframes deck-wiggle { from { transform:rotate(-2.5deg); } to { transform:rotate(2.5deg); } }
+@media (prefers-reduced-motion: reduce) { [data-wiggle] { animation:none; outline:2px dashed #edd49b; } }
+@media (max-width:340px) { .deck-collection { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .deck-collection .deck-cell:nth-child(n) .deck-pop { left:50%; right:auto; transform:translateX(-50%); }
+  .deck-collection .deck-cell:nth-child(n) .deck-pop::before { left:50%; right:auto; transform:translateX(-50%) rotate(45deg); }
+  .deck-collection .deck-cell:nth-child(3n+1) .deck-pop { left:0; transform:none; } .deck-collection .deck-cell:nth-child(3n+1) .deck-pop::before { left:24px; }
+  .deck-collection .deck-cell:nth-child(3n) .deck-pop { left:auto; right:0; transform:none; } .deck-collection .deck-cell:nth-child(3n) .deck-pop::before { left:auto; right:20px; transform:rotate(45deg); } }
