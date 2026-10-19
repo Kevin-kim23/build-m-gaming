@@ -29,6 +29,14 @@ export function createBackHandler({ root = document, now = Date.now, hint, exit 
       if (dialog.open) dialog.close();
       return 'closed';
     }
+    // The mandatory start gate stays open: Android Back on its second step
+    // returns to age entry through the same action as the visible Back button.
+    const startGate = root.querySelector('#access-gate');
+    if (startGate?.open && startGate.dataset?.step === 'consent') {
+      hintedAt = -Infinity;
+      startGate.querySelector('[data-access-back]')?.click();
+      return 'back';
+    }
     const time = now();
     if (time >= hintedAt && time - hintedAt <= EXIT_CONFIRM_MS) {
       hintedAt = -Infinity;

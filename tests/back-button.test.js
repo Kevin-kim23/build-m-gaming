@@ -115,3 +115,23 @@ test('a clock rollback never accepts a stale exit confirmation', () => {
   assert.equal(handler(), 'hint');
   assert.equal(log.exits, 0);
 });
+
+test('Android Back returns from required consent to age without closing the gate', () => {
+  let time=1000,exits=0,hints=0,backClicks=0;
+  const gate={open:true,dataset:{step:'age'},querySelector:selector=>selector==='[data-access-back]'?{click(){backClicks++;gate.dataset.step='age';}}:null};
+  const reader=fakeDialog({closeSelector:'[data-access-reader-close]'});
+  const handler=createBackHandler({root:{querySelector:selector=>selector==='#access-gate'?gate:selector==='#access-reader'?reader:null},
+    now:()=>time,hint:()=>hints++,exit:()=>exits++});
+  assert.equal(handler(),'hint');
+  gate.dataset.step='consent';reader.open=true;
+  assert.equal(handler(),'closed','the nested document closes before navigating the gate');
+  assert.equal(gate.dataset.step,'consent');assert.equal(backClicks,0);
+  time+=100;
+  assert.equal(handler(),'back');
+  assert.equal(gate.dataset.step,'age');assert.equal(gate.open,true);assert.equal(backClicks,1);
+  assert.equal(handler(),'hint','returning to age resets any pending app-exit hint');
+  assert.equal(hints,2);assert.equal(exits,0);
+  time+=100;
+  assert.equal(handler(),'exit','the existing two-press exit behavior is retained at age entry');
+  assert.equal(exits,1);
+});

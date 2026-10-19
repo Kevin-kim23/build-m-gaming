@@ -36,13 +36,39 @@ export function createAccessUI({root=document,storage=localStorage,onExit=()=>{}
     gate.oncancel=event=>event.preventDefault();
     gate.innerHTML=startConsentMarkup();
     bindDocs(gate);
+    const ageInput=gate.querySelector('[name=age]');
+    function setStep(step){
+      gate.dataset.step=step;
+      gate.querySelectorAll('[data-access-stage]').forEach(node=>{node.hidden=node.dataset.accessStage!==step;});
+      gate.querySelector('[data-access-step-label]').textContent=step==='age'?'시작 안내 · 1 / 2':'시작 안내 · 2 / 2';
+      gate.querySelector('#access-title').textContent=step==='age'?'만 나이를 알려주세요':'필수 항목을 확인해 주세요';
+      gate.querySelector('[data-access-subtitle]').textContent=step==='age'?'대한민국 만 14세 이상 이용할 수 있어요.':'광고 동의는 나중에 따로 선택해요.';
+      error(gate,'');gate.querySelector('.access-body').scrollTop=0;
+      if(gate.open)(step==='age'?ageInput:gate.querySelector('#access-title')).focus();
+    }
+    function validAge(){
+      const band=ageBand(ageInput.value);
+      if(!band){error(gate,'만 나이를 0~120 사이의 정수로 입력해 주세요.');return false;}
+      if(band==='under14'){error(gate,'만 14세 미만은 이용할 수 없습니다. 광고는 요청하지 않습니다.');return false;}
+      return true;
+    }
+    setStep('age');
+    gate.querySelector('[data-age-form]').oninput=()=>error(gate,'');
+    gate.querySelector('[data-age-form]').onsubmit=event=>{
+      event.preventDefault();if(validAge())setStep('consent');
+    };
+    gate.querySelector('[data-access-back]').onclick=()=>{
+      gate.querySelector('[name=terms]').checked=false;
+      gate.querySelector('[name=privacy]').checked=false;
+      setStep('age');
+    };
     gate.querySelector('[data-access-form]').oninput=()=>error(gate,'');
     gate.querySelector('[data-access-exit]').onclick=()=>onExit();
     gate.querySelector('[data-access-form]').onsubmit=event=>{
       event.preventDefault();
-      const age=gate.querySelector('[name=age]').value,band=ageBand(age);
-      if(!band)return error(gate,'만 나이를 0~120 사이의 정수로 입력해 주세요.');
-      if(band==='under14')return error(gate,'만 14세 미만은 이번 테스트를 이용할 수 없습니다. 광고는 요청하지 않습니다.');
+      if(gate.dataset.step!=='consent')return;
+      if(!validAge()){setStep('age');validAge();return;}
+      const age=ageInput.value;
       const terms=gate.querySelector('[name=terms]').checked,privacy=gate.querySelector('[name=privacy]').checked;
       if(!terms||!privacy)return error(gate,'이용약관 동의와 개인정보 안내 확인이 필요합니다. 광고 동의는 선택입니다.');
       if(!store.accept({age,terms,privacy}))return error(gate,'선택을 저장하지 못했습니다. 저장 공간을 확인하고 다시 시도해 주세요.');
