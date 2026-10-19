@@ -37,7 +37,7 @@ function equipmentTile(d) {
   return `<article class="equip-tile equipment-list-card" data-equipment="${d.id}" aria-label="${d.name}">
     <div class="equipment-list-art"><canvas data-gun-preview width="220" height="124" role="img" aria-label="${d.name}"></canvas></div>
     <div class="equipment-list-info"><h3>${d.name} <small data-gear-level></small></h3><p class="equipment-list-stats" data-gear-stats title="장비 1대의 기본 능력 · 시설·개인장비·부스터 보너스 제외"></p><p class="equipment-list-next" data-gear-next title="장비 1대의 기본 골드 증가량 · 보너스 제외"></p><p class="equipment-list-status" data-gear-status></p></div>
-    <button type="button" class="equipment-list-detail" data-detail-equipment="${d.id}" aria-label="${d.name} 상세보기"><span aria-hidden="true">ⓘ</span></button>
+    <button type="button" class="equipment-list-detail" data-detail-equipment="${d.id}" aria-label="${d.name} 상세보기"><span aria-hidden="true">i</span></button>
     <div class="equipment-list-action"><button type="button" class="buy" data-buy-equipment="${d.id}">구매</button><button type="button" class="buy" data-enhance-equipment="${d.id}" hidden>강화</button><small data-gear-price></small></div>
   </article>`;
 }

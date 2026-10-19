@@ -19,8 +19,8 @@ const continentOf = (countryId, continentId, cleared) => {
 export const continentStages = continent => campaignStages.filter(s => s.continentId === continent.id);
 // The stage a continent or country opens on: the next one to play, kept inside that range.
 export function focusStage(cleared, first, last) { return Math.min(last, Math.max(first, cleared + 1)); }
-// The continent map is drawn once as a symbol and tiled up the road at its natural width (mirrored every other
-// tile so seams match), instead of one map blown up to the road's full height.
+// The continent map is drawn once as a symbol and tiled upright up the road at its natural width,
+// instead of one map blown up to the road's full height.
 const backdropCache = new Map();
 function backdrop(continent, height) {
   if (!backdropCache.has(continent.id)) {
@@ -30,7 +30,7 @@ function backdrop(continent, height) {
   const box = `0 0 ${continent.width} ${continent.height}`, id = `road-map-${continent.id}`;
   const tiles = Math.ceil(height / (280 * continent.height / continent.width)) + 1;
   return `<div class="road-backdrop" aria-hidden="true"><svg class="road-symbol" width="0" height="0"><symbol id="${id}" viewBox="${box}">${backdropCache.get(continent.id)}</symbol></svg>${
-    Array.from({length: tiles}, (_, i) => `<svg class="road-tile${i % 2 ? ' flip' : ''}" viewBox="${box}" preserveAspectRatio="xMidYMid slice"><use href="#${id}"/></svg>`).join('')}</div>`;
+    Array.from({length: tiles}, (_, i) => `<svg class="road-tile" viewBox="${box}" preserveAspectRatio="xMidYMid slice"><use href="#${id}"/></svg>`).join('')}</div>`;
 }
 function roadNode(state, stage, index, count, selectedId) {
   const cleared = state.campaignCleared ?? 0, done = stage.id <= cleared, next = stage.id === cleared + 1;
@@ -45,7 +45,7 @@ export function campaignMarkup(state,countryId=null,selectedId=null,continentId=
   const stages=continentStages(continent), count=stages.length;
   const selected=stages.find(s=>s.id===selectedId)??stages.find(s=>s.id===focusStage(cleared,continent.firstStage,continent.lastStage));
   const continentCleared=Math.max(0,Math.min(count,cleared-continent.firstStage+1)), access=battleAccess(state);
-  const continentButtons=CONTINENTS.map(c=>`<button data-continent="${c.id}" class="continent-tab ${c.id===continent.id?'active':''}" ${cleared<c.firstStage-1?'disabled':''} aria-label="${c.name} 대륙${cleared<c.firstStage-1?' · 이전 대륙 전체 점령 후 해금':' 진격 로드 열기'}">${battleIcon(c.theme!=='earth'?'orbit':'world')}${c.name}${cleared<c.firstStage-1?' · 잠금':''}</button>`).join('');
+  const continentButtons=CONTINENTS.map(c=>`<button data-continent="${c.id}" class="continent-tab ${c.id===continent.id?'active':''}" ${cleared<c.firstStage-1?'disabled':''} aria-label="${c.name} 대륙${cleared<c.firstStage-1?' · 이전 대륙 전체 점령 후 해금':' 진격 로드 열기'}">${battleIcon(c.theme!=='earth'?'orbit':'world')}${c.name}</button>`).join('');
   const path=stages.map((_,i)=>{const p=roadPoint(i,count);return `${p.x},${p.y}`;});
   const reached=Math.max(1,Math.min(count,continentCleared+1));
   return `<header class="battle-header"><div><small>${space?'DEEP SPACE':'CONQUEST'} · 진격 로드</small><h2 id="battle-title">${continent.name} 대륙</h2></div><button data-battle-close aria-label="전투 메뉴 닫기">×</button></header><p class="battle-session-note" role="status" data-battle-session></p>

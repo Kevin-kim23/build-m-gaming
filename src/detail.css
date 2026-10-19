@@ -26,7 +26,7 @@
   background: #263126;
   border-bottom: 1px solid #47543c;
 }
-.detail-head small { display: block; color: #a8b690; font-size: 10px; letter-spacing: 0.4px; }
+.detail-head small { display: block; color: #a8b690; font-size:11px; letter-spacing: 0.4px; }
 .detail-head h2 { margin: 2px 0 0; font-size: 18px; }
 .detail-close {
   flex: 0 0 auto;

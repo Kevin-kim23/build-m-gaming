@@ -113,7 +113,7 @@ test('academy stages show true prices and recommended ranks, with distinct cache
   const html=schoolDetailMarkup({...general(),officerSchoolLevel:3},'officer').body;
   assert.ok(!schoolsMarkup({...general(),officerSchoolLevel:3}).includes('school-levels'));
   for(const g of OFFICER_GRADES)assert.ok(html.includes(g.name+' 모집'));
-  for(const price of ['15억', '300억', '2,000억', '2조 5,000억', '9조'])
+  for(const price of ['15억', '300억', '2,000억', '2.5조', '9조'])
     assert.ok(html.includes(price+' G'));
   assert.match(html,/추가 계급 제한 없이 골드/);
   const images=OFFICER_GRADES.map(g=>schoolIcon('officer',g.schoolLevel).replace(/aria-label="[^"]*"/,''));

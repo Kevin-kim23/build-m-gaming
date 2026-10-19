@@ -126,20 +126,20 @@
 .tile-visual { position: relative; width: 100%; height: 58px; display: grid; place-items: center; background: #78805b; border-radius: 3px; box-shadow: inset 0 0 0 2px #67714d; }
 .tile-visual canvas { width: 40px; height: 50px; image-rendering: pixelated; }
 .recruit-tile h3 { margin: 4px 0 0; font-size: 14px; line-height: 1.2; word-break: keep-all; }
-.tile-owned { font-size: 10px; color: #b7c2a3; }
+.tile-owned { font-size:11px; color: #b7c2a3; }
 .tile-stats { display: flex; flex-direction: column; margin: 2px 0; font-size: 11px; line-height: 1.45; color: #c9d4b6; }
 .tile-stats span { display: block; }
-.tile-stats small { font-size: 10px; color: #a9b794; }
+.tile-stats small { font-size:11px; color: #a9b794; }
 .tile-stats b { color: #f1dfab; font-weight: 700; white-space: nowrap; }
 .tile-price { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0 3px; margin: 0; font-size: 12px; line-height: 1.3; color: #f1dfab; }
 .tile-price b { font-weight: 700; word-break: keep-all; }
-.tile-price small { font-size: 10px; color: #b9ae7f; }
+.tile-price small { font-size:11px; color: #b9ae7f; }
 .tile-price-bulk { padding-top: 1px; border-top: 1px dashed #5a6947; width: 100%; }
 .tile-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; width: 100%; margin-top: auto; padding-top: 3px; }
 .tile-buttons.single { grid-template-columns: 1fr; }
 .tile-buttons .buy { justify-content: center; min-height: 32px; margin: 0; padding: 4px 0; font-size: 11px; white-space: nowrap; border-radius: 4px; }
 .tile-buttons .buy:disabled { opacity: 0.55; }
-.tile-hint { min-height: 0; margin: 2px 0 0; font-size: 10px; line-height: 1.25; color: #d6b88c; word-break: keep-all; }
+.tile-hint { min-height: 0; margin: 2px 0 0; font-size:11px; line-height: 1.25; color: #d6b88c; word-break: keep-all; }
 .tile-hint:empty { display: none; }
 .tile-detail { position: absolute; top: 1px; right: 1px; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: #1f2b22aa; color: #e8e2b8; font-size: 14px; line-height: 1; cursor: pointer; }
 

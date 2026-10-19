@@ -8,7 +8,6 @@ import {billingPriceLabel} from './billing-price-label.js';
 export function storeMarkup(){
   return `<div class="store-products"><article class="starter-pack" data-starter-pack aria-label="스타터팩">
     <span class="starter-sparks" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-    <div class="starter-promo-tag">특별혜택!</div>
     <header><h3>스타터팩</h3><span class="starter-limit-badge">1회 한정!</span></header>
     <div class="starter-showcase" aria-label="스타터팩 구성">${Object.values(POTIONS).map(p=>`<div class="starter-vial ${p.id}"><span class="starter-vial-art" aria-hidden="true">${potionIcon(p.id)}</span><strong>${p.shortName}<span>${STARTER_PACK[p.id]}개</span></strong></div>`).join('')}</div>
     <p class="starter-max-effect"><span>맥스 부스터</span><strong>${POTIONS.max.durationLabel} 동안</strong><span>터치 골드 <b>${POTIONS.max.tapMultiplier}X</b> · 초당 골드 <b>${POTIONS.max.passiveMultiplier}X</b></span></p>

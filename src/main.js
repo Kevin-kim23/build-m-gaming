@@ -61,6 +61,7 @@ import "./home-menu.css";
 import "./ui-theme.css";
 import './loot.css';
 import "./tap-feedback.css";
+import "./ui-compact.css";
 import "./touch.css";
 import { hidePromotion } from "./promotion.js";
 import { createSettingsUI } from './settings-ui.js';
@@ -195,7 +196,7 @@ function update() {
     const percent = progress.ratio >= 1 ? 100 : Math.floor(progress.ratio * 100);
     $("#promotion-fill").style.width = progress.ratio * 100 + "%";
     $("#promotion-fill").dataset.tone = promotionTone(percent);
-    setText("#promotion-percent", percent + "%");
+    setText("#promotion-percent", `${r === LAST_RANK ? RANKS[LAST_RANK] + " 진급 완료" : RANKS[r + 1] + " 진급까지"} ${percent}%`);
     $(".promotion-track").setAttribute("aria-valuenow", String(percent));
     drawHomeField();
   }

@@ -1,19 +1,19 @@
 import { compactMoney, subtractMoney, serializeSave, multiplyMoney, exact } from '../src/money.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fmt, fmtGold, fmtGoldCost } from '../src/format.js';
+import { fmt, fmtGold, fmtGoldCost, goldLabelStep } from '../src/format.js';
 import { freshState, MAX_GOLD, MAX_OFFLINE_MS, parseSave, tapGold, accrue, perSecond, perTap, recruit, recruitCost, SAVE_KEY, activateAutoTouch, activateSword } from '../src/game.js';
 import { createGameSession } from '../src/session.js';
 
 const T = 1_800_000_000_000;
 
-test('gold labels switch at 1000 eok and truncate only the displayed remainder (wallet rounds down)', () => {
+test('gold labels show one unit from 10eok and truncate only the displayed remainder (wallet rounds down)', () => {
   for (const [value, label] of [
-    [0, '0'], [123456789, '123,456,789'], [99_999_999_999, '999억 9,999만'],
+    [0, '0'], [123456789, '123,456,789'], [99_999_999_999, '999억'],
     [100_000_000_000, '1,000억'], [100_099_999_999, '1,000억'],
     [999_999_999_999, '9,999억'], [1_000_000_000_000, '1조'],
-    [1_234_567_890_123, '1조 2,345억'], [99_999_999_999_999, '99조 9,999억'],
-    [100_000_000_000_000, '100조'], [100_000_100_000_000, '100조 1억'],
+    [1_234_567_890_123, '1.2조'], [99_999_999_999_999, '99.9조'],
+    [100_000_000_000_000, '100조'], [100_000_100_000_000, '100조'],
   ]) assert.equal(fmtGold(value), label);
   assert.equal(fmt(100_000_000_000), '100,000,000,000');
 });
@@ -24,8 +24,8 @@ test('cached gold labels never mix ordinary integers and compact buckets', () =>
       assert.equal(fmtGold(i), fmt(i));
       assert.equal(fmtGold(i * 100_000_000 + 99_999_999), `${fmt(i)}억`);
     }
-    assert.equal(fmtGold(1_234_567_890_123), '1조 2,345억');
-    assert.equal(fmtGold(1_234_599_999_999), '1조 2,345억');
+    assert.equal(fmtGold(1_234_567_890_123), '1.2조');
+    assert.equal(fmtGold(1_234_599_999_999), '1.2조');
   }
 });
 
@@ -123,18 +123,18 @@ test('batched saving and reload preserve large gold without clipping at the old 
   assert.equal(parseSave(values.get(SAVE_KEY), T).gold, MAX_GOLD);
 });
 
-// Shop labels: below 10억 exact, 10억~1,000억 in 만, above in 억.
-test('mid-size gold labels drop digits below 10,000 (만) from 10억', () => {
+// Shop labels: below 10억 exact, from 10억 one unit (one decimal under 100 of it).
+test('mid-size gold labels show one unit from 10억', () => {
   for (const [value, floorLabel, costLabel] of [
     [999_999_999, '999,999,999', '999,999,999'],
     [1_000_000_000, '10억', '10억'],
-    [1_234_567_890, '12억 3,456만', '12억 3,457만'],
-    [1_234_560_000, '12억 3,456만', '12억 3,456만'],
-    [1_200_000_001, '12억', '12억 1만'],
-    [99_999_999_999, '999억 9,999만', '1,000억'],
+    [1_234_567_890, '12.3억', '12.4억'],
+    [1_234_560_000, '12.3억', '12.4억'],
+    [1_200_000_001, '12억', '12.1억'],
+    [99_999_999_999, '999억', '1,000억'],
     [100_000_000_000, '1,000억', '1,000억'],
     [100_000_000_001, '1,000억', '1,001억'],
-    [1_234_567_890_123, '1조 2,345억', '1조 2,346억'],
+    [1_234_567_890_123, '1.2조', '1.3조'],
     [100_000_000_000_000, '100조', '100조'],
   ]) {
     assert.equal(fmtGold(value), floorLabel, `wallet ${value}`);
@@ -146,7 +146,7 @@ const parseLabel = (label) => {
   const unit = { 조: 1e12, 억: 1e8, 만: 1e4 };
   if (/^[\d,]+$/.test(label)) return Number(label.replace(/,/g, ''));
   let total = 0;
-  for (const [, amount, mark] of label.matchAll(/([\d,]+)(조|억|만)/g)) total += Number(amount.replace(/,/g, '')) * unit[mark];
+  for (const [, amount, mark] of label.matchAll(/([\d,]+(?:\.\d)?)(조|억|만)/g)) total += Math.round(Number(amount.replace(/,/g, '')) * unit[mark]);
   return total;
 };
 
@@ -158,13 +158,13 @@ test('a shown price is never lower than the real price and a shown wallet never 
     assert.ok(parseLabel(fmtGoldCost(value)) >= value, `cost label ${fmtGoldCost(value)} < ${value}`);
     assert.ok(parseLabel(fmtGold(value)) <= value, `wallet label ${fmtGold(value)} > ${value}`);
     // Whoever holds the amount shown on a price label can always afford it.
-    assert.ok(parseLabel(fmtGoldCost(value)) - value < (value >= 100_000_000_000 ? 100_000_000 : 10_000) || value < 1_000_000_000);
+    assert.ok(parseLabel(fmtGoldCost(value)) - value < Number(goldLabelStep(value)) || value < 1_000_000_000);
   }
 });
 
 test('cost and wallet labels keep separate caches', () => {
   for (let round = 0; round < 2; round++) {
-    assert.equal(fmtGold(1_234_567_890), '12억 3,456만');
-    assert.equal(fmtGoldCost(1_234_567_890), '12억 3,457만');
+    assert.equal(fmtGold(1_234_567_890), '12.3억');
+    assert.equal(fmtGoldCost(1_234_567_890), '12.4억');
   }
 });

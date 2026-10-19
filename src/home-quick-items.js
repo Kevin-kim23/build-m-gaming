@@ -58,7 +58,7 @@ export function createHomeItemControls(root,{state,writable,use,openOffer,onSucc
       if(button.getAttribute('title')!==status.aria)button.setAttribute('title',status.aria);
       if(button.dataset.homeItem==='auto')button.setAttribute('aria-pressed',String(status.active));
       const label=button.querySelector('[data-item-status]');
-      if(label.textContent!==status.label)label.textContent=status.label;
+      if(label.textContent!==status.label){label.textContent=status.label;label.classList?.toggle('is-ad',status.label==='광고');}
       const time=button.querySelector('[data-item-time]');
       if(time){time.hidden=!status.time;if(time.textContent!==status.time)time.textContent=status.time;}
     }
