@@ -11,7 +11,7 @@ import { battleIcon } from './battle-icons.js';
 // 전투 화면은 글을 최소로 둡니다(클래시 로얄처럼). 설명은 모두 "상세보기"(ⓘ) 팝업(battleDetailMarkup)에 있습니다.
 const infoButton = `<button class="info-btn" data-battle-info aria-label="상세보기">${battleIcon('info')}</button>`;
 export { campaignMarkup as stagesMarkup } from './campaign-map.js';
-export { quickDeckMarkup, stageTagsMarkup } from './quick-deck.js';
+export { stageTagsMarkup } from './quick-deck.js';
 
 const gearLine = (state, id) => {
   const gun = state.equipment[id], trait = UNIT_TRAITS[id], combat = equipmentCombatStats(id, gun.level, armyPower(state), equipmentCount(state, id));

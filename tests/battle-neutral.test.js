@@ -6,7 +6,8 @@ import { chooseEnemyDeployment, enemyTargetScore } from '../src/battle-ai.js';
 import { CONTINENTS } from '../src/campaign.js';
 import { campaignDifficulty } from '../src/campaign-progression.js';
 import { referenceArmy } from '../tools/campaign-sim.mjs';
-import { quickDeckMarkup, stageTagsMarkup, battleDetailMarkup } from '../src/battle-markup.js';
+import { stageTagsMarkup, battleDetailMarkup } from '../src/battle-markup.js';
+import { deckBoardMarkup, freshDeckView } from '../src/loadout-deck.js';
 
 function prepared(stageId=1,gear='tank') {
   const state=referenceArmy(STAGES[159]);state.campaignCleared=200;
@@ -77,9 +78,10 @@ test('enemy decisions preserve threatened lanes and readiness but ignore categor
 test('cards, stage chips and details retain roles and mana without matchup claims',()=>{
   const state=referenceArmy(STAGES[159]);
   for(const stage of [STAGES[6],STAGES[19],STAGES[59],STAGES[159]]) {
-    const card=quickDeckMarkup(state,stage,['tank']);
+    const card=deckBoardMarkup(state,freshDeckView(['tank']));
     assert.doesNotMatch(card+stageTagsMarkup(stage)+battleDetailMarkup(state,stage).body,/상성|유리|불리|약화|방어 장갑|피해 -40%|gear-tile mini (good|bad)/);
-    assert.match(card,/마나 24/);assert.match(card,/기갑/);
+    assert.match(card,/마나 24/);
+    assert.doesNotMatch(card.replaceAll('공중요새',''),/화력|기갑|공중|지원|cls-/,'deck cards share one look with no class labels');
     assert.equal(Object.hasOwn(stageEnemyType(stage.id),'counter'),false);
   }
 });

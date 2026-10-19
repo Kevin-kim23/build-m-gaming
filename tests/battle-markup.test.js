@@ -2,8 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState } from '../src/game.js';
 import { STAGES, defaultLoadout, createBattle } from '../src/battle.js';
-import { stagesMarkup, quickDeckMarkup, stageTagsMarkup, battlefieldMarkup, battleDetailMarkup } from '../src/battle-markup.js';
+import { stagesMarkup, stageTagsMarkup, battlefieldMarkup, battleDetailMarkup } from '../src/battle-markup.js';
 import { loadoutMarkup } from '../src/loadout-view.js';
+import { freshDeckView } from '../src/loadout-deck.js';
 import { battleStarsMarkup, renderBattleStars, renderBattleLock } from '../src/battle-icons.js';
 
 const army = (patch = {}) => ({ ...freshState(1000), soldiers: 880, sergeants: 40, equipment:{artillery:{level:3,count:1,deployed:true}}, ...patch });
@@ -43,14 +44,14 @@ test('the road only picks a stage and offers 출격; the separate loadout screen
   assert.match(html, /data-info-stage="1"/);
   assert.match(html, /class="chip">전초 포병</);
   assert.match(html, /<button[^>]*data-stage="1"[^>]*>출격</);
-  assert.doesNotMatch(html, /quick-deck|data-battle-gear|battle-slot-count|data-battle-start|전투 시작/, 'no deck on the stage screen');
-  const loadout = loadoutMarkup(state, STAGES[0], ['artillery']);
+  assert.doesNotMatch(html, /deck-board|data-deck-card|battle-slot-count|data-battle-start|전투 시작/, 'no deck on the stage screen');
+  const loadout = loadoutMarkup(state, STAGES[0], freshDeckView(['artillery']));
   assert.match(loadout, /출격 편성 · STAGE 01/);
   assert.match(loadout, /<button[^>]*data-battle-back[^>]*data-back-first[^>]*aria-label="스테이지 선택으로 돌아가기"/);
   assert.match(loadout, /id="battle-slot-count">1 \/ 3</);
-  assert.match(inputTag(loadout, 'data-battle-gear', 'artillery'), /\bchecked\b/);
-  assert.equal(inputTag(loadout, 'data-battle-gear', 'tank'), undefined);
-  assert.match(loadout, /data-card-art="artillery"/);
+  assert.match(loadout, /data-deck-card="artillery"[^>]*aria-label="견인포, 마나 18, 강화 3, 출격 칸"/);
+  assert.doesNotMatch(loadout, /data-deck-card="tank"/, 'equipment you do not own is never a playable card');
+  assert.match(loadout, /data-gear-art="artillery"/);
   assert.match(loadout, /<button[^>]*data-battle-start[^>]*>전투 시작</);
   assert.doesNotMatch(loadout, /road-stop|data-stage=/, 'no road on the loadout screen');
   assert.doesNotMatch(html + loadout, /진격 준비|병종별 10명|region-strategy|battle-intel/);
@@ -68,9 +69,9 @@ test('locked or unselectable regions show no deck, and a conquered region offers
   const state = army({ soldiers: 880, sergeants: 40, campaignCleared: 2, equipment: { artillery: { level: 3, deployed: true } } });
   assert.match(stageCards(stagesMarkup(state, 'serdin', 6)).at(-1).content, /이전 스테이지 점령 필요/);
   assert.match(stagesMarkup(state, 'serdin', 1), /다시 출격/);
-  for (const id of [1, 3, 6]) assert.doesNotMatch(stagesMarkup(state, 'serdin', id), /quick-deck/);
-  assert.match(loadoutMarkup(state, STAGES[2], ['artillery']), /quick-deck/);
-  assert.match(loadoutMarkup(state, STAGES[5], ['artillery']), /data-battle-start disabled/, 'a locked stage can never start from the loadout screen');
+  for (const id of [1, 3, 6]) assert.doesNotMatch(stagesMarkup(state, 'serdin', id), /deck-board/);
+  assert.match(loadoutMarkup(state, STAGES[2], freshDeckView(['artillery'])), /deck-board/);
+  assert.match(loadoutMarkup(state, STAGES[5], freshDeckView(['artillery'])), /data-battle-start disabled/, 'a locked stage can never start from the loadout screen');
 });
 
 test('battlefield is minimal: canvas, base HP over each base, mana bar and deploy cards, with no explanation text', () => {
@@ -101,19 +102,6 @@ test('capital detail shows the fortress warning; the deck row only shows a chip;
   assert.doesNotMatch(battleDetailMarkup(state, STAGES[0]).body, /요새 수도/);
 });
 
-test('deck cards show pictures, name, mana and role without category advantage markers', () => {
-  const state = army({ soldiers: 2, sergeants: 128, equipment: { artillery: { level: 3, deployed: true }, tank: { level: 5, deployed: true } } });
-  const markup = quickDeckMarkup(state, STAGES[6], ['tank']);
-  assert.equal((markup.match(/data-card-art=/g) ?? []).length, 2);
-  assert.match(markup, /class="card-cost"[^>]*>18</);
-  assert.match(markup, /class="card-cost"[^>]*>24</);
-  assert.match(inputTag(markup, 'data-battle-gear', 'tank'), /\bchecked\b/);
-  assert.doesNotMatch(inputTag(markup, 'data-battle-gear', 'artillery'), /\bchecked\b/);
-  assert.match(markup, /gear-tile mini"/);
-  assert.doesNotMatch(markup, /유리|불리|gear-tile mini (bad|good)/);
-  assert.match(quickDeckMarkup(army({ equipment: {} }), STAGES[0], []), /보유한 장비가 없어요/);
-});
-
 test('the map shows each conquered region\'s best stars and the selected region\'s record; unconquered regions show none', () => {
   const state = army({ soldiers: 880, sergeants: 40, campaignCleared: 3, campaignStars: [3, 1, 0, ...Array(77).fill(0)], equipment: { artillery: { level: 3, deployed: true } } });
   const html = stagesMarkup(state, 'serdin', 2);
@@ -128,11 +116,11 @@ test('the map shows each conquered region\'s best stars and the selected region\
 
 test('battle symbols are drawn SVGs while controls retain their names and result transitions clear old stars',()=>{
   const state=army({campaignCleared:3,campaignStars:[3,1,0]});
-  const views=[stagesMarkup(state),stagesMarkup(state,'serdin',2),loadoutMarkup(state,STAGES[2],['artillery']),quickDeckMarkup(state,STAGES[6],['artillery']),
+  const views=[stagesMarkup(state),stagesMarkup(state,'serdin',2),loadoutMarkup(state,STAGES[2],{...freshDeckView(['artillery']),picked:'artillery',info:'artillery',swap:true}),
     battlefieldMarkup(createBattle(state,1)),battleDetailMarkup(state,STAGES[6]).body];
   for(const view of views)assert.doesNotMatch(view,/[\p{Extended_Pictographic}\p{Emoji_Presentation}★☆✓▲▼✦◈◎ⓘ↑↓→‹]/u);
-  assert.match(views[4],/aria-label="일시정지"><svg[^>]*data-battle-icon="pause"/);
-  assert.match(views[4],/data-battle-icon="mana"/);
+  assert.match(views[3],/aria-label="일시정지"><svg[^>]*data-battle-icon="pause"/);
+  assert.match(views[3],/data-battle-icon="mana"/);
   assert.match(views[0],/aria-label="현재 위치로 이동"><svg[^>]*data-battle-icon="locate"/);
   for(let count=0;count<=3;count++){
     const stars=battleStarsMarkup(count);

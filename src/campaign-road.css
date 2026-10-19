@@ -33,3 +33,12 @@
 /* 출격 편성 screen (separate from the road) */
 .loadout-head > div { flex:1; min-width:0; }
 .loadout-head h2 { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.loadout-panel { display:flex; flex-direction:column; gap:8px; border:1px solid #5a6b50; border-radius:6px; padding:12px; background:#29372b; }
+.loadout-panel .brief-line { margin:0; font-size:11px; color:#aaba9f; line-height:1.5; }
+.loadout-panel strong { color:#e5d79d; }
+.loadout-panel .brief-deck-head { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#dec88c; }
+.loadout-panel .battle-message { margin:0; font-size:11px; color:#edd49b; min-height:1em; }
+.loadout-panel .battle-message:empty { display:none; }
+.loadout-panel .battle-primary { position:sticky; bottom:6px; z-index:25; width:100%; max-width:none; padding:13px 10px; border:1px solid #decb8c; border-radius:4px; font-size:14px !important; box-shadow:0 -10px 10px #29372b; }
+.space-campaign .loadout-panel { background:#262b43; border-color:#635b7c; }
+.space-campaign .loadout-panel .battle-primary { box-shadow:0 -10px 10px #262b43; }
