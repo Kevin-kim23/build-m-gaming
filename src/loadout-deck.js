@@ -1,20 +1,18 @@
-import { compactGuidePower } from './power-format.js';
-import { equipmentCombatPower } from './battle-balance.js';
 import { UNIT_TRAITS, battleSlots, normalizeLoadout, EXTRA_SLOT_RANKS, MAX_BATTLE_SLOTS } from './battle.js';
 import { EQUIPMENT } from './equipment.js';
 import { battleIcon } from './battle-icons.js';
 
 // 출격 편성 카드 덱(클래식 카드 덱): 위는 출격 칸(계급별 3~6칸, 잠긴 칸 표시), 아래는 보유 장비.
-// 카드를 누르면 바로 아래에 사용(빼기)·닫기만 뜨고, 오른쪽 위 i는 그 장비의 전투력을 카드 위에 보여 준다.
-// 모든 카드는 같은 색이다(상성 없음). 이 파일의 규칙은 순수 함수이고 저장하지 않는다.
-export const freshDeckView = (deck = []) => ({ deck: [...deck], picked: null, swap: false, info: null, message: '' });
+// 카드를 누르면 바로 아래에 사용(빼기)·닫기만 뜬다. 모든 카드는 같은 색, 그림은 강화 장식 없는 기본형으로 통일한다
+// (강화 단계는 Lv 숫자로만). 이 파일의 규칙은 순수 함수이고 저장하지 않는다.
+export const CARD_ART_LEVEL = 1;
+export const freshDeckView = (deck = []) => ({ deck: [...deck], picked: null, swap: false, message: '' });
 
 // One tap → the next view. Deck order always follows the shared loadout rules.
 export function deckAction(state, view, action) {
   const limit = battleSlots(state), next = { ...view, deck: [...view.deck] };
   const tidy = () => { next.deck = normalizeLoadout(state, { equipment: next.deck }).equipment; };
   const { type, id } = action;
-  if (type === 'info') { next.info = view.info === id ? null : id; return next; }
   if (type === 'close') return { ...next, picked: null, swap: false, message: '' };
   if (type === 'card' && view.deck.includes(id)) {
     if (view.swap && view.picked && !view.deck.includes(view.picked)) {
@@ -39,13 +37,12 @@ export function deckAction(state, view, action) {
 
 const cardCost = id => UNIT_TRAITS[id].cost;
 function card(state, view, id, inDeck) {
-  const level = state.equipment[id].level, name = EQUIPMENT[id].name, open = view.picked === id, info = view.info === id;
+  const level = state.equipment[id].level, name = EQUIPMENT[id].name, open = view.picked === id;
   const pop = !open ? '' : `<div class="deck-pop" role="group" aria-label="${name}">${inDeck
     ? '<button type="button" data-deck-act="remove">빼기</button>' : '<button type="button" class="primary" data-deck-act="use">사용</button>'}<button type="button" data-deck-act="close">닫기</button></div>`;
   return `<div class="deck-cell${open ? ' is-open' : ''}"><button type="button" class="deck-card${open ? ' is-selected' : ''}" data-deck-card="${id}"${inDeck && view.swap ? ' data-wiggle' : ''} aria-pressed="${open}" aria-label="${name}, 마나 ${cardCost(id)}, 강화 ${level}${inDeck ? ', 출격 칸' : ''}">
-    <i class="deck-mana" aria-hidden="true">${cardCost(id)}</i><span class="deck-art"><canvas data-gear-art="${id}" data-level="${level}" width="120" height="68" aria-hidden="true"></canvas></span><span class="deck-level">Lv.${level}</span><b class="deck-name">${name}</b>
-    ${info ? `<span class="deck-power" aria-live="polite"><small>전투력</small><b>${compactGuidePower(BigInt(equipmentCombatPower(id, level)))}</b></span>` : ''}</button>
-    <button type="button" class="deck-info" data-deck-info="${id}" aria-pressed="${info}" aria-label="${name} 전투력 보기">i</button>${pop}</div>`;
+    <i class="deck-mana" aria-hidden="true">${cardCost(id)}</i><span class="deck-art"><canvas data-gear-art="${id}" data-level="${CARD_ART_LEVEL}" width="120" height="68" aria-hidden="true"></canvas></span><span class="deck-level">Lv.${level}</span><b class="deck-name">${name}</b>
+</button>${pop}</div>`;
 }
 export function deckBoardMarkup(state, view) {
   const limit = battleSlots(state), owned = Object.keys(EQUIPMENT).filter(id => state.equipment?.[id]);

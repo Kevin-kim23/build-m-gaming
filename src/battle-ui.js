@@ -106,8 +106,7 @@ export function createBattleUI(session, audio = null) {
   }
   function deckTap(target) {
     const d = target.dataset;
-    const action = d.deckAct ? { type: d.deckAct } : d.deckInfo ? { type: 'info', id: d.deckInfo }
-      : d.deckCard ? { type: 'card', id: d.deckCard } : d.deckSlot !== undefined ? { type: 'slot' } : null;
+    const action = d.deckAct ? { type: d.deckAct } : d.deckCard ? { type: 'card', id: d.deckCard } : d.deckSlot !== undefined ? { type: 'slot' } : null;
     if (!action) return false;
     deckView = deckAction(session.state, deckView, action);
     loadout = normalizeLoadout(session.state, { equipment: deckView.deck }); loadoutStage = stageId;   // 고른 덱 기억

@@ -13,28 +13,25 @@ export function supplyCountdown(ms) {
   return `${String(Math.floor(minutes/60)).padStart(2,'0')}:${String(minutes%60).padStart(2,'0')}`;
 }
 const role=o=>o.period?'정기 보급':o.id==='duty'?'자동 지원':'수입 보관';
+// One compact row per operative: portrait | name, effect, price/status | action. Long text sits behind 자세히.
 function operativeCardMarkup(o) {
   const potion=POTIONS[o.potion];
   return `<article class="operative-card" data-operative="${o.id}" style="--operative-color:${o.color}">
-    <div class="operative-profile">
-      <div class="operative-portrait">${operativeIcon(o.id)}</div>
-      <div class="operative-info"><span class="operative-role">${role(o)}</span>
-        <h3>${o.name}</h3><div class="operative-meta"><span data-crew-owned hidden>영입 완료</span><span class="operative-timer" data-crew-timer hidden></span></div>
-        <p class="operative-effect">${o.effect}</p>
-      </div>
+    <div class="operative-portrait">${operativeIcon(o.id)}</div>
+    <div class="operative-info">
+      <h3>${o.name}<span class="operative-tag" data-crew-owned hidden>보유</span><span class="operative-tag operative-timer" data-crew-timer hidden></span>${potion?'<span class="operative-tag welcome" data-crew-welcome>첫 영입 즉시 지급</span>':''}</h3>
+      <p class="operative-effect">${o.effect}</p>
+      <div class="operative-price"><span data-crew-price-label>영입 비용</span> <strong data-crew-price>${fmt(o.price)}개</strong><small data-crew-status></small>
+      <details class="operative-detail"><summary aria-label="${o.name} 상세보기">자세히</summary><p>${potion?`${potion.name}: ${potion.effect} · ${potion.durationLabel}. `:''}${o.detail}${o.period?` 첫 영입 시 1개를 아이템에 즉시 지급해요. 아이템이 가득 차면 보급함에 보관해요. 이후 영입한 시각부터 주기적으로 생성되고, 종료 중에도 시간이 흐르며 최대 ${SUPPLY_CAP}회분을 보관해요. 받으면 아이템에 추가돼요.`:''}</p></details></div>
     </div>
-    ${potion?`<div class="operative-supply-preview"><span class="operative-supply-icon" aria-hidden="true">${potionIcon(o.potion)}</span><div><strong>${potion.name} ×1</strong><span>${potion.effect} · ${potion.durationLabel}</span></div><small data-crew-welcome>첫 영입 즉시 지급</small></div>`:''}
-    <details class="operative-detail"><summary aria-label="${o.name} 상세보기">능력 자세히</summary><p>${o.detail}${o.period?` 첫 영입 시 1개를 아이템에 즉시 지급해요. 아이템이 가득 차면 보급함에 보관해요. 이후 영입한 시각부터 주기적으로 생성되고, 종료 중에도 시간이 흐르며 최대 ${SUPPLY_CAP}회분을 보관해요. 받으면 아이템에 추가돼요.`:''}</p></details>
-    <div class="operative-actions"><div class="operative-action-info"><span data-crew-price-label>영입 비용</span><strong data-crew-price>${fmt(o.price)}개</strong><small data-crew-status></small></div>
-      <button type="button" data-crew-action="${o.id}">영입하기</button></div>
+    <button type="button" class="operative-action" data-crew-action="${o.id}">영입하기</button>
   </article>`;
 }
 export function lootShopMarkup() {
   return `<dialog id="loot-shop" aria-labelledby="loot-title">
     <header class="loot-head"><div><small>승리의 보상, 부대의 새로운 힘</small><h2 id="loot-title">전리품 상점</h2></div><button type="button" data-loot-close aria-label="전리품 상점 닫기">×</button></header>
     <div class="loot-wallet"><span class="loot-wallet-icon" aria-hidden="true">${lootIcon()}</span><div class="loot-wallet-caption"><span>보유 전리품</span><small>전투 승리로 획득</small></div><strong><span data-loot-balance>0</span><small>개</small></strong></div>
-    <div class="loot-scroll"><div class="loot-collection"><div><h3>특별 대원</h3><p>한 번의 영입으로 계속 함께하는 동료</p></div><strong data-loot-collection>0 / ${OPERATIVES.length}</strong></div>
-      <div class="loot-principles"><span>영구 보유</span><span>종류별 1명</span><span>전리품 전용</span></div>
+    <div class="loot-scroll"><div class="loot-collection"><div><h3>특별 대원</h3><p>영구 보유 · 종류별 1명 · 전리품 전용</p></div><strong data-loot-collection>0 / ${OPERATIVES.length}</strong></div>
       ${OPERATIVES.map(operativeCardMarkup).join('')}
       <details class="loot-notice"><summary>전리품·보급 안내</summary><p>첫 승리·수도에서 더 많은 전리품을 얻어요. 재전투 보상은 한국시간 하루 합산 10회예요. 골드나 현금은 사용하지 않으며 골드와 전리품은 서로 교환하지 않아요. 보급은 대원의 ‘받기’를 눌러 수령하세요.</p></details>
     </div><footer class="loot-footer"><span data-loot-summary>대원을 영입하고 특별한 지원을 받아 보세요.</span><button type="button" data-loot-close>닫기</button></footer></dialog>`;

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshState } from '../src/game.js';
 import { battleSlots, MAX_BATTLE_SLOTS, EXTRA_SLOT_RANKS } from '../src/battle.js';
-import { freshDeckView, deckAction, deckBoardMarkup } from '../src/loadout-deck.js';
+import { freshDeckView, deckAction, deckBoardMarkup, CARD_ART_LEVEL } from '../src/loadout-deck.js';
 
 // Three owned gears, rank with the base 3 slots. Synthetic state only; no save is read or written.
 const gear = level => ({ level, count: 1, deployed: true });
@@ -55,13 +55,14 @@ test('use adds into a free slot; a full deck asks which card to swap; remove fre
   assert.match(view.message, /보유 장비를 누른 뒤/);
 });
 
-test('the i button shows that gear\'s combat power on the card; every card shares one look', () => {
-  const state = army();
-  const view = tap(state, freshDeckView(['artillery']), { type: 'info', id: 'tank' });
-  const html = deckBoardMarkup(state, view);
-  assert.match(html, /data-deck-card="tank"[\s\S]*?<span class="deck-power"[^>]*><small>전투력<\/small><b>[^<]+<\/b><\/span><\/button>\s*<button type="button" class="deck-info" data-deck-info="tank" aria-pressed="true"/);
-  assert.equal((html.match(/class="deck-power"/g) ?? []).length, 1);
-  assert.equal(tap(state, view, { type: 'info', id: 'tank' }).info, null);
+test('cards share one look: same base art for every level, no info button, no class labels', () => {
+  const state = army({ equipment: { artillery: gear(30), tank: gear(1), selfPropelled: gear(12) } });
+  const html = deckBoardMarkup(state, freshDeckView(['artillery']));
+  const levels = [...html.matchAll(/data-gear-art="\w+" data-level="(\d+)"/g)].map(m => m[1]);
+  assert.equal(levels.length, 3);
+  assert.deepEqual([...new Set(levels)], [String(CARD_ART_LEVEL)], 'upgrade glow never changes the card picture');
+  assert.match(html, /Lv\.30/);
+  assert.doesNotMatch(html, /deck-info|deck-power|전투력/);
   assert.doesNotMatch(html.replaceAll('공중요새', ''), /cls-|화력|기갑|공중|지원|유리|불리/);
 });
 

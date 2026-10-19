@@ -1,4 +1,4 @@
-/* 출격 편성 · 클래식 카드 덱. Every card shares one colour (no class matchups). */
+/* 출격 편성 · 클래식 카드 덱. Every card shares one colour and the same base art (no class matchups). */
 .deck-board { display:flex; flex-direction:column; gap:8px; }
 .deck-board .brief-deck-head { flex-wrap:wrap; gap:4px; }
 .deck-board .brief-deck-head b { font-variant-numeric:tabular-nums; }
@@ -20,13 +20,7 @@
 .deck-level { font-size:10px; font-weight:800; line-height:1.5; padding:0 5px; border-radius:4px; background:#3a4a3f; color:#e9ecd2; }
 .deck-name { font-size:11px; font-weight:700; line-height:1.2; text-align:center; word-break:keep-all; overflow-wrap:anywhere; }
 .deck-mana { position:absolute; top:-7px; left:-7px; z-index:2; min-width:26px; height:26px; padding:0 4px; box-sizing:border-box; display:grid; place-items:center; border-radius:13px; background:#2f7fd0; border:2px solid #cfe6ff; color:#fff; font:800 12px/1 system-ui; font-style:normal; font-variant-numeric:tabular-nums; }
-.deck-info { position:absolute; top:-7px; right:-7px; z-index:3; width:28px; height:28px; padding:0; display:grid; place-items:center; border-radius:50%; border:2px solid #d8dccf; background:#2b3a31; color:#eef1e8; }
-#battle-modal .deck-info { font:italic 800 14px/1 Georgia, serif; }
 
-.deck-info[aria-pressed=true] { background:#edd49b; border-color:#fff3cf; color:#2a1e08; }
-.deck-power { position:absolute; inset:14px 4px 4px; z-index:2; display:grid; place-content:center; gap:2px; text-align:center; border-radius:7px; background:#0d1410eb; }
-.deck-power small { font-size:10px; color:#aebf9e; }
-.deck-power b { font-size:15px; color:#edd49b; font-variant-numeric:tabular-nums; }
 .deck-card.locked { display:grid; place-items:center; align-content:center; gap:4px; padding:6px; border-style:dashed; border-color:#45573f; background:#101712; color:#8d9a86; text-align:center; }
 .deck-card.locked svg { width:18px; height:18px; opacity:.7; }
 .deck-card.locked small { font-size:10px; }
