@@ -26,7 +26,7 @@ test('erebus has40 original sequential regions, two contiguous nations and safe 
  const s=referenceArmy(campaignStages[179]);s.campaignCleared=160;
  const html=campaignMarkup(s,null,null,'erebus');assert.match(html,/에레보스 대륙/);assert.equal((html.match(/class="road-stop /g)??[]).length,40);
  assert.match(html,/class="road-stop frontier[^"]*" data-region="161"/);
- assert.match(campaignMarkup({...s,campaignCleared:180},'mordrath',181),/장기 도전 지역/);
+ assert.doesNotMatch(campaignMarkup({...s,campaignCleared:180},'mordrath',181),/장기 도전 지역|첫 점령/);
  assert.ok(exact(campaignStages[199].recommendedPower)<=MAX_ARMY_POWER);
 });
 test('maximum-rank50강 clears the first20, while all last20 remain long-term siege objectives',()=>{

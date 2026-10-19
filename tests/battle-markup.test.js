@@ -102,14 +102,14 @@ test('capital detail shows the fortress warning; the deck row only shows a chip;
   assert.doesNotMatch(battleDetailMarkup(state, STAGES[0]).body, /요새 수도/);
 });
 
-test('the map shows each conquered region\'s best stars and the selected region\'s record; unconquered regions show none', () => {
+test('the road shows each conquered stage\'s stars; the stage panel shows no stat text', () => {
   const state = army({ soldiers: 880, sergeants: 40, campaignCleared: 3, campaignStars: [3, 1, 0, ...Array(77).fill(0)], equipment: { artillery: { level: 3, deployed: true } } });
   const html = stagesMarkup(state, 'serdin', 2);
   assert.equal((html.match(/class="road-stars"/g) ?? []).length, 3, 'one star row per conquered stage');
   for(const count of [3,1,0])assert.match(html,new RegExp(`<span class="road-stars"><svg[^>]*aria-label="별 ${count}개"`));
-  assert.match(html, /최고 <span class="best-stars"><svg[^>]*aria-label="최고 별 1개"/);
-  assert.equal((html.match(/data-star-filled="true"/g)??[]).length,5);
-  assert.equal((html.match(/data-star-filled="false"/g)??[]).length,7);
+  assert.doesNotMatch(html.slice(html.indexOf('class="region-brief"')), /best-stars|권장|내 전력|첫 점령/, 'the stage panel stays free of stat text');
+  assert.equal((html.match(/data-star-filled="true"/g)??[]).length,4);
+  assert.equal((html.match(/data-star-filled="false"/g)??[]).length,5);
   assert.doesNotMatch(html, /★|☆|<text class="region-stars"/);
   assert.doesNotMatch(stagesMarkup(state, 'serdin', 4), /최고 <span/);
 });
