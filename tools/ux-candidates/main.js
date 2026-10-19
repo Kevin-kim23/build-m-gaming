@@ -24,8 +24,11 @@ const deckState = new Map(DECK_CANDIDATES.map(c => [c.id, freshDeckState()]));
 const option = (c, kind) => `<article class="candidate" id="${kind}-${c.id}"><div class="cand-head"><span class="cand-letter">${c.id}</span><div><h3>${c.title}</h3><small>${c.tag}</small></div></div>
   <p class="cand-copy">${c.copy}</p><dl class="cand-pc"><div><dt>좋은 점</dt><dd>${c.pros}</dd></div><div><dt>주의할 점</dt><dd>${c.cons}</dd></div></dl>
   <div class="phone" data-kind="${kind}" data-cand="${c.id}"></div></article>`;
-document.querySelector('#stage-grid').innerHTML = STAGE_CANDIDATES.map(c => option(c, 'stage')).join('');
-document.querySelector('#deck-grid').innerHTML = DECK_CANDIDATES.map(c => option(c, 'deck')).join('');
+// The owner picked stage 2 + deck A; they lead the page, the rest stay below for reference.
+const CHOSEN = {stage: '2', deck: 'A'};
+document.querySelector('#chosen-grid').innerHTML = option(STAGE_CANDIDATES.find(c => c.id === CHOSEN.stage), 'stage') + option(DECK_CANDIDATES.find(c => c.id === CHOSEN.deck), 'deck');
+document.querySelector('#stage-grid').innerHTML = STAGE_CANDIDATES.filter(c => c.id !== CHOSEN.stage).map(c => option(c, 'stage')).join('');
+document.querySelector('#deck-grid').innerHTML = DECK_CANDIDATES.filter(c => c.id !== CHOSEN.deck).map(c => option(c, 'deck')).join('');
 
 function render(phone) {
   const {kind, cand} = phone.dataset;
@@ -36,10 +39,11 @@ function render(phone) {
     const box = phone.querySelector('.phone-content'), sel = box?.querySelector('.selected');
     if (box && sel && box.scrollHeight > box.clientHeight) {
       const top = sel.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
-      box.scrollTop = top - box.clientHeight / 2 + sel.offsetHeight / 2;
+      box.scrollTop = top - box.clientHeight / 2 + sel.getBoundingClientRect().height / 2;
     }
   } else phone.innerHTML = DECK_CANDIDATES.find(x => x.id === cand).render(deckState.get(cand));
   paint(phone);
+  phone.querySelector('.card-pop')?.scrollIntoView({block: 'nearest'});
 }
 document.querySelectorAll('.phone').forEach(render);
 

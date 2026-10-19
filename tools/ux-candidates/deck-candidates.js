@@ -6,34 +6,33 @@ const LOCKED = Object.keys(EQUIPMENT).filter(id => !CARDS.some(c => c.id === id)
 const lockedCard = id => `<div class="gear-card locked" aria-label="${EQUIPMENT[id].name} 미보유">${icon('lock')}<span class="card-name">${EQUIPMENT[id].name}</span><small>장비 탭에서 구매</small></div>`;
 export const freshDeckState = () => ({deck: [...STARTER_DECK], picked: null, swap: false, preset: 0,
   presets: [[...STARTER_DECK], ['tank', 'railgunTank', 'fighter', 'carrier', 'transport'], ['icbm', 'orbitalAssault', 'artillery', 'selfPropelled', 'transport']],
-  filter: 'all', sort: 'cost', message: ''});
+  filter: 'all', sort: 'cost', message: '', info: null});
 const head = (title, sub, extra = '') => `<header class="phone-head"><div><small>${sub}</small><h3>${title}</h3></div>${extra}</header>`;
-const deckHead = s => `<div class="deck-head"><b>출격 장비 <span>${s.deck.length} / ${SAMPLE.slots}</span></b><span class="avg">${icon('mana')} 평균 ${avgCost(s.deck)}</span></div>`;
+const deckHead = s => `<div class="deck-head"><b>출격 장비 <span>${s.deck.length} / ${SAMPLE.slots}</span><small class="max-note">최대 ${SAMPLE.maxSlots}칸</small></b><span class="avg">${icon('mana')} 평균 ${avgCost(s.deck)}</span></div>`;
+// Popover sits right under the tapped card and holds only the action and a close button.
+const popover = (s, id) => s.picked !== id ? '' : `<div class="card-pop" role="group" aria-label="${card(id).name}">${s.deck.includes(id)
+  ? '<button type="button" data-act="remove">빼기</button>' : '<button type="button" data-act="use" class="primary">사용</button>'}<button type="button" data-act="cancel">닫기</button></div>`;
+const cell = (s, id, attrs) => gearCard(card(id), {selected: s.picked === id, info: s.info === id, attrs, popover: popover(s, id)});
 function slots(s, {attr = 'data-deck', wiggle = false} = {}) {
-  return `<div class="deck-grid">${Array.from({length: SAMPLE.slots}, (_, i) => s.deck[i]
-    ? gearCard(card(s.deck[i]), {selected: s.picked === s.deck[i], attrs: `${attr}="${s.deck[i]}" data-slot="${i}"${wiggle ? ' data-wiggle' : ''}`})
+  return `<div class="deck-grid">${Array.from({length: SAMPLE.maxSlots}, (_, i) => i >= SAMPLE.slots
+    ? `<div class="slot-locked" aria-label="잠긴 칸 · ${SAMPLE.nextSlotRank} 달성 시 열림">${icon('lock')}<small>${SAMPLE.nextSlotRank} 달성 시<br>열림</small></div>`
+    : s.deck[i] ? cell(s, s.deck[i], `${attr}="${s.deck[i]}" data-slot="${i}"${wiggle ? ' data-wiggle' : ''}`)
     : `<button type="button" class="slot-empty" data-slot="${i}" aria-label="빈 칸 ${i + 1}">+</button>`).join('')}</div>`;
 }
-const collection = (s, list = CARDS) => `<div class="collection-grid">${list.filter(c => !s.deck.includes(c.id)).map(c => gearCard(c, {selected: s.picked === c.id, attrs: `data-collect="${c.id}"`})).join('')}${LOCKED.map(lockedCard).join('')}</div>`;
+const collection = (s, list = CARDS) => `<div class="collection-grid">${list.filter(c => !s.deck.includes(c.id)).map(c => cell(s, c.id, `data-collect="${c.id}"`)).join('')}${LOCKED.map(lockedCard).join('')}</div>`;
 const footer = (s, label = '이 편성으로 출격') => `<footer class="phone-footer"><p class="deck-message" role="status">${s.message}</p><button type="button" class="cta" ${s.deck.length ? '' : 'disabled'}>${label}</button></footer>`;
-const actionBar = s => {
-  if (!s.picked) return '';
-  const inDeck = s.deck.includes(s.picked), c = card(s.picked);
-  return `<div class="card-actions" role="group" aria-label="${c.name}"><span>${c.name} · ${c.clsName} · 공격 ${c.damage} · 체력 ${c.hp}</span>
-    ${inDeck ? '<button type="button" data-act="remove">빼기</button>' : '<button type="button" data-act="use" class="primary">사용</button>'}<button type="button" data-act="cancel">닫기</button></div>`;
-};
 
 // A · Classic: tap a card for Use / Remove; when the deck is full, "Use" asks which slot to swap.
 function classic(s) {
   return `${head('출격 편성', '아스테라 스테이지 24')}<div class="phone-content pad">${deckHead(s)}
-    ${s.swap ? `<p class="swap-banner">${icon('info')} 바꿀 장비를 누르세요</p>` : ''}${slots(s, {wiggle: s.swap})}${actionBar(s)}
+    ${s.swap ? `<p class="swap-banner">${icon('info')} 바꿀 장비를 누르세요</p>` : ''}${slots(s, {wiggle: s.swap})}
     <h4 class="list-title">보유 장비 <small>${CARDS.length}개</small></h4>${collection(s)}</div>${footer(s)}`;
 }
 // B · Deck presets: three saved decks you switch with one tap, plus auto-fill.
 function presets(s) {
   const tabs = s.presets.map((_, i) => `<button type="button" class="preset-tab" data-preset="${i}" aria-pressed="${s.preset === i}">덱 ${i + 1}</button>`).join('');
   return `${head('출격 편성', '아스테라 스테이지 24')}<div class="preset-bar">${tabs}<button type="button" class="ghost-btn" data-auto>자동 편성</button></div>
-    <div class="phone-content pad">${deckHead(s)}${s.swap ? `<p class="swap-banner">${icon('info')} 바꿀 장비를 누르세요</p>` : ''}${slots(s, {wiggle: s.swap})}${actionBar(s)}
+    <div class="phone-content pad">${deckHead(s)}${s.swap ? `<p class="swap-banner">${icon('info')} 바꿀 장비를 누르세요</p>` : ''}${slots(s, {wiggle: s.swap})}
     <h4 class="list-title">보유 장비</h4>${collection(s)}</div>${footer(s)}`;
 }
 // C · Drag and drop: drag a card onto a slot; tap card then tap slot also works.
@@ -76,6 +75,7 @@ function add(s, id) {
 }
 export function handleDeck(s, b) {
   const d = b.dataset;
+  if (d.info) { s.info = s.info === d.info ? null : d.info; return true; }
   if (d.act === 'cancel') { s.picked = null; s.swap = false; return true; }
   if (d.act === 'remove') { s.deck = s.deck.filter(id => id !== s.picked); s.picked = null; s.message = ''; return true; }
   if (d.act === 'use') { add(s, s.picked); return true; }

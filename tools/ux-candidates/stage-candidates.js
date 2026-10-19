@@ -3,6 +3,7 @@ import {SAMPLE, STAGES, ASTERA_COUNTRIES, STARTER_DECK, card, starsOf, statusOf,
 import {battleStarsMarkup} from '../../src/battle-icons.js';
 import {lootIcon} from '../../src/operative-art.js';
 import {countryRegions, polygonPath, bounds} from '../../src/campaign-geometry.js';
+import {mapDefs, oceanArt, countryLand, settlement} from '../../src/campaign-art.js';
 
 const fmt = n => n.toLocaleString('ko-KR');
 const MY_POWER = 9400;
@@ -45,17 +46,31 @@ function commandRoom(id) {
   </div>
   <footer class="phone-footer">${stageFooter(id, {deck: true})}</footer>`;
 }
-// 2 · Conquest road: a vertical path that scrolls; current node centred; nation banners every 20.
+// 2 · Conquest road on the real Astera map: stages 1 (south) to 80 (north) joined by one road; scroll up to advance.
+// Map art, coastlines and region positions come from the game's own campaign data (no new art).
+const ROAD_POINTS = ASTERA_COUNTRIES.flatMap(c => countryRegions(c.id));
+const roadMap = (() => {
+  const xs = ROAD_POINTS.map(r => r.point[0]);
+  return {x: Math.min(...xs) - 70, width: Math.max(...xs) - Math.min(...xs) + 140, y: 40, height: 2420};
+})();
 function conquestRoad(id) {
-  const nodes = [];
-  for (let n = 30; n >= 1; n--) {
-    const st = statusOf(n), side = [0, 1, 2, 1][n % 4];
-    if (n % 20 === 0) nodes.push(`<li class="road-banner" style="--country:${countryOf(n).color}">${countryOf(n).name} 수도</li>`);
-    nodes.push(`<li class="road-node side-${side}"><button type="button" class="node ${st}${n === id ? ' selected' : ''}${n % 20 === 0 ? ' capital' : ''}" data-pick="${n}" ${lockAttr(n)} aria-pressed="${n === id}" aria-label="스테이지 ${n} ${STATUS_NAME[st]}">${st === 'done' ? icon('check') : st === 'locked' ? icon('lock') : n}</button>${st === 'done' ? `<span class="node-stars">${battleStarsMarkup(starsOf(n))}</span>` : st === 'current' ? '<span class="node-label now">지금 도전</span>' : `<span class="node-label">${n}</span>`}</li>`);
-    if (n % 20 === 1) nodes.push(`<li class="road-banner start" style="--country:${countryOf(n).color}">${countryOf(n).name} 진입</li>`);
-  }
-  return `${head('진격 로드', '전투')}${continentBar()}<div class="phone-content road" data-road><ol class="road-list">${nodes.join('')}</ol></div><footer class="phone-footer">${stageFooter(id)}</footer>`;
+  const line = ROAD_POINTS.map(r => r.point.map(Math.round).join(',')).join(' ');
+  const doneLine = ROAD_POINTS.filter(r => r.id <= SAMPLE.current).map(r => r.point.map(Math.round).join(',')).join(' ');
+  const nodes = ROAD_POINTS.map(r => {
+    const st = statusOf(r.id), [x, y] = r.point, cap = r.id % 20 === 0, size = st === 'current' ? 50 : cap ? 44 : 38;
+    return `<g class="road-stop ${st}${r.id === id ? ' selected' : ''}${cap ? ' capital' : ''}" data-pick="${r.id}" role="button" tabindex="${st === 'locked' ? -1 : 0}" aria-disabled="${st === 'locked'}" aria-label="스테이지 ${r.id} ${STATUS_NAME[st]}${cap ? ' 수도' : ''}">
+      ${cap ? settlement(x, y - 58, true) : ''}<circle cx="${x}" cy="${y}" r="${size}"/><text x="${x}" y="${y + 13}">${r.id}</text>
+      ${st === 'done' ? `<g transform="translate(${x - 30} ${y + size - 4}) scale(.75)">${starRow(starsOf(r.id))}</g>` : ''}</g>`;
+  }).join('');
+  const labels = ASTERA_COUNTRIES.map(c => `<text class="road-country" x="${c.label[0]}" y="${c.label[1] + 70}">${c.name}</text>`).join('');
+  return `${head('진격 로드', '전투')}${continentBar()}<div class="phone-content road-map" data-road>
+    <svg viewBox="${roadMap.x} ${roadMap.y} ${roadMap.width} ${roadMap.height}" style="aspect-ratio:${roadMap.width}/${roadMap.height}" aria-label="아스테라 대륙 진격 지도">
+      ${mapDefs('astera')}${oceanArt('earth')}${ASTERA_COUNTRIES.map(c => countryLand(c)).join('')}${labels}
+      <polyline points="${line}" class="road-line"/><polyline points="${doneLine}" class="road-line done"/>${nodes}</svg></div>
+    <footer class="phone-footer">${stageFooter(id)}</footer>`;
 }
+const starRow = n => [0, 1, 2].map(i => `<path transform="translate(${i * 26} 0)" d="M12 0l3.5 7.6 8.5.9-6.3 5.7 1.8 8.3L12 18.2 4.5 22.5l1.8-8.3L0 8.5l8.5-.9z" fill="${i < n ? '#f2d06b' : '#22322a'}" stroke="#3b2c10" stroke-width="1.5"/>`).join('');
+
 // 3 · Nation chapters: swipe nation cards; the chosen nation opens a 4x5 grid.
 function nationChapters(id) {
   const chosen = countryOf(id);
@@ -102,7 +117,7 @@ export const STAGE_CANDIDATES = Object.freeze([
     copy: '열자마자 지금 도전할 스테이지 하나와 큰 출격 버튼만 보입니다. 다른 스테이지는 좌우 화살표나 전체 목록으로 이동합니다.',
     pros: '한 번 눌러 바로 전투, 첫 이용자도 헤매지 않음', cons: '여러 스테이지를 한눈에 비교하기는 어려움'},
   {id: '2', title: '진격 로드', tag: '성장하는 느낌', render: conquestRoad,
-    copy: '아래에서 위로 올라가는 한 줄 길. 지금 위치가 가운데에 오고, 20칸마다 국가 이름과 수도가 나옵니다.',
+    copy: '실제 아스테라 대륙 지도 위에 1번(남쪽)부터 80번(북쪽)까지 길이 이어집니다. 위로 올라가며 정복하고, 지금 위치가 가운데에 옵니다.',
     pros: '정복하는 재미, 현재 위치가 분명함', cons: '멀리 있는 번호는 스크롤이 필요'},
   {id: '3', title: '국가 원정', tag: '국가 단위 정리', render: nationChapters,
     copy: '국가 카드를 고르면 그 국가의 20칸 격자가 열립니다. 국가마다 진행률이 원형으로 보입니다.',
