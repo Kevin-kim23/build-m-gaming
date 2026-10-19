@@ -1,17 +1,15 @@
 import { campaignBonusPercent } from './campaign-rewards.js';
-import {battleRewardMarkup} from './battle-reward-view.js';
 import { COUNTRIES,CONTINENTS,continentForProgress,countryProgress,campaignStages } from './campaign.js';
 import { mapDefs,oceanArt,countryLand } from './campaign-art.js';
 import { battleAccess } from './battle.js';
 import { stageTagsMarkup } from './quick-deck.js';
-import { armyPower } from './units.js';
 import { fmt } from './format.js';
 import { battleIcon, battleStarsMarkup } from './battle-icons.js';
 
 // Conquest road: each continent's stages climb one step at a time, 1 at the bottom, last at the top,
 // over that continent's own map art (no place names). Stage ids, stars, locks and rewards are unchanged.
-export const ROAD_STEP = 88, ROAD_PAD = 90;
-const ZIGZAG = Object.freeze([50, 70, 78, 70, 50, 30, 22, 30]);
+export const ROAD_STEP = 60, ROAD_PAD = 64;
+const ZIGZAG = Object.freeze([50, 64, 70, 64, 50, 36, 30, 36]);
 export const roadHeight = count => ROAD_STEP * (count - 1) + ROAD_PAD * 2;
 export const roadPoint = (index, count) => ({x: ZIGZAG[index % ZIGZAG.length], y: roadHeight(count) - ROAD_PAD - index * ROAD_STEP});
 const continentOf = (countryId, continentId, cleared) => {
@@ -21,13 +19,18 @@ const continentOf = (countryId, continentId, cleared) => {
 export const continentStages = continent => campaignStages.filter(s => s.continentId === continent.id);
 // The stage a continent or country opens on: the next one to play, kept inside that range.
 export function focusStage(cleared, first, last) { return Math.min(last, Math.max(first, cleared + 1)); }
+// The continent map is drawn once as a symbol and tiled up the road at its natural width (mirrored every other
+// tile so seams match), instead of one map blown up to the road's full height.
 const backdropCache = new Map();
-function backdrop(continent) {
+function backdrop(continent, height) {
   if (!backdropCache.has(continent.id)) {
     const lands = COUNTRIES.filter(c => c.continentId === continent.id).map(countryLand).join('');
     backdropCache.set(continent.id, `${mapDefs(continent.id)}${oceanArt(continent.theme)}${lands}`);
   }
-  return backdropCache.get(continent.id);
+  const box = `0 0 ${continent.width} ${continent.height}`, id = `road-map-${continent.id}`;
+  const tiles = Math.ceil(height / (280 * continent.height / continent.width)) + 1;
+  return `<div class="road-backdrop" aria-hidden="true"><svg class="road-symbol" width="0" height="0"><symbol id="${id}" viewBox="${box}">${backdropCache.get(continent.id)}</symbol></svg>${
+    Array.from({length: tiles}, (_, i) => `<svg class="road-tile${i % 2 ? ' flip' : ''}" viewBox="${box}" preserveAspectRatio="xMidYMid slice"><use href="#${id}"/></svg>`).join('')}</div>`;
 }
 function roadNode(state, stage, index, count, selectedId) {
   const cleared = state.campaignCleared ?? 0, done = stage.id <= cleared, next = stage.id === cleared + 1;
@@ -50,16 +53,14 @@ export function campaignMarkup(state,countryId=null,selectedId=null,continentId=
   <div class="road-progress"><span class="road-bar" aria-hidden="true"><i style="width:${continentCleared/count*100}%"></i></span><b>${continentCleared} / ${count} 점령 · 수입 +${campaignBonusPercent(state)}%</b></div>
   <div class="road-frame" data-map-theme="${continent.theme}"><div class="road-window" tabindex="0" aria-label="${continent.name} 진격 로드: 위로 스크롤하면 다음 스테이지">
     <div class="road-canvas" style="height:${roadHeight(count)}px">
-      <svg class="road-backdrop" viewBox="0 0 ${continent.width} ${continent.height}" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${backdrop(continent)}</svg>
+      ${backdrop(continent, roadHeight(count))}
       <svg class="road-path" viewBox="0 0 100 ${roadHeight(count)}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${path.join(' ')}"/><polyline class="reached" points="${path.slice(0,reached).join(' ')}"/></svg>
       ${stages.map((s,i)=>roadNode(state,s,i,count,selected?.id)).join('')}
     </div></div><button type="button" class="road-locate" data-locate aria-label="현재 위치로 이동">${battleIcon('locate')}</button></div>
   <section class="region-brief" aria-label="선택한 스테이지"><div class="brief-head"><div><small>${selected?.capital?'최종 수도전':'STAGE '+String(selected?.continentStage??1).padStart(2,'0')}</small><h3>${selected?.name??'스테이지를 선택하세요'}</h3></div>${selected?`<button class="info-btn" data-battle-info data-info-stage="${selected.id}" aria-label="${selected.name} 상세보기">${battleIcon('info')}</button>`:''}</div>
-    <p class="brief-line">${selected?.regionName??''} · 권장 ${selected?.recommendedRank??''} · 전력 <strong>${fmt(selected?.recommendedPower??0)}</strong> · 장비 +${selected?.recommendedLevel??0}<br>내 전력 ${fmt(armyPower(state))}${selected&&selected.id<=cleared?` · 최고 <span class="best-stars">${battleStarsMarkup(state.campaignStars?.[selected.id-1]??0,true)}</span>`:''}</p>
-    ${selected?.longTerm?'<p class="battle-message">장기 도전 지역 · 현재 장비 만렙 이후의 성장을 위한 고난도 전장입니다.</p>':''}
     ${selected&&access.unlocked&&selected.id<=cleared+1?`<div class="prep-tags">${stageTagsMarkup(selected)}</div>`:''}
     <button class="battle-primary" data-stage="${selected?.id??continent.firstStage}" ${!access.unlocked||!selected||selected.id>cleared+1?'disabled':''}>${!access.unlocked?access.requirement:selected?.id<=cleared?'다시 출격':selected?.id===cleared+1?'출격':'이전 스테이지 점령 필요'}</button>
-    ${selected&&selected.id<=cleared+1?battleRewardMarkup(state,selected):''}</section>`;
+</section>`;
 }
 
 // No animation loop and no storage writes: the road only re-renders after a tap.
