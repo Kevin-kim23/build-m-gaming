@@ -18,7 +18,7 @@ import {createAccessUI} from './access-ui.js';
 import { createGameLifecycle } from './game-lifecycle.js';
 import { showToast } from "./toast.js";
 import { fmtGold,fmt } from "./format.js";
-import { homeMarkup, insignia } from "./home-view.js";
+import { homeMarkup, insignia, promotionTone } from "./home-view.js";
 import { createGameSession } from "./session.js";
 import { createOfflineRewardUI } from './offline-reward-ui.js';
 import { createOfflineNativeAd } from './potion-ad.js';
@@ -190,6 +190,7 @@ function update() {
     setText("#rank-progress", progress.remaining ? `전력 ${fmt(progress.remaining)} 남음` : progress.text);
     const percent = progress.ratio >= 1 ? 100 : Math.floor(progress.ratio * 100);
     $("#promotion-fill").style.width = progress.ratio * 100 + "%";
+    $("#promotion-fill").dataset.tone = promotionTone(percent);
     setText("#promotion-percent", percent + "%");
     $(".promotion-track").setAttribute("aria-valuenow", String(percent));
     drawHomeField();

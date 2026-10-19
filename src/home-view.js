@@ -7,6 +7,13 @@ import { homeItemsMarkup } from "./home-quick-items.js";
 export const coin =
   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10l5 5v10l-5 5H7l-5-5V7z" fill="#d9b55d"/><path d="M8 5h8l3 3v8l-3 3H8l-3-3V8z" fill="#e8cd84"/><path d="M14 8h-4v8h4v-4h-2" fill="none" stroke="#8a6932" stroke-width="2"/></svg>';
 
+export function promotionTone(percent) {
+  if (percent >= 80) return 'red';
+  if (percent >= 60) return 'orange';
+  if (percent >= 40) return 'green';
+  return 'blue';
+}
+
 function headerMarkup(state) {
   return `<header class="hud">
     <div class="rank">
