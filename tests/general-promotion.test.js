@@ -48,7 +48,7 @@ test('repeated ceremonies reuse one dialog, replace one timeout and clear genera
     showPromotion(RANKS.indexOf('준장'),insignia);assert.ok(classes.has('is-general'));assert.equal(pending.size,1);assert.equal(normalIcons,0);
     showPromotion(RANKS.indexOf('대장'),insignia);assert.equal(pending.size,1);assert.equal(created,1);assert.equal(attached,1);
     assert.match(dialog.innerHTML,/대장<span>/);assert.equal(dialog.attributes['aria-label'],'대장 장성 진급식');
-    events.get('click')({target:{closest:()=>true}});assert.equal(dialog.open,false);assert.equal(pending.size,0);
+    events.get('click')({preventDefault(){},stopPropagation(){}});assert.equal(dialog.open,false);assert.equal(pending.size,0);
     showPromotion(RANKS.indexOf('대령'),insignia);assert.ok(!classes.has('is-general'));assert.ok(classes.has('is-field'));assert.equal(normalIcons,1);assert.match(dialog.innerHTML,/대령 진급!/);
     const timeout=[...pending.values()][0];assert.equal(timeout.ms,3000);timeout.fn();assert.equal(dialog.open,false);assert.equal(pending.size,0);
     showPromotion(RANKS.indexOf('병장'),insignia);assert.ok(classes.has('is-simple'));assert.ok(!classes.has('is-field'));assert.equal(normalIcons,2);assert.doesNotMatch(dialog.innerHTML,/wing/);assert.equal(pending.size,1);

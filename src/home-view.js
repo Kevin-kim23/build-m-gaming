@@ -97,8 +97,8 @@ function dockMarkup() {
   return `<section class="home-dock" aria-label="내 부대">
     <div class="coach" id="coach" role="status" aria-live="polite" hidden><p id="coach-text"></p><button type="button" id="coach-off" aria-label="안내 끄기">끄기</button></div>
     <div class="home-expeditions">
-      <button id="open-battle" class="home-battle" hidden>${homeMenuIcon('battle')}<span class="home-expedition-label">전투<small id="battle-lock-label"></small></span></button>
       <button id="open-loot" class="home-battle"><span class="home-menu-icon">${lootIcon()}</span><span class="home-expedition-label">전리품 상점</span></button>
+      <button id="open-battle" class="home-battle" hidden>${homeMenuIcon('battle')}<span class="home-expedition-label">전투<small id="battle-lock-label"></small></span></button>
     </div>
     <nav class="home-tabs" aria-label="부대 메뉴">
     <button id="open-recruit">${homeMenuIcon('recruit')}<span>군대 모집</span></button>

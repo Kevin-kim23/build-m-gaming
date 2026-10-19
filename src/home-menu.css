@@ -12,8 +12,9 @@
 .home-dock .home-tabs button>span:not(.home-menu-icon){display:block;white-space:nowrap;line-height:16px;text-align:center}
 .home-dock .home-menu-icon,.home-dock .home-tabs button .home-menu-icon,.home-dock .home-battle .home-menu-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;margin:0;filter:none}
 .home-dock .home-menu-icon svg,.home-dock .home-tabs #open-shop .home-menu-icon svg{display:block;width:34px;height:34px;max-width:none;image-rendering:pixelated}
-.home-dock .home-tabs #open-shop{border-color:#7d7257}
-.home-dock .home-tabs #open-shop::after{content:"";position:absolute;top:0;left:34%;right:34%;height:2px;background:var(--ui-accent,#d8b66f);border-radius:0 0 2px 2px;pointer-events:none}
+.home-dock .home-tabs #open-shop{border-color:#c4a365;background:linear-gradient(125deg,#76603d,#493e2d 66%,#645333);color:#fff0c9;box-shadow:inset 0 1px #ffe7a74d,inset 0 -2px #241e1b66,0 2px 5px #0b141b55}
+.home-dock .home-tabs #open-shop .home-menu-icon{filter:drop-shadow(0 1px 3px #edb75c44)}
+.home-dock .home-tabs #open-shop::after{content:"";position:absolute;top:0;left:24%;right:24%;height:2px;background:#ffe3a3;border-radius:0 0 2px 2px;box-shadow:0 2px 6px #ffcd7344;pointer-events:none}
 .home-dock .home-battle{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;height:44px;min-height:44px;margin-top:6px;padding:1px 10px}
 .home-dock .home-battle[hidden]{display:none}
 .home-dock .home-battle small{font-size:11px;font-weight:500;letter-spacing:0;color:var(--ui-muted,#b6c2c5)}
@@ -25,6 +26,7 @@
 .home-dock .home-tabs button:focus-visible,.home-dock .home-tabs #open-shop:focus-visible,.home-dock .home-battle:focus-visible{outline:3px solid var(--ui-accent,#d8b66f);outline-offset:2px}
 .home-dock+footer{background:var(--ui-bg,#17262e);color:var(--ui-muted,#b6c2c5)}
 @media(hover:hover){.home-dock .home-tabs button:hover,.home-dock .home-tabs #open-shop:hover,.home-dock .home-battle:hover{background:var(--ui-raised,#304a56);border-color:#718a94}}
+@media(hover:hover){.home-dock .home-tabs #open-shop:hover{background:linear-gradient(125deg,#856d45,#554632);border-color:#f2cf88}}
 @media(max-height:700px){
   .home-dock{padding-top:4px}
   .home-dock .home-tabs button,.home-dock .home-tabs #open-shop{height:52px;min-height:52px}

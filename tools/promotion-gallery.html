@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>부대 키우기 · 모든 계급 진급 연출</title>
+</head>
+<body class="promotion-gallery">
+  <main class="gallery-shell">
+    <header class="gallery-header">
+      <p class="gallery-kicker">부대 키우기 · 독립 미리보기</p>
+      <h1>계급별 진급 연출</h1>
+      <p>실제 게임과 같은 계급장·날개·진급 창입니다. 게임 기록을 불러오거나 바꾸지 않으며, 소리와 보상을 지급하지 않습니다.</p>
+    </header>
+    <section class="gallery-controls" aria-label="연출 재생 설정">
+      <label for="gallery-rank">계급 선택</label>
+      <select id="gallery-rank"></select>
+      <div class="gallery-actions">
+        <button id="gallery-play" type="button">선택한 계급 재생</button>
+        <button id="gallery-play-all" type="button">처음부터 모두 보기</button>
+      </div>
+      <label class="gallery-motion"><input id="gallery-reduced" type="checkbox"> 동작 줄이기 미리보기</label>
+      <p id="gallery-selected" aria-live="polite"></p>
+      <small>화면 어디나 터치·클릭하면 건너뜁니다. 키보드는 Enter·Space를 눌렀다 떼거나 Esc를 누르세요. 각 계급 카드를 눌러 바로 재생할 수도 있어요.</small>
+    </section>
+    <p class="gallery-status" id="gallery-status" role="status">계급을 선택해 실제 크기로 확인하세요.</p>
+    <div id="gallery-groups"></div>
+    <footer>이등병은 시작 계급이므로 실제 게임에서 진급 팝업이 발생하지 않지만, 계급장과 가장 약한 연출을 비교할 수 있도록 포함했습니다. 시스템의 ‘동작 줄이기’ 설정도 실제 게임과 동일하게 적용됩니다.</footer>
+  </main>
+  <script type="module" src="./promotion-gallery.js"></script>
+</body>
+</html>

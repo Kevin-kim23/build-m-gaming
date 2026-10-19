@@ -1,0 +1,51 @@
+html:has(.promotion-gallery), body.promotion-gallery { height:auto; min-height:100%; overflow:auto; }
+.promotion-gallery { background:radial-gradient(ellipse at top,#263e32,#101a16 62%); color:#ecebdd; }
+.gallery-shell { width:min(1060px,100%); margin:auto; padding:34px 20px 50px; }
+.gallery-header { max-width:760px; margin-bottom:24px; }
+.gallery-kicker { color:#d5ba76; font-size:12px; letter-spacing:.14em; }
+.gallery-header h1 { margin:8px 0 12px; font-size:clamp(25px,5vw,36px); }
+.gallery-header p:not(.gallery-kicker),.gallery-group-heading p,.gallery-shell footer { color:#abbdae; font-size:14px; line-height:1.8; }
+.gallery-controls { padding:20px; border:1px solid #72866a77; border-radius:16px; background:#1a2b22e6; display:grid; gap:12px; }
+.gallery-controls>label:first-child { font-size:13px; font-weight:700; color:#cfdbcc; }
+.gallery-controls select { width:100%; min-height:46px; padding:8px 12px; background:#102017; color:#f4edcf; border:1px solid #607a5c; border-radius:8px; font:inherit; }
+.gallery-actions { display:flex; gap:10px; flex-wrap:wrap; }
+.gallery-actions button { flex:1; min-width:170px; min-height:46px; padding:10px 16px; border:1px solid #a99158; border-radius:8px; background:#60542e; color:#fff2c7; font-weight:700; cursor:pointer; }
+.gallery-actions button+button { background:#283e31; border-color:#667d60; color:#dae8d6; }
+.gallery-motion { display:flex; align-items:center; gap:8px; min-height:40px; font-size:13px; }
+.gallery-motion input { width:18px; height:18px; accent-color:#c1a166; }
+#gallery-selected { margin:0; color:#ead29a; font-size:13px; line-height:1.6; }
+.gallery-controls>small { color:#a7baa8; font-size:12px; line-height:1.8; }
+.gallery-status { margin:18px 0; color:#b3c7c1; font-size:13px; line-height:1.6; }
+.gallery-group { margin-top:30px; }
+.gallery-group-heading h2 { font-size:19px; margin:0 0 7px; color:#ead39b; }
+.gallery-group-heading p { margin:0 0 15px; }
+.gallery-ranks { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:10px; }
+.gallery-rank { display:grid; justify-items:center; align-content:start; gap:8px; padding:18px 8px; min-height:145px; background:linear-gradient(140deg,#2a3b2e,#17271e); border:1px solid #61745288; border-radius:12px; cursor:pointer; }
+.gallery-rank:hover { border-color:#d4b271; background:linear-gradient(140deg,#3a4a34,#243627); }
+.gallery-rank-badge { display:grid; place-items:center; height:52px; min-width:52px; }
+.gallery-rank-badge .insignia { transform:scale(1.35); }
+.gallery-rank strong { font-size:15px; line-height:1.5; }
+.gallery-rank small { color:#acbaa5; font-size:11px; line-height:1.5; }
+.gallery-shell footer { margin-top:28px; padding-top:18px; border-top:1px solid #58734e55; font-size:12px; }
+.gallery-playing { position:fixed; top:max(14px,env(safe-area-inset-top)); left:12px; right:12px; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:11px; color:#d6dccb; }
+.gallery-playing button { min-height:44px; padding:8px 12px; border:1px solid #b29864; border-radius:8px; background:#192a20; color:#f2dfae; cursor:pointer; }
+/* Mirrors the game's reduced-motion fallback, only when explicitly requested
+   on this presentation page. Normal game and operating-system settings remain untouched. */
+.gallery-reduced .promotion-stage,
+.gallery-reduced .promotion-layer::backdrop,
+.gallery-reduced .general-promotion,
+.gallery-reduced .general-wing,
+.gallery-reduced .general-crest,
+.gallery-reduced .general-rank-stars,
+.gallery-reduced .promotion-wing svg,
+.gallery-reduced .field-wing-feather,
+.gallery-reduced .salute-barrel { animation:none; }
+.gallery-reduced .promotion-halo,
+.gallery-reduced .promotion-sparks,
+.gallery-reduced .field-wing-shine,
+.gallery-reduced .field-promotion-orbit,
+.gallery-reduced .salute-shot,
+.gallery-reduced .general-dust,
+.gallery-reduced .general-aura { display:none; }
+.gallery-reduced .general-orbit { animation:none; }
+@media(max-width:360px) { .gallery-shell{padding:22px 12px 36px} .gallery-controls{padding:15px} .gallery-ranks{grid-template-columns:repeat(2,minmax(0,1fr))} .gallery-rank strong{font-size:14px} }

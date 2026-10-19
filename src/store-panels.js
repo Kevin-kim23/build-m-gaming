@@ -5,13 +5,23 @@ import {homeAutoTapMarkup,renderHomeAutoTap} from './home-auto-tap-ui.js';
 import {STORE_TEST_GRANT} from './store-purchase.js';
 import {billingPriceLabel} from './billing-price-label.js';
 
+// Read every advertised amount from the same catalog that grants the purchase.
+const starterPotions=Object.values(POTIONS);
+const starterTotal=starterPotions.reduce((sum,p)=>sum+STARTER_PACK[p.id],0);
+const starterBenefits=p=>[
+  p.tapMultiplier>1?`<span>터치 <b>${p.tapMultiplier}배</b></span>`:'',
+  p.passiveMultiplier>1?`<span>초당 <b>${p.passiveMultiplier}배</b></span>`:'',
+].join('');
+
 export function storeMarkup(){
   return `<div class="store-products"><article class="starter-pack" data-starter-pack aria-label="스타터팩">
     <span class="starter-sparks" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-    <div class="starter-promo-tag">특별혜택!</div>
+    <div class="starter-promo-tag">성장 지원 패키지</div>
     <header><h3>스타터팩</h3><span>1회 구매</span></header>
-    <div class="starter-showcase" aria-label="스타터팩 구성">${Object.values(POTIONS).map(p=>`<div class="starter-vial ${p.id}"><span class="starter-vial-art" aria-hidden="true">${potionIcon(p.id)}</span><strong>${p.shortName}<span>${STARTER_PACK[p.id]}개</span></strong></div>`).join('')}</div>
-    <div class="product-purchase-row"><span class="starter-contents-label">부스터 3종<br><small>아이템에서 사용</small></span><button type="button" data-buy-starter disabled>구매 준비 중</button></div>
+    <p class="starter-lead">필요한 순간, 골드 수입에 힘을 더하세요.</p>
+    <div class="starter-showcase" aria-label="스타터팩 구성">${starterPotions.map(p=>`<div class="starter-vial ${p.id}"><span class="starter-vial-art" aria-hidden="true">${potionIcon(p.id)}</span><strong>${p.shortName}<span>${STARTER_PACK[p.id]}개</span></strong><div class="starter-vial-effect">${starterBenefits(p)}</div><small class="starter-vial-duration">1개당 ${p.durationLabel}</small></div>`).join('')}</div>
+    <p class="starter-scope">자동터치 미포함 · 아이템에서 직접 사용</p>
+    <div class="product-purchase-row"><span class="starter-contents-label">부스터 ${starterPotions.length}종 · 총 ${starterTotal}개<small>필요할 때 하나씩 사용해요</small></span><button type="button" data-buy-starter disabled>구매 준비 중</button></div>
     <p data-starter-status role="status" hidden></p>
     <details class="store-purchase-help"><summary>구매·복원 안내</summary><p>자동터치 미포함 · 부스터는 아이템에서 직접 사용합니다.</p>
     <button type="button" data-restore-starter hidden disabled>구매 처리 다시 확인</button>

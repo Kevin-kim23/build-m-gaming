@@ -20,10 +20,16 @@ export function homeAutoTapPitch(){
 }
 export function homeAutoTapMarkup(){
   return `<article class="potion-card auto-tap-card" aria-label="자동터치" data-home-auto-tap>
+    <span class="auto-store-tag">터치가 편해지는 영구 아이템</span>
     <div class="auto-product-row"><div class="store-product-art" aria-hidden="true">${homeAutoTapIcon}</div>
     <header class="auto-product-name"><h3>자동터치</h3><span class="auto-rate-label">${HOME_AUTO_TAP.tapsPerSecond}회/초</span><span class="auto-product-scope">홈 전용 · 영구</span></header>
-    <div class="auto-product-action"><button type="button" data-buy-home-auto disabled>구매 준비 중</button><button type="button" data-toggle-home-auto aria-pressed="false" disabled hidden>자동터치 켜기</button></div></div>
-    <details class="store-purchase-help"><summary>구매·복원 안내</summary><p class="auto-owned-status" data-home-auto-status role="status" hidden></p><button type="button" data-restore-home-auto disabled hidden>구매 복원</button><p>초당 ${HOME_AUTO_TAP.tapsPerSecond}회 · 영구 해금. 홈에서만 작동하며 상점·전투·팝업·앱 종료 중에는 멈춥니다.</p><p class="potion-note" data-play-note>실제 결제는 아직 연결되지 않았어요. 개발 화면에서만 무료 테스트 지급을 받을 수 있어요.<br>현재 기기 기록에 보관하며 구매 복원은 준비 중입니다.</p></details></article>`;
+    </div>
+    <p class="auto-store-lead">반복 터치는 맡기고, 편하게 부대를 키우세요.</p>
+    <div class="auto-store-benefits"><span>손가락 터치와 함께</span><span>원할 때 켜기·끄기</span></div>
+    <p class="auto-store-limit">홈에서만 작동해요.<br>상점·전투·팝업·앱 종료 중에는 멈춥니다.</p>
+    <p class="auto-owned-status" data-home-auto-status role="status" hidden></p>
+    <div class="product-purchase-row"><span class="auto-purchase-label">한 번 구매 · 영구 해금<small>추가 터치를 자동으로</small></span><div class="auto-product-action"><button type="button" data-buy-home-auto disabled>구매 준비 중</button><button type="button" data-toggle-home-auto aria-pressed="false" disabled hidden>자동터치 켜기</button></div></div>
+    <details class="store-purchase-help"><summary>구매·복원 안내</summary><button type="button" data-restore-home-auto disabled hidden>구매 복원</button><p>초당 ${HOME_AUTO_TAP.tapsPerSecond}회 · 영구 해금. 홈에서만 작동하며 상점·전투·팝업·앱 종료 중에는 멈춥니다.</p><p class="potion-note" data-play-note>실제 결제는 아직 연결되지 않았어요. 개발 화면에서만 무료 테스트 지급을 받을 수 있어요.<br>현재 기기 기록에 보관하며 구매 복원은 준비 중입니다.</p></details></article>`;
 }
 export function renderHomeAutoTap(s,root,{busy=false,active=true,allowTestGrant=AUTO_TAP_TEST_GRANT,billing=null}={}){
   const card=root.querySelector('[data-home-auto-tap]');if(!card)return;

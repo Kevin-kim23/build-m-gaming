@@ -26,7 +26,7 @@
 .salute-ember { position:absolute; width:3px; height:8px; border-radius:2px; background:#ffe5a1; box-shadow:0 0 5px #eeb552; animation:salute-ember .85s var(--shot-delay) ease-out both; }
 .general-dust { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:1; }
 .general-dust i { position:absolute; left:var(--dust-x); top:70%; width:2px; height:3px; background:#e8cb81; border-radius:50%; animation:general-dust 3.4s var(--dust-delay) ease-out both; }
-.general-continue { position:relative; z-index:5; margin-top:30px; padding:10px 20px; border:1px solid #a58c555c; border-radius:3px; background:#16271e99; color:#beaf87; font-size:10px; letter-spacing:1px; cursor:pointer; }
+.general-continue { position:relative; z-index:5; margin-top:30px; min-height:44px; padding:10px 20px; border:1px solid #a58c555c; border-radius:3px; background:#16271e99; color:#beaf87; font-size:10px; letter-spacing:1px; cursor:pointer; }
 .general-continue:hover { border-color:#dfc580; color:#fff0bc; background:#344934; }
 .general-continue:focus-visible { outline:2px solid #e7ca85; outline-offset:4px; }
 .general-continue span { margin-left:10px; }

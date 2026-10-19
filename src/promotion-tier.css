@@ -9,6 +9,10 @@
 .promotion-layer.is-simple::backdrop { background:#10180cb3; }
 .promotion-simple { padding:24px 12px; }
 .promotion-simple .promotion-announcement { margin:16px 0 0; font-size:30px; letter-spacing:1px; text-shadow:0 2px 6px #0008; }
+.promotion-layer { touch-action:manipulation; }
+.promotion-continue { position:relative; z-index:5; pointer-events:auto; margin-top:18px; min-height:44px; padding:8px 18px; border:1px solid #b89d625c; border-radius:7px; background:#14251eaa; color:#e4d6af; font:inherit; font-size:12px; cursor:pointer; }
+.promotion-continue:hover { border-color:#e0c589; background:#304638; }
+.promotion-continue:focus-visible { outline:2px solid #f4dca1; outline-offset:4px; }
 
 /* Field officers get layered metal feathers, a moving highlight and an orbit. */
 .promotion-field .promotion-wing { top:20px; width:49%; }

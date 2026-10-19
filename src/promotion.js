@@ -22,9 +22,10 @@ export function promotionProfile(rank) {
 }
 // Original angular wing geometry, reused and mirrored. No external assets.
 const wing = `<svg viewBox="0 0 120 100" aria-hidden="true"><path d="M119 69 100 44 69 33 12 8 24 32 66 57 6 32 22 58 75 76 19 64 37 84 87 91 118 84Z" fill="#d5bb76" stroke="#f6e4aa" stroke-width="2"/><path d="m24 25 72 32 34 20M23 48l55 25 29 7M37 76l44 11" fill="none" stroke="#9d7b40" stroke-width="3"/></svg>`;
+const skipButton = '<button class="promotion-continue" data-dismiss-promotion type="button">화면을 눌러 건너뛰기</button>';
 export function promotionMarkup(rank, insignia, p = promotionProfile(rank)) {
   if (p.style === 'general') return generalPromotionMarkup(rank, p);
-  if (p.style === 'simple') return `<div class="promotion-stage promotion-simple" data-rank="${rank}"><div class="promotion-medal" aria-hidden="true">${insignia(rank)}</div><p class="promotion-announcement">${RANKS[rank]} 진급!</p></div>`;
+  if (p.style === 'simple') return `<div class="promotion-stage promotion-simple" data-rank="${rank}"><div class="promotion-medal" aria-hidden="true">${insignia(rank)}</div><p class="promotion-announcement">${RANKS[rank]} 진급!</p>${skipButton}</div>`;
   const enhanced = p.style === 'field', marks = RANK_DEFINITIONS[rank].marks;
   return `<div class="promotion-stage${enhanced ? ' promotion-field' : ''}" data-rank="${rank}">
     <div class="promotion-halo" aria-hidden="true"></div>
@@ -33,13 +34,18 @@ export function promotionMarkup(rank, insignia, p = promotionProfile(rank)) {
     <div class="promotion-sparks" aria-hidden="true">${Array.from({ length: p.sparks }, (_, i) => `<i style="--angle:${(i / p.sparks) * 360}deg;--distance:${72 + (i % 3) * 15}px;--delay:${(i % 4) * 0.08}s"></i>`).join('')}</div>
     <p class="promotion-eyebrow">${enhanced ? 'FIELD OFFICER' : 'PROMOTION'}</p>
     <div class="promotion-medal" aria-hidden="true">${insignia(rank)}</div>
-    <p class="promotion-announcement">${RANKS[rank]} 진급!</p><p class="promotion-caption">더 큰 부대를 향하여</p>
+    <p class="promotion-announcement">${RANKS[rank]} 진급!</p><p class="promotion-caption">더 큰 부대를 향하여</p>${skipButton}
   </div>`;
 }
-let layer, timer;
+let layer, timer, dismissKey;
+function consumeDismissal(event) {
+  event.preventDefault();
+  event.stopPropagation();
+}
 export function hidePromotion() {
   clearTimeout(timer);
   timer = undefined;
+  dismissKey = undefined;
   if (layer?.open) layer.close();
 }
 export function showPromotion(rank, insignia) {
@@ -51,14 +57,35 @@ export function showPromotion(rank, insignia) {
       if (!layer.open) {
         clearTimeout(timer);
         timer = undefined;
+        dismissKey = undefined;
       }
     });
     layer.addEventListener('click', event => {
-      if (event.target.closest('[data-dismiss-promotion]')) hidePromotion();
+      // Close on completed click, never pointerdown: the release cannot hit a
+      // newly revealed recruit button or the next queued personal-award dialog.
+      consumeDismissal(event);
+      hidePromotion();
+    });
+    layer.addEventListener('pointerdown', event => event.stopPropagation());
+    layer.addEventListener('pointerup', event => event.stopPropagation());
+    layer.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      consumeDismissal(event);
+      if (!event.repeat) dismissKey = event.key;
+    });
+    layer.addEventListener('keyup', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      consumeDismissal(event);
+      if (dismissKey === event.key) hidePromotion();
+    });
+    layer.addEventListener('cancel', event => {
+      consumeDismissal(event);
+      hidePromotion();
     });
     document.body.appendChild(layer);
   }
   clearTimeout(timer);
+  dismissKey = undefined;
   const p = promotionProfile(rank);
   layer.classList.toggle('is-general', p.generalTier > 0);
   layer.classList.toggle('is-simple', p.style === 'simple');

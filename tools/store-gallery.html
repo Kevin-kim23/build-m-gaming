@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>상점 화면 비교</title>
+<style>body{margin:0;background:#0f1e27;color:#e9eee8;font:14px system-ui;text-align:center}header{padding:12px}button{padding:9px 12px;margin:3px;border:1px solid #718b96;background:#263e4b;border-radius:7px;color:inherit;cursor:pointer}iframe{display:block;border:1px solid #617784;width:min(390px,100%);height:780px;margin:0 auto 20px}p{margin:6px}</style></head>
+<body><header><p>상점 화면 비교 · 게임 저장 접근 없음 · 실제 결제 불가</p><div><button data-width="320">320×568</button><button data-width="390">390×780</button></div>
+<div><button data-case="sale">판매 예시</button><button data-case="owned">보유 상태</button><button data-case="test">개발 테스트</button><button data-case="missing">가격 미수신</button></div></header><iframe title="상점 미리보기" src="/tools/store-sale-qa.html"></iframe>
+<script type="module">
+if(location.origin!=='http://127.0.0.1:4233')throw Error('Separate QA origin required');
+const frame=document.querySelector('iframe');
+document.querySelectorAll('[data-width]').forEach(b=>b.onclick=()=>{const w=Number(b.dataset.width);frame.style.width=`min(${w}px,100%)`;frame.style.height=w===320?'568px':'780px';});
+document.querySelectorAll('[data-case]').forEach(b=>b.onclick=()=>{frame.src=`/tools/store-sale-qa.html?case=${b.dataset.case}`;});
+</script></body></html>
