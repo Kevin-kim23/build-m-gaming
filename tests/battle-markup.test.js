@@ -74,7 +74,7 @@ test('locked or unselectable regions show no deck, and a conquered region offers
   assert.match(loadoutMarkup(state, STAGES[5], freshDeckView(['artillery'])), /data-battle-start disabled/, 'a locked stage can never start from the loadout screen');
 });
 
-test('battlefield is minimal: canvas, base HP over each base, mana bar and deploy cards, with no explanation text', () => {
+test('battlefield is minimal: one-line header, base HP strip, taller canvas, mana bar and filling deploy cards, with no explanation text', () => {
   const markup = battlefieldMarkup(createBattle(army({ equipment: { artillery: { level: 3, deployed: true }, tank: { level: 3, deployed: true } } }), 1));
   const ids = [...markup.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
   assert.equal(ids.length, new Set(ids).size);
@@ -84,7 +84,11 @@ test('battlefield is minimal: canvas, base HP over each base, mana bar and deplo
   assert.match(markup, /id="battle-mana-fill"/);
   assert.deepEqual([...markup.matchAll(/data-lane="(\d)"/g)].map(m => m[1]), ['0', '1', '2'], 'three lane buttons');
   assert.match(markup, /aria-label="왼쪽 레인에 출격"/);
-  assert.match(markup, /width="360" height="440"/);
+  assert.match(markup, /width="360" height="520"/, 'taller battlefield');
+  assert.match(markup, /<header class="battle-header slim battle-hud"><span class="battle-stage-chip">STAGE 01<\/span><h2 id="battle-title">[^<]+<\/h2><b id="battle-time">/, 'one-line header');
+  assert.ok(markup.indexOf('battle-hp-strip') < markup.indexOf('battle-arena'), 'base health sits above the field, not over the bases');
+  assert.match(markup, /id="battle-pause-actions">.*data-battle-info.*data-battle-close>전투 나가기/s, 'info and exit live in the pause menu');
+  assert.equal((markup.match(/data-card-fill=/g) ?? []).length, 2, 'cards fill up instead of showing status text');
   for (const required of ['battle-canvas', 'battle-player-hp', 'battle-enemy-hp', 'battle-pause', 'battle-resume'])
     assert.ok(ids.includes(required));
   for (const homeControl of ['tap-zone', 'gold', 'open-shop', 'open-equipment'])

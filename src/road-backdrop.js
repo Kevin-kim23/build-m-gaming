@@ -109,24 +109,30 @@ const PAINTERS = {
   },
 };
 const SEEDS = { topo: 11, orbit: 53, fissure: 71 };
-const cache = new Map();
+const canvases = new Map(), urls = new Map();
 
-// Returns a cached image URL for the theme's tile, or '' when the page cannot draw (tests, very old browsers).
-export function roadBackdropUrl(theme, doc = globalThis.document) {
+// The painted tile for a theme (cached), or null when the page cannot draw (tests, very old browsers).
+// The battlefield floor reuses the same tile, so a continent looks the same on the road and in battle.
+export function roadBackdropCanvas(theme, doc = globalThis.document) {
   const art = ROAD_ART[theme] ?? ROAD_ART.earth;
-  if (cache.has(art)) return cache.get(art);
-  let url = '';
+  if (canvases.has(art)) return canvases.get(art);
+  let canvas = null;
   try {
-    const canvas = doc?.createElement?.('canvas'), ctx = canvas?.getContext?.('2d');
+    const surface = doc?.createElement?.('canvas'), ctx = surface?.getContext?.('2d');
     if (ctx) {
       const scale = Math.min(2, globalThis.devicePixelRatio || 1);
-      canvas.width = TILE_W * scale; canvas.height = TILE_H * scale; ctx.scale(scale, scale);
+      surface.width = TILE_W * scale; surface.height = TILE_H * scale; ctx.scale(scale, scale);
       PAINTERS[art](ctx, mulberry(SEEDS[art]));
-      url = canvas.toDataURL('image/jpeg', .86);
+      canvas = surface;
     }
   } catch (error) { reportError('campaign.roadBackdrop', error); }
-  cache.set(art, url);
-  return url;
+  canvases.set(art, canvas);
+  return canvas;
+}
+export function roadBackdropUrl(theme, doc = globalThis.document) {
+  const art = ROAD_ART[theme] ?? ROAD_ART.earth;
+  if (!urls.has(art)) { const canvas = roadBackdropCanvas(theme, doc); urls.set(art, canvas ? canvas.toDataURL('image/jpeg', .86) : ''); }
+  return urls.get(art);
 }
 export function paintRoadBackdrop(root, theme) {
   const node = root.querySelector('.road-backdrop'), url = roadBackdropUrl(theme);
