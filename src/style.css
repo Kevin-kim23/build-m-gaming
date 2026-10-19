@@ -1174,10 +1174,10 @@ footer {
   text-shadow: 0 0 16px #e9c56a66;
   margin: 20px 0 8px;
 }
-/* Wings attach to the upper-middle of the rank badge for every rank: the top edge follows the badge size, and the translate lines the wing root up with it. */
+/* Wings attach to the vertical middle of the rank badge for every rank: the top edge follows the badge size, and the translate lines the wing root up with it. */
 .promotion-wing {
   position: absolute;
-  top: calc(18px + var(--medal-size) * 0.42);
+  top: calc(18px + var(--medal-size) * 0.56);
   width: 43%;
   z-index: 1;
   transform: translateY(-76%);
