@@ -9,6 +9,7 @@ import { reportError } from './diagnostics.js';
 import { stageTagsMarkup, quickDeckMarkup } from './quick-deck.js';
 import { armyPower } from './units.js';
 import { fmt } from './format.js';
+import { battleIcon, battleStarsMarkup, mapBattleStars, mapBattleCheck } from './battle-icons.js';
 
 
 export function campaignMarkup(state,countryId=null,selectedId=null,deckIds=null,continentId=null){
@@ -20,17 +21,17 @@ export function campaignMarkup(state,countryId=null,selectedId=null,deckIds=null
   const previousCountry=country&&country.index>0&&cleared>=country.firstStage-1?COUNTRIES[country.index-1]:null;
   const selected=campaignStages.find(s=>s.id===selectedId&&s.countryId===countryId);
   const access=battleAccess(state);
-  const continentButtons=CONTINENTS.map(c=>`<button data-continent="${c.id}" class="continent-tab ${c.id===continent.id?'active':''}" ${cleared<c.firstStage-1?'disabled':''} aria-label="${c.name} 대륙${cleared<c.firstStage-1?' · 이전 대륙 전체 점령 후 해금':' 지도 열기'}"><span aria-hidden="true">${c.theme!=='earth'?'✦':'◈'}</span>${c.name}${cleared<c.firstStage-1?' · 잠금':''}</button>`).join('');
+  const continentButtons=CONTINENTS.map(c=>`<button data-continent="${c.id}" class="continent-tab ${c.id===continent.id?'active':''}" ${cleared<c.firstStage-1?'disabled':''} aria-label="${c.name} 대륙${cleared<c.firstStage-1?' · 이전 대륙 전체 점령 후 해금':' 지도 열기'}">${battleIcon(c.theme!=='earth'?'orbit':'world')}${c.name}${cleared<c.firstStage-1?' · 잠금':''}</button>`).join('');
   const countryButtons=countries.map(c=>{
     const p=countryProgress(state,c.id);
-    return `<button data-country="${c.id}" class="nation-tab ${countryId===c.id?'active':''}" ${!p.unlocked?'disabled':''} aria-label="${c.name}${p.unlocked?' 지도 열기':' · 이전 국가 점령 필요'}"><span>${p.complete?'✓':p.unlocked?'0'+(c.localIndex+1):'🔒'}</span>${c.name.split(' ')[0]}</button>`;
+    return `<button data-country="${c.id}" class="nation-tab ${countryId===c.id?'active':''}" ${!p.unlocked?'disabled':''} aria-label="${c.name}${p.unlocked?' 지도 열기':' · 이전 국가 점령 필요'}"><span>${p.complete?battleIcon('check'):p.unlocked?'0'+(c.localIndex+1):battleIcon('lock')}</span>${c.name.split(' ')[0]}</button>`;
   }).join('');
   return `<header class="battle-header"><div><small>${space?'DEEP SPACE':'CONQUEST'} · ${country?'REGIONAL MAP':'WORLD MAP'}</small><h2 id="battle-title">${country?country.name:continent.name+' 대륙'}</h2></div><button data-battle-close aria-label="전투 메뉴 닫기">×</button></header><p class="battle-session-note" role="status" data-battle-session></p>
   <nav class="continent-tabs" aria-label="원정 대륙">${continentButtons}</nav>
   <nav class="nation-tabs" aria-label="대륙의 국가">${countryButtons}</nav>
-  <div class="atlas-toolbar"><button data-world ${country?'':'hidden'}>‹ 대륙으로</button><span>${country?country.terrain:space?continent.id==='erebus'?'은하단 최정예 원정 · 후반 20지역은 장기 도전':'성운을 넘어 펼쳐지는 두 번째 원정':'남쪽 해안에서 시작하는 대륙 정복'}</span><b>${country?countryProgress(state,country.id).cleared+'/20':Math.floor(continentCleared/20)+'/'+countries.length} 점령 · 수입 +${campaignBonusPercent(state)}%</b></div>
-  ${nextCountry?`<button class="atlas-next-country" data-country="${nextCountry.id}" aria-label="${nextCountry.name}으로 바로 이동"><span aria-hidden="true">${nextCountry.continentId!==continent.id?'✦':'↑'}</span> ${nextCountry.continentId!==continent.id?'다음 대륙 · '+CONTINENTS.find(c=>c.id===nextCountry.continentId).name:'다음 나라 · '+nextCountry.name}</button>`:''}
-  <div class="atlas-window" tabindex="0" data-map-theme="${continent.theme}" aria-label="지도: 손가락으로 끌어 이동, 두 손가락으로 확대·축소, 키보드는 화살표와 +/-"><button class="atlas-locate" data-locate aria-label="현재 위치로 이동">◎</button><svg id="campaign-svg" role="group" aria-label="${country?country.name+'의 20개 지역 지도':continent.name+' 대륙 지도'}" xmlns="http://www.w3.org/2000/svg">${mapDefs(continent.id)}${oceanArt(continent.theme)}
+  <div class="atlas-toolbar"><button data-world ${country?'':'hidden'}>${battleIcon('left')} 대륙으로</button><span>${country?country.terrain:space?continent.id==='erebus'?'은하단 최정예 원정 · 후반 20지역은 장기 도전':'성운을 넘어 펼쳐지는 두 번째 원정':'남쪽 해안에서 시작하는 대륙 정복'}</span><b>${country?countryProgress(state,country.id).cleared+'/20':Math.floor(continentCleared/20)+'/'+countries.length} 점령 · 수입 +${campaignBonusPercent(state)}%</b></div>
+  ${nextCountry?`<button class="atlas-next-country" data-country="${nextCountry.id}" aria-label="${nextCountry.name}으로 바로 이동">${battleIcon(nextCountry.continentId!==continent.id?'orbit':'up')} ${nextCountry.continentId!==continent.id?'다음 대륙 · '+CONTINENTS.find(c=>c.id===nextCountry.continentId).name:'다음 나라 · '+nextCountry.name}</button>`:''}
+  <div class="atlas-window" tabindex="0" data-map-theme="${continent.theme}" aria-label="지도: 손가락으로 끌어 이동, 두 손가락으로 확대·축소, 키보드는 화살표와 +/-"><button class="atlas-locate" data-locate aria-label="현재 위치로 이동">${battleIcon('locate')}</button><svg id="campaign-svg" role="group" aria-label="${country?country.name+'의 20개 지역 지도':continent.name+' 대륙 지도'}" xmlns="http://www.w3.org/2000/svg">${mapDefs(continent.id)}${oceanArt(continent.theme)}
   ${countries.map(c=>{
     const p=countryProgress(state,c.id),dim=country?c.id!==country.id:!p.unlocked;
     return `<g class="country-terrain ${dim?'dimmed':''}">${countryLand(c)}${dim?`<path d="${polygonPath(c.polygon)}" fill="#0b202bbb"/>`:''}</g>`;
@@ -42,13 +43,13 @@ export function campaignMarkup(state,countryId=null,selectedId=null,deckIds=null
   ${country?countryRegions(country.id).map(r=>{
     const stage=campaignStages[r.id-1],done=r.id<=cleared,next=r.id===cleared+1,[x,y]=r.point;
     return `<g class="region-hit ${done?'occupied':next?'frontier':'locked'} ${r.id===selected?.id?'selected':''}" data-region="${r.id}" role="button" tabindex="0" aria-label="${String(r.number).padStart(2,'0')} ${stage.name} · ${done?'점령 완료':next?'진격 가능':'미점령'} · 권장 전력 ${fmt(stage.recommendedPower)}">
-    <circle class="region-touch" cx="${x}" cy="${y}" r="36"/>${stage.capital?settlement(x,y-15,true,continent.theme):''}<circle class="region-badge" cx="${x}" cy="${y}" r="21"/><text class="region-number" x="${x}" y="${y+7}">${done?'✓':String(r.number).padStart(2,'0')}</text>${done?`<text class="region-stars" x="${x}" y="${y-27}" aria-label="최고 별 ${state.campaignStars?.[r.id-1]??0}개">${'★'.repeat(state.campaignStars?.[r.id-1]??0)}${'☆'.repeat(3-(state.campaignStars?.[r.id-1]??0))}</text>`:''}<text class="region-label" x="${x}" y="${y+44}">${stage.name}</text></g>`;
+    <circle class="region-touch" cx="${x}" cy="${y}" r="36"/>${stage.capital?settlement(x,y-15,true,continent.theme):''}<circle class="region-badge" cx="${x}" cy="${y}" r="21"/>${done?mapBattleCheck(x,y):`<text class="region-number" x="${x}" y="${y+7}">${String(r.number).padStart(2,'0')}</text>`}${done?mapBattleStars(state.campaignStars?.[r.id-1]??0,x,y-27):''}<text class="region-label" x="${x}" y="${y+44}">${stage.name}</text></g>`;
   }).join(''):''}</svg>
-  <div class="atlas-compass" aria-hidden="true">N<span>↑</span></div></div>
-  ${previousCountry?`<button class="atlas-previous-country" data-country="${previousCountry.id}" aria-label="${previousCountry.name}으로 바로 내려가기"><span aria-hidden="true">↓</span> ${previousCountry.continentId!==continent.id?'이전 대륙 · '+CONTINENTS.find(c=>c.id===previousCountry.continentId).name:'이전 나라 · '+previousCountry.name}</button>`:''}
+  <div class="atlas-compass" aria-hidden="true">N${battleIcon('up')}</div></div>
+  ${previousCountry?`<button class="atlas-previous-country" data-country="${previousCountry.id}" aria-label="${previousCountry.name}으로 바로 내려가기">${battleIcon('down')} ${previousCountry.continentId!==continent.id?'이전 대륙 · '+CONTINENTS.find(c=>c.id===previousCountry.continentId).name:'이전 나라 · '+previousCountry.name}</button>`:''}
 
-  ${country?`<section class="region-brief" aria-label="선택한 지역"><div class="brief-head"><div><small>${selected?.capital?'최종 수도전':'REGION '+String(selected?.region??1).padStart(2,'0')}</small><h3>${selected?.name??'지역을 선택하세요'}</h3></div>${selected?`<button class="info-btn" data-battle-info data-info-stage="${selected.id}" aria-label="${selected.name} 상세보기">ⓘ</button>`:''}</div>
-    <p class="brief-line">권장 ${selected?.recommendedRank??''} · 전력 <strong>${fmt(selected?.recommendedPower??0)}</strong> · 장비 +${selected?.recommendedLevel??0}<br>내 전력 ${fmt(armyPower(state))}${selected&&selected.id<=cleared?` · 최고 <span class="best-stars">${'★'.repeat(state.campaignStars?.[selected.id-1]??0)}${'☆'.repeat(3-(state.campaignStars?.[selected.id-1]??0))}</span>`:''}</p>
+  ${country?`<section class="region-brief" aria-label="선택한 지역"><div class="brief-head"><div><small>${selected?.capital?'최종 수도전':'REGION '+String(selected?.region??1).padStart(2,'0')}</small><h3>${selected?.name??'지역을 선택하세요'}</h3></div>${selected?`<button class="info-btn" data-battle-info data-info-stage="${selected.id}" aria-label="${selected.name} 상세보기">${battleIcon('info')}</button>`:''}</div>
+    <p class="brief-line">권장 ${selected?.recommendedRank??''} · 전력 <strong>${fmt(selected?.recommendedPower??0)}</strong> · 장비 +${selected?.recommendedLevel??0}<br>내 전력 ${fmt(armyPower(state))}${selected&&selected.id<=cleared?` · 최고 <span class="best-stars">${battleStarsMarkup(state.campaignStars?.[selected.id-1]??0,true)}</span>`:''}</p>
     ${selected?.longTerm?'<p class="battle-message">장기 도전 지역 · 현재 장비 만렙 이후의 성장을 위한 고난도 전장입니다.</p>':''}
     ${selected&&access.unlocked&&selected.id<=cleared+1?`<div class="prep-tags">${stageTagsMarkup(selected)}</div><div class="brief-deck-head"><span>출전 장비</span><b id="battle-slot-count">${(deckIds??[]).length} / ${battleSlots(state)}</b></div>${quickDeckMarkup(state,selected,deckIds??[])}<p role="status" class="battle-message" id="battle-message"></p>`:''}
     <button class="battle-primary" data-stage="${selected?.id??country.firstStage}" ${!access.unlocked||!selected||selected.id>cleared+1?'disabled':''}>${!access.unlocked?access.requirement:selected?.id<=cleared?'다시 도전':selected?.id===cleared+1?'전투 시작':'이전 지역 점령 필요'}</button>

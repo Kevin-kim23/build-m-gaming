@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { freshState } from '../src/game.js';
 import { STAGES, defaultLoadout, createBattle } from '../src/battle.js';
 import { stagesMarkup, quickDeckMarkup, stageTagsMarkup, battlefieldMarkup, battleDetailMarkup } from '../src/battle-markup.js';
+import { battleStarsMarkup, renderBattleStars, renderBattleLock } from '../src/battle-icons.js';
 
 const army = (patch = {}) => ({ ...freshState(1000), soldiers: 880, sergeants: 40, equipment:{artillery:{level:3,count:1,deployed:true}}, ...patch });
 function stageCards(markup) {
@@ -96,6 +97,7 @@ test('deck cards are pictures with name and mana badge, marked advantageous or d
   assert.match(inputTag(markup, 'data-battle-gear', 'tank'), /\bchecked\b/);
   assert.doesNotMatch(inputTag(markup, 'data-battle-gear', 'artillery'), /\bchecked\b/);
   assert.match(markup, /gear-tile mini bad/);
+  assert.match(markup, /<span class="sr-only"> · 불리<\/span>/);
   assert.match(quickDeckMarkup(army({ equipment: {} }), STAGES[0], []), /보유한 장비가 없어요/);
 });
 
@@ -103,9 +105,38 @@ test('the map shows each conquered region\'s best stars and the selected region\
   const state = army({ soldiers: 880, sergeants: 40, campaignCleared: 3, campaignStars: [3, 1, 0, ...Array(77).fill(0)], equipment: { artillery: { level: 3, deployed: true } } });
   const html = stagesMarkup(state, 'serdin', 2, ['artillery']);
   assert.equal((html.match(/class="region-stars"/g) ?? []).length, 3, 'one star row per conquered region');
-  assert.match(html, /aria-label="최고 별 3개">★★★</);
-  assert.match(html, /aria-label="최고 별 1개">★☆☆</);
-  assert.match(html, /aria-label="최고 별 0개">☆☆☆</);
-  assert.match(html, /최고 <span class="best-stars">★☆☆</);
+  for(const count of [3,1,0])assert.match(html,new RegExp(`<g class="region-stars" role="img" aria-label="최고 별 ${count}개"`));
+  assert.match(html, /최고 <span class="best-stars"><svg[^>]*aria-label="최고 별 1개"/);
+  assert.equal((html.match(/data-star-filled="true"/g)??[]).length,5);
+  assert.equal((html.match(/data-star-filled="false"/g)??[]).length,7);
+  assert.doesNotMatch(html, /★|☆|<text class="region-stars"/);
   assert.doesNotMatch(stagesMarkup(state, 'serdin', 4, ['artillery']), /최고 <span/);
+});
+
+test('battle symbols are drawn SVGs while controls retain their names and result transitions clear old stars',()=>{
+  const state=army({campaignCleared:3,campaignStars:[3,1,0]});
+  const views=[stagesMarkup(state),stagesMarkup(state,'serdin',2,['artillery']),quickDeckMarkup(state,STAGES[6],['artillery']),
+    battlefieldMarkup(createBattle(state,1)),battleDetailMarkup(state,STAGES[6]).body];
+  for(const view of views)assert.doesNotMatch(view,/[\p{Extended_Pictographic}\p{Emoji_Presentation}★☆✓▲▼✦◈◎ⓘ↑↓→‹]/u);
+  assert.match(views[3],/aria-label="일시정지"><svg[^>]*data-battle-icon="pause"/);
+  assert.match(views[3],/data-battle-icon="mana"/);
+  assert.match(views[0],/aria-label="현재 위치로 이동"><svg[^>]*data-battle-icon="locate"/);
+  for(let count=0;count<=3;count++){
+    const stars=battleStarsMarkup(count);
+    assert.match(stars,new RegExp(`aria-label="별 ${count}개"`));
+    assert.equal((stars.match(/data-star-filled="true"/g)??[]).length,count);
+  }
+  const classes=new Set(),node={innerHTML:'',classList:{toggle(name,on){on?classes.add(name):classes.delete(name);}}};
+  renderBattleStars(node,3,true);assert.match(node.innerHTML,/신기록!/);assert.equal(classes.has('pop'),true);
+  renderBattleStars(node);assert.equal(node.innerHTML,'');assert.equal(classes.has('pop'),false);
+  renderBattleStars(node,1);assert.doesNotMatch(node.innerHTML,/신기록!/);assert.match(node.innerHTML,/별 1개/);
+  renderBattleStars(node,null);assert.equal(node.innerHTML,'');
+});
+
+test('home battle lock rendering keeps unchanged updates cheap and removes the icon once unlocked',()=>{
+  assert.doesNotThrow(()=>renderBattleLock(null,'대위 해금'));
+  let inserts=0;const node={dataset:{},textContent:'',insertAdjacentHTML(where,html){inserts++;this.icon=html;}};
+  renderBattleLock(node,'대위 해금');assert.equal(node.textContent,'대위 해금');assert.match(node.icon,/data-battle-icon="lock"/);
+  renderBattleLock(node,'대위 해금');assert.equal(inserts,1);
+  renderBattleLock(node,'');assert.equal(node.textContent,'');assert.equal(inserts,1);
 });

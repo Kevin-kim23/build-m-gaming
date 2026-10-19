@@ -30,6 +30,8 @@ for(const amount of [105,0,1000000000]){
  const button=document.createElement('button');button.textContent=`승리 표시 ${amount}`;document.querySelector('nav').append(button);
  button.onclick=()=>{frame.src=`/tools/loot-result-qa.html?amount=${amount}`;};
 }
+const battleSymbols=document.createElement('button');battleSymbols.textContent='전투 긴 이름 · 6장';document.querySelector('nav').append(battleSymbols);
+battleSymbols.onclick=()=>{frame.src='/tools/battle-symbols-qa.html';};
 document.querySelectorAll('[data-width]').forEach(b=>b.onclick=()=>frame.style.width=`min(${b.dataset.width}px,100%)`);
 document.querySelectorAll('[data-fixture]').forEach(b=>b.onclick=async()=>{
  // Let the previous game finish saving before replacing synthetic QA data.

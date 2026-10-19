@@ -7,6 +7,7 @@ import { battlefieldMarkup, battleDetailMarkup } from './battle-markup.js';
 import { openDetail } from './detail-popup.js';
 import { reportError } from './diagnostics.js';
 import { renderBattleLoot } from './battle-result-view.js';
+import { renderBattleStars } from './battle-icons.js';
 import { UNITS } from './units.js';
 import { EQUIPMENT } from './equipment.js';
 import './battle.css';
@@ -251,7 +252,7 @@ export function createBattleUI(session, audio = null) {
     audio?.setMusicScene?.(null);
     audio?.stop?.();
     overlay('일시정지', session.active ? '' : '현재 게임 창의 조작 권한을 기다리고 있어요.', false);
-    text('#battle-result-stars', '');
+    renderBattleStars($('#battle-result-stars'));
   }
   function resume() {
     if (!session.active || document.hidden || battle?.status !== 'running') return;
@@ -266,12 +267,13 @@ export function createBattleUI(session, audio = null) {
     endDrag();
     finalized = true; stop();
     const won = battle.status === 'victory';
-    let copy = won ? '' : '장비는 그대로예요. 정비하고 다시 도전하세요.', loot = null, stars = '', canNext = false;
+    let copy = won ? '' : '장비는 그대로예요. 정비하고 다시 도전하세요.', loot = null, stars = null, newBest = false, canNext = false;
     if (won) {
       // Mark handled first: change() notifies the home UI synchronously.
       const result = session.change(s => recordBattleVictory(s, battle));
       if (result?.ok) {
-        stars = '★'.repeat(result.stars) + '☆'.repeat(3 - result.stars) + (result.newBest && !result.firstClear ? ' 신기록!' : '');
+        stars = result.stars;
+        newBest = result.newBest && !result.firstClear;
         loot = result.loot;
         const bits = [];
         if(!result.loot)bits.push('오늘 재전투 보상 횟수 또는 전리품 보유 한도를 확인해 주세요.');
@@ -284,9 +286,8 @@ export function createBattleUI(session, audio = null) {
     }
     const reveal=()=>{
     overlay(won ? '승리' : battle.status === 'defeat' ? '패배' : '무승부', copy, true);
-    text('#battle-result-stars', stars); renderBattleLoot($('#battle-result-loot'), loot);
+    renderBattleStars($('#battle-result-stars'),stars,newBest); renderBattleLoot($('#battle-result-loot'), loot);
     const next = $('[data-battle-next]'); if (next) next.hidden = !canNext;
-    if (stars) $('#battle-result-stars').classList.add('pop');
     sound(won ? 'win' : battle.status === 'draw' ? 'draw' : 'lose', 0); haptic(won ? [30, 60, 30, 60, 90] : [120]);
     sync();
     $('#battle-result-title').setAttribute('role','status');

@@ -1,10 +1,11 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>승리 보상 표시 검증</title></head><body><dialog id="battle-modal" class="in-battle"></dialog><script type="module">
 import '/src/style.css';import '/src/battle.css';import '/src/ui-theme.css';import '/src/battle-result.css';
 import {battlefieldMarkup} from '/src/battle-markup.js';import {renderBattleLoot} from '/src/battle-result-view.js';
+import {renderBattleStars} from '/src/battle-icons.js';
 const modal=document.querySelector('dialog');modal.innerHTML=battlefieldMarkup({stageId:2,stageName:'제2지역',enemy:{hq:{name:'적 기지'}},player:{hq:{name:'중대'}},deck:[]});
 const amount=Number(new URLSearchParams(location.search).get('amount')??105);
 const text=(id,value)=>document.getElementById(id).textContent=value;
-text('battle-result-tag','표시 검증 · 기록 변경 없음');text('battle-result-title','승리');text('battle-result-stars','★★★');text('battle-result-copy','지역 점령! · 초당 수입 +1%');
+text('battle-result-tag','표시 검증 · 기록 변경 없음');text('battle-result-title','승리');renderBattleStars(document.getElementById('battle-result-stars'),3);text('battle-result-copy','지역 점령! · 초당 수입 +1%');
 const overlay=document.getElementById('battle-overlay');overlay.hidden=false;overlay.classList.add('result');
 renderBattleLoot(document.getElementById('battle-result-loot'),amount);
 document.getElementById('battle-resume').hidden=true;document.getElementById('battle-result-actions').hidden=false;document.querySelector('[data-battle-next]').hidden=false;modal.showModal();

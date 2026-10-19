@@ -34,7 +34,7 @@ const lootArt = (() => {
 })();
 export const lootIcon = () => lootArt;
 
-const skin={light:'#f4d2ac',warm:'#deb089',mid:'#c28f6f',shade:'#a16f56',deep:'#6d4b40',line:'#362f2d'};
+const skin={light:'#f4d2ac',mid:'#c28f6f',shade:'#a16f56',deep:'#6d4b40'};
 const ink='#101f29';
 const palette={
   duty:{dark:'#233b4c',mid:'#436177',light:'#718fa1',shine:'#a5c1c8',trim:'#91c9d6'},
@@ -44,7 +44,7 @@ const palette={
   operative:{dark:'#1c2b35',mid:'#344957',light:'#5b7381',shine:'#91a6ac',trim:'#e6c67d'},
 };
 // Actual 192×224 pixel drawing, not enlarged copies of the previous full figures.
-// The 58px face and the foreground tools remain recognisable in a compact card.
+// Anonymous black faces keep attention on uniforms and the distinct field tools.
 function stitches(c,x,y,length,horizontal,color) {
   for(let n=0;n<length;n+=5)c.r(x+(horizontal?n:0),y+(horizontal?0:n),horizontal?3:1,horizontal?1:3,color);
 }
@@ -68,40 +68,10 @@ function shoulder(c,x,y,a) {
   c.r(x+4,y+10,27,2,a.mid);fastener(c,x+25,y+3);
 }
 function neck(c) {
-  c.p('M80 82h31v21l14 10-29 21-29-20 13-12z',skin.deep);
-  c.p('M82 86h23v17l-9 16-17-13z',skin.mid);
-  c.p('M84 88h11v10l-6 7-7-2z',skin.warm);c.r(94,96,12,4,skin.shade);
+  c.p('M80 82h31v21l14 10-29 21-29-20 13-12z','#000000');
 }
-function face(c,{mature=false,mask=false}={}) {
-  const {r,p}=c;
-  p('M74 26h39v5h8v9h5v35h-5v13l-10 13H82L69 88V77h-5V42h5V31h5z',skin.deep);
-  p('M73 34h41l7 11v31l-7 14-10 8H84L72 85l-3-14V46z',skin.mid);
-  p('M76 35h27l7 7v29l-4 13-10 7H83L74 79l-2-17V44z',skin.warm);
-  p('M77 39h23v8l-7 3H77zM75 52h8v17h-6l-4-8zM84 75h11v7H83z',skin.light);
-  p('M109 46h10v26l-6 12-7 6h-6l9-16z',skin.shade);
-  r(63,53,7,20,skin.shade);r(64,55,4,13,skin.warm);r(65,60,3,6,skin.mid);
-  r(122,53,5,19,skin.deep);r(122,55,3,13,skin.mid);
-  p('M75 53h16v4H78v2h-4zM102 54h14v5h-4v-2h-10z',skin.line);
-  r(77,58,14,5,skin.shade);r(103,59,12,4,skin.deep);
-  r(78,58,11,3,'#eee7cf');r(103,59,10,2,'#d5c8ac');
-  r(84,58,4,4,'#253735');r(104,59,4,3,'#253735');r(85,58,1,1,'#d5f0e0');r(105,59,1,1,'#d5f0e0');
-  p('M94 57h4v13h4v5H92v-3h3z',skin.shade);r(94,59,2,12,skin.light);
-  r(91,74,3,2,skin.deep);r(100,74,3,2,skin.deep);r(95,75,4,1,skin.light);
-  p('M86 83h16v2h5v2H89v-1h-3z',skin.deep);r(88,83,13,1,'#b47863');r(90,88,12,2,skin.light);
-  r(84,94,18,2,skin.shade);
-  if(mature){
-    p('M74 49h16v1H74zM76 51h11v1H76zM104 51h10v1h-10z',skin.shade);
-    r(77,65,9,1,skin.shade);r(105,65,9,1,skin.deep);
-    p('M81 80h3v7h3v5h-2v-4h-4zM108 77h2v10h-2z',skin.shade);
-    for(const [x,y]of [[84,90],[88,92],[97,93],[103,90],[79,85]])r(x,y,2,1,skin.deep);
-  }
-  if(mask){
-    p('M69 69h16v4h20v-3h17v18l-14 16H84L69 88z',ink);
-    p('M72 73h13v3h20v-2h13v13l-12 13H85L73 87z','#344b56');
-    p('M74 74h10v4h22v-2h9v5H77z','#6e8488');
-    for(const y of [82,87,92])r(83,y,23,2,'#1b303c');
-    r(75,80,3,7,'#425f69');r(110,81,3,7,'#425f69');
-  }
+function face(c) {
+  c.p('M74 26h39v5h8v9h5v35h-5v13l-10 13H82L69 88V77h-5V42h5V31h5z','#000000');
 }
 function uniform(c,a,{coat=false}={}) {
   const {r,p}=c;
@@ -182,7 +152,7 @@ function scout(c) {
   const {r,p}=c,a=palette.scout;
   p('M51 84h87l25 45 16 90H13l12-77z','#152d29');
   neck(c);uniform(c,a);face(c);
-  // Layered hood and patterned fabric, with the eyes remaining unobscured.
+  // Layered hood and patterned fabric around the anonymous silhouette.
   p('M55 72V35l9-17 18-11h31l19 14 8 26v47h-18V78h7V48l-10-22H79L65 47v33H53z',ink);
   p('M57 68V36l10-15 18-11h24l17 13 9 25v39h-12V73h6V48l-11-25H80L63 45v23z',a.dark);
   p('M59 49V36l11-14 15-10h16v7H83L69 34l-6 19z',a.light);
@@ -211,7 +181,7 @@ function supply(c) {
   const {r,p}=c,a=palette.supply;
   p('M30 91h125v104H26V106z',ink);r(31,96,24,87,a.mid);r(34,99,4,73,a.light);
   r(145,95,14,98,a.dark);r(148,98,4,89,a.mid);
-  neck(c);uniform(c,a);face(c,{mature:true});peakedCap(c,a);
+  neck(c);uniform(c,a);face(c);peakedCap(c,a);
   for(const x of [58,124]){r(x,116,7,48,'#baa775');r(x+2,118,2,42,'#e6d2a1');fastener(c,x+1,127,'#f0d4a0');}
   // Reinforced supply load with lid thickness, timber grain and strap rivets.
   p('M22 176 36 163h113l17 14v44H35l-13-10z',ink);
@@ -231,12 +201,8 @@ function supply(c) {
 }
 function quartermaster(c) {
   const {r,p}=c,a=palette.quartermaster;
-  neck(c);uniform(c,a,{coat:true});face(c,{mature:true});peakedCap(c,a,true);
+  neck(c);uniform(c,a,{coat:true});face(c);peakedCap(c,a,true);
   p('M83 106h27l-14 20z','#dde2d9');p('M92 111h8l-2 9 5 25-7 9-7-9 5-25z','#293547');r(93,120,2,25,'#687080');
-  for(const x of [73,102]){
-    r(x,55,17,11,'#b1a68b');r(x+2,57,13,7,'#d7c5aa');r(x+5,58,4,4,'#304043');r(x+2,57,10,1,'#ede7cd');
-  }
-  r(90,57,12,2,'#d4c9a7');r(68,56,5,2,'#ada68e');r(119,56,4,2,'#8e897a');
   for(const x of [47,124]){r(x,113,24,5,'#ad925b');r(x+1,113,22,2,'#ead59d');for(let i=0;i<3;i++)r(x+5+i*5,118,2,4,'#c6ab70');}
   r(115,138,21,5,'#b5a5c5');r(116,139,19,1,'#e4d9e9');
   // Leather ledger: bound pages, corner guards, elastic and pencil.
@@ -258,19 +224,13 @@ function operative(c) {
   const {r,p}=c,a=palette.operative;
   p('M41 93h109v85H39z',ink);r(140,89,14,98,a.dark);r(144,92,4,75,a.light);
   r(149,41,3,55,'#718993');r(148,38,5,8,ink);
-  neck(c);uniform(c,a);face(c,{mask:true});
-  // Low-profile helmet and two amber lens assemblies.
+  neck(c);uniform(c,a);face(c);
+  // Low-profile helmet; the exposed face remains entirely black.
   p('M59 51V28l11-17 42-3 17 13 7 28h-14V33H74v18z',ink);
   p('M64 36V27l10-13 35-2 14 11 7 22h-8V31H74v5z',a.mid);
   p('M68 28l9-11 27-2 13 8H83l-11 9z',a.light);r(77,18,25,2,a.shine);
   p('M76 25h43v8H74z',a.dark);r(82,26,30,2,a.light);
   r(89,17,18,11,ink);r(92,19,12,7,a.light);r(95,20,6,4,a.dark);
-  p('M65 48h59v22H65z',ink);
-  for(const x of [69,102]){
-    r(x,50,20,17,'#796b46');r(x+2,52,16,12,'#c8a65b');
-    r(x+3,52,12,4,'#f0da8e');r(x+4,53,6,1,'#fff4c0');r(x+14,58,3,5,'#8c7848');r(x+1,65,18,2,a.light);
-  }
-  r(91,54,9,9,'#687d83');r(92,55,7,2,'#a8b7af');r(62,53,4,12,a.light);r(124,53,4,12,a.light);
   p('M64 123h66v77H62z',ink);r(67,126,58,68,a.dark);r(68,126,55,4,a.light);
   for(const y of [137,147,157]){
     r(69,y,53,5,'#172b36');for(let x=72;x<121;x+=10){r(x,y,7,2,a.light);r(x+1,y+2,5,2,a.mid);}

@@ -27,6 +27,7 @@ import './offline-reward.css';
 import { createBattleUI } from "./battle-ui.js";
 import { createAchievementUI } from "./achievement-ui.js";
 import { battleAccess } from "./battle.js";
+import { renderBattleLock } from './battle-icons.js';
 import "./style.css";
 import "./hud.css";
 import "./general-promotion.css";
@@ -218,7 +219,7 @@ function update() {
   $("#sound").disabled = !session.active;
   const access = battleAccess(state);
   $("#open-battle").hidden = !access.visible;
-  setText('#battle-lock-label', access.unlocked ? '' : `🔒 ${access.reason==='rank'?'대위 해금':'장비 필요'}`);
+  renderBattleLock($('#battle-lock-label'), access.unlocked ? '' : access.reason==='rank'?'대위 해금':'장비 필요');
   battleUI.sync();
   if (lifecycle.started) guideUI.sync(state, session.active && lifecycle.canRun);
   armyPanels.sync();

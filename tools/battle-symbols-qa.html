@@ -1,0 +1,15 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>전투 아이콘과 작은 화면 확인</title></head><body><dialog id="battle-modal" class="in-battle"></dialog><script type="module">
+// Read-only markup fixture: no game session, storage, rewards or combat engine.
+import '/src/style.css';import '/src/battle.css';import '/src/ui-theme.css';import '/src/battle-result.css';
+import {battlefieldMarkup} from '/src/battle-markup.js';
+import {STAGES,UNIT_TRAITS} from '/src/battle.js';
+import {EQUIPMENT} from '/src/equipment.js';
+const stage=[...STAGES].sort((a,b)=>b.name.length-a.name.length)[0];
+const deck=Object.values(EQUIPMENT).sort((a,b)=>b.name.length-a.name.length).slice(0,6).map(d=>({id:d.id,level:30,cost:UNIT_TRAITS[d.id].cost}));
+const modal=document.querySelector('dialog');
+modal.innerHTML=battlefieldMarkup({stageId:stage.id,stageName:stage.name,enemy:{hq:{name:'적 본부'}},player:{hq:{name:'우리 본부'}},deck});
+modal.querySelector('#battle-time').textContent='14:59';
+modal.querySelector('#battle-mana-text').textContent='100 / 100';
+modal.querySelector('#battle-mana-fill').style.width='100%';
+modal.showModal();
+</script></body></html>

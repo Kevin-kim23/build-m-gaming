@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>대원 얼굴 표현 확인</title>
+<style>
+body{margin:0;padding:24px;background:#142630;color:#edf2ef;font:16px system-ui}h1{font-size:22px;margin:0 0 8px}p{color:#b4c5c9;margin:0 0 24px;line-height:1.5}.gallery{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;max-width:940px}article{padding:16px 8px;background:#203844;border:1px solid #506773;border-radius:12px;text-align:center}h2{font-size:16px;margin:0 0 14px}svg{display:block;width:min(100%,192px);height:auto;margin:auto;image-rendering:pixelated}.small{width:96px;margin-top:16px}@media(max-width:680px){.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style></head><body><h1>전리품 상점 대원</h1><p>얼굴·목은 검정 단색. 모자·복장·장비로 역할을 구분합니다.<br>그림만 표시하며 게임 기록을 읽거나 바꾸지 않습니다.</p><main class="gallery"></main>
+<script type="module">
+import {OPERATIVES} from '/src/loot.js';
+import {operativeIcon} from '/src/operative-art.js';
+document.querySelector('main').innerHTML=OPERATIVES.map(o=>`<article><h2>${o.name}</h2>${operativeIcon(o.id)}<div class="small">${operativeIcon(o.id)}</div></article>`).join('');
+</script></body></html>
