@@ -37,17 +37,21 @@ test('locked tiles keep the requirement visible and cannot be bought from the ma
   assert.doesNotMatch(html, /data-buy-bulk/);
 });
 
-test('the 100 button is a purchase-free locked placeholder until the baton unlocks it', () => {
+test('only the 1 recruit button is shown until that unit unlocks baton batch recruitment', () => {
   const none = recruit(state(160, 0));
   assert.doesNotMatch(none, /data-buy-bulk|data-bulk-locked|data-bulk-price/);
   const preview = tile(recruit(state(640)), 'soldier');
-  assert.match(preview, /<button[^>]*\sdisabled[^>]*data-bulk-locked="soldier"/);
-  assert.doesNotMatch(preview, /data-buy-bulk|data-bulk-price/);
+  assert.match(preview, /class="tile-buttons single"/);
+  assert.match(preview, /data-buy="soldier"[^>]*>1명</);
+  assert.doesNotMatch(preview, /data-buy-bulk|data-bulk-locked|data-bulk-price|100명/);
   const open = tile(recruit(state(1280)), 'soldier');
   assert.match(open, /data-buy-bulk="soldier"/);
   assert.match(open, /data-bulk-price/);
-  // Newly supported officer batches stay visibly locked until paid baton levels 9/10.
-  assert.match(tile(recruit({ ...state(1280), ncoSchoolLevel: 5, officerSchoolLevel: 4 }), 'major'), /data-bulk-locked/);
+  // A later officer still offers only a single recruit even when soldier batches are unlocked.
+  const officer = tile(recruit({ ...state(1280), ncoSchoolLevel: 5, officerSchoolLevel: 4 }), 'major');
+  assert.match(officer, /class="tile-buttons single"/);
+  assert.match(officer, /data-buy="major"[^>]*>1명</);
+  assert.doesNotMatch(officer, /data-buy-bulk|data-bulk-locked|data-bulk-price|100명/);
 });
 
 test('detail popup lists exact numbers, requirement and both prices', () => {

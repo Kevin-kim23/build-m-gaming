@@ -34,200 +34,268 @@ const lootArt = (() => {
 })();
 export const lootIcon = () => lootArt;
 
-const skin = { light: '#e9c5a0', mid: '#c69774', shadow: '#92644e', deep: '#4b3e37' };
-function face(c, x, y, mask = false) {
-  const { r, p } = c;
-  p(`M${x + 3} ${y}h22v5h3v16h-4v6H${x + 7}v-3h-4v-5H${x}v-13h3z`, skin.shadow);
-  r(x + 4, y + 2, 19, 20, skin.mid); r(x + 5, y + 2, 15, 16, skin.light);
-  r(x + 1, y + 9, 4, 8, skin.mid); r(x + 24, y + 9, 3, 7, skin.shadow);
-  r(x + 5, y + 8, 6, 2, skin.deep); r(x + 17, y + 8, 5, 2, skin.deep);
-  r(x + 8, y + 10, 2, 2, '#182b31'); r(x + 18, y + 10, 2, 2, '#182b31');
-  r(x + 13, y + 10, 3, 7, skin.mid); r(x + 15, y + 15, 3, 2, skin.shadow);
-  r(x + 9, y + 21, 10, 2, skin.shadow); r(x + 9, y + 26, 11, 5, skin.mid);
-  if (mask) { r(x + 3, y + 16, 22, 10, '#263b42'); r(x + 5, y + 17, 18, 2, '#5c7071'); r(x + 7, y + 21, 14, 1, '#162b33'); }
+const skin={light:'#f4d2ac',warm:'#deb089',mid:'#c28f6f',shade:'#a16f56',deep:'#6d4b40',line:'#362f2d'};
+const ink='#101f29';
+const palette={
+  duty:{dark:'#233b4c',mid:'#436177',light:'#718fa1',shine:'#a5c1c8',trim:'#91c9d6'},
+  scout:{dark:'#263e36',mid:'#4f6b50',light:'#829777',shine:'#b4c3a0',trim:'#8dcab9'},
+  supply:{dark:'#464435',mid:'#787454',light:'#aaa47c',shine:'#d6cd9c',trim:'#e1aa77'},
+  quartermaster:{dark:'#303347',mid:'#52576f',light:'#858ba1',shine:'#c0c4d0',trim:'#d0b7e4'},
+  operative:{dark:'#1c2b35',mid:'#344957',light:'#5b7381',shine:'#91a6ac',trim:'#e6c67d'},
+};
+// Actual 192×224 pixel drawing, not enlarged copies of the previous full figures.
+// The 58px face and the foreground tools remain recognisable in a compact card.
+function stitches(c,x,y,length,horizontal,color) {
+  for(let n=0;n<length;n+=5)c.r(x+(horizontal?n:0),y+(horizontal?0:n),horizontal?3:1,horizontal?1:3,color);
 }
-function legs(c, colors, wide = false) {
-  const { r, p } = c;
-  p(wide ? 'M26 74h45v10h-3v16H52V86H43v14H27z' : 'M28 74h38v9h-2v17H50V87H43v13H29z', colors.dark);
-  r(30, 76, 11, 22, colors.mid); r(52, 78, 10, 19, colors.mid);
-  r(31, 77, 3, 18, colors.light); r(53, 82, 2, 13, colors.light);
-  r(29, 87, 12, 7, colors.dark); r(53, 88, 10, 6, colors.dark);
-  r(31, 88, 8, 2, colors.mid); r(55, 89, 6, 2, colors.mid);
-  p('M27 97h17v10H23v-5h4zM50 97h15v5h7v5H49z', '#14232a');
-  r(27, 99, 13, 3, '#415158'); r(52, 99, 11, 3, '#35474e');
-  r(24, 105, 19, 2, '#09191f'); r(50, 105, 21, 2, '#09191f');
-  for (const x of [31, 55]) { r(x, 99, 5, 1, '#81918c'); r(x, 102, 5, 1, '#60716f'); }
+function fastener(c,x,y,col='#b6b6a0') {
+  c.r(x,y,5,5,ink);c.r(x+1,y,3,4,col);c.r(x+1,y+1,1,1,'#ecede0');
 }
-function pouch(c, x, y, colors, width = 10) {
-  c.r(x, y, width, 13, colors.dark); c.r(x + 1, y + 1, width - 2, 10, colors.mid);
-  c.r(x + 1, y + 1, width - 2, 3, colors.light); c.r(x + 4, y + 4, 2, 5, colors.dark);
-  c.r(x + 4, y + 5, 2, 2, '#b4bba5');
+function patch(c,x,y,col) {
+  c.p('M'+x+' '+y+'h17v12l-8 6-9-6z',ink);
+  c.p('M'+(x+2)+' '+(y+2)+'h13v9l-6 4-7-4z',col);
+  c.p('M'+(x+5)+' '+(y+5)+'h7v2h-2v4h-3v-4h-2z','#dbe3cf');
 }
-function torso(c, colors, accent) {
-  const { r, p } = c;
-  p('M28 40h12v-4h16v4h12v4h9v31h-9v7H26v-7h-8V47h10z', colors.dark);
-  p('M28 43h38v34H27z', colors.mid); r(30, 44, 7, 29, colors.light);
-  p('M36 40h8l4 10-8 4zM52 40h8l-7 14-5-4z', colors.light);
-  r(44, 48, 9, 29, colors.dark); r(47, 51, 2, 24, '#a6ada0');
-  r(20, 47, 8, 22, colors.mid); r(21, 47, 3, 15, colors.light);
-  r(67, 47, 8, 23, colors.mid); r(71, 51, 4, 17, colors.dark);
-  r(20, 51, 8, 5, accent); r(21, 52, 6, 2, '#d5dbc6');
-  pouch(c, 32, 55, colors); pouch(c, 55, 55, colors);
-  r(27, 75, 41, 5, '#192c31'); r(44, 75, 10, 5, '#b6a776'); r(46, 76, 6, 3, '#45534e');
+function pouch(c,x,y,w,h,a) {
+  c.r(x-1,y,w+2,h+2,ink);c.r(x,y,w,h,a.dark);c.r(x+2,y+2,w-4,h-5,a.mid);
+  c.r(x+2,y+2,w-4,5,a.light);c.r(x+2,y+7,w-4,2,a.dark);
+  c.r(x+3,y+h-4,w-6,1,a.light);stitches(c,x+3,y+3,w-6,true,a.shine);
+  c.r(x+Math.floor(w/2)-2,y+7,5,8,a.dark);fastener(c,x+Math.floor(w/2)-2,y+9);
 }
-
+function shoulder(c,x,y,a) {
+  c.p('M'+x+' '+y+'h31l9 8v17H'+(x-4)+'v-17z',a.dark);
+  c.r(x+1,y+2,29,7,a.light);c.r(x+2,y+2,26,2,a.shine);
+  c.r(x+4,y+10,27,2,a.mid);fastener(c,x+25,y+3);
+}
+function neck(c) {
+  c.p('M80 82h31v21l14 10-29 21-29-20 13-12z',skin.deep);
+  c.p('M82 86h23v17l-9 16-17-13z',skin.mid);
+  c.p('M84 88h11v10l-6 7-7-2z',skin.warm);c.r(94,96,12,4,skin.shade);
+}
+function face(c,{mature=false,mask=false}={}) {
+  const {r,p}=c;
+  p('M74 26h39v5h8v9h5v35h-5v13l-10 13H82L69 88V77h-5V42h5V31h5z',skin.deep);
+  p('M73 34h41l7 11v31l-7 14-10 8H84L72 85l-3-14V46z',skin.mid);
+  p('M76 35h27l7 7v29l-4 13-10 7H83L74 79l-2-17V44z',skin.warm);
+  p('M77 39h23v8l-7 3H77zM75 52h8v17h-6l-4-8zM84 75h11v7H83z',skin.light);
+  p('M109 46h10v26l-6 12-7 6h-6l9-16z',skin.shade);
+  r(63,53,7,20,skin.shade);r(64,55,4,13,skin.warm);r(65,60,3,6,skin.mid);
+  r(122,53,5,19,skin.deep);r(122,55,3,13,skin.mid);
+  p('M75 53h16v4H78v2h-4zM102 54h14v5h-4v-2h-10z',skin.line);
+  r(77,58,14,5,skin.shade);r(103,59,12,4,skin.deep);
+  r(78,58,11,3,'#eee7cf');r(103,59,10,2,'#d5c8ac');
+  r(84,58,4,4,'#253735');r(104,59,4,3,'#253735');r(85,58,1,1,'#d5f0e0');r(105,59,1,1,'#d5f0e0');
+  p('M94 57h4v13h4v5H92v-3h3z',skin.shade);r(94,59,2,12,skin.light);
+  r(91,74,3,2,skin.deep);r(100,74,3,2,skin.deep);r(95,75,4,1,skin.light);
+  p('M86 83h16v2h5v2H89v-1h-3z',skin.deep);r(88,83,13,1,'#b47863');r(90,88,12,2,skin.light);
+  r(84,94,18,2,skin.shade);
+  if(mature){
+    p('M74 49h16v1H74zM76 51h11v1H76zM104 51h10v1h-10z',skin.shade);
+    r(77,65,9,1,skin.shade);r(105,65,9,1,skin.deep);
+    p('M81 80h3v7h3v5h-2v-4h-4zM108 77h2v10h-2z',skin.shade);
+    for(const [x,y]of [[84,90],[88,92],[97,93],[103,90],[79,85]])r(x,y,2,1,skin.deep);
+  }
+  if(mask){
+    p('M69 69h16v4h20v-3h17v18l-14 16H84L69 88z',ink);
+    p('M72 73h13v3h20v-2h13v13l-12 13H85L73 87z','#344b56');
+    p('M74 74h10v4h22v-2h9v5H77z','#6e8488');
+    for(const y of [82,87,92])r(83,y,23,2,'#1b303c');
+    r(75,80,3,7,'#425f69');r(110,81,3,7,'#425f69');
+  }
+}
+function uniform(c,a,{coat=false}={}) {
+  const {r,p}=c;
+  p('M67 103h17l13 12 12-12h16l23 7 16 15 11 53 4 43H17l4-43 11-53 16-15z',ink);
+  p('M64 107h21l12 16 13-16h17l22 11 11 28 10 72H25l9-71 13-29z',a.dark);
+  p('M53 117h24l15 14-4 84H35l5-65z',a.mid);
+  p('M119 112l26 10 10 28 8 65h-51l-7-89z',a.mid);
+  p('M51 119h9l-13 39-5 55H30l9-66z',a.light);
+  p('M132 119h7l11 31 7 58h-8l-10-56z',a.light);
+  p('M61 107h17l17 20-20 13-18-18zM113 107h16l9 14-23 19-17-13z',a.light);
+  p('M63 109h10l16 18-13 7-13-14zM118 110h9l7 10-18 14-10-7z',a.shine);
+  r(92,129,11,88,a.dark);r(96,132,2,80,a.shine);r(100,134,2,80,ink);
+  for(const y of [143,160,177,194])fastener(c,94,y,a.shine);
+  shoulder(c,43,112,a);shoulder(c,120,112,a);
+  for(const [x,y]of [[43,145],[36,165],[146,145],[152,170]]){
+    r(x,y,9,2,a.dark);r(x+2,y+3,7,1,a.light);
+  }
+  stitches(c,52,143,64,false,a.shine);stitches(c,140,142,62,false,a.dark);
+  pouch(c,58,144,27,31,a);pouch(c,109,144,27,31,a);
+  r(55,136,29,4,a.dark);r(57,137,25,1,a.shine);
+  r(108,135,26,5,a.dark);r(110,136,21,1,a.shine);patch(c,31,137,a.trim);
+  if(coat){
+    p('M48 176h41l4 41H26l8-26zM106 176h37l22 41h-62z',a.dark);
+    p('M46 179h37l4 35H32zM112 180h29l16 34h-48z',a.mid);
+    stitches(c,42,207,40,true,a.light);stitches(c,116,207,34,true,a.light);
+  }else{
+    r(40,202,113,11,ink);r(43,203,107,3,a.light);
+    r(89,201,20,13,'#bcb58e');r(92,204,14,7,a.dark);r(93,205,6,2,a.shine);
+  }
+}
+function glove(c,x,y,a) {
+  c.p('M'+(x+3)+' '+y+'h14v4h4v17h-5v5H'+(x+1)+'v-5h-3V'+(y+8)+'h5z',a.dark);
+  c.r(x+2,y+5,14,15,a.mid);c.r(x+3,y+5,12,3,a.light);
+  for(let i=0;i<3;i++)c.r(x+3+i*4,y+12,2,7,ink);
+}
+function hand(c,x,y) {
+  c.p('M'+(x+3)+' '+y+'h12v4h5v16h-5v4H'+x+'v-5h-3V'+(y+7)+'h6z',skin.deep);
+  c.r(x+1,y+4,14,15,skin.mid);c.r(x+2,y+3,12,5,skin.light);
+  for(let n=0;n<3;n++)c.r(x+2+n*4,y+10,2,8,skin.shade);
+}
+function peakedCap(c,a,gold=false) {
+  const {r,p}=c;
+  p('M61 39V22l9-10 47-3 13 10 3 20-8 8H68z',ink);
+  p('M65 27l10-10 39-3 12 9 2 14H65z',a.mid);
+  p('M70 25l9-7 29-2 12 7H84v2z',a.light);
+  p('M73 22l9-3 20-1v2H84l-8 4z',a.shine);
+  r(64,33,64,10,a.dark);r(66,34,59,2,gold?'#e1c88c':a.light);
+  r(67,40,58,3,gold?'#9d8150':a.mid);
+  p('M65 43h61v4l-14 6H78l-14-6z',ink);p('M70 44h49v2l-10 3H81z',a.light);
+  p('M73 44h37v1H73z',a.shine);
+  p('M89 22h14v9l-7 5-7-5z','#b19558');p('M91 24h10v6l-5 3-5-3z','#ecd491');
+  r(94,25,4,4,'#fff1bf');r(65,36,3,4,'#c0c7b4');r(123,36,3,4,'#8b9c94');
+}
 function duty(c) {
-  const { r, p } = c;
-  const a = { dark: '#233b49', mid: '#476477', light: '#7d97a4' };
-  r(64, 30, 12, 29, '#263b44'); r(66, 32, 8, 23, '#5b7480');
-  legs(c, a); torso(c, a, '#8cbdd0'); face(c, 33, 13);
-  p('M29 16V9h5V6h24v3h5v11H33v-4z', '#233945');
-  r(35, 8, 21, 6, '#66889b'); r(35, 8, 17, 2, '#9cb5bb');
-  r(31, 14, 31, 5, '#304d5e'); r(32, 15, 21, 2, '#84a8b6');
-  r(40, 10, 8, 3, '#d6cb99'); r(42, 9, 4, 2, '#f5e4b2');
-  p('M30 19h-3v16h5v-6h-2zM61 18h4v15h-6v-9h2z', '#152a35');
-  r(27, 22, 5, 10, '#77949d'); r(61, 22, 5, 10, '#758993');
-  r(28, 24, 3, 6, '#314b59'); r(62, 24, 3, 6, '#263d49');
-  p('M64 31h3v7H54v-3h10z', '#1c3039'); r(52, 34, 5, 3, '#8ba5a9');
-  // Slanted field tablet with a map grid and a bright cursor.
-  p('M40 58h36v5h4v26H43v-5h-3z', '#142b35');
-  p('M43 60h30v5h4v20H46v-5h-3z', '#5c7b87');
-  r(47, 64, 25, 17, '#172f3c'); r(49, 66, 21, 13, '#2a5363');
-  for (const x of [53, 60, 67]) r(x, 66, 1, 13, '#416c75');
-  for (const y of [70, 75]) r(49, y, 21, 1, '#416c75');
-  p('M51 76h6v-7h7v4h5v2h-7v-4h-3v7h-8z', '#a0d9cf');
-  r(65, 67, 4, 3, '#f4df9f'); r(73, 72, 2, 6, '#c0cbb7');
-  p('M21 67h9v4h12v9H27v-3h-6z', '#7e969f');
-  r(35, 71, 10, 8, skin.mid); r(36, 71, 8, 3, skin.light);
-  r(74, 65, 7, 11, skin.mid); r(75, 65, 5, 4, skin.light);
-  r(28, 44, 10, 3, '#a4b3af'); r(30, 45, 6, 1, '#d7e5d5');
+  const {r,p}=c,a=palette.duty;
+  p('M136 89h21v68h-17z','#243946');r(140,93,12,52,'#627e8a');
+  neck(c);uniform(c,a);face(c);peakedCap(c,a);
+  // Padded communication headset, cable and boom microphone.
+  p('M60 48h-7v28h12V57h-5zM128 47h9v29h-12V57h3z',ink);
+  r(55,54,8,19,a.light);r(56,55,3,16,a.shine);r(126,53,9,20,a.mid);
+  r(128,56,5,13,a.light);r(61,48,4,15,'#adbbb8');
+  p('M132 74h5v14h-23v-3h18z','#95b2b5');r(107,83,11,5,'#253d47');r(108,83,6,1,'#b8d0cb');
+  p('M132 79h3v24h6v19h-3v-16h-6z',ink);
+  pouch(c,41,161,17,32,a);r(45,163,8,8,'#101f29');r(47,165,4,3,'#83c9c4');
+  // Map terminal: framed screen, grid, route, switches and hand strap.
+  p('M68 166h87l9 9v44H68l-9-10v-35z',ink);
+  p('M70 169h82l8 8v38H72l-8-8v-32z','#657d87');
+  r(74,176,72,32,'#112d3a');r(77,179,66,26,'#244b5a');
+  for(let x=84;x<142;x+=10)r(x,179,1,26,'#386977');
+  for(let y=185;y<205;y+=6)r(77,y,66,1,'#386977');
+  p('M80 200h13v-9h17v7h12v-14h15v3h-12v14h-18v-7H96v9H80z','#9dd4b8');
+  r(131,181,5,5,'#f7d891');r(78,180,13,2,'#80b7c2');
+  for(const y of [180,188,196])r(150,y,4,4,y===180?'#e8cd85':'#a2b9b4');
+  r(81,210,52,2,'#8fa7a8');r(107,214,16,2,'#283f4d');
+  hand(c,54,187);hand(c,153,181);
 }
-
 function scout(c) {
-  const { r, p } = c;
-  const a = { dark: '#263f38', mid: '#4f6c52', light: '#91a480' };
-  // Wide weather cloak and raised binoculars give this scout a distinct outline.
-  p('M26 37h43l9 45H65v7H24V76H17l5-29z', '#203b36');
-  legs(c, a, true); torso(c, a, '#89bbb1'); face(c, 32, 14);
-  p('M24 31V15h5V9h7V5h23v4h7v8h6v22H60v-9h3V18h-6v-6H39v6h-7v13z', '#29453b');
-  p('M25 22V14h6v-4h8V7h17v4H38v7h-7v15h-6z', '#7c9470');
-  p('M62 15h5v12h4v11H61v-8h3V18h-2z', '#526f50');
-  p('M26 37h12l-2 22-8 10-2 16H16l6-16V50z', '#718467');
-  p('M59 37h11l7 20v26H66l-2-20z', '#4d694f');
-  for (const [x, y, w, h, col] of [[29, 11, 8, 3, a.dark], [24, 24, 6, 5, a.mid], [23, 48, 8, 4, a.dark], [18, 74, 7, 4, a.dark], [61, 45, 10, 4, a.light], [67, 62, 8, 5, a.dark], [58, 72, 7, 4, a.light], [31, 81, 7, 4, a.dark]]) r(x, y, w, h, col);
-  p('M25 47h9v-8h7v-7h8v12h-9v12H25z', '#879b79');
-  p('M60 43h9v6h6v10H63v-9h-7z', '#647d5b');
-  r(36, 33, 8, 8, skin.mid); r(36, 33, 7, 3, skin.light);
-  r(58, 35, 8, 8, skin.mid); r(59, 35, 6, 3, skin.light);
-  r(40, 25, 25, 15, '#152c2b'); r(44, 24, 5, 3, '#78958c');
-  r(41, 26, 9, 13, '#587872'); r(55, 26, 9, 13, '#587872');
-  r(42, 28, 7, 8, '#0d252d'); r(56, 28, 7, 8, '#0d252d');
-  r(43, 29, 4, 4, '#91d3cd'); r(57, 29, 4, 4, '#91d3cd');
-  r(44, 29, 3, 1, '#e0f4e7'); r(58, 29, 3, 1, '#e0f4e7');
-  r(51, 29, 3, 8, '#77958c'); r(50, 38, 5, 2, '#111f27');
-  pouch(c, 20, 80, a, 12); r(66, 79, 8, 14, '#2c4540'); r(68, 80, 4, 8, '#96aa8c');
+  const {r,p}=c,a=palette.scout;
+  p('M51 84h87l25 45 16 90H13l12-77z','#152d29');
+  neck(c);uniform(c,a);face(c);
+  // Layered hood and patterned fabric, with the eyes remaining unobscured.
+  p('M55 72V35l9-17 18-11h31l19 14 8 26v47h-18V78h7V48l-10-22H79L65 47v33H53z',ink);
+  p('M57 68V36l10-15 18-11h24l17 13 9 25v39h-12V73h6V48l-11-25H80L63 45v23z',a.dark);
+  p('M59 49V36l11-14 15-10h16v7H83L69 34l-6 19z',a.light);
+  p('M112 15l13 11 8 26v30h-7V48l-11-23z',a.mid);
+  p('M52 90h20l-10 27-7 35-17 64H17l15-73z',a.mid);
+  p('M57 94h10l-11 30-7 36-17 54H21l18-72z',a.light);
+  p('M129 89h13l14 40 17 87h-21l-10-63z',a.dark);
+  for(const [x,y,w,h]of [[70,25,7,4],[61,42,4,6],[116,26,6,4],[128,55,5,10],[51,108,8,4],[43,132,7,6],[34,167,10,5],[27,191,8,7],[143,131,8,4],[150,172,8,5]]) {
+    r(x,y,w,h,a.dark);r(x+2,y+1,Math.max(2,w-3),1,a.mid);
+  }
+  // Binoculars: two lens assemblies rather than a flat equipment silhouette.
+  p('M52 113h19v-4h35v4h18v37H52z',ink);
+  r(56,116,24,32,'#314e4a');r(96,116,24,32,'#314e4a');r(80,119,16,19,'#627d72');
+  for(const x of [56,96]){
+    r(x,116,24,6,'#799c89');r(x+3,119,18,25,'#182e32');
+    r(x+5,123,14,17,'#2e6876');r(x+6,124,8,9,'#8ed4d4');
+    r(x+7,124,6,2,'#dfefdf');r(x+15,131,2,8,'#4c8b96');
+    r(x+2,141,20,4,'#5d7b6f');r(x+4,145,16,2,'#9eb49a');
+  }
+  r(83,114,10,4,'#91aa92');r(86,112,4,2,'#d2d9b8');
+  p('M67 149h3v22h42v-23h3v27H67z','#17302c');
+  glove(c,42,125,a);glove(c,121,125,a);pouch(c,68,182,25,29,a);pouch(c,108,182,25,29,a);
+  r(116,180,2,19,'#ddd5a1');r(114,178,6,5,'#2c453e');
 }
-
 function supply(c) {
-  const { r, p } = c;
-  const a = { dark: '#4a4536', mid: '#81775b', light: '#b7ad87' };
-  p('M22 32h49v45H20V39z', '#4a493b'); r(23, 36, 12, 28, '#82775a');
-  r(21, 39, 4, 28, '#afa17b'); r(69, 35, 7, 37, '#3c4035');
-  r(24, 33, 46, 5, '#b4a47c');
-  legs(c, a, true); torso(c, a, '#dfa578'); face(c, 33, 13);
-  p('M28 16V9h5V5h24v3h7v9h5v6H28z', '#4c5143');
-  r(34, 7, 22, 8, '#a3a484'); r(35, 7, 17, 3, '#d2c5a0');
-  r(29, 15, 36, 5, '#69745e'); r(30, 16, 25, 2, '#b3b18a');
-  r(59, 12, 5, 7, '#303e36'); r(29, 21, 4, 9, '#516353');
-  r(40, 11, 12, 3, '#52604a'); r(43, 11, 6, 2, '#dfcf8f');
-  p('M35 41h6v13h-6zM58 41h5v13h-5z', '#d6b484');
-  r(36, 43, 3, 7, '#6a5844'); r(59, 43, 3, 7, '#6a5844');
-  // Chest-level load, reinforced lid, straps, steel corners and shipping chevrons.
-  p('M16 62 24 54h48l9 8v31H24l-8-7z', '#3a3e35');
-  p('M19 62 26 57h45l6 5-7 6H25z', '#d9b579');
-  p('M25 68h45v23H25l-6-6V63z', '#967343');
-  p('M70 68 78 62v24l-8 5z', '#5e553b');
-  r(27, 69, 41, 3, '#cda265'); r(27, 73, 41, 12, '#b08c55'); r(27, 86, 41, 3, '#705c3d');
-  r(31, 63, 6, 28, '#384b43'); r(58, 63, 6, 28, '#384b43');
-  r(32, 65, 2, 23, '#89958a'); r(59, 65, 2, 23, '#89958a');
-  r(41, 72, 13, 11, '#384b43'); r(43, 74, 9, 7, '#d9c18d');
-  p('M44 76h2v-1h3v1h2v2h-3v2h-2v-2h-2z', '#8b6b3d');
-  r(21, 63, 5, 4, '#e2ce9a'); r(66, 66, 4, 4, '#dfc58d');
-  r(14, 67, 9, 12, skin.mid); r(15, 67, 7, 4, skin.light);
-  r(75, 65, 9, 13, skin.mid); r(76, 65, 7, 4, skin.light);
-  r(15, 73, 6, 1, skin.shadow); r(78, 73, 5, 1, skin.shadow);
+  const {r,p}=c,a=palette.supply;
+  p('M30 91h125v104H26V106z',ink);r(31,96,24,87,a.mid);r(34,99,4,73,a.light);
+  r(145,95,14,98,a.dark);r(148,98,4,89,a.mid);
+  neck(c);uniform(c,a);face(c,{mature:true});peakedCap(c,a);
+  for(const x of [58,124]){r(x,116,7,48,'#baa775');r(x+2,118,2,42,'#e6d2a1');fastener(c,x+1,127,'#f0d4a0');}
+  // Reinforced supply load with lid thickness, timber grain and strap rivets.
+  p('M22 176 36 163h113l17 14v44H35l-13-10z',ink);
+  p('M27 176 39 167h106l15 10-14 9H39z','#d6b67d');
+  p('M40 186h106v32H39l-12-9v-31z','#977448');
+  p('M146 186 161 178v31l-15 9z','#60533c');
+  r(43,188,100,4,'#cca66b');r(43,193,100,20,'#ad8852');r(44,212,99,3,'#795c3a');
+  for(const x of [50,129]){
+    r(x,175,10,43,'#33463f');r(x+2,179,3,34,'#a2ad96');
+    for(const y of [186,208])fastener(c,x+3,y,'#c4c7a2');
+  }
+  for(const [x,y,w]of [[65,197,25],[100,200,24],[62,208,35],[104,208,20]])r(x,y,w,1,'#8a683e');
+  r(83,190,28,20,'#3c4b3e');r(86,193,22,14,'#dac696');
+  p('M91 196h12v3h-4v5h-4v-5h-4z','#87764d');
+  r(29,178,9,5,'#eee0b4');r(140,181,6,5,'#e2c58a');
+  hand(c,19,179);hand(c,157,175);
 }
-
 function quartermaster(c) {
-  const { r, p } = c;
-  const a = { dark: '#303447', mid: '#51566b', light: '#8c91a4' };
-  legs(c, a);
-  p('M28 39h12v-3h16v3h12v6h7v29l5 20H52l-5-11-5 11H17l5-23V46h6z', a.dark);
-  p('M29 42h16v39l-6 10H23l5-29zM53 42h13l1 23 8 26H55l-6-11V47z', a.mid);
-  p('M31 42h7l-7 45h-5z', a.light); r(60, 47, 4, 28, '#73788c');
-  r(22, 47, 8, 25, a.mid); r(23, 47, 3, 17, a.light); r(67, 47, 8, 24, a.mid);
-  face(c, 33, 12);
-  p('M27 14V8h7V4h25v4h6v9H29z', '#262d3c');
-  r(34, 6, 25, 7, '#777e93'); r(35, 6, 19, 2, '#b2b6c0');
-  r(28, 13, 36, 4, '#c5af78'); r(28, 17, 34, 4, '#222b37');
-  r(32, 17, 24, 2, '#637080'); r(44, 7, 7, 6, '#d7bd7d'); r(46, 8, 3, 3, '#f4e4a5');
-  p('M37 39h8l3 7 5-7h7l-4 16-7-4-9 4z', '#abb3bc');
-  p('M45 41h6l-2 5 3 17-5 4-4-4 3-17z', '#273341');
-  r(28, 42, 10, 3, '#d9bb79'); r(59, 42, 10, 3, '#d9bb79');
-  for (const y of [57, 66, 75]) { r(41, y, 2, 2, '#e4ca8f'); r(53, y, 2, 2, '#e4ca8f'); }
-  r(26, 73, 42, 5, '#24303b'); r(44, 73, 10, 5, '#bdab7c'); r(46, 74, 6, 3, '#58636d');
-  // Field ledger under the left arm, pocket watch held outward on a short chain.
-  p('M13 60h21v29H16v-3h-3z', '#202b39'); r(16, 62, 15, 24, '#9781a6');
-  r(18, 64, 11, 3, '#d5c6c6'); r(18, 71, 11, 1, '#5e526d'); r(18, 74, 9, 1, '#5e526d');
-  r(16, 84, 15, 2, '#ddd2b8'); r(18, 57, 9, 10, skin.mid); r(19, 57, 6, 4, skin.light);
-  p('M68 65h9v6h-6v6h-5V66z', skin.mid); r(69, 64, 7, 4, skin.light);
-  p('M59 76h3v3h3v3h4v-7h2v10h-7v-3h-4v-3h-1z', '#bea86e');
-  r(73, 69, 4, 4, '#d8be79'); p('M69 73h12v3h3v12h-3v3H69v-3h-3V76h3z', '#8e774b');
-  p('M70 74h10v3h3v10h-3v3H70v-3h-3V77h3z', '#e6c989');
-  r(70, 77, 10, 10, '#f4e7bd'); r(74, 78, 2, 6, '#404d5a'); r(75, 82, 4, 2, '#404d5a');
-  r(71, 77, 7, 1, '#fff5da');
+  const {r,p}=c,a=palette.quartermaster;
+  neck(c);uniform(c,a,{coat:true});face(c,{mature:true});peakedCap(c,a,true);
+  p('M83 106h27l-14 20z','#dde2d9');p('M92 111h8l-2 9 5 25-7 9-7-9 5-25z','#293547');r(93,120,2,25,'#687080');
+  for(const x of [73,102]){
+    r(x,55,17,11,'#b1a68b');r(x+2,57,13,7,'#d7c5aa');r(x+5,58,4,4,'#304043');r(x+2,57,10,1,'#ede7cd');
+  }
+  r(90,57,12,2,'#d4c9a7');r(68,56,5,2,'#ada68e');r(119,56,4,2,'#8e897a');
+  for(const x of [47,124]){r(x,113,24,5,'#ad925b');r(x+1,113,22,2,'#ead59d');for(let i=0;i<3;i++)r(x+5+i*5,118,2,4,'#c6ab70');}
+  r(115,138,21,5,'#b5a5c5');r(116,139,19,1,'#e4d9e9');
+  // Leather ledger: bound pages, corner guards, elastic and pencil.
+  p('M24 164h47l8 6v51H24z',ink);r(28,168,43,49,'#77627f');r(30,170,37,44,'#9880a1');
+  r(29,169,4,48,'#594e67');r(33,172,31,2,'#c4acc7');r(68,174,6,42,'#d9d3ba');
+  for(const y of [178,184,190,196,202,208])r(69,y,4,1,'#a5a791');
+  r(38,182,23,2,'#dbc69f');r(42,187,15,1,'#baa887');r(48,168,4,49,'#514961');
+  r(57,158,3,48,'#d1af69');r(58,160,1,39,'#f1d597');r(57,158,3,4,'#35404a');
+  hand(c,21,176);hand(c,142,170);
+  // Pocket chronometer with chained links and individually cut bezel ticks.
+  p('M129 184h5v4h7v4h5v6h4v-10h2v13h-7v-7h-6v-4h-6v-3h-4z','#c4ac72');
+  r(153,183,7,5,'#e7c983');r(154,180,5,4,'#968157');
+  p('M145 188h22v4h4v23h-4v4h-22v-4h-4v-23h4z','#816d45');
+  p('M146 190h19v4h4v19h-4v4h-19v-4h-4v-19h4z','#d4b873');
+  r(147,194,17,18,'#f1e5bc');r(150,191,12,2,'#fff3cc');r(154,196,2,9,'#46525d');r(156,202,6,2,'#46525d');
+  for(const [x,y]of [[150,195],[161,195],[148,202],[162,207],[155,210]])r(x,y,1,2,'#837451');
 }
-
 function operative(c) {
-  const { r, p } = c;
-  const a = { dark: '#182833', mid: '#344956', light: '#637580' };
-  r(25, 27, 47, 44, '#14232c'); r(66, 29, 9, 38, '#344853'); r(69, 30, 2, 32, '#657984');
-  r(70, 15, 2, 19, '#a8b4ac'); r(69, 12, 4, 5, '#273d47');
-  legs(c, a, true); torso(c, a, '#c9ae70'); face(c, 32, 12, true);
-  p('M27 22V10h6V5h25v4h7v14h-7v-6H35v5z', '#14232d');
-  p('M29 16v-6h6V7h21v4H35v5z', '#687b83'); r(32, 13, 27, 7, '#3e5662');
-  r(30, 20, 34, 10, '#111f28'); r(33, 21, 12, 8, '#8d784c'); r(49, 21, 12, 8, '#8d784c');
-  r(35, 22, 8, 5, '#cfb56c'); r(51, 22, 8, 5, '#cfb56c');
-  r(35, 22, 7, 2, '#fff1b4'); r(51, 22, 7, 2, '#fff1b4'); r(45, 23, 4, 4, '#536a72');
-  r(30, 31, 5, 10, '#1b2e38'); r(59, 29, 7, 10, '#1b2e38');
-  r(29, 24, 3, 5, '#819492'); r(62, 24, 3, 5, '#819492');
-  p('M32 42h30v29H32z', '#283c47'); r(35, 43, 24, 3, '#5a707c');
-  for (const y of [49, 56, 63]) { r(35, y, 24, 3, '#152a35'); r(35, y, 22, 1, '#78908f'); }
-  r(39, 42, 4, 28, '#455e66'); r(53, 42, 4, 28, '#455e66');
-  r(20, 46, 8, 8, '#b59d67'); r(21, 48, 6, 2, '#e4ca84');
-  pouch(c, 22, 69, a, 11); pouch(c, 61, 67, a, 11);
-  // Armoured gold case held low, matching the Max booster supply role.
-  p('M52 77v-4h19v4h9v23H48V77z', '#12242d');
-  r(56, 74, 11, 4, '#a99b70'); r(58, 75, 7, 2, '#253a43');
-  r(51, 79, 26, 18, '#aa8545'); r(52, 79, 24, 4, '#e2c581');
-  r(53, 85, 22, 9, '#c7a45d'); r(54, 86, 20, 2, '#e8cc8b');
-  r(51, 80, 4, 17, '#5b6260'); r(73, 80, 4, 17, '#5b6260');
-  r(52, 82, 2, 13, '#b2b69a'); r(74, 82, 2, 13, '#999e87');
-  r(61, 84, 7, 9, '#465653'); r(63, 85, 3, 5, '#e7cd8b');
-  r(64, 89, 1, 2, '#3a4d4c'); r(52, 79, 3, 2, '#fff0b7');
-  r(61, 68, 9, 8, '#223843'); r(62, 69, 7, 3, '#697d83');
-  r(19, 67, 9, 11, '#192f3a'); r(20, 68, 7, 3, '#60767d');
-  r(22, 79, 4, 15, '#1a303a'); r(23, 80, 2, 8, '#8da09b');
+  const {r,p}=c,a=palette.operative;
+  p('M41 93h109v85H39z',ink);r(140,89,14,98,a.dark);r(144,92,4,75,a.light);
+  r(149,41,3,55,'#718993');r(148,38,5,8,ink);
+  neck(c);uniform(c,a);face(c,{mask:true});
+  // Low-profile helmet and two amber lens assemblies.
+  p('M59 51V28l11-17 42-3 17 13 7 28h-14V33H74v18z',ink);
+  p('M64 36V27l10-13 35-2 14 11 7 22h-8V31H74v5z',a.mid);
+  p('M68 28l9-11 27-2 13 8H83l-11 9z',a.light);r(77,18,25,2,a.shine);
+  p('M76 25h43v8H74z',a.dark);r(82,26,30,2,a.light);
+  r(89,17,18,11,ink);r(92,19,12,7,a.light);r(95,20,6,4,a.dark);
+  p('M65 48h59v22H65z',ink);
+  for(const x of [69,102]){
+    r(x,50,20,17,'#796b46');r(x+2,52,16,12,'#c8a65b');
+    r(x+3,52,12,4,'#f0da8e');r(x+4,53,6,1,'#fff4c0');r(x+14,58,3,5,'#8c7848');r(x+1,65,18,2,a.light);
+  }
+  r(91,54,9,9,'#687d83');r(92,55,7,2,'#a8b7af');r(62,53,4,12,a.light);r(124,53,4,12,a.light);
+  p('M64 123h66v77H62z',ink);r(67,126,58,68,a.dark);r(68,126,55,4,a.light);
+  for(const y of [137,147,157]){
+    r(69,y,53,5,'#172b36');for(let x=72;x<121;x+=10){r(x,y,7,2,a.light);r(x+1,y+2,5,2,a.mid);}
+  }
+  for(const x of [69,89,109])pouch(c,x,169,16,28,a);
+  r(73,128,6,37,a.mid);r(113,128,6,37,a.mid);fastener(c,73,131);fastener(c,113,131);
+  patch(c,31,137,'#c5aa6d');glove(c,26,180,a);
+  // Secure gold case: matte body, bright corner edges, mechanical latch.
+  p('M117 185v-8h32v8h18v34h-64v-34z',ink);
+  r(122,180,22,8,'#b8a477');r(126,182,14,4,a.dark);
+  r(108,188,54,27,'#997746');r(110,188,50,5,'#e1c583');r(113,196,43,14,'#bf9b59');
+  r(114,197,40,2,'#e6cc8c');r(113,211,44,2,'#735a3a');
+  for(const x of [109,153]){
+    r(x,189,7,27,'#4f5d5a');r(x+1,191,2,20,'#9fae97');fastener(c,x+1,193,'#d2c796');fastener(c,x+1,208,'#c4bb8e');
+  }
+  r(130,195,14,14,'#394b48');r(133,197,8,9,'#e5cd90');r(135,200,4,4,'#6a715b');
+  r(110,188,6,2,'#fff0b8');glove(c,128,169,a);
 }
-
-const draw = { duty, scout, supply, quartermaster, operative };
+const draw={duty,scout,supply,quartermaster,operative};
 export function operativeIcon(id) {
-  if (cache.has(id)) return cache.get(id);
-  if (!OPERATIVES.some(o => o.id === id)) throw new RangeError('Unknown operative');
-  const c = canvas();
-  c.p('M21 104h53v3h6v3H16v-3h5z', '#07151b66');
+  if(cache.has(id))return cache.get(id);
+  if(!OPERATIVES.some(o=>o.id===id))throw new RangeError('Unknown operative');
+  const c=canvas();
   draw[id](c);
-  const svg = c.svg(96, 112);
-  cache.set(id, svg);
+  const svg=c.svg(192,224);
+  cache.set(id,svg);
   return svg;
 }

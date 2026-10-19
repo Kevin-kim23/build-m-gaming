@@ -33,6 +33,24 @@ test('back closes an open popup through its own close button and never exits', (
   assert.deepEqual([log.exits, log.hints.length], [0, 0]);
 });
 
+test('back closes the loot shop through its own control and resets the previous exit hint', () => {
+  const loot = fakeDialog({ closeSelector: '[data-loot-close]' });
+  let time = 1000, hints = 0, exits = 0;
+  const handler = createBackHandler({
+    root: { querySelector: selector => selector === '#loot-shop' ? loot : null },
+    now: () => time, hint: () => hints++, exit: () => exits++,
+  });
+  assert.equal(handler(), 'hint');
+  loot.open = true; time += 100;
+  assert.equal(handler(), 'closed');
+  assert.equal(loot.clicked, 1, 'use the normal close control so its focus handler still runs');
+  assert.equal(loot.closed, 0, 'do not close an already closed dialog a second time');
+  assert.equal(loot.open, false); assert.equal(exits, 0);
+  time += 100;
+  assert.equal(handler(), 'hint', 'closing the shop clears the earlier exit confirmation');
+  assert.equal(hints, 2); assert.equal(exits, 0);
+});
+
 test('stacked popups close one at a time, top-most first', () => {
   const { dialogs, handler } = setup(['#modal', '#detail-modal']);
   assert.equal(handler(), 'closed');
@@ -53,7 +71,7 @@ test('every kind of popup the game opens is covered', () => {
     assert.equal(handler(), 'closed', layer.selector);
     assert.equal(dialogs[layer.selector].open, false, layer.selector);
   }
-  assert.deepEqual(BACK_LAYERS.map((l) => l.selector), ['#access-reader', '#ad-choice-modal', '#offline-reward-modal', '#test-purchase-modal', '#potion-ad-modal', '#personal-award-modal', '.promotion-layer', '#detail-modal', '#battle-modal', '#achievement-modal', '#modal']);
+  assert.deepEqual(BACK_LAYERS.map((l) => l.selector), ['#access-reader', '#ad-choice-modal', '#offline-reward-modal', '#test-purchase-modal', '#potion-ad-modal', '#personal-award-modal', '.promotion-layer', '#detail-modal', '#battle-modal', '#loot-shop', '#achievement-modal', '#modal']);
 });
 
 test('a popup whose close button does nothing is still closed', () => {

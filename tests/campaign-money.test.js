@@ -22,8 +22,9 @@ test('conquest bonus avoids floating rounding at seventeen regions and accepts e
 function expectedIncome(state,count) {
   let gearPassive=0n,gearTap=0n;
   for(const gear of Object.values(EQUIPMENT)){
-    gearPassive+=(BigInt(gear.passive)+20n*BigInt(gear.passiveStep)+12n*BigInt(gear.passive))*BigInt(count);
-    gearTap+=(BigInt(gear.tap)+20n*BigInt(gear.tapStep)+12n*BigInt(gear.tap))*BigInt(count);
+    // Lv.20 retrofit adds a shared 1 billion passive / 6 billion tap gold.
+    gearPassive+=(BigInt(gear.passive)+20n*BigInt(gear.passiveStep)+12n*BigInt(gear.passive)+1_000_000_000n)*BigInt(count);
+    gearTap+=(BigInt(gear.tap)+20n*BigInt(gear.tapStep)+12n*BigInt(gear.tap)+6_000_000_000n)*BigInt(count);
   }
   gearPassive=gearPassive>MAX_GOLD?MAX_GOLD:gearPassive;
   gearTap=gearTap>MAX_GOLD?MAX_GOLD:gearTap;

@@ -43,18 +43,17 @@ test('repeat purchase is locked at every rank and cannot spend or mutate even th
     assert.deepEqual(buyAdditionalEquipment(s,T+1000,id),{ok:false,reason:'disabled'});assert.deepEqual(s,before);
   }
 });
-test('equipment income is integer, grows increasingly, and reaches 6x and 17x',()=>{
+test('equipment income is integer, retains early sixfold growth, and includes shared late refit rewards',()=>{
   for(const d of Object.values(EQUIPMENT)){
-    let delta=0;
     for(let level=1;level<=30;level++){
       const a=equipmentStats(level-1,d.id),b=equipmentStats(level,d.id);
       assert.ok(Number.isSafeInteger(b.passive)&&Number.isSafeInteger(b.tap));
-      assert.ok(b.passive-a.passive>delta);delta=b.passive-a.passive;
+      assert.ok(b.passive>a.passive&&b.tap>a.tap);
       assert.ok(b.tap>d.tap+level*d.tapStep);
     }
     assert.equal(equipmentStats(10,d.id).passive,d.passive*6);
-    assert.equal(equipmentStats(20,d.id).tap,d.tap*17);
-    assert.equal(equipmentStats(30,d.id).tap,d.tap*34);
+    assert.equal(equipmentStats(20,d.id).tap,d.tap*17+6_000_000_000);
+    assert.equal(equipmentStats(30,d.id).tap,d.tap*34+1_200_000_000_000_000);
   }
 });
 test('player attack and healing upgrade rewards increase for players while enemy units keep their stage stats',()=>{

@@ -87,7 +87,7 @@ test('flag advances each military cap through 30; all gear gains income, firepow
       assert.ok((nextCombat.healing??nextCombat.damage)>(combat.healing??combat.damage));
       assert.ok(nextCombat.intervalMs<=combat.intervalMs);
     }
-    assert.equal(equipmentStats(30,id).passive,EQUIPMENT[id].passive*34);
+    assert.equal(equipmentStats(30,id).passive,EQUIPMENT[id].passive*34+200_000_000_000_000);
   }
 });
 
@@ -132,7 +132,8 @@ test('maximum personal and military gear preserves exact eight-hour income and w
   reconcileAchievements(s);
   const gear=equipmentIncome(s);
   for(const kind of ['passive','tap']) {
-    const raw=Object.values(EQUIPMENT).reduce((sum,d)=>sum+BigInt(d[kind])*34n*100000n,0n);
+    const common=kind==='passive'?200_000_000_000_000n:1_200_000_000_000_000n;
+    const raw=Object.values(EQUIPMENT).reduce((sum,d)=>sum+(BigInt(d[kind])*34n+common)*100000n,0n);
     assert.equal(exact(gear[kind]),raw>MAX_GOLD?MAX_GOLD:raw);
   }
   const expected=exact(perSecond(s))*BigInt(MAX_OFFLINE_MS)/1000n;

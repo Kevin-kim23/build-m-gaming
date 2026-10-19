@@ -9,6 +9,7 @@ import {BULK_RECRUIT,bulkRecruitDiscountPercent} from '../src/personal-equipment
 import {PERSONAL_EQUIPMENT} from '../src/personal-catalog.js';
 import {GALACTIC_PERSONAL_COSTS,personalUpgradeStep} from '../src/personal-enhancement.js';
 import {EQUIPMENT,equipmentStats,equipmentStage,enhancementCost} from '../src/equipment.js';
+import {equipmentGrowth} from '../src/equipment-growth.js';
 import {reconcileAchievements} from '../src/achievements.js';
 import {recruit,recruitOffer,unitCost,enhanceEquipment,accrue,activateAutoTouch,activateSword,perTap,perSecond} from '../src/game.js';
 import {UNITS} from '../src/units.js';
@@ -70,7 +71,7 @@ test('every military weapon upgrades31..40 with exact gold and nonempty stage na
       assert.equal(enhanceEquipment(s,T,id).reason,'gold');assert.equal(s.equipment[id].level,level);
       s.gold=cost;assert.equal(enhanceEquipment(s,T,id).ok,true);assert.equal(s.gold,0);
       assert.ok(equipmentStage(id,level+1));
-      assert.equal(exact(equipmentStats(level+1,id).tap),exact(EQUIPMENT[id].tap)+exact(EQUIPMENT[id].tapStep)*BigInt(level+1)+exact(EQUIPMENT[id].tap)*3n*BigInt((level+1)**2)/100n);
+      assert.equal(exact(equipmentStats(level+1,id).tap),exact(EQUIPMENT[id].tap)+exact(EQUIPMENT[id].tapStep)*BigInt(level+1)+exact(EQUIPMENT[id].tap)*3n*BigInt((level+1)**2)/100n+exact(equipmentGrowth(level+1).tap));
       assert.equal(parseSave(serializeSave(s),T).equipment[id].level,level+1);
     }
     assert.equal(enhanceEquipment(s,T,id).reason,'max');

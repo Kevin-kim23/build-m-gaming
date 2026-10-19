@@ -49,7 +49,7 @@ test('late military uses the same flag-gated twenty upgrades, independent prices
       assert.ok(next.passive>previous.passive&&next.tap>previous.tap);
       assert.equal(typeof equipmentStage(id,level+1),'string');previous=next;previousCost=cost;
     }
-    assert.deepEqual(previous,{passive:EQUIPMENT[id].passive*17,tap:EQUIPMENT[id].tap*17});
+    assert.deepEqual(previous,{passive:EQUIPMENT[id].passive*17+1_000_000_000,tap:EQUIPMENT[id].tap*17+6_000_000_000});
     assert.equal(enhanceEquipment(s,T,id).reason,'max');
     assert.deepEqual(parseSave(serializeSave(s),T).equipment[id],s.equipment[id]);
     s.personalLevels.divisionFlag=1;s.equipment[id].level=11;

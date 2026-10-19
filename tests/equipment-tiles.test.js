@@ -3,6 +3,14 @@ import assert from 'node:assert/strict';
 import { freshState } from '../src/game.js';
 import { equipmentStoreMarkup } from '../src/equipment-panels.js';
 import { equipmentDetailMarkup } from '../src/equipment-detail.js';
+
+test('equipment detail explains retrofit growth, mana and the actual transport support role', () => {
+  const state=freshState(0),artillery=equipmentDetailMarkup(state,'artillery').body;
+  assert.match(artillery, /출격 마나<\/dt><dd>18<\/dd>/);
+  assert.match(artillery, /11강부터/);
+  assert.doesNotMatch(artillery, /20강 17배|30강 34배|수송기 회복량도 강화할수록/);
+  assert.match(equipmentDetailMarkup(state,'transport').body, /같은 전선의 가까운 아군 장비 회복/);
+});
 import { EQUIPMENT, visibleEquipment } from '../src/equipment.js';
 
 const T = 1_800_000_000_000;

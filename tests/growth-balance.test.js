@@ -60,11 +60,15 @@ test('planning model evaluates genuine purchases, schools and paid personal upgr
   assert.ok(Object.values(report.final.facilityLevels).every(level=>level===1));
   assert.ok(days['대령']>=1&&days['대령']<=5);assert.ok(report.unlocks.length>5);
 });
-test('45-minute reference model including consecutive real battles reaches the new maximum in six to eight weeks',()=>{
+test('45-minute reference model including consecutive real battles reaches the maximum in the approved five to six weeks',()=>{
   const report=withUpgrades(),days=Object.fromEntries(report.milestones.map(m=>[m.rank,m.day]));
-  assert.equal(report.final.rank,'은하단 원수');assert.ok(days['은하단 원수']>=42&&days['은하단 원수']<=56,JSON.stringify(report.milestones.slice(-5)));
+  // The stronger late equipment was approved with a roughly 37-day reference goal.
+  assert.equal(report.final.rank,'은하단 원수');assert.ok(days['은하단 원수']>=35&&days['은하단 원수']<=42,JSON.stringify(report.milestones.slice(-5)));
   assert.ok(Object.values(report.final.facilityLevels).some(level=>level>1));
   assert.ok(Object.values(report.final.facilityLevels).every(level=>level<=MAX_FACILITY_LEVEL));
-  const ranks=['은하 원수','은하단 준장','은하단 소장','은하단 중장','은하단 대장','은하단 원수'];
+  // The approved 37-day path crosses the first new-rank boundary in about
+  // 7 h 49 m. Later constellation promotions must still take at least a day.
+  assert.ok(days['은하단 준장']-days['은하 원수']>=.25);
+  const ranks=['은하단 준장','은하단 소장','은하단 중장','은하단 대장','은하단 원수'];
   for(let i=1;i<ranks.length;i++)assert.ok(days[ranks[i]]-days[ranks[i-1]]>=1);
 });

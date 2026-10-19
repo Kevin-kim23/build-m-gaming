@@ -46,7 +46,7 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
         const after=enhancementOffer(next,gear.id),before=enhancementOffer(state,gear.id);
         if(before.reason==='max'&&after.reason!=='max'){
           const a=equipmentStats(state.equipment[gear.id].level+1,gear.id),b=equipmentStats(state.equipment[gear.id].level,gear.id);
-          gain+=effective(a.passive-b.passive,a.tap-b.tap,true)*Number(offer.cost)/(Number(offer.cost)+Number(after.cost));
+          gain+=effective(Number(subtractMoney(a.passive,b.passive)),Number(subtractMoney(a.tap,b.tap)),true)*Number(offer.cost)/(Number(offer.cost)+Number(after.cost));
         }
       }
       if(gain>0)result.push({kind:'personal',id:item.id,cost:offer.cost,score:Number(offer.cost)/gain,apply:()=>enhancePersonalEquipment(state,START+elapsed*1000,item.id)});
@@ -68,7 +68,7 @@ export function simulateGrowth({minutes=7.5,tapsPerSecond=3,days=90,investmentHo
       if(offer.reason==='locked'||offer.reason==='max'||offer.cost===null)continue;
       const after=equipmentStats(owned?owned.level+1:0,gear.id);
       const before=owned?equipmentStats(owned.level,gear.id):{passive:0,tap:0};
-      const gain=effective(after.passive-before.passive,after.tap-before.tap,true);
+      const gain=effective(Number(subtractMoney(after.passive,before.passive)),Number(subtractMoney(after.tap,before.tap)),true);
       if(gain<=0)continue;
       result.push({kind:'gear',id:gear.id,cost:offer.cost,score:Number(offer.cost)/gain,apply:()=>{
         return owned?enhanceEquipment(state,START+elapsed*1000,gear.id):buyEquipment(state,START+elapsed*1000,gear.id);

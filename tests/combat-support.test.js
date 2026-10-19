@@ -10,11 +10,16 @@ import {serializeSave} from '../src/money.js';
 import {FORMATION_ACHIEVEMENTS,reconcileAchievements} from '../src/achievements.js';
 import {medalSvg} from '../src/achievement-art.js';
 import {achievementListMarkup} from '../src/achievement-markup.js';
-test('all seventeen weapons receive player-only damage and health buffs at every enhancement',()=>{
+test('all seventeen weapons keep original player buffs and only players gain high-level refits',()=>{
  for(const id of Object.keys(EQUIPMENT))for(let level=0;level<=50;level++){
   const ally=equipmentCombatStats(id,level),enemy=equipmentCombatStats(id,level,undefined,1,true,false);
-  assert.ok(Math.abs(ally.damage-enemy.damage*1.2)<=Math.abs(ally.damage)*1e-12);
-  assert.ok(Math.abs(ally.hp-enemy.hp*1.15)<=Math.abs(ally.hp)*1e-12);
+  if(level<=10){
+   assert.ok(Math.abs(ally.damage-enemy.damage*1.2)<=Math.abs(ally.damage)*1e-12);
+   assert.ok(Math.abs(ally.hp-enemy.hp*1.15)<=Math.abs(ally.hp)*1e-12);
+  }else{
+   assert.ok(ally.damage+Math.abs(ally.damage)*1e-12>=enemy.damage*1.2);
+   assert.ok(ally.hp+Math.abs(ally.hp)*1e-12>=enemy.hp*1.15);
+  }
   assert.equal(ally.intervalMs,enemy.intervalMs);
  }
 });

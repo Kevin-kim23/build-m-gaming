@@ -1,7 +1,8 @@
 /* Two equal home actions. Balances belong inside the shop, never in the dock. */
-.home-dock .home-expeditions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:6px}
+.home-dock .home-expeditions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0 0 6px}
 .home-dock .home-expeditions:has(#open-battle[hidden]){grid-template-columns:minmax(0,1fr)}
 .home-dock .home-expeditions .home-battle{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;box-sizing:border-box;height:52px;min-height:52px;min-width:0;margin:0;padding:6px 8px;gap:8px}
+.home-dock .home-expeditions .home-battle[hidden]{display:none}
 .home-dock .home-expeditions .home-menu-icon{width:30px;height:30px;flex:0 0 30px}
 .home-dock .home-expeditions .home-menu-icon svg{width:100%;height:100%;display:block;max-width:100%}
 .home-dock .home-expedition-label{min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;font-size:13px;line-height:18px;white-space:nowrap}
@@ -9,28 +10,47 @@
 .home-dock #open-loot.supplies-ready::after{content:"";position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:#e6c581;box-shadow:0 0 0 2px #263c47}
 @media(max-height:700px){.home-dock .home-expeditions .home-battle{height:46px;min-height:46px}.home-dock .home-expeditions .home-menu-icon{width:28px;height:28px;flex-basis:28px}}
 
-/* Portrait-led shop with a fixed wallet and footer, inside the game's phone frame. */
-#loot-shop{box-sizing:border-box;width:min(440px,calc(100% - 20px));max-height:calc(var(--game-frame-height,100dvh) - 24px);margin:auto;padding:0;border:1px solid #657b80;border-radius:18px;background:#172a34;color:#f3f0e7;overflow:hidden;font-family:var(--ui-font,system-ui,sans-serif);box-shadow:0 16px 56px #07121ab3,inset 0 1px #d8e1cf20}
+/* A stable balance above the scrollable roster; no balance or countdown can
+   move the primary action or force a card to widen on small phones. */
+#loot-shop{box-sizing:border-box;width:min(440px,calc(100% - 20px));max-height:calc(var(--game-frame-height,100dvh) - 24px);margin:auto;padding:0;border:1px solid #657d89;border-radius:20px;background:#132733;color:#f3f0e7;overflow:hidden;font-family:var(--ui-font,system-ui,sans-serif);box-shadow:0 20px 64px #051018c9,inset 0 1px #d8e1cf20}
 #loot-shop[open]{display:flex;flex-direction:column}
-#loot-shop::backdrop{background:#07131bcc}
-.loot-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 16px 12px;flex:none;background:linear-gradient(115deg,#263d47,#1b303b)}
-.loot-head small{font-size:11px;line-height:16px;color:#c4b68d;letter-spacing:.03em}.loot-head h2{font-size:22px;line-height:28px;margin:2px 0 0;letter-spacing:-.5px}
-.loot-head button{width:40px;height:40px;flex:none;border:1px solid #526a72;background:#2b414c;color:#e4e8e5;border-radius:12px;font-size:24px;cursor:pointer}
-.loot-wallet{display:flex;align-items:center;gap:9px;margin:0;padding:10px 16px;border-block:1px solid #b29d6544;background:linear-gradient(105deg,#b8a16918,#36494655);flex:none;font-size:12px;color:#e2dac7}
-.loot-wallet svg{width:34px;height:34px;flex:none}.loot-wallet strong{display:flex;align-items:baseline;gap:4px;margin-left:auto;font-size:22px;line-height:28px;color:#f3d28d;font-variant-numeric:tabular-nums}.loot-wallet strong small{font-size:11px;font-weight:500;color:#c4c3b1}
-.loot-scroll{min-height:0;overflow:auto;overscroll-behavior:contain;padding:12px 12px 4px;scrollbar-width:none}.loot-scroll::-webkit-scrollbar{display:none}
-.loot-intro,.loot-notice{font-size:11px;line-height:1.65;color:#b9c6c8;margin:0 2px 12px}.loot-intro span{display:block;color:#94aab1;font-size:10px;margin-top:3px}.loot-notice{padding:5px 2px 9px;margin:0}
-.operative-card{position:relative;display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px 14px;margin-bottom:12px;padding:12px;border:1px solid #49636e;border-radius:14px;background:linear-gradient(125deg,#2b424f,#213540);box-shadow:inset 0 1px #d4e3db0d}
-.operative-portrait{width:96px;height:116px;display:grid;place-items:center;overflow:hidden;border:1px solid #aec2bf24;border-bottom:2px solid var(--operative-color);border-radius:9px;background:radial-gradient(ellipse at 50% 28%,#92b3b026,transparent 75%),linear-gradient(160deg,#203540,#122731);box-shadow:inset 0 1px #bed3ce18}
-.operative-portrait svg{display:block;width:96px;height:112px;max-width:100%;image-rendering:pixelated}
-.operative-info{min-width:0;align-self:center}.operative-info h3{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:17px;line-height:23px;margin:0 0 7px;color:#f4f0e5;letter-spacing:-.3px}.operative-info h3 small{padding:1px 5px;border:1px solid #94b8a53d;background:#405651;color:#cee3d6;border-radius:4px;font-size:10px;line-height:15px;font-weight:500}
-.operative-info p{font-size:12px;line-height:1.55;margin:0;color:var(--operative-color);word-break:keep-all;overflow-wrap:anywhere}
-.operative-info details{margin-top:7px;font-size:11px;color:#becdd1}.operative-info details p{font-size:11px;color:#c1cecf;margin-top:6px}.operative-info summary{cursor:pointer;padding:5px 0;width:fit-content;min-height:24px}
-.operative-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border-top:1px solid #98b1b21a;padding-top:10px}
-.operative-actions small{flex:1;min-width:90px;font-size:11px;line-height:1.5;color:#b8c8cc;word-break:keep-all}.operative-actions button{min-height:42px;padding:8px 11px;border:1px solid #c8ac70;border-radius:9px;background:linear-gradient(#ead197,#d1b475);box-shadow:inset 0 1px #fff3cc55;color:#23353d;font:800 12px/18px var(--ui-font,system-ui);cursor:pointer;white-space:normal;overflow-wrap:anywhere}
-.operative-actions button:disabled{background:#2a414d;border-color:#536972;color:#afbdc1;box-shadow:none;cursor:default}.operative-actions button[aria-pressed]{background:#304f5a;border-color:#72958f;color:#d5e8dc;box-shadow:inset 0 1px #d1e6da18}
-.loot-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-top:1px solid #425761;flex:none;background:#20343e}.loot-footer span{font-size:11px;line-height:16px;color:#b5c5ca;word-break:keep-all}.loot-footer button{min-height:42px;padding:8px 16px;border:1px solid #637d87;background:#354f5c;border-radius:10px;color:#f3f0e7;white-space:nowrap}
+#loot-shop::backdrop{background:#07131bd6}
+.loot-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 16px 13px;flex:none;background:linear-gradient(115deg,#2b4350,#1b303e)}
+.loot-head small{font-size:11px;line-height:16px;color:#c8b78f;letter-spacing:.02em}.loot-head h2{font-size:22px;line-height:28px;margin:2px 0 0;letter-spacing:-.6px}
+.loot-head button{width:40px;height:40px;flex:none;border:1px solid #526b77;background:#2d4553;color:#edf1ec;border-radius:12px;font-size:24px;cursor:pointer}
+.loot-wallet{display:flex;align-items:center;gap:9px;padding:10px 16px;border-block:1px solid #ad96663b;background:linear-gradient(100deg,#b3975a14,#b3975a06);flex:none;min-width:0}
+.loot-wallet-icon{width:36px;height:36px;flex:none}.loot-wallet-icon svg{display:block;width:100%;height:100%}
+.loot-wallet-caption{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:12px;line-height:17px;color:#dedacb}.loot-wallet-caption small{font-size:10px;line-height:14px;color:#95adb8}
+.loot-wallet strong{display:flex;align-items:baseline;gap:4px;margin-left:auto;min-width:0;font-size:21px;line-height:28px;color:#f3d28d;font-variant-numeric:tabular-nums;white-space:nowrap}.loot-wallet strong small{font-size:11px;font-weight:500;color:#c8c8b6}
+.loot-scroll{min-height:0;overflow:auto;overflow-anchor:none;overscroll-behavior:contain;padding:14px 12px 8px;scrollbar-width:none}.loot-scroll::-webkit-scrollbar{display:none}
+.loot-collection{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 2px 9px}.loot-collection h3{margin:0;font-size:15px;line-height:21px;color:#eee9da}.loot-collection p{margin:3px 0 0;font-size:11px;line-height:16px;color:#9fb4be}.loot-collection>strong{flex:none;padding:5px 9px;border:1px solid #7e92934d;border-radius:8px;color:#d7c394;background:#2d4149;font-size:12px;font-variant-numeric:tabular-nums}
+.loot-principles{display:flex;flex-wrap:wrap;gap:5px;margin:0 2px 14px}.loot-principles span{font-size:10px;line-height:16px;padding:2px 8px;border:1px solid #71889338;border-radius:5px;color:#b7c8cc;background:#243b46}
+.operative-card{position:relative;min-width:0;overflow:hidden;margin-bottom:13px;padding:13px;border:1px solid #4c6673;border-radius:15px;background:linear-gradient(125deg,#2b4350,#213642 65%,#20343e);box-shadow:0 4px 12px #08192330,inset 0 1px #d4e3db0e}
+.operative-card::before{content:"";position:absolute;left:0;top:18px;width:3px;height:46px;background:var(--operative-color);border-radius:0 3px 3px 0;opacity:.8}
+.operative-profile{display:grid;grid-template-columns:112px minmax(0,1fr);gap:14px;align-items:center}
+.operative-portrait{width:112px;aspect-ratio:6/7;display:grid;place-items:center;overflow:hidden;border:1px solid #afc6c838;border-bottom:2px solid var(--operative-color);border-radius:10px;background:radial-gradient(ellipse at 50% 30%,#94b6bd30,transparent 75%),linear-gradient(160deg,#2a424f,#132733);box-shadow:inset 0 1px #bed3ce24,0 4px 10px #08172226}
+.operative-portrait svg{display:block;width:100%;height:100%;max-width:100%;image-rendering:pixelated}
+.operative-info{min-width:0}.operative-role{display:inline-block;font-size:10px;font-weight:600;line-height:16px;letter-spacing:.04em;color:var(--operative-color);margin:0 0 5px}
+.operative-info h3{font-size:20px;line-height:27px;margin:0;color:#f5f0e4;letter-spacing:-.6px;word-break:keep-all}
+.operative-meta{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:5px}.operative-meta:has(>[hidden]):not(:has(>:not([hidden]))){display:none}
+.operative-meta>span{padding:2px 5px;border:1px solid #94b8a538;background:#36504f;color:#c8dfd4;border-radius:4px;font-size:10px;line-height:14px;font-weight:500;white-space:nowrap}
+.operative-meta .operative-timer{color:#d3e5ec;background:#294551;border-color:#62838e66;font-variant-numeric:tabular-nums}
+.operative-info .operative-effect{font-size:13px;line-height:1.6;font-weight:700;margin:9px 0 0;color:#e5e8df;word-break:keep-all;overflow-wrap:anywhere}
+.operative-supply-preview{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;padding:8px 10px;border:1px solid #b4c2b41a;border-radius:9px;background:#1127336b}
+.operative-supply-icon{width:25px;height:31px;flex:none;display:block}.operative-supply-icon svg{width:100%;height:100%;display:block}
+.operative-supply-preview>div{min-width:0;flex:1}.operative-supply-preview strong{display:block;font-size:11px;line-height:17px;font-weight:600;color:var(--operative-color)}.operative-supply-preview>div>span{display:block;font-size:10px;line-height:15px;color:#adbec4;word-break:keep-all;overflow-wrap:anywhere}
+.operative-supply-preview>small{flex-basis:100%;border-top:1px solid #c1c9a317;padding-top:5px;font-size:10px;line-height:15px;color:#d9c190}
+.operative-detail{margin-top:5px;font-size:11px;color:#c0d0d5}.operative-detail summary{display:flex;align-items:center;justify-content:space-between;min-height:36px;cursor:pointer;list-style:none;color:#a8bdc6}.operative-detail summary::-webkit-details-marker{display:none}.operative-detail summary::after{content:"⌄";font-size:16px;margin-left:6px;transform:translateY(-2px)}.operative-detail[open] summary::after{transform:rotate(180deg)}.operative-detail p{margin:0 0 12px;font-size:11px;line-height:1.7;color:#c1ced1;word-break:keep-all;overflow-wrap:anywhere}
+.operative-actions{display:grid;grid-template-columns:minmax(0,1fr) 104px;align-items:center;gap:10px;border-top:1px solid #9ab1b52b;padding-top:11px}
+.operative-action-info{min-width:0}.operative-action-info>span{display:block;font-size:10px;line-height:15px;color:#a8bbc1}.operative-action-info>strong{display:block;font-size:18px;line-height:25px;font-variant-numeric:tabular-nums;color:#eed29d;letter-spacing:-.3px}.operative-action-info>small{display:block;margin-top:2px;font-size:10px;line-height:15px;color:#b1c2c8;word-break:keep-all;overflow-wrap:anywhere}
+.operative-actions button{width:100%;min-height:44px;padding:9px 7px;border:1px solid #e2c181;border-radius:10px;background:linear-gradient(#f0d8a6,#d7b77b);box-shadow:inset 0 1px #fff3d17d,0 3px 8px #07151c26;color:#233640;font:800 13px/18px var(--ui-font,system-ui);cursor:pointer;white-space:normal;overflow-wrap:anywhere}
+.operative-actions button:disabled{background:#2b4350;border-color:#506c77;color:#a6bac2;box-shadow:none;cursor:default}
+.operative-card[data-phase="locked"] .operative-action-info>small{color:#d7b295}.operative-card[data-phase="ready"]{border-color:#8c9b78}.operative-card[data-phase="ready"] .operative-actions button:enabled{background:linear-gradient(#cce1b5,#a5c38f);border-color:#b9d2a3;color:#223b31}
+.operative-actions button[aria-pressed="true"]{background:#345b5c;border-color:#7da59c;color:#d8ece0;box-shadow:inset 0 1px #d1e6da18}.operative-actions button[aria-pressed="false"]{background:#3e505f;border-color:#7b8e99;color:#e0e8ea}
+.operative-card[data-phase="applied"] .operative-action-info>strong{color:#d6c6e8}.operative-card[data-phase="active"] .operative-action-info>strong{color:#c4e1d5}
+.loot-notice{margin:0 2px 4px;font-size:11px;line-height:1.7;color:#9fb4be}.loot-notice summary{padding:10px 0;cursor:pointer;color:#bccbd0}.loot-notice p{margin:0 0 8px;word-break:keep-all}
+.loot-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 13px;border-top:1px solid #425c68;flex:none;background:#1e3541}.loot-footer>span{font-size:10px;line-height:16px;color:#b2c5cd;word-break:keep-all}.loot-footer button{min-height:40px;min-width:62px;padding:8px 13px;border:1px solid #637d87;background:#354f5c;border-radius:10px;color:#f3f0e7;font:600 12px/18px var(--ui-font,system-ui);white-space:nowrap}
 #loot-shop button:focus-visible,#loot-shop summary:focus-visible{outline:2px solid #f2d58b;outline-offset:2px}
-@media(max-width:350px){.operative-card{grid-template-columns:80px minmax(0,1fr);gap:8px 10px;padding:10px}.operative-portrait{width:80px;height:98px}.operative-portrait svg{width:80px;height:94px}.operative-info h3{font-size:16px}.operative-info p{font-size:11px}.loot-scroll{padding-inline:10px}.loot-head{padding:12px}.loot-head h2{font-size:20px}.loot-wallet{padding:8px 12px}.loot-wallet strong{font-size:20px}}
-
-.operative-info h3 .operative-timer{color:#d4e9ed;background:#294952;border-color:#62838e66;font-variant-numeric:tabular-nums;white-space:nowrap}
+#loot-shop [hidden]{display:none!important}
+@media(max-width:350px){.loot-head{padding:12px}.loot-head h2{font-size:20px}.loot-head small{font-size:10px}.loot-wallet{padding:9px 12px;gap:7px}.loot-wallet-icon{width:30px;height:30px}.loot-wallet-caption{font-size:11px}.loot-wallet-caption small{font-size:10px}.loot-wallet strong{font-size:19px}.loot-scroll{padding:12px 10px 6px}.loot-collection p{font-size:10px}.operative-card{padding:11px}.operative-profile{grid-template-columns:96px minmax(0,1fr);gap:10px}.operative-portrait{width:96px}.operative-info h3{font-size:18px;line-height:24px}.operative-info .operative-effect{font-size:12px;margin-top:7px}.operative-meta{gap:3px}.operative-meta>span{font-size:10px;padding-inline:4px}.operative-actions{grid-template-columns:minmax(0,1fr) 90px;gap:8px}.operative-action-info>strong{font-size:17px}.operative-actions button{font-size:12px}.operative-supply-preview{padding:7px 8px}}
+@media(max-height:600px){.loot-head{padding-block:10px}.loot-head small{display:none}.loot-wallet{padding-block:7px}.loot-footer{padding-block:6px}}

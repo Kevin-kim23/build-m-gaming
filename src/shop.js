@@ -6,7 +6,7 @@ import { potionsMarkup } from './potion-panels.js';
 import { fmtGold } from "./format.js";
 import { UNITS, unitAccess } from "./units.js";
 import { schoolsMarkup } from "./school-panels.js";
-import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, commandBatonStatus } from "./personal-equipment.js";
+import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess } from "./personal-equipment.js";
 
 export const SHOP_CATEGORIES = Object.freeze([
   Object.freeze({ id: "recruit", name: "군대 모집" }),
@@ -16,7 +16,7 @@ export const SHOP_CATEGORIES = Object.freeze([
 ]);
 
 // The 100-unit button exists only for units the command baton can bulk-recruit.
-// Before the baton unlocks it shows as a locked placeholder (no purchase attributes).
+// Until unlocked, keep one full-width single-recruit action instead of a locked batch slot.
 function bulkSlot(s, unit) {
   if (!BULK_RECRUIT[unit.id]) return { button: "", price: "" };
   const amount = COMMAND_BATON.recruitAmount, access = bulkRecruitAccess(s, unit.id);
@@ -24,8 +24,7 @@ function bulkSlot(s, unit) {
     button: `<button class="buy bulk-buy" data-buy-bulk="${unit.id}" aria-label="${unit.name} ${amount}명 모집">${amount}명</button>`,
     price: `<p class="tile-price tile-price-bulk" data-bulk-unit="${unit.id}"><small>${amount}명</small><b data-bulk-price></b></p>`,
   };
-  return { price: "", button: commandBatonStatus(s).visible
-    ? `<button class="buy bulk-buy" disabled data-bulk-locked="${unit.id}" aria-label="${unit.name} ${amount}명 모집 잠김 (지휘봉 필요)">${amount}명</button>` : "" };
+  return { price: "", button: "" };
 }
 
 // One compact tile per unit: icon, name, abilities, price, 1/100 buttons. Details live in a popup.

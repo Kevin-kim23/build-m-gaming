@@ -29,3 +29,13 @@ test('home keeps loot balance inside the shop rather than crowding its navigatio
   assert.match(button,/전리품 상점/);assert.match(button,/<svg/);
   assert.doesNotMatch(button,/보유|data-home-loot|<small/);
 });
+
+test('battle and loot form the first dock row before the six unchanged management buttons',()=>{
+  const html=homeMarkup({});
+  const dock=html.slice(html.indexOf('<section class="home-dock"'));
+  const row=dock.match(/<div class="home-expeditions">([\s\S]*?)<\/div>/)[1];
+  assert.deepEqual([...row.matchAll(/<button id="([^"]+)"/g)].map(match=>match[1]),['open-battle','open-loot']);
+  assert.ok(dock.indexOf('class="home-expeditions"')<dock.indexOf('<nav class="home-tabs"'));
+  for(const id of ['open-battle','open-loot','open-recruit','open-equipment','open-shop','open-facilities','open-personal','open-items'])
+    assert.equal(html.split(`id="${id}"`).length-1,1,id);
+});

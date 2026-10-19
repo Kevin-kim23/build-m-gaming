@@ -1,4 +1,4 @@
-import { compactMoney, subtractMoney, serializeSave } from '../src/money.js';
+import { compactMoney, subtractMoney, serializeSave, multiplyMoney, exact } from '../src/money.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fmt, fmtGold, fmtGoldCost } from '../src/format.js';
@@ -94,7 +94,9 @@ test('large boosted automatic earnings never overflow or repay spent pulses', ()
     s.equipment[id] = { level: 20, count: 100_000, deployed: true };
   assert.equal(activateSword(s, T).ok, true);
   assert.equal(activateAutoTouch(s, T).ok, true);
-  assert.ok(Number.isSafeInteger(perTap(s, T) * 200));
+  const automatic=exact(multiplyMoney(perTap(s,T),200));
+  assert.equal(automatic,BigInt(perTap(s,T))*200n);
+  assert.ok(automatic>BigInt(Number.MAX_SAFE_INTEGER)&&automatic<MAX_GOLD);
   accrue(s, T + 60_000);
   assert.equal(s.gold, MAX_GOLD);
   assert.equal(s.autoTouchTicks, 200);

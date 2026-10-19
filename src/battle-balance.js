@@ -1,5 +1,6 @@
 import { BATTALION_SIZE } from "./formations.js";
 import { EQUIPMENT, MAX_EQUIPMENT_COUNT } from "./equipment.js";
+import { equipmentGrowth } from './equipment-growth.js';
 import { campaignStages } from './campaign.js';
 import {RANKS,RANK_REQUIREMENTS} from './ranks.js';
 
@@ -119,7 +120,7 @@ export function combatScale(totalPower) {
   return totalPower / BATTALION_SIZE;
 }
 
-export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, count = 1, playerUpgrades = true, playerBonus = true) {
+function originalCombatStats(id, level, totalPower, count, playerUpgrades, playerBonus) {
   if (!Number.isSafeInteger(count) || count < 1 || count > MAX_EQUIPMENT_COUNT) throw new RangeError("Invalid equipment count");
   const type = EQUIPMENT[id];
   if (!type || !Number.isInteger(level) || level < 0 || level > type.maxLevel)
@@ -143,6 +144,45 @@ export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, cou
   };
 }
 
+// One value measure for the list and the mana-aware attack retrofit floor.
+function combatValue(stats, trait) {
+  const rate=trait.kind==='strike'?stats.damage*BATTLE_RULES.strikeMultiplier/(trait.cooldownMs/1000):((stats.damage||stats.healing||0)*1000/stats.intervalMs);
+  return rate*20+stats.hp*.1;
+}
+const retrofitCurves = new Map();
+function combatRetrofit(id, level) {
+  if (!retrofitCurves.has(id)) {
+    const trait = UNIT_TRAITS[id], factors=[];
+    let previous = 1;
+    for (let step=0; step<=EQUIPMENT[id].maxLevel; step++) {
+      const stats=originalCombatStats(id,step,BATTALION_SIZE,1,true,true);
+      const target=equipmentGrowth(step).combatPerMana*trait.cost;
+      let factor;
+      if (trait.kind==='heal') {
+        // Healing is 12% of the recipient's max HP and includes self-healing.
+        // Never fill an attack-score deficit entirely with healer HP: that
+        // would turn a low-mana support card into an almost immortal tank.
+        const tank=originalCombatStats('tank',step,BATTALION_SIZE,1,true,true);
+        const hpPerMana=tank.hp*combatRetrofit('tank',step)/UNIT_TRAITS.tank.cost;
+        factor=step<=10?1:hpPerMana*trait.cost*.85/stats.hp;
+      } else factor=target/combatValue(stats,trait);
+      // Retain earlier refits so faster firing never makes a later upgrade lose
+      // per-shot damage/HP. The small overshoot is covered by mana-value tests.
+      previous=Math.max(previous,factor);
+      factors.push(previous);
+    }
+    retrofitCurves.set(id,Object.freeze(factors));
+  }
+  return retrofitCurves.get(id)[level];
+}
+export function equipmentCombatStats(id, level, totalPower = BATTALION_SIZE, count = 1, playerUpgrades = true, playerBonus = true) {
+  const stats=originalCombatStats(id,level,totalPower,count,playerUpgrades,playerBonus);
+  // Enemy spawn calls have playerBonus=false. Their stage balance is unchanged.
+  if (!playerUpgrades || !playerBonus || level<=10) return stats;
+  const factor=combatRetrofit(id,level);
+  return factor===1?stats:{...stats,hp:stats.hp*factor,damage:stats.damage*factor};
+}
+
 // 권장 강화와 적 강화의 성장 차이를 보정한다. 실제 난이도 곡선은 campaign-progression.js에서 관리한다.
 export function enemyStack(stageId, enemyLevel) {
   const refLevel=STAGES[stageId-1].recommendedLevel;
@@ -153,6 +193,5 @@ export function enemyStack(stageId, enemyLevel) {
 // A comparison index, not damage: 20s damage/healing plus one tenth of HP.
 export function equipmentCombatPower(id,level){
  const s=equipmentCombatStats(id,level),t=UNIT_TRAITS[id];
- const rate=t.kind==='strike'?s.damage*BATTLE_RULES.strikeMultiplier/(t.cooldownMs/1000):((s.damage||s.healing||0)*1000/s.intervalMs);
- return Math.max(1,Math.round(rate*20+s.hp*.1));
+ return Math.max(1,Math.round(combatValue(s,t)));
 }

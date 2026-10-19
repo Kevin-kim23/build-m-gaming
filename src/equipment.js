@@ -1,4 +1,5 @@
 import { MILITARY_MAX_LEVEL } from './equipment-limits.js';
+import { equipmentGrowth } from './equipment-growth.js';
 import { multiplyMoney, addMoney, scaleMoney, exact, compactMoney, minMoney, MAX_GOLD } from './money.js';
 import { GALACTIC_EQUIPMENT } from './galactic-equipment.js';
 import { LATE_EQUIPMENT } from './late-equipment-catalog.js';
@@ -107,9 +108,10 @@ export function equipmentStats(level, id = "artillery") {
   const d = equipmentType(id);
   if (!Number.isInteger(level) || level < 0 || level > d.maxLevel)
     throw new RangeError("Invalid enhancement level");
+  const retrofit = equipmentGrowth(level);
   return {
-    passive: addMoney(addMoney(d.passive,multiplyMoney(d.passiveStep,level)),scaleMoney(d.passive,3*level*level,100)),
-    tap: addMoney(addMoney(d.tap,multiplyMoney(d.tapStep,level)),scaleMoney(d.tap,3*level*level,100)),
+    passive: addMoney(addMoney(addMoney(d.passive,multiplyMoney(d.passiveStep,level)),scaleMoney(d.passive,3*level*level,100)),retrofit.passive),
+    tap: addMoney(addMoney(addMoney(d.tap,multiplyMoney(d.tapStep,level)),scaleMoney(d.tap,3*level*level,100)),retrofit.tap),
   };
 }
 export const emptyEquipment = () =>
@@ -137,7 +139,7 @@ export function equipmentIncome(s) {
     { passive: 0, tap: 0 },
   );
 }
-export function enhancementCost(level, id = "artillery") {
+function originalEnhancementCost(level, id) {
   const d = equipmentType(id);
   equipmentStats(level, id);
   if(level>=40){
@@ -145,7 +147,7 @@ export function enhancementCost(level, id = "artillery") {
     // Shared late-game floor: one of 32 budget shares of the corresponding flag upgrade.
     // Exact 3/2 growth keeps every individual quote below the wallet cap.
     const floor=12_800_000_000_000_000_000n*3n**BigInt(level-40)/2n**BigInt(level-40);
-    const prior=exact(enhancementCost(39,id))*3n**BigInt(level-39)/2n**BigInt(level-39);
+    const prior=exact(originalEnhancementCost(39,id))*3n**BigInt(level-39)/2n**BigInt(level-39);
     const amount=floor>prior?floor:prior;
     return compactMoney((amount+9999n)/10000n*10000n);
   }
@@ -162,6 +164,12 @@ export function enhancementCost(level, id = "artillery") {
   return level === d.maxLevel
     ? null
     : Math.ceil(((d.cost / 4) * 1.4 ** level) / 10000) * 10000;
+}
+export function enhancementCost(level, id = "artillery") {
+  const original = originalEnhancementCost(level, id);
+  if (original === null) return null;
+  const floor = equipmentGrowth(level + 1).upgradeCost;
+  return original > floor ? original : floor;
 }
 export function equipmentPurchaseOffer(s, id = "artillery") {
   const d = equipmentType(id),
