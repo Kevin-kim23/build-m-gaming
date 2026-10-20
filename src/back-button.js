@@ -14,6 +14,7 @@ export const BACK_LAYERS = Object.freeze([
   Object.freeze({ selector: '.promotion-layer', close: '[data-dismiss-promotion]' }),
   Object.freeze({ selector: '#detail-modal', close: '[data-detail-close]' }),
   Object.freeze({ selector: '#battle-modal', close: '[data-back-first], [data-battle-close]' }),
+  Object.freeze({ selector: '#defense-modal', close: '[data-defense-close]' }),
   Object.freeze({ selector: '#loot-shop', close: '[data-loot-close]' }),
   Object.freeze({ selector: '#achievement-modal', close: '#close-achievements' }),
   Object.freeze({ selector: '#modal', close: '#close-shop, #close-equipment' }),

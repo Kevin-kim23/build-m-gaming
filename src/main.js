@@ -25,6 +25,7 @@ import { createOfflineRewardUI } from './offline-reward-ui.js';
 import { createOfflineNativeAd } from './potion-ad.js';
 import './offline-reward.css';
 import { createBattleUI } from "./battle-ui.js";
+import { createDefenseUI } from "./defense-ui.js";
 import { createAchievementUI } from "./achievement-ui.js";
 import { battleAccess } from "./battle.js";
 import { renderBattleLock } from './battle-icons.js';
@@ -108,6 +109,10 @@ function drawHomeField() {
 }
 window.addEventListener('character-art-ready',()=>{if(session.active)drawHomeField();});
 const battleUI = createBattleUI(session, gameAudio);
+// 무한 방어전 2단계: 홈 버튼은 5단계에서. 지금은 주소 끝 #defense 로만 여는 시험 화면.
+const defenseUI = createDefenseUI(session, { notify: showToast });
+const openDefenseFromHash = () => { if (location.hash === '#defense' && session.active) defenseUI.open(); };
+addEventListener('hashchange', openDefenseFromHash);
 const accessUI=createAccessUI({onExit:()=>{
   if(Capacitor.isNativePlatform())App.exitApp().catch(error=>reportError('app.exit',error));
   else showToast('이 창을 닫으면 종료됩니다. 동의 전에는 게임이 시작되지 않습니다.');
@@ -132,6 +137,7 @@ const opening = createOpeningScreen({onStart: async () => {
   $('#app').inert=false;
   gameAudio.setMusicScene('home');
   lifecycle.start();
+  openDefenseFromHash();
   void armyPanels.syncBilling();
   if (!document.querySelector('dialog[open]')) zone.focus({preventScroll:true});
 }, soundEnabled: !session.hasSavedProgress || (state.sound && !session.saveNotice), soundVolume: state.sfxVolume,
@@ -144,6 +150,7 @@ const lifecycle = createGameLifecycle({session, opening, onPause: () => {
   guideUI.suspend();
   fieldNavigation.clear();
   battleUI.suspend();
+  defenseUI.suspend();
   hidePromotion();
   gameAudio.stop();
   gameAudio.music.configure({active:false});

@@ -126,7 +126,7 @@ function impact(c, x, y, age, color, size) {
 // 장비 둘레 진영색 외곽선(아군 청록·적 빨강): 장비·진영·강화 단계별로 한 번만 만들어 캐시한다.
 const TEAM_OUTLINE = Object.freeze({ player: '#35c29a', enemy: '#e0564b' });
 const outlines = new Map();
-function teamSprite(id, side, level) {
+export function teamSprite(id, side, level) {
   const key = `${id}:${side}:${level}`; if (outlines.has(key)) return outlines.get(key);
   const base = unitSprite(id, side, level), pad = Math.max(2, Math.round(base.width * .045));
   const out = document.createElement('canvas'); out.width = base.width + pad * 2; out.height = base.height + pad * 2;

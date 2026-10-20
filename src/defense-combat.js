@@ -127,6 +127,8 @@ function fire(run, dt) {
       && visible(run, e, radarRange) && Math.hypot(e.x - px, e.y - py) <= s.range).sort((a, b) => progress(b) - progress(a));
     if (!targets.length) return;
     t.cooldown = s.interval;
+    if (run.fx.length >= 40) run.fx.shift();
+    run.fx.push({ line: t.line, x0: px, y0: py, x1: targets[0].x, y1: targets[0].y, at: run.time, splash: s.splash });
     for (let shot = 0; shot < s.shots; shot++) hit(run, s, targets[shot % targets.length], targets, radarRange);
   });
 }

@@ -71,7 +71,7 @@ test('every kind of popup the game opens is covered', () => {
     assert.equal(handler(), 'closed', layer.selector);
     assert.equal(dialogs[layer.selector].open, false, layer.selector);
   }
-  assert.deepEqual(BACK_LAYERS.map((l) => l.selector), ['#access-reader', '#ad-choice-modal', '#offline-reward-modal', '#test-purchase-modal', '#potion-ad-modal', '#personal-award-modal', '.promotion-layer', '#detail-modal', '#battle-modal', '#loot-shop', '#achievement-modal', '#modal']);
+  assert.deepEqual(BACK_LAYERS.map((l) => l.selector), ['#access-reader', '#ad-choice-modal', '#offline-reward-modal', '#test-purchase-modal', '#potion-ad-modal', '#personal-award-modal', '.promotion-layer', '#detail-modal', '#battle-modal', '#defense-modal', '#loot-shop', '#achievement-modal', '#modal']);
 });
 
 test('a popup whose close button does nothing is still closed', () => {
