@@ -23,8 +23,7 @@
 .battle-pause-actions .info-btn { flex:0 0 48px; }
 
 /* Cards: grey while waiting, a blue fill rises with mana/cooldown, gold edge when ready. No status text. */
-.battle-cards .deploy-card { overflow:hidden; }
-.battle-cards .deploy-card .card-fill { position:absolute; inset:auto 0 0 0; height:0; background:linear-gradient(#7fc0ff1f,#3d86d659); border-top:2px solid #7fc0ffcc; pointer-events:none; transition:height .2s linear; }
+.battle-cards .deploy-card .card-fill { position:absolute; inset:auto 0 0 0; border-radius:0 0 6px 6px; z-index:0; height:0; background:linear-gradient(#7fc0ff1f,#3d86d659); border-top:2px solid #7fc0ffcc; pointer-events:none; transition:height .2s linear; }
 .battle-cards .deploy-card:not(:disabled) .card-fill { display:none; }
 .battle-cards button.deploy-card:disabled { opacity:1; filter:none; }
 .battle-cards .deploy-card:disabled .card-art { filter:grayscale(1) brightness(.6); }
@@ -39,3 +38,4 @@
 /* Pause menu: continue is the big primary action; info and exit sit below it as smaller secondary buttons. */
 .battle-overlay:not(.result) #battle-resume { width:100%; }
 .battle-pause-actions button { padding:9px 10px; font-size:12px !important; }
+.battle-cards .deploy-card .card-cost { z-index:2; }
