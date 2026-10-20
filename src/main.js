@@ -110,7 +110,7 @@ function drawHomeField() {
 }
 window.addEventListener('character-art-ready',()=>{if(session.active)drawHomeField();});
 const battleUI = createBattleUI(session, gameAudio);
-const defenseUI = createDefenseUI(session, { notify: showToast });
+const defenseUI = createDefenseUI(session, { notify: showToast, audio: gameAudio });
 const accessUI=createAccessUI({onExit:()=>{
   if(Capacitor.isNativePlatform())App.exitApp().catch(error=>reportError('app.exit',error));
   else showToast('이 창을 닫으면 종료됩니다. 동의 전에는 게임이 시작되지 않습니다.');

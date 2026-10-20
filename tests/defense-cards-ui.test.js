@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cardsMarkup, evolveRow, towerPanelMarkup, basePanelMarkup, hudValues } from '../src/defense-markup.js';
+import { cardsMarkup, evolveRow, towerBubbleMarkup, basePanelMarkup, hudValues } from '../src/defense-markup.js';
 import { createRun, build, upgrade, buildBay, upgradeBay, openCards, evolve } from '../src/defense-run.js';
 
 // 무한 방어전 3단계: 카드 고르기·진화 화면 글자. 저장은 건드리지 않는다.
@@ -35,7 +35,7 @@ test('evolution row: level hint, ticket hint, then one button or two branch butt
   assert.match(html, /data-evolve="1">진화 → 타이탄 공성포/);
   evolve(run, { pad: 0 }, 0);
   assert.equal(evolveRow(run, 0), '');
-  assert.match(towerPanelMarkup(run, 0), /다연장 로켓포 Lv20/);
+  assert.match(towerBubbleMarkup(run, 0), /다연장 로켓포 <span>Lv20/);
 });
 
 test('support bays evolve at Lv20 with a ticket into one of two branches', () => {

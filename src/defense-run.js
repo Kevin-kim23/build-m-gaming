@@ -7,18 +7,20 @@ import { buildCost, bayBuildCost, upgradeCost, baseUpgradeCost, startBaseLevel, 
 import { drawCards, applyCard, evolvable } from './defense-cards.js';
 
 // awaken: 계열 각성 보너스(판 밖 성장) { armor, firepower, air } → 그 계열 공격 +%.
-export function createRun({ rank = '부사령관', seed = 1, awaken = {} } = {}) {
+// manualStart: 첫 웨이브 전 '준비' 상태(시간 멈춤)에서 시작 버튼을 기다린다.
+export function createRun({ rank = '부사령관', seed = 1, awaken = {}, manualStart = false } = {}) {
   const baseLevel = startBaseLevel(rank);
   if (baseLevel === null) throw new RangeError('Defense is locked below 부사령관');
   return {
-    rank, rng: seed | 0, time: 0, wave: 0, cleared: 0, phase: 'gap', gapLeft: WAVE_GAP_S,
+    rank, rng: seed | 0, time: 0, wave: 0, cleared: 0, phase: manualStart ? 'ready' : 'gap', gapLeft: WAVE_GAP_S,
     supply: START_SUPPLY, supplyTimer: 0, baseLevel, hearts: START_HEARTS, maxHearts: START_HEARTS,
     pads: PADS.map(() => null), bays: { transport: null, recon: null },
     mods: { supplyInterval: 1, supplyAmount: 0, allAttack: 0, line: { armor: awaken.armor ?? 0, firepower: awaken.firepower ?? 0, air: awaken.air ?? 0 } },
     storedCards: 1, hand: null, rerolls: 1, evoTickets: 0, wavesWithoutEvo: 0,
     mines: [], skills: {}, enemies: [], queue: [], spawnTimer: 0, nextId: 1, warning: null, banner: null,
     stats: { kills: 0, evolutions: 0, leaks: 0 },
-    fx: [],   // 화면 연출용 최근 사격(최대 40개, 저장하지 않음)
+    fx: [],      // 화면 연출용 최근 사격(최대 40개, 저장하지 않음)
+    events: [],  // 화면이 가져가는 사건(처치·새는 적·보스 처치·웨이브 시작). 화면이 비운다.
   };
 }
 
@@ -146,6 +148,12 @@ export function upgradeBay(run, bay, times = 1) {
 }
 
 // 바로 부르기: 쉬는 시간에만. 남은 초 × 5 보급 후 바로 다음 웨이브.
+// 준비 상태에서 첫 웨이브 시작.
+export function startRun(run) {
+  if (run.phase !== 'ready') fail('Already started');
+  run.phase = 'gap'; run.gapLeft = 0;
+  return run;
+}
 export function callEarly(run) {
   if (run.phase !== 'gap') fail('Not between waves');
   run.supply += callEarlyBonus(run.gapLeft);

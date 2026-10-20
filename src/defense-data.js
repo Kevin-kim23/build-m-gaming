@@ -7,7 +7,7 @@ export const BASE_POS = Object.freeze([180, 690]);
 // 공격 장비 자리 6곳. 지원 2칸은 기지 양옆에 고정(BAYS).
 export const PADS = Object.freeze([[180, 112], [180, 280], [300, 280], [180, 450], [62, 520], [292, 610]]);
 
-export const START_SUPPLY = 100;
+export const START_SUPPLY = 150;   // 시작 전(준비)에 장비 둘을 지을 수 있게
 export const START_HEARTS = 20;
 export const WAVE_GAP_S = 4;              // 웨이브 사이 쉬는 시간
 export const CALL_EARLY_PER_S = 5;        // 바로 부르기: 남은 초 × 5 보급
@@ -76,20 +76,20 @@ export const RANK_START_LEVEL = Object.freeze({
 });
 export const UNLOCK_RANK = '부사령관';
 
-// 적. hp는 그 웨이브 기본 체력 배율, speed는 초당 px. first = 처음 나오는 웨이브.
+// 적(공허 군단). art는 alien-art.js 그림 종류. hp는 그 웨이브 기본 체력 배율, speed는 초당 px. first = 처음 나오는 웨이브.
 export const ENEMIES = Object.freeze({
-  grunt: Object.freeze({ name: '일반', art: 'tank', hp: 1, speed: 40, first: 1, supply: 3 }),
-  air: Object.freeze({ name: '공중', art: 'helicopter', hp: 0.8, speed: 46, first: 3, air: true, supply: 4 }),
-  shield: Object.freeze({ name: '방패', art: 'selfPropelled', hp: 1.3, speed: 34, first: 8, shield: 3, supply: 4 }),
-  fast: Object.freeze({ name: '빠른 적', art: 'tank', hp: 0.6, speed: 80, first: 14, supply: 4 }),
-  stealth: Object.freeze({ name: '위장', art: 'tank', hp: 0.9, speed: 44, first: 25, stealth: true, supply: 5 }),
-  midBoss: Object.freeze({ name: '중간 보스', art: 'tank', hp: 14, speed: 26, boss: true, leak: 5, supply: 40 }),
+  grunt: Object.freeze({ name: '갑각병', art: 'crawler', hp: 1, speed: 40, first: 1, supply: 3 }),
+  air: Object.freeze({ name: '포자 드론', art: 'drone', hp: 0.8, speed: 46, first: 3, air: true, supply: 4 }),
+  shield: Object.freeze({ name: '방패 갑충', art: 'shell', hp: 1.3, speed: 34, first: 8, shield: 3, supply: 4 }),
+  fast: Object.freeze({ name: '질주체', art: 'runner', hp: 0.6, speed: 80, first: 14, supply: 4 }),
+  stealth: Object.freeze({ name: '위상 잠입자', art: 'phase', hp: 0.9, speed: 44, first: 25, stealth: true, supply: 5 }),
+  midBoss: Object.freeze({ name: '거대 갑각병', art: 'brute', hp: 14, speed: 26, boss: true, leak: 5, supply: 40 }),
 });
 // 20웨이브마다 큰 보스. 패턴: stun(범위 장비 정지) · summon(체력 25%마다 소환) · shield.
 export const BOSSES = Object.freeze([
-  Object.freeze({ wave: 20, name: '강철 거인', art: 'railgunTank', hp: 40, speed: 22, stun: true }),
-  Object.freeze({ wave: 40, name: '무인기 모선', art: 'droneCarrier', hp: 40, speed: 22, summon: true }),
-  Object.freeze({ wave: 60, name: '심연 공성 거신', art: 'siegeMech', hp: 44, speed: 20, stun: true, shield: 10 }),
+  Object.freeze({ wave: 20, name: '모체', art: 'mother', hp: 40, speed: 22, stun: true }),
+  Object.freeze({ wave: 40, name: '포자 모선', art: 'hive', hp: 40, speed: 22, summon: true }),
+  Object.freeze({ wave: 60, name: '심연 거신', art: 'colossus', hp: 44, speed: 20, stun: true, shield: 10 }),
 ]);
 export const BOSS_STUN = Object.freeze({ every: 8, warn: 3, duration: 5, radius: 70 });
 export const BOSS_SUMMON = Object.freeze({ count: 6, type: 'grunt' });
@@ -100,18 +100,14 @@ export const ZONES = Object.freeze([
   Object.freeze({ id: 'aetherion', name: '에테리온', theme: 'space', hp: 1.5 }),
   Object.freeze({ id: 'erebus', name: '에레보스', theme: 'abyss', hp: 2.25 }),
 ]);
-// 구간마다 적 장비 그림이 바뀐다(아스테라 지구 장비 → 에테리온·에레보스 은하 장비).
-export const ZONE_ART = Object.freeze({
-  asteria: Object.freeze({ grunt: 'tank', air: 'helicopter', shield: 'selfPropelled', fast: 'rocketLauncher', stealth: 'artillery', midBoss: 'railgunTank' }),
-  aetherion: Object.freeze({ grunt: 'plasmaTank', air: 'stellarBomber', shield: 'siegeMech', fast: 'railgunTank', stealth: 'plasmaTank', midBoss: 'siegeMech' }),
-  erebus: Object.freeze({ grunt: 'railgunTank', air: 'droneCarrier', shield: 'siegeMech', fast: 'plasmaTank', stealth: 'stellarBomber', midBoss: 'carrier' }),
-});
+// 적은 우리 장비가 아닌 '공허 군단'(외계 생체·기계 침략군). 구간마다 같은 모양에 색만 바뀐다.
+export const ZONE_PALETTE = Object.freeze({ asteria: 'rust', aetherion: 'crystal', erebus: 'magma' });
 // 새 적이 처음 나올 때 띄우는 한 줄 안내.
 export const ENEMY_TIPS = Object.freeze({
-  air: '공중 적: 길을 무시하고 기지로 직진 · 대공만 맞혀요',
-  shield: '방패 적: 첫 3발을 막아요 · 화력 범위·레일건이 좋아요',
-  fast: '빠른 적: 2배 속도 · 기갑 연사·지뢰가 좋아요',
-  stealth: '위장 적: 정찰 비행장 레이더 안에서만 보여요',
+  air: '포자 드론(공중): 길을 무시하고 기지로 직진 · 대공만 맞혀요',
+  shield: '방패 갑충: 첫 3발을 막아요 · 화력 범위·레일건이 좋아요',
+  fast: '질주체: 2배 속도 · 기갑 연사·지뢰가 좋아요',
+  stealth: '위상 잠입자: 정찰 비행장 레이더 안에서만 보여요',
 });
 export const WAVE_HP_BASE = 40;
 export const WAVE_HP_GROWTH = 1.12;

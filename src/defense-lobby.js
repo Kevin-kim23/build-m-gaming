@@ -20,6 +20,7 @@ export function lobbyMarkup(state, rankName, now = Date.now()) {
     <p class="defense-dim">무한 방어전</p>
     <h2 id="defense-title" class="defense-lobby-title">${d.best ? `최고 기록 ${n(d.best)}웨이브` : '첫 도전'}</h2>
     ${d.best ? `<p class="defense-dim">${dateText(d.bestAt)} 달성</p>` : ''}
+    <button type="button" class="defense-btn primary big" data-defense-start>출격</button>
     <div class="defense-stats">
       <div><span>계급 <b class="defense-rank">${rankName}</b></span><b class="defense-gold-text">시작 기지 Lv${start}</b></div>
       <div><span>시작 초당 보급</span><b>${baseStats(start).perSecond.toFixed(1)}</b></div>
@@ -27,9 +28,9 @@ export function lobbyMarkup(state, rankName, now = Date.now()) {
       <div><span>오늘 보상</span><b>${rewardsLeft(state, now)} / ${DAILY_REWARDS}판 남음</b></div>
       <div><span>보상</span><b>웨이브당 전리품 ${LOOT_PER_WAVE} · 방어 훈장 1</b></div>
     </div>
-    <p class="defense-medals">방어 훈장 <b>${n(d.medals)}</b> · 계열 각성</p>
-    <div class="defense-stats">${Object.keys(LINES).map(awakenRow).join('')}</div>
-    <div class="defense-panel-row"><button type="button" class="defense-btn" data-defense-close>나가기</button><button type="button" class="defense-btn primary" data-defense-start>출격</button></div>
+    <details class="defense-more"><summary>방어 훈장 <b>${n(d.medals)}</b> · 계열 각성 열기</summary>
+      <div class="defense-stats">${Object.keys(LINES).map(awakenRow).join('')}</div></details>
+    <div class="defense-panel-row"><button type="button" class="defense-btn" data-defense-close>나가기</button></div>
   </div>`;
 }
 

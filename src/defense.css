@@ -5,8 +5,9 @@
 #defense-modal button { font:inherit; cursor:pointer; }
 #defense-modal button:disabled { cursor:default; opacity:.45; }
 #defense-modal [hidden] { display:none !important; }
-.defense-frame { height:100%; display:grid; place-items:center; }
-.defense-field { position:relative; overflow:hidden; touch-action:manipulation; }
+.defense-frame { height:100%; display:flex; flex-direction:column; align-items:center; }
+.defense-frame.lobby { justify-content:center; }
+.defense-field { position:relative; overflow:hidden; touch-action:none; flex:none; }
 .defense-field canvas { display:block; image-rendering:pixelated; }
 .defense-labels { position:absolute; inset:0; pointer-events:none; }
 .defense-lv { position:absolute; transform:translate(-50%,-50%); padding:0 6px; border-radius:99px; background:#c99a45; color:#2a1e08; font-size:10px; font-weight:800; line-height:16px; }
@@ -14,15 +15,14 @@
 .defense-bay-name { position:absolute; transform:translate(-50%,-50%); padding:1px 7px; border-radius:99px; background:#2a2140; color:#e3d4ff; font-size:10px; font-weight:800; white-space:nowrap; }
 .defense-star { position:absolute; width:13%; aspect-ratio:1; transform:translate(-50%,-60%); filter:drop-shadow(0 1px 2px #000a); }
 .defense-star svg, .defense-star .insignia { display:block; width:100%; height:100%; }
-.defense-hud { position:absolute; left:8px; right:8px; top:8px; display:grid; gap:4px; pointer-events:none; }
-.defense-row { display:flex; align-items:center; gap:5px; }
+.defense-hud { position:absolute; left:8px; right:8px; top:8px; display:flex; align-items:center; gap:6px; pointer-events:none; }
 .defense-fill { flex:1; }
 .defense-chip { margin:0; padding:3px 8px; border-radius:99px; background:#0e1418e6; border:1px solid #3e535d; font-size:11.5px; font-weight:800; white-space:nowrap; color:#e9ecd2; pointer-events:auto; }
 .defense-chip.blue { color:#9fcbf5; } .defense-chip.red { color:#ff8a7a; } .defense-chip.green { color:#9fd3a8; }
 .defense-supply { position:relative; padding-bottom:6px; } .defense-supply small { font-size:10px; color:#9fb1b8; }
 .defense-supply i { position:absolute; left:9px; bottom:2px; height:3px; max-width:calc(100% - 18px); border-radius:2px; background:#7fd0a8; }
 .defense-test { margin:0; justify-self:start; padding:2px 9px; border-radius:99px; background:#0e1418cc; color:#9fb1b8; font-size:10.5px; }
-.defense-actions { position:absolute; right:8px; top:40px; display:grid; gap:6px; justify-items:end; }
+.defense-actions { position:absolute; right:8px; top:44px; display:grid; gap:6px; justify-items:end; }
 .defense-actions .defense-btn { min-height:32px; padding:5px 11px; }
 .defense-btn { min-height:36px; padding:7px 12px; border-radius:10px; border:1px solid #5d6f58; background:#24353d; color:#e9ecd2; font-size:13px; font-weight:800; }
 .defense-btn.primary { background:linear-gradient(#f2d48e,#c99a45); color:#2a1e08; border:0; }
@@ -72,3 +72,48 @@
 .defense-medals { font-size:13px; color:#c7d3c0; } .defense-medals b { color:#cfe3ff; }
 .defense-awaken { align-items:center; gap:8px; } .defense-awaken span { display:grid; text-align:left; } .defense-awaken span b { color:#e6c27a; letter-spacing:1px; } .defense-awaken small { color:#9fb1b8; font-size:11px; }
 .defense-awaken em { font-style:normal; color:#e6c27a; font-weight:800; }
+
+/* 0.82 조작 개편: 위쪽 줄 3개 · 다음 웨이브 · 장비 아래 ▲ · 아래 카드 줄 · 말풍선 · 첫 판 안내 */
+.defense-hud .defense-chip { font-size:13px; padding:4px 10px; }
+.defense-supply { font-size:15px !important; }
+.defense-sub { position:absolute; left:8px; top:44px; display:flex; gap:6px; align-items:center; pointer-events:none; }
+.defense-sub > * { pointer-events:auto; }
+.defense-chip.next { display:flex; align-items:center; gap:6px; border-color:#b8443c; color:#ffb1a6; }
+.defense-next-icons { display:flex; gap:4px; } .defense-next-icons span { display:flex; align-items:center; gap:1px; color:#e9ecd2; font-size:11px; }
+.defense-next-icons canvas { width:18px; height:18px; image-rendering:pixelated; }
+.defense-btn.small { min-height:30px; padding:4px 10px; font-size:12px; }
+.defense-btn.armed { background:#b8443c; border-color:#ff8a7a; color:#fff; }
+.defense-lv { padding:0 6px; line-height:15px; font-size:10px; }
+.defense-pad-act { position:absolute; transform:translate(-50%,-50%); min-width:46px; padding:2px 8px; border-radius:99px; border:1.5px solid #cdeedd; background:#2f8f5a; color:#fff; font-size:11.5px; font-weight:800; line-height:18px; white-space:nowrap; pointer-events:auto; box-shadow:0 2px 4px #0007; touch-action:none; }
+.defense-pad-act.trait, .defense-pad-act.evolve { background:#2c5aa0; border-color:#cfe3ff; animation:defense-pulse 1.1s ease-in-out infinite; }
+.defense-pad-act:disabled { background:#3b4642; border-color:#6d7a74; color:#b8c2bd; opacity:1; }
+@keyframes defense-pulse { 50% { box-shadow:0 0 0 4px #7fb6ff55; } }
+@media (prefers-reduced-motion: reduce) { .defense-pad-act.trait, .defense-pad-act.evolve { animation:none; } }
+.defense-labels > * { pointer-events:none; } .defense-labels .defense-pad-act { pointer-events:auto; }
+.defense-skill, .defense-btn.skill { position:absolute; right:8px; bottom:12px; }
+.defense-tray { position:relative; width:100%; max-width:480px; flex:1; min-height:92px; display:grid; grid-template-columns:repeat(3,1fr) 76px; gap:6px; padding:8px; background:#0b1110; border-top:1px solid #2a3a33; touch-action:none; }
+.defense-tray-card { position:relative; display:grid; justify-items:center; align-content:center; gap:0; border-radius:12px; border:2px solid #5d6f58; background:#1b2620; color:#e9ecd2; padding:4px 2px; user-select:none; -webkit-user-select:none; }
+.defense-tray-card canvas { width:34px; height:auto; image-rendering:pixelated; }
+.defense-tray-card b { font-size:13px; } .defense-tray-card small { font-size:10px; color:#9fb1b8; }
+.defense-tray-card em { position:absolute; top:-8px; right:-4px; font-style:normal; font-size:11px; font-weight:800; padding:0 7px; border-radius:9px; background:#2f8f5a; border:2px solid #cdeedd; color:#fff; }
+.defense-tray-card.poor { opacity:.45; } .defense-tray-card.poor em { background:#5d4a2a; }
+.defense-tray-card.armed { border-color:#7fd0a8; box-shadow:0 0 0 3px #7fd0a855; }
+.defense-tray-side { display:grid; gap:6px; }
+.defense-tray-btn { border-radius:10px; border:1px solid #6a5a8a; background:#2a2140; color:#e3d4ff; font-size:12px; font-weight:800; }
+.defense-tray-btn.gold { border:0; background:linear-gradient(#f2d48e,#c99a45); color:#2a1e08; }
+.defense-tray-btn.gold:disabled { background:#3b4642; color:#9fb1b8; opacity:1; }
+.defense-evo-badge { position:absolute; left:10px; top:-14px; padding:1px 9px; border-radius:99px; background:#16243a; border:1px solid #7fb6ff; color:#cfe3ff; font-size:11px; font-weight:800; }
+.defense-bubble { position:absolute; width:min(240px,66%); transform:translate(-50%,-100%); padding:10px; border-radius:12px; background:#0e1418f4; border:1px solid #e6c27a; display:grid; gap:7px; box-shadow:0 6px 16px #000a; }
+.defense-bubble.below { transform:translate(-50%,0); }
+.defense-bubble .defense-head b { font-size:13.5px; } .defense-bubble .defense-head b span { color:#e6c27a; }
+.defense-bubble .defense-btn { min-height:32px; padding:5px 10px; font-size:12px; }
+.defense-x { margin-left:auto; align-self:start; width:28px; height:28px; border-radius:50%; border:1px solid #5d6f58; background:#1b2a30; color:#e9ecd2; }
+.defense-tip { margin:0; color:#8fa29b; font-size:10.5px; text-align:center; }
+.defense-coach { position:absolute; left:50%; bottom:14px; transform:translateX(-50%); width:min(300px,88%); margin:0; padding:9px 12px; border-radius:12px; background:#e6c27a; color:#2a1e08; font-size:12.5px; font-weight:800; text-align:center; box-shadow:0 4px 12px #0009; pointer-events:none; }
+.defense-coach::after { content:""; position:absolute; left:50%; top:100%; transform:translateX(-50%); border:8px solid transparent; border-top-color:#e6c27a; }
+.defense-go { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); padding:14px 30px; border-radius:14px; border:0; background:linear-gradient(#f2d48e,#c99a45); color:#2a1e08; font-size:20px; font-weight:800; box-shadow:0 6px 18px #000a; }
+.defense-more { width:100%; } .defense-more summary { cursor:pointer; color:#c7d3c0; font-size:13px; padding:6px 0; }
+.defense-btn.big { min-height:52px; font-size:18px; width:100%; }
+
+.defense-hint, .defense-banner, .defense-boss, .defense-coach { pointer-events:none; }
+.defense-hint { top:auto; bottom:12px; }

@@ -15,7 +15,7 @@ export const MINE = Object.freeze({ radius: 30, hpMultiple: 3 });
 const BIG_BOSS_SUPPLY = 100;
 
 export function step(run, dt) {
-  for (let left = dt; left > 1e-9 && run.phase !== 'over' && !run.hand; left -= STEP) tick(run, Math.min(STEP, left));
+  for (let left = dt; left > 1e-9 && run.phase !== 'over' && run.phase !== 'ready' && !run.hand; left -= STEP) tick(run, Math.min(STEP, left));
   return run;
 }
 
@@ -42,8 +42,12 @@ function produceSupply(run, dt) {
   }
 }
 
+// 화면이 한 프레임에 한 번 비우는 사건 목록. 쌓이지 않게 최대 60개.
+function pushEvent(run, event) { if (run.events.length < 60) run.events.push(event); }
+
 function startWave(run) {
   run.wave += 1; run.phase = 'wave'; run.spawnTimer = 0;
+  pushEvent(run, { type: 'wave', wave: run.wave });
   run.queue = waveSpec(run.wave).enemies.slice();
   run.banner = waveBanner(run.wave);
   if (run.banner) run.banner.until = run.time + 3;
@@ -71,9 +75,11 @@ function moveEnemies(run, dt) {
     e.dist += e.speed * (e.slowUntil > run.time ? 0.7 : 1) * dt;
     if (e.burnUntil > run.time) e.hp -= e.burnDps * dt;
     const [x, y] = e.air ? airPointAt(e.from, e.dist) : pointAt(e.dist);
+    if (x !== e.x || y !== e.y) e.angle = Math.atan2(y - e.y, x - e.x);   // 가는 방향(코너에서 꺾임)
     e.x = x; e.y = y;
     if (e.hp > 0 && e.dist >= (e.air ? airLength(e.from) : PATH_LENGTH)) {
       run.hearts -= e.boss ? BOSS_LEAK_HEARTS : LEAK_HEARTS; run.stats.leaks += 1; e.hp = 0; e.leaked = true;
+      pushEvent(run, { type: 'leak', x: e.x, y: e.y, boss: e.boss });
       if (run.hearts <= 0) { run.hearts = 0; run.phase = 'over'; }
     }
   }
@@ -130,7 +136,8 @@ function fire(run, dt) {
     if (!targets.length) return;
     t.cooldown = s.interval;
     if (run.fx.length >= 40) run.fx.shift();
-    run.fx.push({ line: t.line, x0: px, y0: py, x1: targets[0].x, y1: targets[0].y, at: run.time, splash: s.splash });
+    t.aim = Math.atan2(targets[0].y - py, targets[0].x - px);   // 포신이 표적 쪽을 본다
+    run.fx.push({ line: t.line, pad: i, art: s.art, x0: px, y0: py, x1: targets[0].x, y1: targets[0].y, at: run.time, splash: s.splash, amount: damageFor(run, s, targets[0]) });
     for (let shot = 0; shot < s.shots; shot++) hit(run, s, targets[shot % targets.length], targets, radarRange);
   });
 }
@@ -177,8 +184,10 @@ function blast(run, x, y, radius, damage, includeAir) {
 function removeDead(run) {
   if (!run.enemies.some(e => e.hp <= 0)) return;
   for (const e of run.enemies) if (e.hp <= 0 && !e.leaked) {
+    const gain = e.big ? BIG_BOSS_SUPPLY : e.def.supply;
     run.stats.kills += 1;
-    run.supply = Math.min(baseStats(run.baseLevel).cap, run.supply + (e.big ? BIG_BOSS_SUPPLY : e.def.supply));
+    run.supply = Math.min(baseStats(run.baseLevel).cap, run.supply + gain);
+    pushEvent(run, { type: e.big ? 'bossKill' : 'kill', x: e.x, y: e.y, supply: gain });
   }
   run.enemies = run.enemies.filter(e => e.hp > 0);
 }

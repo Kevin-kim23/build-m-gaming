@@ -61,14 +61,14 @@ test('waves: 20-wave zones loop with double HP, enemy types open on schedule, bo
   assert.ok(!types(7).has('shield') && types(8).has('shield'));
   assert.ok(types(14).has('fast') && types(25).has('stealth'));
   assert.deepEqual(newEnemyTypes(3), ['air']);
-  assert.equal(bossFor(10).name, '중간 보스');
-  assert.deepEqual([20, 40, 60, 80].map(w => bossFor(w).name), ['강철 거인', '무인기 모선', '심연 공성 거신', '강철 거인']);
+  assert.equal(bossFor(10).name, '거대 갑각병');
+  assert.deepEqual([20, 40, 60, 80].map(w => bossFor(w).name), ['모체', '포자 모선', '심연 거신', '모체']);
   assert.equal(bossFor(11), null);
   assert.ok(waveSpec(21).hp > waveSpec(20).hp * 1.5, 'zone change makes enemies tougher');
 });
 
 test('build spends supply, move is free and swaps when the target pad is taken, sell refunds 60%', () => {
-  const run = createRun();
+  const run = createRun(); run.supply = 100;
   build(run, 1, 'armor');
   assert.equal(run.supply, 50);
   assert.throws(() => build(run, 2, 'firepower'), /Not enough supply/);
@@ -159,7 +159,7 @@ test('stored cards: open draws a hand, one reroll per run, picking applies and c
 });
 
 test('call early only between waves and pays the remaining seconds × 5', () => {
-  const run = createRun();
+  const run = createRun(); run.supply = 100;
   run.gapLeft = 3;
   callEarly(run);
   assert.equal(run.supply, 115);
