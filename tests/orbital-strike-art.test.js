@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {drawLane,LANE_CANVAS} from '../src/lane-art.js';
 import {battleNumber} from '../src/battle-format.js';
 function canvas(){
-  const ops=[],lines=[],ctx={setTransform(){},save(){},restore(){},drawImage(){},translate(){},rotate(){},beginPath(){},moveTo(){},lineTo(){},ellipse(){},strokeRect(){},stroke(){lines.push(this.strokeStyle);},fillRect(...r){ops.push([this.fillStyle,...r]);}};
+  const ops=[],lines=[],ctx={setTransform(){},save(){},restore(){},drawImage(){},translate(){},rotate(){},scale(){},arc(){},fill(){},closePath(){},beginPath(){},moveTo(){},lineTo(){},ellipse(){},strokeRect(){},stroke(){lines.push(this.strokeStyle);},fillRect(...r){ops.push([this.fillStyle,...r]);}};
   return {width:360,height:440,clientWidth:360,ops,lines,getContext:()=>ctx};
 }
 test('strike weapons show charge beams or ballistic payloads and target the opposing HQ',()=>{
@@ -18,7 +18,9 @@ test('strike weapons show charge beams or ballistic payloads and target the oppo
     assert.ok(render('novaCannon',320).lines.includes('#e3b2ff'));
     assert.ok(render('icbm',160).ops.some(([c])=>c==='#ffad65'));
     assert.notDeepEqual(render('orbitalAssault',80).ops,render('icbm',80).ops);
-    assert.deepEqual(render('orbitalAssault',601).ops,[]);
+    // After the strike ends nothing extra is drawn: only the always-on scene (base turrets since 0.76.52).
+    const idle=canvas();drawLane(idle,{elapsed:601,countryId:'noctaris',player:army(),enemy:army(),fx:[]});
+    assert.deepEqual(render('orbitalAssault',601).ops,idle.ops);
     assert.match(battleNumber(7.2e16),/경/);
   }finally{if(old===undefined)delete globalThis.document;else globalThis.document=old;}
 });
