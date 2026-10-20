@@ -5,6 +5,7 @@ import { roadBackdropCanvas, TILE_W, TILE_H } from './road-backdrop.js';
 import { battleHeadquartersSprite } from './battle-hq-art.js';
 import { teamSprite } from './lane-art.js';
 import { towerId, towerStats } from './defense-run.js';
+import { pointAt, PATH_LENGTH } from './defense-path.js';
 import { BAY_POS } from './defense-markup.js';
 import { reportError } from './diagnostics.js';
 
@@ -37,7 +38,9 @@ function draw(x, img, cx, cy, w, flip = false) {
   const h = img.height / img.width * w;
   x.save(); x.translate(cx, cy); if (flip) x.rotate(Math.PI); x.drawImage(img, -w / 2, -h / 2, w, h); x.restore();
 }
-const sprite = (id, side) => teamSprite(id, side, 12).canvas;
+const sprite = (id, side, level = 12) => teamSprite(id, side, level).canvas;
+// 레벨이 오르면 본편 강화 외형(부품 → 금장·홍금·성운·은하단)을 그대로 보여준다.
+const gearLevel = level => Math.min(50, level);
 
 // view: { selected: {pad|bay|base}|null, moveFrom: pad|null }
 export function drawDefense(canvas, run, theme, view = {}) {
@@ -53,11 +56,20 @@ export function drawDefense(canvas, run, theme, view = {}) {
       const [px, py] = PADS[i];
       if (!t) { plus(x, px, py, view.moveFrom !== null && view.moveFrom !== undefined); return; }
       if (t.stunnedUntil > run.time) { x.globalAlpha = 0.45; }
-      draw(x, sprite(TOWERS[towerId(t)].art, 'player'), px, py, 40);
+      draw(x, sprite(TOWERS[towerId(t)].art, 'player', gearLevel(t.level)), px, py, 40);
       x.globalAlpha = 1;
     });
     for (const [id, [bx, by]] of Object.entries(BAY_POS)) if (run.bays[id]) draw(x, sprite(BAY_ART[id], 'player'), bx, by, 40);
     else plus(x, bx, by, false);
+    if (view.evoTargets) for (const target of view.evoTargets) {
+      const [gx, gy] = target.pad !== undefined ? PADS[target.pad] : BAY_POS[target.bay];
+      x.strokeStyle = '#7fb6ff'; x.lineWidth = 3; x.shadowColor = '#7fb6ff'; x.shadowBlur = 10;
+      x.beginPath(); x.roundRect(gx - 29, gy - 29, 58, 58, 11); x.stroke(); x.shadowBlur = 0;
+    }
+    for (const mine of run.mines) {
+      const [mx, my] = pointAt(mine.at * PATH_LENGTH);
+      x.fillStyle = '#3b3f2c'; x.strokeStyle = '#e6c27a'; x.lineWidth = 1.5; x.beginPath(); x.arc(mx, my, 6, 0, 7); x.fill(); x.stroke();
+    }
     if (run.warning) {
       const [wx, wy] = PADS[run.warning.at] ?? BASE_POS;
       x.strokeStyle = '#ff6b6b'; x.lineWidth = 2; x.setLineDash([6, 5]); x.beginPath(); x.arc(wx, wy, BOSS_STUN.radius, 0, 7); x.stroke(); x.setLineDash([]);
@@ -78,6 +90,12 @@ export function drawDefense(canvas, run, theme, view = {}) {
       x.fillStyle = 'rgba(255,245,220,.9)'; x.beginPath(); x.arc(f.x1, f.y1, f.splash ? f.splash * 0.5 : 5, 0, 7); x.fill();
       x.globalAlpha = 1;
     }
+    const b = view.blast, age = b ? run.time - b.at : 1;
+    if (age < 0.6) {
+      const g = x.createRadialGradient(b.x, b.y, 4, b.x, b.y, 60); g.addColorStop(0, `rgba(255,240,200,${1 - age / 0.6})`); g.addColorStop(0.5, `rgba(255,140,60,${0.8 * (1 - age / 0.6)})`); g.addColorStop(1, 'rgba(255,80,40,0)');
+      x.fillStyle = g; x.beginPath(); x.arc(b.x, b.y, 60, 0, 7); x.fill();
+    }
+    if (view.aim) { x.strokeStyle = '#ff8a7a'; x.lineWidth = 2; x.setLineDash([5, 5]); x.strokeRect(4, 4, MAP.width - 8, MAP.height - 8); x.setLineDash([]); }
   } catch (error) { reportError('defense.draw', error); }
 }
 function plus(x, cx, cy, hot) {

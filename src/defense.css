@@ -42,3 +42,20 @@
 .defense-stats { display:grid; gap:6px; } .defense-stats div { display:flex; justify-content:space-between; padding:7px 10px; border-radius:9px; background:#1b2a30; font-size:13px; }
 .defense-result { position:absolute; inset:0; background:#070c0fe6; display:grid; align-content:center; gap:14px; padding:0 22px; text-align:center; }
 .defense-result p { margin:0; } .defense-dim { color:#9fb1b8; } .defense-big { font-size:42px; font-weight:800; } .defense-gold { color:#e6c27a; font-size:24px; font-weight:800; }
+
+.defense-left { position:absolute; left:8px; top:40%; display:grid; gap:8px; justify-items:start; }
+.defense-card-btn { width:54px; height:66px; border-radius:10px; border:0; background:linear-gradient(#f2d48e,#c99a45); color:#2a1e08; font-weight:800; font-size:12px; display:grid; place-items:center; align-content:center; box-shadow:0 0 0 3px #e6c27a55,0 0 18px #e6c27a88; }
+.defense-card-btn b { font-size:22px; line-height:1; }
+.defense-btn.evo { border-color:#7fb6ff; color:#cfe3ff; background:#16243a; }
+.defense-btn.skill { border-color:#ff8a7a; color:#ffd0c8; background:#3a1a18; }
+.defense-btn.skill small { font-size:11px; color:#ffb1a6; }
+.defense-hint { position:absolute; left:50%; top:76px; transform:translateX(-50%); margin:0; padding:4px 12px; border-radius:99px; background:#16243aee; border:1px solid #7fb6ff; color:#cfe3ff; font-size:12px; font-weight:800; white-space:nowrap; }
+.defense-evo-note { margin:0; text-align:center; color:#9fc4ef; font-size:11.5px; }
+.defense-cards { position:absolute; inset:0; background:#070c0fd9; display:grid; align-content:center; gap:12px; padding:0 14px; text-align:center; }
+.defense-cards p { margin:0; } .defense-cards-title { margin:0; font-size:20px; }
+.defense-picks { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.defense-pick { display:grid; gap:6px; justify-items:center; align-content:start; min-height:150px; padding:10px 6px; border-radius:12px; border:2px solid #b7c4bd; background:linear-gradient(170deg,#2c3a30,#141c17 75%); color:#e9ecd2; }
+.defense-pick.rare { border-color:#7fb6ff; } .defense-pick.legendary { border-color:#e6c27a; }
+.defense-pick b { font-size:14px; } .defense-pick small { font-size:11.5px; color:#c7d3c0; line-height:1.4; }
+.defense-rarity { font-size:10px; font-weight:800; padding:1px 8px; border-radius:99px; background:#b7c4bd; color:#111; }
+.defense-pick.rare .defense-rarity { background:#7fb6ff; } .defense-pick.legendary .defense-rarity { background:#e6c27a; }

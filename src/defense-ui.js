@@ -1,11 +1,11 @@
 // 무한 방어전 화면 조종: 대화상자 하나와 애니메이션 루프 하나. 규칙 계산은 defense-run/combat에 맡긴다.
 // 매 프레임에는 캔버스와 바뀐 숫자만 고치고, HTML 교체는 패널을 열거나 누를 때만 한다. 저장은 하지 않는다(2단계).
-import { createRun, build, upgrade, chooseTrait, sell, move, upgradeBase, buildBay, upgradeBay, callEarly } from './defense-run.js';
-import { step } from './defense-combat.js';
+import { createRun, build, upgrade, chooseTrait, sell, move, upgradeBase, buildBay, upgradeBay, callEarly, openCards, pickCard, reroll, evolve } from './defense-run.js';
+import { step, useIcbm } from './defense-combat.js';
 import { zoneFor } from './defense-waves.js';
 import { MAP, UNLOCK_RANK } from './defense-data.js';
 import { startBaseLevel } from './defense-economy.js';
-import { defenseMarkup, buildMenuMarkup, towerPanelMarkup, basePanelMarkup, resultMarkup, hudValues, hitTest, fieldFit } from './defense-markup.js';
+import { defenseMarkup, buildMenuMarkup, towerPanelMarkup, basePanelMarkup, resultMarkup, cardsMarkup, hudValues, hitTest, fieldFit, evolveTargets } from './defense-markup.js';
 import { drawDefense } from './defense-art.js';
 import { RANKS, RANK_DEFINITIONS, rankForArmy } from './ranks.js';
 import { supremeRankBadge } from './rank-emblem.js';
@@ -24,6 +24,7 @@ function rankStar(index) {
 export function createDefenseUI(session, { notify = () => {} } = {}) {
   const dialog = document.querySelector('#defense-modal');
   let run = null, raf = 0, last = 0, speed = 1, selected = null, moveFrom = null, best = 0, canvas = null, field = null;
+  let mode = null, blast = null;   // mode: 'evolve'(진화할 장비 고르기) | 'aim'(ICBM 떨어질 곳) | null
   const hudCache = {}, lvCache = {};
 
   function rankName() {
@@ -33,8 +34,7 @@ export function createDefenseUI(session, { notify = () => {} } = {}) {
   function start() {
     const rank = rankName();
     run = createRun({ rank: rank.name, seed: Date.now() & 0x7fffffff });
-    run.storedCards = 0;   // 카드 고르기는 3단계에서 연결
-    selected = null; moveFrom = null;
+    selected = null; moveFrom = null; mode = null; blast = null;
     Object.keys(hudCache).forEach(k => delete hudCache[k]); Object.keys(lvCache).forEach(k => delete lvCache[k]);
     dialog.innerHTML = defenseMarkup({ rankName: rank.name, starSvg: rankStar(RANKS.indexOf(rank.name)), testMode: true });
     canvas = dialog.querySelector('[data-defense-canvas]'); field = dialog.querySelector('[data-defense-field]');
@@ -77,7 +77,7 @@ export function createDefenseUI(session, { notify = () => {} } = {}) {
 
   function render() {
     if (!run || !canvas) return;
-    drawDefense(canvas, run, zoneFor(Math.max(1, run.wave)).theme, { selected, moveFrom });
+    drawDefense(canvas, run, zoneFor(Math.max(1, run.wave)).theme, { selected, moveFrom, evoTargets: mode === 'evolve' ? evolveTargets(run) : null, aim: mode === 'aim', blast });
     const values = hudValues(run);
     for (const [k, v] of Object.entries(values)) if (hudCache[k] !== v) {
       hudCache[k] = v;
@@ -85,11 +85,26 @@ export function createDefenseUI(session, { notify = () => {} } = {}) {
       if (!node) continue;
       if (k === 'supplybar') node.style.width = v; else node.textContent = v;
     }
-    const early = dialog.querySelector('[data-defense-early]');
-    if (early && early.hidden !== (run.phase !== 'gap')) early.hidden = run.phase !== 'gap';
+    toggle('[data-defense-early]', run.phase !== 'gap');
+    toggle('[data-defense-cards]', run.storedCards < 1);
+    toggle('[data-defense-evo]', run.evoTickets < 1);
+    toggle('[data-defense-icbm]', !run.skills.icbm);
     run.pads.forEach((t, i) => setLv(`pad${i}`, `[data-pad-lv="${i}"]`, t ? `Lv${t.level}` : ''));
     for (const id of Object.keys(run.bays)) setLv(id, `[data-bay-lv="${id}"]`, run.bays[id] ? `Lv${run.bays[id].level}` : '');
     dialog.querySelectorAll('[data-defense-panel] [data-cost]').forEach(b => { const off = run.supply < Number(b.dataset.cost); if (b.disabled !== off) b.disabled = off; });
+  }
+  function toggle(selector, hidden) {
+    const node = dialog.querySelector(selector);
+    if (node && node.hidden !== hidden) node.hidden = hidden;
+  }
+  function hint(text) {
+    const node = dialog.querySelector('[data-defense-hint]');
+    node.textContent = text ?? ''; node.hidden = !text;
+  }
+  function showHand() {
+    const box = dialog.querySelector('[data-defense-hand]');
+    if (!run.hand) { box.hidden = true; return; }
+    box.innerHTML = cardsMarkup(run); box.hidden = false;
   }
   function setLv(key, selector, text) {
     if (lvCache[key] === text) return;
@@ -117,7 +132,12 @@ export function createDefenseUI(session, { notify = () => {} } = {}) {
   function tapField(event) {
     const box = field.getBoundingClientRect();
     const x = (event.clientX - box.left) / box.width * MAP.width, y = (event.clientY - box.top) / box.height * MAP.height;
+    if (mode === 'aim') {
+      act(() => { useIcbm(run, x, y); blast = { x, y, at: run.time }; });
+      mode = null; hint(null); return;
+    }
     const hit = hitTest(x, y);
+    if (mode === 'evolve') { mode = null; hint(null); }
     if (moveFrom !== null) {
       if (hit?.pad !== undefined && hit.pad !== moveFrom) { const to = hit.pad; act(() => { move(run, moveFrom, to); moveFrom = null; selected = { pad: to }; }); }
       else { moveFrom = null; refreshPanel(); }
@@ -145,6 +165,19 @@ export function createDefenseUI(session, { notify = () => {} } = {}) {
     if (b.matches('[data-panel-close]')) return hidePanel();
     if (b.matches('[data-defense-speed]')) { speed = speed === 1 ? 2 : 1; b.textContent = `x${speed}`; return; }
     if (b.matches('[data-defense-early]')) return act(() => callEarly(run));
+    if (b.matches('[data-defense-cards]')) { act(() => openCards(run)); showHand(); return; }
+    if (d.pick) { act(() => pickCard(run, Number(d.pick))); showHand(); return; }
+    if (b.matches('[data-reroll]')) { act(() => reroll(run)); showHand(); return; }
+    if (b.matches('[data-defense-evo]')) {
+      if (!evolveTargets(run).length) { notify('진화할 수 있는 장비가 없어요 (1차 Lv10 · 2차 Lv20)'); return; }
+      hidePanel(); mode = 'evolve'; hint('진화할 장비를 누르세요'); render(); return;
+    }
+    if (b.matches('[data-defense-icbm]')) {
+      if (run.skills.icbm.ready > 0) { notify('ICBM 준비 중이에요'); return; }
+      hidePanel(); mode = mode === 'aim' ? null : 'aim'; hint(mode ? 'ICBM이 떨어질 곳을 누르세요' : null); return;
+    }
+    if (d.evolve) return act(() => evolve(run, { pad: selected.pad }, Number(d.evolve)));
+    if (d.bayEvolve) return act(() => evolve(run, { bay: selected.tab }, Number(d.bayEvolve)));
     if (d.build) return act(() => build(run, selected.pad, d.build));
     if (d.upgrade) return act(() => upgrade(run, selected.pad, Number(d.upgrade)));
     if (d.trait) { const [level, index] = d.trait.split(':').map(Number); return act(() => chooseTrait(run, selected.pad, level, index)); }

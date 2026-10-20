@@ -1,6 +1,7 @@
 // 무한 방어전 화면 글자(HTML): 상단 줄, 짓기 메뉴, 장비·기지 패널, 결과. 열 때·누를 때만 만든다(매 프레임 아님).
 // 그림(전장)은 defense-art.js가 캔버스에 그리고, 이름표·레벨은 선명한 HTML로 위에 얹는다.
-import { MAP, PADS, BASE_POS, LINES, BAYS, TOWERS, MAX_LEVEL, COMMON_TRAITS, BRANCH_TRAITS, BASE_MAX_LEVEL } from './defense-data.js';
+import { MAP, PADS, BASE_POS, LINES, BAYS, TOWERS, MAX_LEVEL, COMMON_TRAITS, BRANCH_TRAITS, BASE_MAX_LEVEL, EVOLVE_LEVELS, BAY_EVOLVE_LEVEL } from './defense-data.js';
+import { CARDS, evolvable } from './defense-cards.js';
 import { baseStats, baseUpgradeCost, bayBuildCost, upgradeCost, upgradeCostTo, nextChoiceLevel, sellRefund, callEarlyBonus } from './defense-economy.js';
 import { towerId, towerStats } from './defense-run.js';
 
@@ -42,14 +43,21 @@ export function defenseMarkup({ rankName, starSvg, testMode }) {
         <span class="defense-chip red">♥ <b data-d="hearts">20</b></span>
         <span class="defense-chip green defense-supply" aria-label="보급"><b data-d="supply">0</b><small>/<span data-d="cap">0</span></small><i data-d="supplybar"></i></span>
       </div>
-      ${testMode ? '<p class="defense-test">시험 화면 · 카드·진화는 다음 단계</p>' : ''}
+      ${testMode ? '<p class="defense-test">시험 화면 · 기록·보상은 저장되지 않아요</p>' : ''}
     </div>
     <div class="defense-actions">
       <button type="button" class="defense-btn" data-defense-close aria-label="방어전 나가기">✕ 나가기</button>
       <button type="button" class="defense-btn" data-defense-speed>x1</button>
       <button type="button" class="defense-btn primary" data-defense-early hidden>바로! <b data-d="early">+0</b></button>
     </div>
+    <div class="defense-left">
+      <button type="button" class="defense-card-btn" data-defense-cards hidden>카드<b data-d="cards">0</b></button>
+      <button type="button" class="defense-btn evo" data-defense-evo hidden>진화권 <b data-d="evo">0</b></button>
+      <button type="button" class="defense-btn skill" data-defense-icbm hidden>ICBM <small data-d="icbm"></small></button>
+    </div>
+    <p class="defense-hint" data-defense-hint hidden></p>
     <div class="defense-panel" data-defense-panel hidden></div>
+    <div class="defense-cards" data-defense-hand hidden></div>
     <div class="defense-result" data-defense-result hidden></div>
   </div>
 </div>`;
@@ -81,12 +89,44 @@ export function towerPanelMarkup(run, pad, { moving = false } = {}) {
   }
   return `<div class="defense-head">${sprite(TOWERS[id].art, 40)}<div><b>${TOWERS[id].name} Lv${t.level}</b>
     <small>${LINES[t.line].name} · ${stage} · 공격 ${n(s.damage)} · 사거리 ${Math.round(s.range)}</small></div></div>
+    ${evolveRow(run, pad)}
     ${body}
     <div class="defense-panel-row">
       <button type="button" class="defense-btn${moving ? ' primary' : ''}" data-move>${moving ? '옮길 자리를 누르세요' : '옮기기'}</button>
       <button type="button" class="defense-btn" data-sell>팔기 +${n(sellRefund(t.spent))}</button>
       <button type="button" class="defense-btn" data-panel-close>닫기</button>
     </div>`;
+}
+
+const BAY_BRANCH_NAMES = Object.freeze({ flyingFortress: '공중요새 · 사거리 +15%', transportWing: '수송 편대 · 보급 +20%', globalRadar: '전역 레이더 · 맵 전체 탐지', targetMark: '표적 지정 · 보스 피해 +25%' });
+// 진화: 진화권(희귀 카드)으로만. 1차 Lv10, 2차 갈래 Lv20. 레벨은 그대로.
+export function evolveRow(run, pad) {
+  const t = run.pads[pad];
+  if (t.stage >= 2) return '';
+  const path = LINES[t.line].path, need = EVOLVE_LEVELS[t.stage];
+  const targets = t.stage === 0 ? [path[1]] : path[2];
+  const names = targets.map(id => TOWERS[id].name).join(' / ');
+  if (t.level < need) return `<p class="defense-evo-note">Lv${need}부터 진화권으로 진화 → ${names}</p>`;
+  if (run.evoTickets < 1) return `<p class="defense-evo-note">진화 가능 (Lv${need} ✓) · 진화권 카드가 필요해요 → ${names}</p>`;
+  return `<div class="defense-panel-row">${targets.map((id, i) => `<button type="button" class="defense-btn evo" data-evolve="${i}">진화 → ${TOWERS[id].name}</button>`).join('')}</div>`;
+}
+function bayEvolveRow(run, bay) {
+  const b = run.bays[bay];
+  if (!b || b.branch) return b?.branch ? `<p class="defense-evo-note">진화: ${BAY_BRANCH_NAMES[b.branch]}</p>` : '';
+  const names = BAYS[bay].branches.map(id => BAY_BRANCH_NAMES[id]);
+  if (b.level < BAY_EVOLVE_LEVEL || run.evoTickets < 1) return `<p class="defense-evo-note">Lv${BAY_EVOLVE_LEVEL} + 진화권 → ${names.join(' / ')}</p>`;
+  return `<div class="defense-panel-row">${names.map((name, i) => `<button type="button" class="defense-btn evo" data-bay-evolve="${i}">${name}</button>`).join('')}</div>`;
+}
+
+// 카드 3장 고르기(전투는 멈춤).
+export function cardsMarkup(run) {
+  const label = card => card.id === 'lineFocus' ? `${LINES[card.line].name} 특화` : CARDS[card.id].name;
+  const text = card => card.id === 'lineFocus' ? `${LINES[card.line].name} 공격 +20%` : CARDS[card.id].text;
+  const rarity = { common: '일반', rare: '희귀', legendary: '전설' };
+  return `<p class="defense-dim">쌓인 카드 ${run.storedCards}장 · 1장 고르기</p><h3 class="defense-cards-title">보상 카드</h3>
+    <div class="defense-picks">${run.hand.map((card, i) => `<button type="button" class="defense-pick ${CARDS[card.id].rarity}" data-pick="${i}">
+      <span class="defense-rarity">${rarity[CARDS[card.id].rarity]}</span><b>${label(card)}</b><small>${text(card)}</small></button>`).join('')}</div>
+    <div class="defense-panel-row"><button type="button" class="defense-btn" data-reroll${run.rerolls < 1 ? ' disabled' : ''}>다시 뽑기 ${run.rerolls}</button></div>`;
 }
 
 export function basePanelMarkup(run, tab = 'base') {
@@ -99,7 +139,7 @@ export function basePanelMarkup(run, tab = 'base') {
       <div class="defense-panel-row">${next ? costButton('기지 강화', baseUpgradeCost(run.baseLevel + 1), 'data-base-up', run, ' primary') : '<p class="defense-note">기지 최고 레벨</p>'}</div>`;
   } else {
     const b = run.bays[tab], text = tab === 'transport' ? '모든 장비 공격 속도 +1%/Lv · Lv10부터 웨이브마다 ♥ +1' : '위장 적을 보이게 하는 레이더 · Lv10부터 레이더 안 적 피해 +10%';
-    body = `<p class="defense-note">${text}</p><div class="defense-panel-row">${b
+    body = `<p class="defense-note">${text}</p>${bayEvolveRow(run, tab)}<div class="defense-panel-row">${b
       ? (b.level < MAX_LEVEL ? costButton(`Lv${b.level + 1}`, upgradeCost(BAYS[tab].buildCost, b.level), `data-bay-up="${tab}"`, run, ' primary') : '<p class="defense-note">최고 레벨</p>')
       : costButton('짓기', bayBuildCost(tab), `data-bay-build="${tab}"`, run, ' primary')}</div>`;
   }
@@ -115,6 +155,7 @@ export function resultMarkup(run, best) {
 }
 
 // 상단 줄 숫자(매 프레임 비교 후 바뀐 것만 쓴다).
+export const evolveTargets = run => evolvable(run);
 export function hudValues(run) {
   const b = baseStats(run.baseLevel);
   return {
@@ -122,5 +163,7 @@ export function hudValues(run) {
     supplybar: `${Math.round(run.supply / b.cap * 100)}%`,
     timer: run.phase === 'gap' ? `다음 0:0${Math.max(0, Math.ceil(run.gapLeft))}` : `남은 적 ${run.enemies.length + run.queue.length}`,
     early: `+${callEarlyBonus(run.gapLeft)}`,
+    cards: String(run.storedCards), evo: String(run.evoTickets),
+    icbm: run.skills.icbm ? (run.skills.icbm.ready > 0 ? `${Math.ceil(run.skills.icbm.ready)}초` : '준비') : '',
   };
 }

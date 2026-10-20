@@ -74,7 +74,7 @@ test('HUD numbers, result and the hidden test entry', () => {
 
 test('the frame loop only draws the canvas and patches changed numbers', () => {
   const ui = read('src/defense-ui.js');
-  const loop = ui.slice(ui.indexOf('function render()'), ui.indexOf('function setLv'));
+  const loop = ui.slice(ui.indexOf('function render()'), ui.indexOf('function toggle'));
   assert.doesNotMatch(loop, /innerHTML|localStorage|JSON\./);
   assert.doesNotMatch(read('src/defense-art.js'), /innerHTML|localStorage/);
 });
