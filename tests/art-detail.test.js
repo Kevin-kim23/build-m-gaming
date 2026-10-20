@@ -16,6 +16,7 @@ test('rank insignia preserves enlisted marks and frames all general and marshal 
       assert.equal((art.match(/data-rank-star/g)||[]).length,stars);
       return;
     }
+    if(rank.topStar){assert.equal(insignia(i),`<span class="insignia ${rank.kind} top-star"><b class="insignia-top-star"></b>${'<i></i>'.repeat(rank.chevrons)}</span>`);return;}
     assert.equal(insignia(i), '<span class="insignia '+rank.kind+(rank.marks>4?' extended-stars':'')+'">'+'<i></i>'.repeat(rank.marks)+'</span>');
   });
 });

@@ -13,7 +13,7 @@ const tile = (html, id) => html.match(new RegExp(`<article class="recruit-tile[^
 test('each recruit tile shows only icon, name, abilities, price, 1/100 buttons and a detail button', () => {
   const html = tile(recruit(state(1280)), 'soldier');
   assert.match(html, /data-portrait="soldier"/);
-  assert.match(html, /<h3>일반병<\/h3>/);
+  assert.match(html, /<h3>일반병<span class="tile-owned" data-field="owned"><\/span><\/h3>/);
   assert.match(html, /초당.*\+?1<.*터치.*10</s);
   assert.match(html, /data-field="price"/);
   assert.match(html, /data-buy="soldier"[^>]*>1명</);
