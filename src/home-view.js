@@ -143,6 +143,8 @@ export function insignia(index) {
     return `<span class="insignia general framed-rank">${rankBadgeInstance(galacticRankBadge(r.marks))}</span>`;
   if (r.kind === 'general' && r.marks >= 6)
     return `<span class="insignia general framed-rank">${rankBadgeInstance(marshalRankBadge(r.marks))}</span>`;
+  if (r.topStar)
+    return `<span class="insignia ${r.kind} top-star"><b class="insignia-top-star"></b>${"<i></i>".repeat(r.chevrons)}</span>`;
   return (
     '<span class="insignia ' +
     r.kind +

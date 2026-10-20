@@ -32,7 +32,7 @@ function recruitTile(s, unit, insignia) {
   const bulk = bulkSlot(s, unit);
   return `<article class="recruit-tile" data-unit="${unit.id}" aria-label="${unit.name} 모집">
     <div class="tile-visual">${recruitRankMarkup(unit,insignia)}<button type="button" class="tile-detail" data-detail-unit="${unit.id}" aria-label="${unit.name} 상세보기">ⓘ</button><canvas data-portrait="${unit.id}" width="80" height="100" role="img" aria-label="${unit.name} 픽셀 그림"></canvas></div>
-    <h3>${unit.name}</h3><span class="tile-owned" data-field="owned"></span>${unit.role ? `<small class="tile-role">${unit.role}</small>` : ''}
+    <h3>${unit.name}<span class="tile-owned" data-field="owned"></span></h3>${unit.role ? `<small class="tile-role">${unit.role}</small>` : ''}
     <p class="tile-stats"><span><small>초당</small> <b>${fmtGold(unit.passive)}</b></span><span><small>터치</small> <b>${fmtGold(unit.tap)}</b></span></p>
     <p class="tile-price"><b data-field="price"></b></p>${bulk.price}
     <div class="tile-buttons${bulk.button ? "" : " single"}"><button class="buy" data-buy="${unit.id}" aria-label="${unit.name} 1명 모집">1명</button>${bulk.button}</div>

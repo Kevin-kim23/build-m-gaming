@@ -73,6 +73,9 @@ export const RANK_DEFINITIONS = Object.freeze([
     condition: "4개 분대",
     kind: "nco",
     marks: 4,
+    // 계급장: 상사의 꺾쇠 3개 위에 작은 별 하나.
+    chevrons: 3,
+    topStar: true,
   },
   {
     name: "준위",

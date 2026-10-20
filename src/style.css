@@ -866,6 +866,15 @@ footer {
   height: 6px;
   clip-path: polygon(0 0, 50% 52%, 100% 0, 100% 40%, 50% 100%, 0 40%);
 }
+/* 원사: 상사 꺾쇠 3개 위의 작은 별 */
+.insignia-top-star {
+  display: block;
+  width: 9px;
+  height: 9px;
+  margin: 0 auto 1px;
+  background: #f3d27a;
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
 .insignia.warrant i {
   width: 7px;
   height: 10px;
