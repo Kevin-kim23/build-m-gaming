@@ -15,7 +15,7 @@
 #modal .recruit-tile .recruit-rank-badge{position:relative;top:auto;left:auto;flex:none}
 #modal .recruit-tile h3 .tile-owned{margin-left:6px;font-size:12px;font-weight:600;color:var(--ui-muted,#b6c2c5)}
 #modal .recruit-tile .tile-role,#modal .recruit-tile .tile-price-bulk{display:none}
-#modal .recruit-tile .tile-detail{position:absolute;top:-4px;right:-6px;width:32px;height:32px;padding:0;border:0;background:transparent;color:transparent;font-size:0}
+#modal .recruit-tile .tile-detail{position:absolute;top:-4px;left:-4px;width:32px;height:32px;padding:0;border:0;background:transparent;color:transparent;font-size:0}
 #modal .recruit-tile .tile-detail::after{content:"i";display:grid;place-items:center;width:16px;height:16px;margin:2px;border:1px solid #b6c2c5;border-radius:50%;background:#17262e;color:#f1efe5;font:italic 800 11px/1 Georgia,serif}
 #modal .recruit-tile h3{grid-area:h;margin:0;font-size:15px}
 #modal .recruit-tile .tile-stats{grid-area:s;display:flex;flex-direction:row;flex-wrap:wrap;gap:0 8px;margin:0;font-size:12px}
