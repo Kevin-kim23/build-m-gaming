@@ -57,3 +57,11 @@
 #loot-shop [hidden]{display:none!important}
 @media(max-width:350px){.loot-head{padding:12px}.loot-head h2{font-size:20px}.loot-head small{font-size:11px}.loot-wallet{padding:9px 12px;gap:7px}.loot-wallet-icon{width:30px;height:30px}.loot-wallet strong{font-size:19px}.loot-scroll{padding:12px 10px 6px}.operative-card{grid-template-columns:38px minmax(0,1fr) 66px;gap:7px;padding:8px}.operative-portrait{width:38px}.operative-info h3{font-size:14px}}
 @media(max-height:600px){.loot-head{padding-block:10px}.loot-head small{display:none}.loot-wallet{padding-block:7px}.loot-footer{padding-block:6px}}
+
+/* 전리품 상점 | 무한 방어전 | 전투: 세 칸일 때는 그림 위·글자 아래 */
+.home-dock .home-expeditions:has(#open-defense:not([hidden])){grid-template-columns:repeat(3,minmax(0,1fr))}
+.home-dock .home-expeditions:has(#open-defense:not([hidden])) .home-battle{flex-direction:column;gap:2px;height:60px;min-height:60px;padding:4px}
+.home-dock .home-expeditions:has(#open-defense:not([hidden])) .home-expedition-label{display:grid;justify-items:center;font-size:12px;line-height:1.15}
+.home-dock .home-expeditions:has(#open-defense:not([hidden])) .home-menu-icon{width:26px;height:26px;flex-basis:26px}
+.home-dock .home-expeditions:has(#open-defense:not([hidden])) #open-battle small,.home-dock #open-defense small{font-size:10px;line-height:11px;text-align:center;color:var(--ui-muted,#b6c2c5)}
+.home-dock #open-defense small:empty{display:none}

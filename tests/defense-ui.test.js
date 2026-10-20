@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { fieldFit, hitTest, buildMenuMarkup, towerPanelMarkup, basePanelMarkup, resultMarkup, hudValues, defenseMarkup, BAY_POS } from '../src/defense-markup.js';
+import { fieldFit, hitTest, buildMenuMarkup, towerPanelMarkup, basePanelMarkup, hudValues, defenseMarkup, BAY_POS } from '../src/defense-markup.js';
+import { resultMarkup } from '../src/defense-lobby.js';
 import { createRun, build, upgrade, chooseTrait } from '../src/defense-run.js';
 import { PADS, BASE_POS } from '../src/defense-data.js';
 
@@ -58,18 +59,20 @@ test('base panel: base level stats and the two support bays to build', () => {
   assert.match(basePanelMarkup(run, 'recon'), /data-bay-build="recon" data-cost="100" disabled/);
 });
 
-test('HUD numbers, result and the hidden test entry', () => {
+test('HUD numbers, result and the home entry', () => {
   const run = createRun();
   assert.equal(hudValues(run).timer, '다음 0:04');
   assert.equal(hudValues(run).early, '+20');
   run.phase = 'wave'; run.queue = [{}, {}];
   assert.equal(hudValues(run).timer, '남은 적 2');
   run.cleared = 12;
-  assert.match(resultMarkup(run, 10), /최고 기록 경신/);
-  assert.match(resultMarkup(run, 30), /최고 기록 30웨이브/);
-  assert.match(defenseMarkup({ rankName: '부사령관', starSvg: '', testMode: true }), /시험 화면/);
+  assert.match(resultMarkup(run, 12, { newBest: true, rewarded: true, loot: 96, medals: 12, left: 2 }), /최고 기록 경신[\s\S]*\+96[\s\S]*\+12[\s\S]*2판/);
+  assert.match(resultMarkup(run, 30, { newBest: false, rewarded: false }), /최고 기록 30웨이브[\s\S]*기록만 저장/);
+  assert.match(resultMarkup(run, 30, null), /저장하지 못했어요/);
+  assert.match(defenseMarkup({ rankName: '부사령관', starSvg: '' }), /data-defense-close data-back-first/);
   assert.match(read('index.html'), /<dialog id="defense-modal"/);
-  assert.match(read('src/main.js'), /location\.hash === '#defense'/);
+  assert.doesNotMatch(read('src/main.js'), /#defense'/);
+  assert.match(read('src/main.js'), /#open-defense"\)\.onclick = \(\) => defenseUI\.open\(\)/);
 });
 
 test('the frame loop only draws the canvas and patches changed numbers', () => {

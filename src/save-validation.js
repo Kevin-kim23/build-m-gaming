@@ -1,4 +1,5 @@
 import { validLoot } from './loot.js';
+import { validDefense } from './defense-progress.js';
 import {CONSTELLATION_OFFICERS} from './constellation-officers.js';
 import { COMMAND_OFFICERS } from './command-officers.js';
 import { GALACTIC_OFFICERS } from './galactic-officers.js';
@@ -44,6 +45,7 @@ export function validateSave(s) {
   }
   requireSave(typeof s.sound === 'boolean', 'sound');
   if(s.version>=43)requireSave(validLoot(s.loot,s.lastAccrual),'loot');
+  if(s.version>=44)requireSave(validDefense(s.defense,s.lastAccrual),'defense');
   if(s.version>=39)requireSave(validStarterPack(s.starterPack,s.version),'starterPack');
   if(s.version>=33)requireSave(validHomeAutoTap(s.homeAutoTap,s.version),'homeAutoTap');
   if(s.version>=32)requireSave(validPotions(s.potions,s.version),'potions');

@@ -3,9 +3,10 @@
 import { createRun, build, upgrade, chooseTrait, sell, move, upgradeBase, buildBay, upgradeBay, callEarly, openCards, pickCard, reroll, evolve } from './defense-run.js';
 import { step, useIcbm } from './defense-combat.js';
 import { zoneFor } from './defense-waves.js';
-import { MAP, UNLOCK_RANK } from './defense-data.js';
-import { startBaseLevel } from './defense-economy.js';
-import { defenseMarkup, buildMenuMarkup, towerPanelMarkup, basePanelMarkup, resultMarkup, cardsMarkup, hudValues, hitTest, fieldFit, evolveTargets } from './defense-markup.js';
+import { MAP } from './defense-data.js';
+import { defenseMarkup, buildMenuMarkup, towerPanelMarkup, basePanelMarkup, cardsMarkup, hudValues, hitTest, fieldFit, evolveTargets } from './defense-markup.js';
+import { lobbyMarkup, resultMarkup } from './defense-lobby.js';
+import { recordDefenseRun, awaken, awakenBonus, defenseUnlocked, defenseOf } from './defense-progress.js';
 import { drawDefense } from './defense-art.js';
 import { RANKS, RANK_DEFINITIONS, rankForArmy } from './ranks.js';
 import { supremeRankBadge } from './rank-emblem.js';
@@ -23,20 +24,21 @@ function rankStar(index) {
 
 export function createDefenseUI(session, { notify = () => {} } = {}) {
   const dialog = document.querySelector('#defense-modal');
-  let run = null, raf = 0, last = 0, speed = 1, selected = null, moveFrom = null, best = 0, canvas = null, field = null;
+  let run = null, raf = 0, last = 0, speed = 1, selected = null, moveFrom = null, canvas = null, field = null;
   let mode = null, blast = null;   // mode: 'evolve'(진화할 장비 고르기) | 'aim'(ICBM 떨어질 곳) | null
   const hudCache = {}, lvCache = {};
 
-  function rankName() {
-    const name = RANKS[rankForArmy(session.state)];
-    return startBaseLevel(name) === null ? { name: UNLOCK_RANK, test: true } : { name, test: false };
+  const rankName = () => RANKS[rankForArmy(session.state)];
+  function showLobby() {
+    cancelAnimationFrame(raf); raf = 0; run = null; canvas = null; field = null;
+    dialog.innerHTML = `<div class="defense-frame">${lobbyMarkup(session.state, rankName())}</div>`;
   }
   function start() {
-    const rank = rankName();
-    run = createRun({ rank: rank.name, seed: Date.now() & 0x7fffffff });
+    const rank = { name: rankName() };
+    run = createRun({ rank: rank.name, seed: Date.now() & 0x7fffffff, awaken: awakenBonus(session.state) });
     selected = null; moveFrom = null; mode = null; blast = null;
     Object.keys(hudCache).forEach(k => delete hudCache[k]); Object.keys(lvCache).forEach(k => delete lvCache[k]);
-    dialog.innerHTML = defenseMarkup({ rankName: rank.name, starSvg: rankStar(RANKS.indexOf(rank.name)), testMode: true });
+    dialog.innerHTML = defenseMarkup({ rankName: rank.name, starSvg: rankStar(RANKS.indexOf(rank.name)) });
     canvas = dialog.querySelector('[data-defense-canvas]'); field = dialog.querySelector('[data-defense-field]');
     resize();
   }
@@ -51,9 +53,9 @@ export function createDefenseUI(session, { notify = () => {} } = {}) {
   }
 
   function open() {
+    if (!defenseUnlocked(session.state)) { notify('무한 방어전은 부사령관부터 열려요'); return; }
     if (!dialog.open) dialog.showModal();
-    start();
-    loop();
+    showLobby();
   }
   function close() {
     cancelAnimationFrame(raf); raf = 0; run = null;
@@ -150,20 +152,29 @@ export function createDefenseUI(session, { notify = () => {} } = {}) {
     refreshPanel(); render();
   }
 
+  // 판 끝(기지 파괴 또는 나가기): 기록·보상을 저장하고 결과를 보여 준다.
   function finish() {
     cancelAnimationFrame(raf); raf = 0;
+    if (run.phase !== 'over') run.phase = 'over';
+    const reward = session.change(s => recordDefenseRun(s, run.cleared)) ?? null;
     const box = dialog.querySelector('[data-defense-result]');
-    box.innerHTML = resultMarkup(run, best); box.hidden = false;
-    best = Math.max(best, run.cleared);
+    box.innerHTML = resultMarkup(run, defenseOf(session.state).best, reward); box.hidden = false;
+    hidePanel(); dialog.querySelector('[data-defense-hand]').hidden = true;
   }
 
   dialog.addEventListener('click', event => {
     const b = event.target.closest('button');
     if (!b) { if (event.target.closest('[data-defense-canvas]')) tapField(event); return; }
-    if (b.matches('[data-defense-close]')) return close();
+    if (b.matches('[data-defense-close]')) {
+      if (!run) return close();
+      if (run.phase === 'over') return showLobby();
+      return finish();
+    }
+    if (b.matches('[data-awaken]')) { session.change(s => awaken(s, b.dataset.awaken)); showLobby(); return; }
+    if (b.matches('[data-defense-start], [data-defense-retry]')) { start(); loop(); return; }
+    if (b.matches('[data-defense-lobby]')) return showLobby();
     if (!run) return;
     const d = b.dataset;
-    if (b.matches('[data-defense-retry]')) { start(); loop(); return; }
     if (b.matches('[data-panel-close]')) return hidePanel();
     if (b.matches('[data-defense-speed]')) { speed = speed === 1 ? 2 : 1; b.textContent = `x${speed}`; return; }
     if (b.matches('[data-defense-early]')) return act(() => callEarly(run));
@@ -190,7 +201,7 @@ export function createDefenseUI(session, { notify = () => {} } = {}) {
     if (d.bayBuild) return act(() => buildBay(run, d.bayBuild));
     if (d.bayUp) return act(() => upgradeBay(run, d.bayUp));
   });
-  dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
+  dialog.addEventListener('cancel', event => { event.preventDefault(); dialog.querySelector('[data-defense-close]')?.click(); });
   addEventListener('resize', () => { if (dialog.open) resize(); });
   // 앱이 내려가면 lifecycle이 suspend()로 멈추고, 다시 보이면 이어서 진행한다.
   const resume = () => { if (dialog.open && run && run.phase !== 'over' && !raf) loop(); };

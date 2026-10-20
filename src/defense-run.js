@@ -6,14 +6,15 @@ import {
 import { buildCost, bayBuildCost, upgradeCost, baseUpgradeCost, startBaseLevel, sellRefund, callEarlyBonus } from './defense-economy.js';
 import { drawCards, applyCard, evolvable } from './defense-cards.js';
 
-export function createRun({ rank = '부사령관', seed = 1 } = {}) {
+// awaken: 계열 각성 보너스(판 밖 성장) { armor, firepower, air } → 그 계열 공격 +%.
+export function createRun({ rank = '부사령관', seed = 1, awaken = {} } = {}) {
   const baseLevel = startBaseLevel(rank);
   if (baseLevel === null) throw new RangeError('Defense is locked below 부사령관');
   return {
     rank, rng: seed | 0, time: 0, wave: 0, cleared: 0, phase: 'gap', gapLeft: WAVE_GAP_S,
     supply: START_SUPPLY, supplyTimer: 0, baseLevel, hearts: START_HEARTS, maxHearts: START_HEARTS,
     pads: PADS.map(() => null), bays: { transport: null, recon: null },
-    mods: { supplyInterval: 1, supplyAmount: 0, allAttack: 0, line: { armor: 0, firepower: 0, air: 0 } },
+    mods: { supplyInterval: 1, supplyAmount: 0, allAttack: 0, line: { armor: awaken.armor ?? 0, firepower: awaken.firepower ?? 0, air: awaken.air ?? 0 } },
     storedCards: 1, hand: null, rerolls: 1, evoTickets: 0, wavesWithoutEvo: 0,
     mines: [], skills: {}, enemies: [], queue: [], spawnTimer: 0, nextId: 1, warning: null, banner: null,
     stats: { kills: 0, evolutions: 0, leaks: 0 },

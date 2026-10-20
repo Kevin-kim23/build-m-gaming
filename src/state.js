@@ -12,9 +12,10 @@ import { GALACTIC_OFFICERS } from './galactic-officers.js';
 import { CAMPAIGN_STAGE_COUNT } from './campaign-constants.js';
 import { GENERAL_SWORD, AUTO_TOUCH, emptyPersonalLevels } from './personal-catalog.js';
 import { emptyEquipment } from './equipment.js';
+import { emptyDefense } from './defense-progress.js';
 
 // Shared defaults and limits have no dependency on game actions or save parsing.
-export const SAVE_VERSION = 43;
+export const SAVE_VERSION = 44;
 // 지역마다 지금까지 받은 최고 별(0~3). 두 대륙의 지역 수는 공통 상수와 테스트로 동기화한다.
 export { CAMPAIGN_STAGE_COUNT };
 export const SAVE_KEY = "budae-kiugi-recruits-v3";
@@ -27,6 +28,7 @@ export function freshState(now = Date.now()) {
   return {
     version: SAVE_VERSION,
     loot: emptyLoot(),
+    defense: emptyDefense(),
     potions: emptyPotions(),
     homeAutoTap: emptyHomeAutoTap(),
     starterPack: emptyStarterPack(),

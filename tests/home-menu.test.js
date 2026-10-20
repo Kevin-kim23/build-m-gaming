@@ -34,7 +34,7 @@ test('loot is left and battle is right before the six unchanged management butto
   const html=homeMarkup({});
   const dock=html.slice(html.indexOf('<section class="home-dock"'));
   const row=dock.match(/<div class="home-expeditions">([\s\S]*?)<\/div>/)[1];
-  assert.deepEqual([...row.matchAll(/<button id="([^"]+)"/g)].map(match=>match[1]),['open-loot','open-battle']);
+  assert.deepEqual([...row.matchAll(/<button id="([^"]+)"/g)].map(match=>match[1]),['open-loot','open-defense','open-battle']);
   assert.ok(dock.indexOf('class="home-expeditions"')<dock.indexOf('<nav class="home-tabs"'));
   for(const id of ['open-battle','open-loot','open-recruit','open-equipment','open-shop','open-facilities','open-personal','open-items'])
     assert.equal(html.split(`id="${id}"`).length-1,1,id);

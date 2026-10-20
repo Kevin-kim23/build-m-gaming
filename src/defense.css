@@ -64,3 +64,11 @@
 .defense-boss b { color:#ff8a7a; font-size:12px; white-space:nowrap; } .defense-boss span { flex:1; height:8px; border-radius:8px; background:#2a1414; overflow:hidden; } .defense-boss i { display:block; height:100%; background:#ff6b6b; }
 .defense-banner { position:absolute; left:0; right:0; top:38%; display:grid; justify-items:center; gap:4px; padding:14px 10px; background:linear-gradient(90deg,#0000,#0b1328ee 18%,#0b1328ee 82%,#0000); border-block:1px solid #9fcbf5; pointer-events:none; text-align:center; }
 .defense-banner b { font-size:20px; color:#cfe3ff; } .defense-banner small { font-size:12px; color:#9fb1b8; }
+
+.defense-lobby { width:100%; max-width:420px; max-height:100%; overflow-y:auto; display:grid; gap:12px; padding:20px 18px; text-align:center; }
+.defense-lobby p { margin:0; } .defense-lobby-title { margin:0; font-size:22px; color:#e6c27a; }
+.defense-rank { padding:1px 8px; border-radius:99px; background:#c6dbe8; color:#141821; font-size:11px; }
+.defense-gold-text { color:#e6c27a; }
+.defense-medals { font-size:13px; color:#c7d3c0; } .defense-medals b { color:#cfe3ff; }
+.defense-awaken { align-items:center; gap:8px; } .defense-awaken span { display:grid; text-align:left; } .defense-awaken span b { color:#e6c27a; letter-spacing:1px; } .defense-awaken small { color:#9fb1b8; font-size:11px; }
+.defense-awaken em { font-style:normal; color:#e6c27a; font-weight:800; }

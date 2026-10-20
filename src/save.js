@@ -17,6 +17,7 @@ import { reconcileAchievements } from './achievements.js';
 import { emptyEquipment, EQUIPMENT, deployedEquipment, MAX_DEPLOYED_EQUIPMENT } from './equipment.js';
 import { freshState, MAX_SOLDIERS, MAX_ARMY_POWER, SAVE_VERSION, CAMPAIGN_STAGE_COUNT } from './state.js';
 import { validateSave, requireSave, SaveValidationError } from './save-validation.js';
+import { emptyDefense, copyDefense } from './defense-progress.js';
 
 // Pure parsing: callers decide when to report a diagnostic. Missing saves are not errors.
 export function inspectSave(raw, now = Date.now()) {
@@ -45,6 +46,7 @@ function migrateSave(s, now) {
   if (s.version === 2) return { ...freshState(now), gold: minMoney(gold, MAX_GOLD), taps: s.taps, sound: s.sound, sfxVolume: s.sound ? 0.7 : 0, musicVolume: s.sound ? 0.45 : 0 };
   const migrated = {
     version: SAVE_VERSION,
+    defense:s.version>=44?copyDefense(s.defense):emptyDefense(),
     loot:s.version>=43?{balance:s.loot.balance,operatives:Object.fromEntries(Object.entries(s.loot.operatives).map(([id,p])=>[id,p?{...p}:null]))}:legacyLoot(s.version>=15?s.campaignCleared:0),
     constellationSchoolLevel:s.version>=37?s.constellationSchoolLevel:0,
     replayRewardDay:s.version>=37?s.replayRewardDay:0,replayRewardCount:s.version>=37?s.replayRewardCount:0,

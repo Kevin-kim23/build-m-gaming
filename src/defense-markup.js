@@ -26,7 +26,7 @@ export function hitTest(x, y) {
   return null;
 }
 
-export function defenseMarkup({ rankName, starSvg, testMode }) {
+export function defenseMarkup({ rankName, starSvg }) {
   return `<div class="defense-frame">
   <div class="defense-field" data-defense-field>
     <canvas data-defense-canvas aria-label="무한 방어전 전장"></canvas>
@@ -43,10 +43,9 @@ export function defenseMarkup({ rankName, starSvg, testMode }) {
         <span class="defense-chip red">♥ <b data-d="hearts">20</b></span>
         <span class="defense-chip green defense-supply" aria-label="보급"><b data-d="supply">0</b><small>/<span data-d="cap">0</span></small><i data-d="supplybar"></i></span>
       </div>
-      ${testMode ? '<p class="defense-test">시험 화면 · 기록·보상은 저장되지 않아요</p>' : ''}
     </div>
     <div class="defense-actions">
-      <button type="button" class="defense-btn" data-defense-close aria-label="방어전 나가기">✕ 나가기</button>
+      <button type="button" class="defense-btn" data-defense-close data-back-first aria-label="이번 판 끝내기">✕ 끝내기</button>
       <button type="button" class="defense-btn" data-defense-speed>x1</button>
       <button type="button" class="defense-btn primary" data-defense-early hidden>바로! <b data-d="early">+0</b></button>
     </div>
@@ -147,13 +146,6 @@ export function basePanelMarkup(run, tab = 'base') {
   }
   return `<div class="defense-tabs">${tabs.map(([id, label]) => `<button type="button" data-base-tab="${id}"${id === tab ? ' class="on"' : ''}>${label}</button>`).join('')}</div>${body}
     <div class="defense-panel-row"><button type="button" class="defense-btn" data-panel-close>닫기</button></div>`;
-}
-
-export function resultMarkup(run, best) {
-  return `<p class="defense-dim">무한 방어전 종료</p><p class="defense-big">${run.cleared} 웨이브</p>
-    ${run.cleared > best ? '<p class="defense-gold">최고 기록 경신!</p>' : `<p class="defense-dim">최고 기록 ${best}웨이브</p>`}
-    <div class="defense-stats"><div><span>처치한 적</span><b>${n(run.stats.kills)}</b></div><div><span>시간</span><b>${Math.floor(run.time / 60)}분 ${Math.floor(run.time % 60)}초</b></div></div>
-    <div class="defense-panel-row"><button type="button" class="defense-btn" data-defense-close>나가기</button><button type="button" class="defense-btn primary" data-defense-retry>다시 도전</button></div>`;
 }
 
 // 상단 줄 숫자(매 프레임 비교 후 바뀐 것만 쓴다).

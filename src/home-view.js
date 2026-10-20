@@ -93,11 +93,14 @@ function fieldMarkup() {
     </button></div>${fieldToolsMarkup()}<span id="home-auto-feedback" aria-hidden="true"></span><span id="revolver-feedback" aria-hidden="true"></span><span id="field-scroll-hint" class="field-scroll-hint" hidden>↔ 좌우로 밀어서 둘러보기</span></section>`;
 }
 
+// 무한 방어전 버튼 그림: 방패 위 별(자체 제작 도형).
+const defenseIcon = () => '<svg viewBox="0 0 32 32" width="30" height="30"><path d="M16 3 27 7v8c0 7-5 12-11 14C10 27 5 22 5 15V7Z" fill="#41606a" stroke="#c9dde2" stroke-width="1.6"/><path d="M16 9.5l1.9 4 4.4.5-3.3 3 .9 4.3-3.9-2.2-3.9 2.2.9-4.3-3.3-3 4.4-.5Z" fill="#e6c27a"/></svg>';
 function dockMarkup() {
   return `<section class="home-dock" aria-label="내 부대">
     <div class="coach" id="coach" role="status" aria-live="polite" hidden><p id="coach-text"></p><button type="button" id="coach-off" aria-label="안내 끄기">끄기</button></div>
     <div class="home-expeditions">
       <button id="open-loot" class="home-battle"><span class="home-menu-icon">${lootIcon()}</span><span class="home-expedition-label">전리품 상점</span></button>
+      <button id="open-defense" class="home-battle" hidden><span class="home-menu-icon" aria-hidden="true">${defenseIcon()}</span><span class="home-expedition-label">무한 방어전<small id="defense-home-label"></small></span></button>
       <button id="open-battle" class="home-battle" hidden>${homeMenuIcon('battle')}<span class="home-expedition-label">전투<small id="battle-lock-label"></small></span></button>
     </div>
     <nav class="home-tabs" aria-label="부대 메뉴">
