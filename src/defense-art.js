@@ -76,8 +76,13 @@ export function drawDefense(canvas, run, theme, view = {}) {
     }
     for (const e of run.enemies) {
       const w = e.big ? 84 : e.boss ? 52 : 30;
+      if (e.boss) {
+        const g = x.createRadialGradient(e.x, e.y, 6, e.x, e.y, w * 0.9); g.addColorStop(0, 'rgba(255,60,80,.45)'); g.addColorStop(1, 'rgba(255,60,80,0)');
+        x.fillStyle = g; x.beginPath(); x.arc(e.x, e.y, w * 0.9, 0, 7); x.fill();
+      }
+      if (e.air) { x.fillStyle = 'rgba(0,0,0,.25)'; x.beginPath(); x.ellipse(e.x + 6, e.y + 10, w * 0.32, w * 0.16, 0, 0, 7); x.fill(); }
       if (e.stealth) x.globalAlpha = 0.5;
-      draw(x, sprite(e.def.art ?? 'tank', 'enemy'), e.x, e.y, w, true);
+      draw(x, sprite(e.art ?? e.def.art ?? 'tank', 'enemy'), e.x, e.y, w, true);
       x.globalAlpha = 1;
       if (e.hp < e.maxHp) { x.fillStyle = '#000a'; x.fillRect(e.x - w / 2, e.y - w / 2 - 6, w, 3); x.fillStyle = e.boss ? '#ff6b6b' : '#e6c27a'; x.fillRect(e.x - w / 2, e.y - w / 2 - 6, w * Math.max(0, e.hp / e.maxHp), 3); }
       if (e.shield > 0) { x.strokeStyle = '#9fe8ffcc'; x.lineWidth = 1.5; x.beginPath(); x.arc(e.x, e.y, w * 0.62, 0, 7); x.stroke(); }

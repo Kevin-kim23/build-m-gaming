@@ -4,7 +4,7 @@ import {
   BASE_POS, PADS, ENEMIES, SPAWN_SPACING_S, WAVE_GAP_S, LEAK_HEARTS, BOSS_LEAK_HEARTS, BOSS_STUN, BOSS_SUMMON,
 } from './defense-data.js';
 import { baseStats } from './defense-economy.js';
-import { waveSpec } from './defense-waves.js';
+import { waveSpec, waveBanner, enemyArt } from './defense-waves.js';
 import { PATH_LENGTH, pointAt, airLength, airPointAt } from './defense-path.js';
 import { towerStats, addStoredCards } from './defense-run.js';
 
@@ -45,6 +45,8 @@ function produceSupply(run, dt) {
 function startWave(run) {
   run.wave += 1; run.phase = 'wave'; run.spawnTimer = 0;
   run.queue = waveSpec(run.wave).enemies.slice();
+  run.banner = waveBanner(run.wave);
+  if (run.banner) run.banner.until = run.time + 3;
 }
 
 function spawn(run, dt) {
@@ -58,7 +60,7 @@ function addEnemy(run, spec, dist) {
   const id = run.nextId++, kind = spec.boss ?? ENEMIES[spec.type];
   const air = !!kind.air;
   run.enemies.push({
-    id, type: spec.type, boss: !!spec.boss, big: spec.type === 'boss', def: kind, hp: spec.hp, maxHp: spec.hp,
+    id, type: spec.type, boss: !!spec.boss, big: spec.type === 'boss', def: kind, art: enemyArt(Math.max(1, run.wave), spec.type, spec.boss), hp: spec.hp, maxHp: spec.hp,
     speed: kind.speed, dist, air, from: air ? [40 + (id * 97) % 280, 40] : null, shield: kind.shield ?? 0,
     stealth: !!kind.stealth, burnDps: 0, burnUntil: 0, slowUntil: 0, summoned: 0, clock: 0, x: 0, y: 0,
   });

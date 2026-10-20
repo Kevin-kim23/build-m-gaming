@@ -15,7 +15,7 @@ export function createRun({ rank = '부사령관', seed = 1 } = {}) {
     pads: PADS.map(() => null), bays: { transport: null, recon: null },
     mods: { supplyInterval: 1, supplyAmount: 0, allAttack: 0, line: { armor: 0, firepower: 0, air: 0 } },
     storedCards: 1, hand: null, rerolls: 1, evoTickets: 0, wavesWithoutEvo: 0,
-    mines: [], skills: {}, enemies: [], queue: [], spawnTimer: 0, nextId: 1, warning: null,
+    mines: [], skills: {}, enemies: [], queue: [], spawnTimer: 0, nextId: 1, warning: null, banner: null,
     stats: { kills: 0, evolutions: 0, leaks: 0 },
     fx: [],   // 화면 연출용 최근 사격(최대 40개, 저장하지 않음)
   };

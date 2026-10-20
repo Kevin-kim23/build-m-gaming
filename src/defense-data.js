@@ -100,6 +100,19 @@ export const ZONES = Object.freeze([
   Object.freeze({ id: 'aetherion', name: '에테리온', theme: 'space', hp: 1.5 }),
   Object.freeze({ id: 'erebus', name: '에레보스', theme: 'abyss', hp: 2.25 }),
 ]);
+// 구간마다 적 장비 그림이 바뀐다(아스테라 지구 장비 → 에테리온·에레보스 은하 장비).
+export const ZONE_ART = Object.freeze({
+  asteria: Object.freeze({ grunt: 'tank', air: 'helicopter', shield: 'selfPropelled', fast: 'rocketLauncher', stealth: 'artillery', midBoss: 'railgunTank' }),
+  aetherion: Object.freeze({ grunt: 'plasmaTank', air: 'stellarBomber', shield: 'siegeMech', fast: 'railgunTank', stealth: 'plasmaTank', midBoss: 'siegeMech' }),
+  erebus: Object.freeze({ grunt: 'railgunTank', air: 'droneCarrier', shield: 'siegeMech', fast: 'plasmaTank', stealth: 'stellarBomber', midBoss: 'carrier' }),
+});
+// 새 적이 처음 나올 때 띄우는 한 줄 안내.
+export const ENEMY_TIPS = Object.freeze({
+  air: '공중 적: 길을 무시하고 기지로 직진 · 대공만 맞혀요',
+  shield: '방패 적: 첫 3발을 막아요 · 화력 범위·레일건이 좋아요',
+  fast: '빠른 적: 2배 속도 · 기갑 연사·지뢰가 좋아요',
+  stealth: '위장 적: 정찰 비행장 레이더 안에서만 보여요',
+});
 export const WAVE_HP_BASE = 40;
 export const WAVE_HP_GROWTH = 1.12;
 export const LOOP_HP_FACTOR = 2;

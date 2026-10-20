@@ -1,6 +1,6 @@
 // 무한 방어전 웨이브 구성: 구간(20웨이브), 적 체력 배율, 섞여 나오는 적, 10웨이브마다 보스.
 import {
-  ENEMIES, BOSSES, ZONES, WAVE_HP_BASE, WAVE_HP_GROWTH, LOOP_HP_FACTOR,
+  ENEMIES, BOSSES, ZONES, WAVE_HP_BASE, WAVE_HP_GROWTH, LOOP_HP_FACTOR, ZONE_ART, ENEMY_TIPS,
 } from './defense-data.js';
 
 const checkWave = wave => { if (!Number.isInteger(wave) || wave < 1) throw new RangeError('Invalid wave'); };
@@ -34,4 +34,21 @@ export function waveSpec(wave) {
   const boss = bossFor(wave);
   if (boss) enemies.push({ type: boss === ENEMIES.midBoss ? 'midBoss' : 'boss', boss, hp: hp * boss.hp });
   return { wave, zone: zoneFor(wave), hp, enemies, newTypes: newEnemyTypes(wave) };
+}
+
+// 적 그림: 큰 보스는 보스 그림, 나머지는 구간별 그림.
+export function enemyArt(wave, type, boss = null) {
+  if (type === 'boss' && boss) return boss.art;
+  return ZONE_ART[zoneFor(wave).id][type] ?? ZONE_ART.asteria.grunt;
+}
+
+// 웨이브가 시작될 때 띄우는 안내(구간 전환 > 큰 보스 > 중간 보스 > 새 적). 없으면 null.
+export function waveBanner(wave) {
+  const zone = zoneFor(wave), boss = bossFor(wave), fresh = newEnemyTypes(wave).filter(id => ENEMY_TIPS[id]);
+  if (wave > 1 && (wave - 1) % 20 === 0)
+    return { kind: 'zone', title: `${zone.name} 전선 진입${zone.loop > 1 ? ` · ${zone.loop}회차` : ''}`, text: `배경·적 장비가 바뀌어요 · 적 체력 ×${+(zone.hp / zoneFor(wave - 1).hp).toFixed(2)}` };
+  if (boss && boss !== ENEMIES.midBoss) return { kind: 'boss', title: `보스 등장: ${boss.name}`, text: boss.summon ? '체력이 줄 때마다 무인기를 불러요' : '경고 원 안의 장비가 잠시 멈춰요' };
+  if (boss) return { kind: 'boss', title: '중간 보스 등장', text: '기지에 닿으면 ♥ −5' };
+  if (fresh.length) return { kind: 'new', title: '새 적 등장', text: ENEMY_TIPS[fresh[0]] };
+  return null;
 }

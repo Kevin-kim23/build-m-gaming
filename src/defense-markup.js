@@ -56,6 +56,8 @@ export function defenseMarkup({ rankName, starSvg, testMode }) {
       <button type="button" class="defense-btn skill" data-defense-icbm hidden>ICBM <small data-d="icbm"></small></button>
     </div>
     <p class="defense-hint" data-defense-hint hidden></p>
+    <div class="defense-boss" data-defense-boss hidden><b data-d="bossname"></b><span><i data-d="bossbar"></i></span></div>
+    <div class="defense-banner" data-defense-banner hidden><b data-d="bannertitle"></b><small data-d="bannertext"></small></div>
     <div class="defense-panel" data-defense-panel hidden></div>
     <div class="defense-cards" data-defense-hand hidden></div>
     <div class="defense-result" data-defense-result hidden></div>
@@ -156,6 +158,12 @@ export function resultMarkup(run, best) {
 
 // 상단 줄 숫자(매 프레임 비교 후 바뀐 것만 쓴다).
 export const evolveTargets = run => evolvable(run);
+// 가장 앞선 보스 하나의 이름·남은 체력(없으면 빈 값).
+function bossValues(run) {
+  const boss = run.enemies.find(e => e.big) ?? run.enemies.find(e => e.boss);
+  if (!boss) return { bossname: '', bossbar: '0%' };
+  return { bossname: boss.def.name, bossbar: `${Math.max(0, Math.round(boss.hp / boss.maxHp * 100))}%` };
+}
 export function hudValues(run) {
   const b = baseStats(run.baseLevel);
   return {
@@ -165,5 +173,6 @@ export function hudValues(run) {
     early: `+${callEarlyBonus(run.gapLeft)}`,
     cards: String(run.storedCards), evo: String(run.evoTickets),
     icbm: run.skills.icbm ? (run.skills.icbm.ready > 0 ? `${Math.ceil(run.skills.icbm.ready)}초` : '준비') : '',
+    ...bossValues(run), bannertitle: run.banner?.title ?? '', bannertext: run.banner?.text ?? '',
   };
 }

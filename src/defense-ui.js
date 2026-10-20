@@ -83,12 +83,14 @@ export function createDefenseUI(session, { notify = () => {} } = {}) {
       hudCache[k] = v;
       const node = dialog.querySelector(`[data-d="${k}"]`);
       if (!node) continue;
-      if (k === 'supplybar') node.style.width = v; else node.textContent = v;
+      if (k === 'supplybar' || k === 'bossbar') node.style.width = v; else node.textContent = v;
     }
     toggle('[data-defense-early]', run.phase !== 'gap');
     toggle('[data-defense-cards]', run.storedCards < 1);
     toggle('[data-defense-evo]', run.evoTickets < 1);
     toggle('[data-defense-icbm]', !run.skills.icbm);
+    toggle('[data-defense-boss]', !values.bossname);
+    toggle('[data-defense-banner]', !run.banner || run.time > run.banner.until);
     run.pads.forEach((t, i) => setLv(`pad${i}`, `[data-pad-lv="${i}"]`, t ? `Lv${t.level}` : ''));
     for (const id of Object.keys(run.bays)) setLv(id, `[data-bay-lv="${id}"]`, run.bays[id] ? `Lv${run.bays[id].level}` : '');
     dialog.querySelectorAll('[data-defense-panel] [data-cost]').forEach(b => { const off = run.supply < Number(b.dataset.cost); if (b.disabled !== off) b.disabled = off; });
