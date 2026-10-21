@@ -79,7 +79,7 @@ export function marketCardView(state,item,clock,active=true) {
   const o=lootItemOffer(state,item.id,clock);
   if(o.owned)return {phase:'applied',owned:true,deal:false,label:'영구 적용',price:'적용 중',status:'',action:'보유',disabled:true};
   const status=o.reason==='loot'?`전리품 ${fmt(o.price-(state.loot?.balance??0))}개 부족`:o.reason==='limit'?'오늘 구매 완료 · 자정에 초기화':o.reason==='full'?'아이템 보관 한도예요':
-    item.id==='vault'?`받을 골드 ${fmtGold(multiplyMoney(basePassiveIncome(state),VAULT_SECONDS))} G`:item.limit?`오늘 ${o.left} / ${item.limit}회 남음`:'한 번 사면 계속 적용';
+    item.id==='vault'?`받을 골드 ${fmtGold(multiplyMoney(basePassiveIncome(state),VAULT_SECONDS))} G · 오늘 ${o.left} / ${item.limit}회`:item.limit?`오늘 ${o.left} / ${item.limit}회 남음`:'한 번 사면 계속 적용';
   return {phase:o.reason==='loot'?'locked':o.reason?'waiting':'available',owned:false,deal:o.deal,label:o.deal?`특가 (원래 ${fmt(item.price)}개)`:'가격',price:`${fmt(o.price)}개`,
     status:o.deal&&!o.reason?`${status} · 오늘만 ${DEAL_PERCENT}% 할인`:status,action:o.reason==='limit'?'오늘 완료':'구매',disabled:!active||!o.canBuy};
 }

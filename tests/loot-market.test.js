@@ -100,6 +100,7 @@ test('shop shows seven support cards with art, honest prices and the deal label'
   assert.equal(v.deal,true);assert.match(v.label,/특가/);assert.match(v.status,/부족/);assert.equal(v.disabled,true);
   s.loot.balance=1_000_000;buyLootItem(s,'manual',T);
   assert.deepEqual([marketCardView(s,LOOT_PERKS[2],T).action,marketCardView(s,LOOT_PERKS[2],T).disabled],['보유',true]);
-  for(let i=0;i<LOOT_DAILY[0].limit;i++)buyLootItem(s,'vault',T,1);
+  buyLootItem(s,'vault',T,1);assert.match(marketCardView(s,LOOT_DAILY[0],T).status,/받을 골드 .* · 오늘 2 \/ 3회/);
+  for(let i=1;i<LOOT_DAILY[0].limit;i++)buyLootItem(s,'vault',T,1);
   assert.equal(marketCardView(s,LOOT_DAILY[0],T).action,'오늘 완료');
 });
