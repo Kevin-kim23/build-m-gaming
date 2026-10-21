@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import {STAGES} from '../src/battle.js';
 import {referenceArmy,simulateBattle} from './campaign-sim.mjs';
 const rows=[];
-for(const stage of STAGES.slice(160,180)){
- const s=referenceArmy(stage);let low=1,high=2e18,best;
- const target=105+(stage.id-161)*2;
+for(const stage of STAGES.slice(160,200)){
+ const s=referenceArmy(stage);let low=1,high=stage.id<=180?2e18:2e20,best;
+ const n=stage.id-161,target=n<20?105+n*2:120+(n-20)*2;
  for(let i=0;i<28;i++){
   const hp=Math.round((low+high)/2),b=simulateBattle(s,stage.id,{hqPower:hp}),seconds=b.elapsedMs/1000;
   if(b.status==='victory'&&(!best||Math.abs(seconds-target)<Math.abs(best.seconds-target)))best={id:stage.id,hp,seconds};

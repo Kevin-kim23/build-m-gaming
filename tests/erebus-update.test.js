@@ -29,13 +29,17 @@ test('erebus has40 original sequential regions, two contiguous nations and safe 
  assert.doesNotMatch(campaignMarkup({...s,campaignCleared:180},'mordrath',181),/장기 도전 지역|첫 점령/);
  assert.ok(exact(campaignStages[199].recommendedPower)<=MAX_ARMY_POWER);
 });
-test('maximum-rank50강 clears the first20, while all last20 remain long-term siege objectives',()=>{
- for(const stage of campaignStages.slice(160)){
-  const s=referenceArmy(stage,{power:CONSTELLATION_POWERS.at(-1),level:50});
-  const b=simulateBattle(s,stage.id);
-  if(stage.id<=180)assert.equal(b.status,'victory',String(stage.id));
-  else {assert.notEqual(b.status,'victory',String(stage.id));assert.equal(stage.longTerm,true);}
+test('maximum-rank50강 clears the first20; the last20 recommend Lv.51–70 and are won with it',()=>{
+ for(const stage of campaignStages.slice(160,180)){
+  const b=simulateBattle(referenceArmy(stage,{power:CONSTELLATION_POWERS.at(-1),level:50}),stage.id);
+  assert.equal(b.status,'victory',String(stage.id));
  }
+ for(const [i,stage] of campaignStages.slice(180).entries()){
+  assert.equal(stage.recommendedLevel,51+i);
+  const b=simulateBattle(referenceArmy(stage),stage.id);
+  assert.equal(b.status,'victory',String(stage.id));assert.ok(b.elapsedMs>=110000&&b.elapsedMs<=170000,`${stage.id}:${b.elapsedMs}`);
+ }
+ assert.notEqual(simulateBattle(referenceArmy(campaignStages[199],{level:50}),200).status,'victory','Lv.50 gear is not enough for the last region');
  for(const stage of campaignStages.slice(160,180)){
   const b=simulateBattle(referenceArmy(stage),stage.id);
   assert.equal(b.status,'victory',String(stage.id));assert.ok(b.elapsedMs>=60000&&b.elapsedMs<=150000,`${stage.id}:${b.elapsedMs}`);
