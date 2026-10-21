@@ -40,7 +40,7 @@ test('shared late income rewards keep early upgrades modest and make old max-lev
   assert.ok(equipmentStats(11).passive<equipmentStats(10).passive*2,'first refit is not a late-game income jump');
   assert.ok(equipmentStats(50).passive>equipmentStats(50,'novaCannon').passive/4);
   assert.ok(equipmentStats(50).passive<equipmentStats(50,'novaCannon').passive);
-  for(const invalid of [-1,51,1.2,NaN])assert.throws(()=>equipmentGrowth(invalid),RangeError);
+  for(const invalid of [-1,71,1.2,NaN])assert.throws(()=>equipmentGrowth(invalid),RangeError);
 });
 
 test('retrofit prices rise monotonically, preserve original late floors, and remain payable',()=>{
@@ -50,12 +50,12 @@ test('retrofit prices rise monotonically, preserve original late floors, and rem
   assert.equal(exact(enhancementCost(49)),676_547_251_344_014_030_000n);
   for(const id of ids){
     let previous=0n;
-    for(let level=0;level<50;level++){
+    for(let level=0;level<70;level++){
       const cost=exact(enhancementCost(level,id));
       assert.ok(cost>previous&&cost<MAX_GOLD,`${id} to ${level+1}`);
       assert.ok(cost>=exact(equipmentGrowth(level+1).upgradeCost));previous=cost;
     }
-    assert.equal(enhancementCost(50,id),null);
+    assert.equal(enhancementCost(70,id),null);
     assert.ok(exact(additionalEquipmentCost(id,50))<MAX_GOLD);
   }
 });

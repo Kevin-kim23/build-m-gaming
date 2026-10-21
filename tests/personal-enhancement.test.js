@@ -73,10 +73,10 @@ test('revolver duration and paid pulses use activation level across upgrades, re
 
 test('v19 validates every persisted level and activation duration, while v18 cannot inject paid levels', () => {
   const state=army();
-  for(const bad of [null,[],{},'10',{...state.personalLevels,generalSword:0},{...state.personalLevels,generalSword:31},
+  for(const bad of [null,[],{},'10',{...state.personalLevels,generalSword:0},{...state.personalLevels,generalSword:61},
     {...state.personalLevels,commandBaton:1.5},{...state.personalLevels,generalRevolver:'2'}])
     assert.equal(game.parseSave(serializeSave({...state,personalLevels:bad}),T),null);
-  for(const patch of [{autoTouchDurationMs:undefined},{autoTouchDurationMs:60001},{autoTouchDurationMs:360000},{swordDurationMs:330000}])
+  for(const patch of [{autoTouchDurationMs:undefined},{autoTouchDurationMs:60001},{autoTouchDurationMs:660000},{swordDurationMs:630000}])
     assert.equal(game.parseSave(serializeSave({...state,...patch}),T),null);
   state.personalLevels.generalSword=10;
   assert.equal(game.parseSave(serializeSave({...state,version:18,gold:LEGACY_MAX_GOLD}),T).personalLevels.generalSword,1);

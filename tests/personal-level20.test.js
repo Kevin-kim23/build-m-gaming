@@ -64,7 +64,7 @@ test('v29 preserves earned levels, exact wallet, equipment and running windows; 
     const bad=structuredClone(restored);bad.personalLevels[key]=PERSONAL_EQUIPMENT[key].maxLevel+1;
     assert.equal(parseSave(serializeSave(bad),T),null,key);
   }
-  const badGear=structuredClone(restored);badGear.equipment.tank.level=51;
+  const badGear=structuredClone(restored);badGear.equipment.tank.level=71;
   assert.equal(parseSave(serializeSave(badGear),T),null);
   for(const patch of [{personalLevels:restored.personalLevels},{equipment:restored.equipment},
     {swordDurationMs:220000},{autoTouchDurationMs:250000}])assert.equal(parseSave(serializeLegacySave({...old,...patch}),T),null);

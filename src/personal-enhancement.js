@@ -6,12 +6,14 @@ import { multiplyMoney, scaleMoney } from './money.js';
 // Preserve early costs; later steps grow by an exact 8/5, without floating-point gold.
 // Galactic progression starts with all eight items at Lv.20. Lv.21 has a new
 // economy anchor, then costs double per level; no rank gate and no random roll.
+// From Lv.31 (flag Lv.41) each step costs an exact 5/4 more so Lv.60 stays inside the wallet.
 export const GALACTIC_PERSONAL_COSTS = Object.freeze(Object.fromEntries(
   Object.keys(PERSONAL_EQUIPMENT).map((id,i)=>[id,BigInt([20,30,40,50,60,70,80,100][i])*10_000_000_000_000_000n])));
 const steps = Object.fromEntries(Object.values(PERSONAL_EQUIPMENT).map(item => {
   let cost = item.baseUpgradeCost;
   return [item.id, Object.freeze(Array.from({length:item.maxLevel-1}, (_, index) => {
     if (index===19) cost=GALACTIC_PERSONAL_COSTS[item.id];
+    else if (index>=(item.id==='divisionFlag'?39:29)) cost=scaleMoney(cost,5,4);
     else if (item.id==='divisionFlag' && index>=29) cost=scaleMoney(cost,index===29?2:3,index===29?1:2);
     else if (index) cost = index < 10 || index>19 ? multiplyMoney(cost,2) : scaleMoney(cost,8,5);
     return Object.freeze({level:index+1,nextLevel:index+2,cost});

@@ -27,13 +27,13 @@ function panel({military=[],personal=[]}={}){
 }
 function withCanvas(run){const previous=globalThis.document;globalThis.document={createElement:element};try{return run();}finally{if(previous===undefined)delete globalThis.document;else globalThis.document=previous;}}
 
-test('military50 completes enhancement while lower caps stay on the action without redundant status',()=>withCanvas(()=>{
+test('military70 completes enhancement while lower caps stay on the action without redundant status',()=>withCanvas(()=>{
   const s={...freshState(T),soldiers:50000,sergeants:300},root=panel({military:['tank']}),card=root.cards.get('tank');
-  for(const level of [20,30,40,50]){
+  for(const level of [20,30,40,50,70]){
     s.personalLevels.divisionFlag=level-10;s.equipment.tank={level,count:1,deployed:true};
     renderEquipmentPanel(s,root,'tank');
     assert.equal(card.querySelector('[data-enhance-equipment]').disabled,true);
-    assert.equal(card.querySelector('[data-enhance-equipment]').textContent,level===50?'최대 강화':'강화 한도');
+    assert.equal(card.querySelector('[data-enhance-equipment]').textContent,level===70?'최대 강화':'강화 한도');
     assert.doesNotMatch(card.querySelector('[data-gear-status]').textContent,/배치 중|사단기 강화/);
   }
 }));

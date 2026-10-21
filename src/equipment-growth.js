@@ -19,6 +19,9 @@ const anchors = Object.freeze([
   [30, 200_000_000_000_000n, 7_000_000_000_000],
   [40, 360_000_000_000_000n, 17_500_000_000_000],
   [50, 550_000_000_000_000n, 35_000_000_000_000],
+  // 0.78.0 Lv.51–70: steady income, and about twice the Lv.50 combat value at Lv.70.
+  [60, 800_000_000_000_000n, 52_000_000_000_000],
+  [70, 1_100_000_000_000_000n, 70_000_000_000_000],
 ].map(Object.freeze));
 
 const empty = Object.freeze({passive:0, tap:0, combatPerMana:0, upgradeCost:0});

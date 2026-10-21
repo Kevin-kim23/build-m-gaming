@@ -45,7 +45,7 @@ test('v34 preserves all levels and active windows; v35 round-trips new maxima an
   assert.equal(loaded.swordDurationMs,220000);assert.equal(loaded.autoTouchDurationMs,250000);
   loaded.swordDurationMs=320000;loaded.autoTouchDurationMs=350000;loaded.autoTouchTicks=1166;
   assert.deepEqual(parseSave(serializeSave(loaded),T),loaded);
-  for(const patch of [{swordDurationMs:330000},{autoTouchDurationMs:360000},{autoTouchTicks:1167}])
+  for(const patch of [{swordDurationMs:630000},{autoTouchDurationMs:660000},{autoTouchTicks:1167}])
     assert.equal(parseSave(serializeSave({...loaded,...patch}),T),null);
 });
 

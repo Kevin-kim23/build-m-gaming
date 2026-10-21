@@ -9,8 +9,8 @@ import {EQUIPMENT,enhancementCost,equipmentStage} from '../src/equipment.js';
 import {enhanceEquipment,enhancePersonalEquipment} from '../src/game.js';
 const T=1800000000000;
 const army=()=>({...freshState(T),soldiers:10000,sergeants:300,galacticMarshals:64});
-test('only the division flag reaches40, all quotes fit the exact wallet cap',()=>{
- for(const item of Object.values(PERSONAL_EQUIPMENT))assert.equal(item.maxLevel,item.id==='divisionFlag'?40:30);
+test('baton stays Lv.30, other personal gear reaches Lv.60; flag 31..40 quotes fit the exact wallet cap',()=>{
+ for(const item of Object.values(PERSONAL_EQUIPMENT))assert.equal(item.maxLevel,item.id==='commandBaton'?30:60);
  const s=army();s.personalLevels.divisionFlag=30;
  let previous=exact(personalUpgradeStep('divisionFlag',29).cost);
  for(let level=30;level<40;level++){
@@ -20,7 +20,7 @@ test('only the division flag reaches40, all quotes fit the exact wallet cap',()=
   s.gold=cost;assert.equal(enhancePersonalEquipment(s,T,'divisionFlag').ok,true);assert.equal(s.gold,0);
   assert.equal(parseSave(serializeSave(s),T).personalLevels.divisionFlag,level+1);
  }
- assert.equal(personalUpgradeOffer(s,'divisionFlag').reason,'max');
+ assert.equal(personalUpgradeOffer(s,'divisionFlag').nextLevel,41);
 });
 test('all17 military weapons upgrade41..50 and stop without charging at50',()=>{
  for(const id of Object.keys(EQUIPMENT)){

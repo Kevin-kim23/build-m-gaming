@@ -1,7 +1,7 @@
 import { artSurface, brush } from './pixel-detail.js';
 export function advancedEquipmentSprite(base,level){
   const canvas=artSurface(110,62),c=canvas.getContext('2d'),r=brush(c),tier=Math.min(10,level-10),red=level>20;
-  const glow=level>40?'#d2f4ff':level>30?'#ac89ff99':red?'#f4514199':tier>=6?'#80e7e499':'#efcf7788',metal=level>40?'#d2f4ff':level>30?'#e1cdff':red?'#efbd73':tier>=6?'#a8eee2':'#efcf85';
+  const glow=level>60?'#fff1c4':level>50?'#5ff0d6aa':level>40?'#d2f4ff':level>30?'#ac89ff99':red?'#f4514199':tier>=6?'#80e7e499':'#efcf7788',metal=level>60?'#fff4d6':level>50?'#9ff7e6':level>40?'#d2f4ff':level>30?'#e1cdff':red?'#efbd73':tier>=6?'#a8eee2':'#efcf85';
   // Follow the silhouette so the glow does not become a rectangular backdrop.
   c.shadowColor=glow;c.shadowBlur=8+tier*2;
   c.drawImage(base,0,0,110,62);
@@ -28,11 +28,22 @@ export function advancedEquipmentSprite(base,level){
       r(x,y,6,4,'#503474');r(x,y,6,1,metal);r(x+2,y+1,2,2,'#e9e0ff');
     }
   }
+  // Lv.51–60 void sigils: dark teal diamonds with a bright eye. Lv.61–70 supernova rays and a white-gold core.
+  for(let i=0;i<Math.min(10,level-50);i++) {
+    const x=21+(i%5)*16,y=6+Math.floor(i/5)*44;
+    r(x+2,y,3,1,'#9ff7e6');r(x,y+1,7,3,'#123d43');r(x+1,y+1,5,1,'#5ff0d6');r(x+2,y+4,3,1,'#2a7a76');r(x+3,y+2,1,1,'#f2fffb');
+  }
+  if(level>60) {
+    const rays=Math.min(10,level-60);
+    for(let i=0;i<rays;i++){const x=12+i*9.6;r(x,2,1,4+(i%3)*2,'#fff1c4');r(x-1,3,3,1,'#ffd27a');}
+    r(49,24,13,11,'#7a4d1c');r(50,25,11,9,'#ffd27a');r(52,26,7,7,'#fff4d6');r(54,28,3,3,'#ffffff');
+    if(level>=70){r(44,29,23,1,'#fff4d6');r(55,19,1,21,'#fff4d6');}
+  }
   return canvas;
 }
 export function overheadEnhancement(c,level){
   if(level<=10)return;
-  const r=brush(c),metal=level>40?'#d2f4ff':level>30?'#e1cdff':level>20?'#efbd73':level>=16?'#a8eee2':'#efcf85';
+  const r=brush(c),metal=level>60?'#fff4d6':level>50?'#9ff7e6':level>40?'#d2f4ff':level>30?'#e1cdff':level>20?'#efbd73':level>=16?'#a8eee2':'#efcf85';
   for(let n=0;n<Math.min(10,level-10);n++){const x=n%2?41:11,y=17+Math.floor(n/2)*8;r(x,y,4,1,metal);r(x+1,y-1,1,4,'#fff5bd');}
   for(let n=0;n<Math.min(10,level-20);n++){
     const x=n%2?34:18,y=19+Math.floor(n/2)*8;
@@ -42,4 +53,6 @@ export function overheadEnhancement(c,level){
     const x=n%2?39:12,y=17+Math.floor(n/2)*8;
     r(x,y,4,3,'#644586');r(x+1,y,2,2,'#eee4ff');
   }
+  for(let n=0;n<Math.min(10,level-50);n++){const x=n%2?44:7,y=19+Math.floor(n/2)*8;r(x,y,3,3,'#123d43');r(x+1,y+1,1,1,'#9ff7e6');}
+  if(level>60){const k=Math.min(10,level-60);r(26-k/2,5,k+4,2,'#ffd27a');r(27,4,2,4,'#fff4d6');}
 }

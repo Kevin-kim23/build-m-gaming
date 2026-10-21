@@ -5,7 +5,7 @@ export const artLevel = (value, maxLevel=PERSONAL_MAX_LEVEL) => Number.isInteger
 export function personalLustre(kind,level) {
   if(level<=1)return '';
   const wide=kind==='revolver',w=wide?256:192,h=wide?192:256;
-  const tint=level>30?'#d8f6ff':level>=26?'#ffe8af':level>=21?'#d7afff':level>=16?'#ffd69a':level>=11?'#d5e9ff':level>=8?'#dafff4':level>=5?'#94d9d1':'#f2cc78';
+  const tint=level>50?'#fff1c4':level>40?'#9ff7e6':level>30?'#d8f6ff':level>=26?'#ffe8af':level>=21?'#d7afff':level>=16?'#ffd69a':level>=11?'#d5e9ff':level>=8?'#dafff4':level>=5?'#94d9d1':'#f2cc78';
   const p=[`<g aria-hidden="true"><rect x="${w*.2}" y="${h*.16}" width="${w*.6}" height="${h*.67}" rx="12" fill="${tint}" opacity="${.018+level*.005}"/>`];
   for(let i=0;i<Math.min(19,level-1);i++){
     const x=Math.round(w*(i%2?.85:.12)+(i%3)*2),y=Math.round(h*(.17+.065*Math.floor(i/2)));
@@ -22,6 +22,15 @@ export function personalLustre(kind,level) {
   if(level>20)p.push(`<path d="M${w*.25} ${h*.13}L${w*.2} ${h*.22}V${h*.75}L${w*.28} ${h*.83}H${w*.72}L${w*.8} ${h*.75}V${h*.22}L${w*.75} ${h*.13}" fill="none" stroke="${tint}" stroke-width="${level>=26?3:2}" opacity=".7"/>`);
   if(kind==='flag'&&level>30)for(let i=0;i<Math.min(10,level-30);i++){
     const x=57+i*8;p.push('<rect x="'+x+'" y="203" width="5" height="6" fill="#d8f6ff" stroke="#6c9eae" stroke-width="1"/>');
+  }
+  // Lv.31–60 (flag Lv.41–60): a crown of void-teal studs, then white-gold rays from Lv.51.
+  if(level>30&&kind!=='flag'||level>40)for(let i=0;i<Math.min(10,level-(kind==='flag'?40:30));i++){
+    const x=Math.round(w*(.24+i*.058)),y=Math.round(h*.05);
+    p.push(`<path d="M${x} ${y}l3-4 3 4-3 4Z" fill="#123d43" stroke="${tint}" stroke-width="1"/><rect x="${x+2}" y="${y-1}" width="2" height="2" fill="#f2fffb"/>`);
+  }
+  if(level>50)for(let i=0;i<Math.min(10,level-50);i++){
+    const a=Math.PI*(1.1+i*.08),cx=w/2,cy=h*.5,R=Math.min(w,h)*.47;
+    p.push(`<path d="M${Math.round(cx+Math.cos(a)*R*.86)} ${Math.round(cy+Math.sin(a)*R*.86)}L${Math.round(cx+Math.cos(a)*R)} ${Math.round(cy+Math.sin(a)*R)}" stroke="#ffd27a" stroke-width="3" opacity=".85"/>`);
   }
   p.push('</g>');return p.join('');
 }

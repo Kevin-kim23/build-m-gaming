@@ -1,4 +1,4 @@
-import { MILITARY_MAX_LEVEL } from './equipment-limits.js';
+import { MILITARY_MAX_LEVEL, LEGACY_MILITARY_MAX_LEVEL } from './equipment-limits.js';
 import { equipmentGrowth } from './equipment-growth.js';
 import { multiplyMoney, addMoney, scaleMoney, exact, compactMoney, minMoney, MAX_GOLD } from './money.js';
 import { GALACTIC_EQUIPMENT } from './galactic-equipment.js';
@@ -83,7 +83,7 @@ export const EQUIPMENT = Object.freeze({
 export const MAX_DEPLOYED_EQUIPMENT = Object.keys(EQUIPMENT).length;
 export const REPEAT_EQUIPMENT_LEVEL = 10;
 export const equipmentLevelLimit = state => enhancementLimitForFlag(divisionFlagStatus(state).level);
-export const equipmentStage = (id,level) => level <= 10 ? (EQUIPMENT[id].stages ?? EQUIPMENT_STAGES)[level] : ['금장 보강','빛나는 장갑','지휘 문양','은빛 광채','황금 코어','청광 패널','정예 문장','별빛 장갑','영광의 광채','최종 지휘관 사양','홍금 외장','루비 코어','홍금 보강판','태양 문양','진홍 장갑','홍염 동력부','황금 방호판','홍금 지휘 문장','태양의 광채','최종 홍금 사양','성운 외장','자수정 코어','은하 방호판','성운 문양','백금 장갑','성운 동력부','성광 방호판','은하 지휘 문장','초신성 광채','최종 은하 사양','심우주 외장','청백 코어','백금 장갑','성좌 조준기','성운 방호막','우주 동력로','청백 광학계','백금 지휘 문장','성좌 광채','최종 은하단 사양'][level-11];
+export const equipmentStage = (id,level) => level <= 10 ? (EQUIPMENT[id].stages ?? EQUIPMENT_STAGES)[level] : ['금장 보강','빛나는 장갑','지휘 문양','은빛 광채','황금 코어','청광 패널','정예 문장','별빛 장갑','영광의 광채','최종 지휘관 사양','홍금 외장','루비 코어','홍금 보강판','태양 문양','진홍 장갑','홍염 동력부','황금 방호판','홍금 지휘 문장','태양의 광채','최종 홍금 사양','성운 외장','자수정 코어','은하 방호판','성운 문양','백금 장갑','성운 동력부','성광 방호판','은하 지휘 문장','초신성 광채','최종 은하 사양','심우주 외장','청백 코어','백금 장갑','성좌 조준기','성운 방호막','우주 동력로','청백 광학계','백금 지휘 문장','성좌 광채','최종 은하단 사양','공허 외장','공허 각인','심연 코어','공허 방호판','암흑 조준기','공허 동력로','심연 장갑','공허 지휘 문장','심연 광채','최종 공허 사양','초신성 외장','백열 코어','초신성 각인','태양풍 방호막','백금 성광판','초신성 동력로','항성 조준기','초신성 지휘 문장','초신성 폭광','최종 초신성 사양'][level-11];
 // Income saturates at the wallet limit before large offline multiplications.
 export const MAX_EQUIPMENT_COUNT = 100_000;
 export const ARTILLERY = EQUIPMENT.artillery;
@@ -226,7 +226,7 @@ export function validEquipment(value, legacy = false, includeHelicopter = true, 
         !Array.isArray(g) &&
         Number.isInteger(g.level) &&
         g.level >= 0 &&
-        g.level <= (includeAircraft ? (saveVersion<30?20:saveVersion<35?30:saveVersion<36?40:EQUIPMENT[id].maxLevel) : 10) &&
+        g.level <= (includeAircraft ? (saveVersion<30?20:saveVersion<35?30:saveVersion<36?40:saveVersion<44?LEGACY_MILITARY_MAX_LEVEL:EQUIPMENT[id].maxLevel) : 10) &&
         typeof g.deployed === "boolean" &&
         (!requireCount || (Number.isSafeInteger(g.count) && g.count >= 1 &&
           g.count <= MAX_EQUIPMENT_COUNT && (g.count === 1 || g.level >= REPEAT_EQUIPMENT_LEVEL)))
