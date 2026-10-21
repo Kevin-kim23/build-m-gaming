@@ -1,23 +1,25 @@
 import { CAMPAIGN_STAGE_COUNT } from './campaign-constants.js';
 import { POTION_COUNT_LIMIT, POTION_TIME_LIMIT } from './potions.js';
+import { emptyMarket, validMarket } from './loot-market.js';
 
 export const MAX_LOOT = 1_000_000_000;
 export const SUPPLY_CAP = 3;
 const DAY = 86_400_000;
+// 0.80.0: prices ×10. Already hired operatives stay hired.
 export const OPERATIVES = Object.freeze([
-  {id:'duty',name:'당직병',price:300,color:'#8fb6d0',effect:'홈 자동터치 +1회/초',detail:'홈이 보일 때만 작동해요. 유료 자동터치와 합산되며 손가락 터치 횟수에는 영향을 주지 않아요.'},
-  {id:'scout',name:'정찰병',price:900,color:'#75c4bc',potion:'blue',period:DAY,effect:'24시간마다 초당 부스터 1개',detail:'초당 골드 2배 · 30분 부스터를 가져와요.'},
-  {id:'supply',name:'보급장교',price:900,color:'#df9a73',potion:'red',period:DAY,effect:'24시간마다 터치 부스터 1개',detail:'터치 골드 2배 · 1분 부스터를 보급해요.'},
-  {id:'quartermaster',name:'병참관',price:2400,color:'#b7a1d3',effect:'오프라인 수입 최대 12시간',detail:'기존 8시간에서 12시간으로 늘어나요. 영입 전 버려진 시간은 소급하지 않아요.'},
-  {id:'operative',name:'특수공작원',price:6000,color:'#e2bd68',potion:'max',period:3*DAY,effect:'72시간마다 맥스 부스터 1개',detail:'터치 골드 10배 + 초당 골드 20배 · 10분 부스터를 확보해요.'},
+  {id:'duty',name:'당직병',price:3000,color:'#8fb6d0',effect:'홈 자동터치 +1회/초',detail:'홈이 보일 때만 작동해요. 유료 자동터치와 합산되며 손가락 터치 횟수에는 영향을 주지 않아요.'},
+  {id:'scout',name:'정찰병',price:9000,color:'#75c4bc',potion:'blue',period:DAY,effect:'24시간마다 초당 부스터 1개',detail:'초당 골드 2배 · 30분 부스터를 가져와요.'},
+  {id:'supply',name:'보급장교',price:9000,color:'#df9a73',potion:'red',period:DAY,effect:'24시간마다 터치 부스터 1개',detail:'터치 골드 2배 · 1분 부스터를 보급해요.'},
+  {id:'quartermaster',name:'병참관',price:24000,color:'#b7a1d3',effect:'오프라인 수입 최대 12시간',detail:'기존 8시간에서 12시간으로 늘어나요. 영입 전 버려진 시간은 소급하지 않아요.'},
+  {id:'operative',name:'특수공작원',price:60000,color:'#e2bd68',potion:'max',period:3*DAY,effect:'72시간마다 맥스 부스터 1개',detail:'터치 골드 10배 + 초당 골드 20배 · 10분 부스터를 확보해요.'},
 ].map(Object.freeze));
-export const emptyLoot = () => ({balance:0,operatives:Object.fromEntries(OPERATIVES.map(o=>[o.id,null]))});
+export const emptyLoot = () => ({balance:0,operatives:Object.fromEntries(OPERATIVES.map(o=>[o.id,null])),market:emptyMarket()});
 const integer=(v,max)=>Number.isSafeInteger(v)&&v>=0&&v<=max;
 const clockAt=(s,now)=>Math.max(now,s.lastAccrual??0);
 export const operativeOwned=(s,id)=>!!s.loot?.operatives?.[id];
 export const dutyEnabled=s=>operativeOwned(s,'duty')&&s.loot.operatives.duty.enabled;
-export function validLoot(loot,lastAccrual) {
-  return !!loot&&typeof loot==='object'&&!Array.isArray(loot)&&integer(loot.balance,MAX_LOOT)&&
+export function validLoot(loot,lastAccrual,version=Infinity) {
+  return !!loot&&typeof loot==='object'&&!Array.isArray(loot)&&integer(loot.balance,MAX_LOOT)&&(version<45||validMarket(loot.market))&&
     !!loot.operatives&&typeof loot.operatives==='object'&&!Array.isArray(loot.operatives)&&
     Object.keys(loot.operatives).length===OPERATIVES.length&&OPERATIVES.every(o=>{
       const p=loot.operatives[o.id];

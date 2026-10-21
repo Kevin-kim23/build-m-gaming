@@ -1,4 +1,5 @@
 import { MILITARY_MAX_LEVEL, LEGACY_MILITARY_MAX_LEVEL } from './equipment-limits.js';
+import { withLootDiscount } from './loot-market.js';
 import { equipmentGrowth } from './equipment-growth.js';
 import { multiplyMoney, addMoney, scaleMoney, exact, compactMoney, minMoney, MAX_GOLD } from './money.js';
 import { GALACTIC_EQUIPMENT } from './galactic-equipment.js';
@@ -192,7 +193,7 @@ export function equipmentPurchaseOffer(s, id = "artillery") {
 export function enhancementOffer(s, id = "artillery") {
   const gun = equipmentOf(s, id),
     limit = equipmentLevelLimit(s),
-    cost = gun && gun.level < limit ? multiplyMoney(enhancementCost(gun.level, id),equipmentCount(s,id)) : null;
+    cost = gun && gun.level < limit ? withLootDiscount(s,'lab',multiplyMoney(enhancementCost(gun.level, id),equipmentCount(s,id))) : null;
   const reason = !gun
     ? "unowned"
     : cost === null

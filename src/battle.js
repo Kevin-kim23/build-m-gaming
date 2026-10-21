@@ -2,6 +2,7 @@ import {chooseEnemyDeployment,enemyTargetScore} from './battle-ai.js';
 import { EQUIPMENT, equipmentCount } from "./equipment.js";
 import { FORMATIONS } from "./formations.js";
 import { armyPower } from "./units.js";
+import { lootBattleBoostPercent } from "./loot-market.js";
 import { RANKS, rankForArmy } from "./ranks.js";
 import {
   BATTLE_RULES, STAGES, UNIT_TRAITS, equipmentCombatStats, stageEnemyType, isFortress,
@@ -83,7 +84,7 @@ export function createBattle(state, stageId, input) {
     deck: loadout.equipment.map((id) => ({
       id, level: state.equipment[id].level, count:1, cost: UNIT_TRAITS[id].cost, readyMs: 0,
     })),
-    player: { hq: { id: formation.id, name: formation.name, maxHp: power, hp: power }, fortress: null, units: [], power,
+    player: { hq: { id: formation.id, name: formation.name, maxHp: power, hp: power }, fortress: null, units: [], power, boostPercent: lootBattleBoostPercent(state),
       turret: { damage: turretDamage(power, 1), nextShotMs: BATTLE_RULES.turretIntervalMs } },
     enemy: {
       hq: { id: enemyFormation.id, name: enemyFormation.name, maxHp: stage.hqPower, hp: stage.hqPower },
@@ -108,6 +109,8 @@ export function deploy(battle, gearId, lane = 1) {
   next.mana -= c.cost;
   c.readyMs = next.elapsedMs + UNIT_TRAITS[gearId].cooldownMs;
   const unit = makeUnit(next, "player", gearId, c.level, c.count, next.player.power, 1, true, 1, lane);
+  // 전투 교본: 아군 장비의 공격·회복·체력 +10%.
+  if (next.player.boostPercent) for (const key of ["hp", "maxHp", "damage", "healing"]) unit[key] *= 1 + next.player.boostPercent / 100;
   if (unit.kind === "strike") {
     next.enemy.hq.hp = Math.max(0, next.enemy.hq.hp - unit.damage * BATTLE_RULES.strikeMultiplier);
     next.fx.push({ at: next.elapsedMs, kind: "strike", side: "player", id: gearId, x: BATTLE_RULES.laneLength });

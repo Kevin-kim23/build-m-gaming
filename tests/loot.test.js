@@ -17,7 +17,7 @@ import {STAGES} from '../src/battle.js';
 import {lootShopMarkup,supplyTime,supplyCountdown} from '../src/loot-ui.js';
 import {operativeIcon} from '../src/operative-art.js';
 const T=1800000000000,DAY=86400000;
-function hire(id){const s=freshState(T);s.loot.balance=10000;assert.equal(recruitOperative(s,id,T).ok,true);return s;}
+function hire(id){const s=freshState(T);s.loot.balance=100000;assert.equal(recruitOperative(s,id,T).ok,true);return s;}
 const win=id=>({stageId:id,status:'victory',elapsedMs:50000,enemy:{hq:{hp:0}},player:{hq:{hp:100,maxHp:100}}});
 function army(){const s=freshState(T);s.soldiers=10000;s.equipment.artillery={count:1,deployed:true,level:10};return s;}
 
@@ -83,7 +83,7 @@ test('quartermaster extends direct and popup offline settlement to twelve hours 
  accrue(s,T+2*DAY);assert.equal(s.gold,rate*43200);assert.equal(s.lastAccrual,T+2*DAY);
  const p=hire('quartermaster');p.soldiers=100;prepareOfflineReward(p,T+2*DAY);
  assert.equal(p.offlineReward.durationMs,43200000);assert.equal(p.offlineReward.amount,rate*43200);assert.ok(parseSave(serializeSave(p),T+2*DAY));
- const before=army();before.loot.balance=2400;accrue(before,T+DAY);const gold=before.gold;
+ const before=army();before.loot.balance=24000;accrue(before,T+DAY);const gold=before.gold;
  recruitOperative(before,'quartermaster',T+DAY);accrue(before,T+DAY);assert.equal(before.gold,gold);
 });
 test('duty yields one independent home pulse, stacks with paid ten and cannot catch up after a popup',()=>{
@@ -110,7 +110,7 @@ test('shop has five accessible portraits, fixed ownership and transparent schedu
 
 test('first recruitment immediately grants one booster and starts its normal supply clock',()=>{
  for(const o of OPERATIVES.filter(o=>o.period)){
-  const s=freshState(T);s.loot.balance=10000;s.potions[o.potion].count=7;
+  const s=freshState(T);s.loot.balance=100000;s.potions[o.potion].count=7;
   const result=recruitOperative(s,o.id,T);
   assert.equal(result.amount,1);assert.equal(s.potions[o.potion].count,8);
   assert.equal(supplyStatus(s,o.id,T).ready,0);assert.equal(supplyStatus(s,o.id,T).remainingMs,o.period);
@@ -122,7 +122,7 @@ test('first recruitment immediately grants one booster and starts its normal sup
  }
 });
 test('first booster stays in supply stock if the item inventory is full',()=>{
- const s=freshState(T);s.loot.balance=900;s.potions.blue.count=POTION_COUNT_LIMIT;
+ const s=freshState(T);s.loot.balance=9000;s.potions.blue.count=POTION_COUNT_LIMIT;
  const result=recruitOperative(s,'scout',T);assert.equal(result.ok,true);assert.equal(result.pendingSupply,1);
  assert.equal(s.loot.operatives.scout.stock,1);assert.equal(s.potions.blue.count,POTION_COUNT_LIMIT);
  const loaded=parseSave(serializeSave(s),T);assert.ok(loaded);loaded.potions.blue.count--;
@@ -130,12 +130,12 @@ test('first booster stays in supply stock if the item inventory is full',()=>{
 });
 test('a failed first recruitment grants no booster and an older owned record gets no extra on load',()=>{
  const s=freshState(T);const before=serializeSave(s);assert.equal(recruitOperative(s,'scout',T).ok,false);assert.equal(serializeSave(s),before);
- s.loot.balance=900;recruitOperative(s,'scout',T);s.potions.blue.count=0;
+ s.loot.balance=9000;recruitOperative(s,'scout',T);s.potions.blue.count=0;
  const loaded=parseSave(serializeSave(s),T);assert.equal(loaded.potions.blue.count,0);assert.equal(loaded.loot.operatives.scout.stock,0);
 });
 
 test('first recruitment saved after a storage retry cannot duplicate its welcome booster',()=>{
- const initial=freshState(T);initial.loot.balance=900;const values=new Map([[SAVE_KEY,serializeSave(initial)]]);let fail=false;
+ const initial=freshState(T);initial.loot.balance=9000;const values=new Map([[SAVE_KEY,serializeSave(initial)]]);let fail=false;
  const session=createGameSession({storage:{getItem:k=>values.get(k)??null,setItem(k,v){if(fail)throw Error('quota');values.set(k,v);}},now:()=>T,setTimer:()=>1,clearTimer:()=>{}});
  session.start();fail=true;assert.equal(session.change(s=>recruitOperative(s,'scout',T)).amount,1);
  assert.equal(session.change(s=>recruitOperative(s,'scout',T)).reason,'owned');

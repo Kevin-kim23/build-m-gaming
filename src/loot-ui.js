@@ -1,6 +1,10 @@
 import { OPERATIVES, SUPPLY_CAP, supplyStatus, recruitOperative, claimSupply, toggleDuty } from './loot.js';
 import { POTIONS, POTION_COUNT_LIMIT } from './potions.js';
-import { fmt } from './format.js';
+import { fmt, fmtGold } from './format.js';
+import { LOOT_ITEMS, DEAL_PERCENT, VAULT_SECONDS, lootItemOffer, buyLootItem, dealItem } from './loot-market.js';
+import { marketIcon } from './market-art.js';
+import { basePassiveIncome } from './game.js';
+import { multiplyMoney } from './money.js';
 import { operativeIcon, lootIcon } from './operative-art.js';
 import { potionIcon } from './potion-art.js';
 
@@ -27,12 +31,27 @@ function operativeCardMarkup(o) {
     <button type="button" class="operative-action" data-crew-action="${o.id}">영입하기</button>
   </article>`;
 }
+// Support goods share the operative row layout: art | name, effect, price/status | one action.
+function marketCardMarkup(item) {
+  return `<article class="operative-card market-card" data-market="${item.id}" style="--operative-color:${item.color}">
+    <div class="operative-portrait market-portrait">${marketIcon(item)}</div>
+    <div class="operative-info">
+      <h3>${item.name}<span class="operative-tag" data-market-owned hidden>보유</span><span class="operative-tag market-deal" data-market-deal hidden>특가 −${DEAL_PERCENT}%</span><span class="operative-tag">${item.limit?`하루 ${item.limit}회`:'영구'}</span></h3>
+      <p class="operative-effect">${item.effect}</p>
+      <div class="operative-price"><span data-market-price-label>가격</span> <strong data-market-price>${fmt(item.price)}개</strong><small data-market-status></small>
+      <details class="operative-detail"><summary aria-label="${item.name} 상세보기">자세히</summary><p>${item.detail}${item.limit?' 구매 횟수는 한국 시간 자정에 초기화돼요.':' 한 번 사면 계속 적용돼요.'}</p></details></div>
+    </div>
+    <button type="button" class="operative-action" data-market-action="${item.id}">구매</button>
+  </article>`;
+}
 export function lootShopMarkup() {
   return `<dialog id="loot-shop" aria-labelledby="loot-title">
     <header class="loot-head"><div><small>승리의 보상, 부대의 새로운 힘</small><h2 id="loot-title">전리품 상점</h2></div><button type="button" data-loot-close aria-label="전리품 상점 닫기">×</button></header>
     <div class="loot-wallet"><span class="loot-wallet-icon" aria-hidden="true">${lootIcon()}</span><div class="loot-wallet-caption"><span>보유 전리품</span><small>전투 승리로 획득</small></div><strong><span data-loot-balance>0</span><small>개</small></strong></div>
     <div class="loot-scroll"><div class="loot-collection"><div><h3>특별 대원</h3><p>영구 보유 · 종류별 1명 · 전리품 전용</p></div><strong data-loot-collection>0 / ${OPERATIVES.length}</strong></div>
       ${OPERATIVES.map(operativeCardMarkup).join('')}
+      <div class="loot-collection market-head"><div><h3>부대 지원품</h3><p>영구 강화 · 하루 상품 · 매일 특가</p></div><strong data-market-today>오늘의 특가</strong></div>
+      ${LOOT_ITEMS.map(marketCardMarkup).join('')}
       <details class="loot-notice"><summary>전리품·보급 안내</summary><p>첫 승리·수도에서 더 많은 전리품을 얻어요. 재전투 보상은 한국시간 하루 합산 10회예요. 골드나 현금은 사용하지 않으며 골드와 전리품은 서로 교환하지 않아요. 보급은 대원의 ‘받기’를 눌러 수령하세요.</p></details>
     </div><footer class="loot-footer"><span data-loot-summary>대원을 영입하고 특별한 지원을 받아 보세요.</span><button type="button" data-loot-close>닫기</button></footer></dialog>`;
 }
@@ -56,11 +75,22 @@ export function operativeCardView(state,o,clock,active=true) {
   return {owned:true,phase:'applied',label:'오프라인 수입 보관',price:'최대 12시간',status:'기존 8시간에서 4시간 추가',action:'적용 중',disabled:true};
 }
 
+export function marketCardView(state,item,clock,active=true) {
+  const o=lootItemOffer(state,item.id,clock);
+  if(o.owned)return {phase:'applied',owned:true,deal:false,label:'영구 적용',price:'적용 중',status:'',action:'보유',disabled:true};
+  const status=o.reason==='loot'?`전리품 ${fmt(o.price-(state.loot?.balance??0))}개 부족`:o.reason==='limit'?'오늘 구매 완료 · 자정에 초기화':o.reason==='full'?'아이템 보관 한도예요':
+    item.id==='vault'?`받을 골드 ${fmtGold(multiplyMoney(basePassiveIncome(state),VAULT_SECONDS))} G`:item.limit?`오늘 ${o.left} / ${item.limit}회 남음`:'한 번 사면 계속 적용';
+  return {phase:o.reason==='loot'?'locked':o.reason?'waiting':'available',owned:false,deal:o.deal,label:o.deal?`특가 (원래 ${fmt(item.price)}개)`:'가격',price:`${fmt(o.price)}개`,
+    status:o.deal&&!o.reason?`${status} · 오늘만 ${DEAL_PERCENT}% 할인`:status,action:o.reason==='limit'?'오늘 완료':'구매',disabled:!active||!o.canBuy};
+}
+
 export function createLootShop(session,{root=document,now=Date.now,onSuccess=()=>{},notify=()=>{}}={}) {
   root.body.insertAdjacentHTML('beforeend',lootShopMarkup());
   const dialog=root.querySelector('#loot-shop'),trigger=root.querySelector('#open-loot');
   const balanceNode=dialog.querySelector('[data-loot-balance]'),collection=dialog.querySelector('[data-loot-collection]'),summary=dialog.querySelector('[data-loot-summary]');
   const cards=OPERATIVES.map(o=>{const node=dialog.querySelector(`[data-operative="${o.id}"]`),find=key=>node.querySelector(`[data-crew-${key}]`);return {o,node,button:find('action'),status:find('status'),owned:find('owned'),timer:find('timer'),welcome:find('welcome'),label:find('price-label'),price:find('price')};});
+  const market=LOOT_ITEMS.map(item=>{const node=dialog.querySelector(`[data-market="${item.id}"]`),find=key=>node.querySelector(`[data-market-${key}]`);return {item,node,button:find('action'),status:find('status'),owned:find('owned'),deal:find('deal'),label:find('price-label'),price:find('price')};});
+  const today=dialog.querySelector('[data-market-today]');
   const text=(node,value)=>{if(node.textContent!==value)node.textContent=value;};
   function sync() {
     const state=session.state,clock=now();
@@ -79,9 +109,24 @@ export function createLootShop(session,{root=document,now=Date.now,onSuccess=()=
       button.setAttribute('aria-label',`${o.name} ${v.action}${!v.owned?` · 전리품 ${fmt(o.price)}개`:''}`);
       if(v.pressed!==undefined)button.setAttribute('aria-pressed',String(v.pressed));else button.removeAttribute('aria-pressed');
     }
+    text(today,`특가 · ${dealItem(state,clock)?.name??'없음'}`);
+    for(const {item,node,button,status,owned,deal,label,price} of market){
+      const v=marketCardView(state,item,clock,session.active);
+      if(node.dataset.phase!==v.phase)node.dataset.phase=v.phase;
+      owned.hidden=!v.owned;deal.hidden=!v.deal;
+      text(label,v.label);text(price,v.price);text(status,v.status);text(button,v.action);button.disabled=v.disabled;
+      button.setAttribute('aria-label',`${item.name} ${v.action} · ${v.price}`);
+    }
   }
   dialog.addEventListener('click',event=>{
     const close=event.target.closest?.('[data-loot-close]');if(close){dialog.close();return;}
+    const buy=event.target.closest?.('[data-market-action]')?.dataset.marketAction;
+    if(buy&&session.active){
+      const result=session.change(s=>buyLootItem(s,buy,now(),basePassiveIncome(s)));
+      if(result?.ok){onSuccess();notify(result.potion?'부스터를 아이템에 넣었어요.':result.gold!==undefined?`골드 ${fmtGold(result.gold)} G를 받았어요.`:'영구 지원을 확보했어요.');}
+      else notify(result?.reason==='limit'?'오늘은 모두 샀어요. 자정에 다시 열려요.':result?.reason==='full'?'아이템 보관 한도예요. 사용 후 다시 사 주세요.':'현재 상태를 확인하고 다시 눌러 주세요.');
+      sync();return;
+    }
     const id=event.target.closest?.('[data-crew-action]')?.dataset.crewAction;
     if(!id||!session.active)return;
     const owned=!!session.state.loot?.operatives?.[id];

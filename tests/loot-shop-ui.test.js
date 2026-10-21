@@ -32,7 +32,7 @@ test('recruitment view exposes exact shortage, keeps prices unchanged and guards
 
 test('owned supply cards show their real clock, collection amount and an inventory-full explanation',()=>{
   for(const o of OPERATIVES.filter(o=>o.period)){
-    const s=freshState(T);s.loot.balance=10000;recruitOperative(s,o.id,T);
+    const s=freshState(T);s.loot.balance=100000;recruitOperative(s,o.id,T);
     let v=view(s,o.id);assert.equal(v.owned,true);assert.equal(v.phase,'waiting');
     assert.equal(v.timer,o.period===DAY?'다음 24:00':'다음 72:00');assert.equal(v.disabled,true);
     v=view(s,o.id,T+o.period);assert.equal(v.phase,'ready');assert.equal(v.action,'1개 받기');assert.equal(v.disabled,false);
@@ -45,7 +45,7 @@ test('owned supply cards show their real clock, collection amount and an invento
 });
 
 test('passive and toggle cards retain their exact benefits with distinct, truthful action states',()=>{
-  const s=freshState(T);s.loot.balance=10000;
+  const s=freshState(T);s.loot.balance=100000;
   recruitOperative(s,'duty',T);let v=view(s,'duty');
   assert.equal(v.phase,'active');assert.equal(v.action,'끄기');assert.equal(v.pressed,true);
   toggleDuty(s);v=view(s,'duty');assert.equal(v.phase,'paused');assert.equal(v.action,'켜기');assert.equal(v.pressed,false);
@@ -71,7 +71,7 @@ function fixture(){
   dialog.addEventListener=(name,fn)=>handlers.set(name,fn);trigger.focus=()=>{};
   let insertions=0;
   const root={body:{insertAdjacentHTML(){insertions++;}},querySelector:id=>id==='#loot-shop'?dialog:trigger};
-  const state=freshState(T);state.loot.balance=10000;
+  const state=freshState(T);state.loot.balance=100000;
   const session={state,active:true,change:fn=>fn(state)};
   return {root,session,dialog,nodes,handlers,get insertions(){return insertions;}};
 }
@@ -85,5 +85,5 @@ test('recruiting and repeat sync preserve card DOM, scroll and a single welcome 
   assert.equal(f.dialog.scrollTop,480);assert.equal(f.insertions,1);
   f.handlers.get('click')(event);assert.equal(f.session.state.potions.blue.count,1);
   assert.equal(f.dialog.querySelector('[data-loot-collection]').textContent,'1 / 5');
-  assert.equal(f.dialog.querySelector('[data-loot-balance]').textContent,'9,100');
+  assert.equal(f.dialog.querySelector('[data-loot-balance]').textContent,'91,000');
 });

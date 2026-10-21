@@ -1,3 +1,4 @@
+import { rewardDay } from './kst-day.js';
 import { campaignStages } from './campaign.js';
 import { scaleMoney } from './money.js';
 import {CONTINENT_STAGE_COUNT} from './campaign-constants.js';
@@ -30,7 +31,7 @@ export function battleStars(battle) {
 }
 
 export const REPLAY_DAILY_LIMIT=10;
-export function rewardDay(now){return Math.floor((now+9*3600000)/86400000);}
+export { rewardDay };
 export function replayRemaining(state,now=Date.now()){
  const day=Math.max(state.replayRewardDay??0,rewardDay(Math.max(now,state.lastAccrual??0)));
  return day>(state.replayRewardDay??0)?10:Math.max(0,10-(state.replayRewardCount??0));

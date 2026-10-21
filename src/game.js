@@ -10,6 +10,7 @@ import { schoolOffer } from "./schools.js";
 import { COMMAND_BATON, BULK_RECRUIT, bulkRecruitAccess, bulkRecruitDiscountPercent, swordSkillStatus, autoTouchStatus, generalSwordDuration, generalRevolverDuration, withPersonalIncome, withPersonalEquipmentIncome } from "./personal-equipment.js";
 import { personalUpgradeOffer } from './personal-enhancement.js';
 import { settleAutoTouch } from './auto-touch.js';
+import { withLootDiscount } from './loot-market.js';
 import { withCampaignIncome } from './campaign-rewards.js';
 import { reconcileAchievements } from "./achievements.js";
 import {
@@ -79,7 +80,7 @@ export function recruitOffer(s, type = "soldier", quantity = 1) {
   const unit = recruitUnit(type, quantity), bulk = quantity > 1;
   const power = armyPower(s),
     owned = s[unit.field] ?? 0,
-    cost = bulk ? scaleMoney(batchRecruitCost(owned,type),100-bulkRecruitDiscountPercent(s),100) : unitCost(owned, type);
+    cost = withLootDiscount(s,'instructors',bulk ? scaleMoney(batchRecruitCost(owned,type),100-bulkRecruitDiscountPercent(s),100) : unitCost(owned, type));
   const baton = bulk ? bulkRecruitAccess(s, type) : null;
   const access = unitAccess(s, unit);
   const locked = !access.unlocked || (bulk && !baton.unlocked);

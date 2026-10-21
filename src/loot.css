@@ -57,3 +57,11 @@
 #loot-shop [hidden]{display:none!important}
 @media(max-width:350px){.loot-head{padding:12px}.loot-head h2{font-size:20px}.loot-head small{font-size:11px}.loot-wallet{padding:9px 12px;gap:7px}.loot-wallet-icon{width:30px;height:30px}.loot-wallet strong{font-size:19px}.loot-scroll{padding:12px 10px 6px}.operative-card{grid-template-columns:38px minmax(0,1fr) 66px;gap:7px;padding:8px}.operative-portrait{width:38px}.operative-info h3{font-size:14px}}
 @media(max-height:600px){.loot-head{padding-block:10px}.loot-head small{display:none}.loot-wallet{padding-block:7px}.loot-footer{padding-block:6px}}
+/* 부대 지원품: 대원 카드와 같은 줄 구조. 특가는 금빛 테두리로만 구분한다. */
+.market-head{margin-top:14px}
+.market-head>strong{max-width:56%;white-space:normal;text-align:right;word-break:keep-all}
+.market-portrait{aspect-ratio:1;background:#1a303b}
+.operative-tag.market-deal{background:#5a3b23;color:#ffd99a}
+.market-card:has([data-market-deal]:not([hidden])){border-color:#c8a35d;box-shadow:inset 0 0 0 1px #c8a35d33}
+.market-card[data-phase="applied"] .operative-price strong{color:#d6c6e8}
+.market-card[data-phase="available"] .operative-price small:not(:empty){display:block}
