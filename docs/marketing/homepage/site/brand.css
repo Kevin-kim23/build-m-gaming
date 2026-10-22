@@ -1,0 +1,142 @@
+/* ===== Dongramco 브랜드 레이어 =====
+   로고의 두 모양을 사이트 전체 모티프로 씁니다.
+   1) 화살 엠블럼: 앞으로 나아가는 방향 → 점(dot), 구분자, 버튼, 히어로 그래픽
+   2) 갈라진 D: 둥근 사각 + 비스듬한 절단 → 카드 모서리, 등장 효과(clip-path) */
+:root{--orange:#ff681e;--orange-deep:#e9530f;--ink:#151515;--paper:#f7f6f2;--ease:cubic-bezier(.2,.8,.2,1)}
+body{font-family:"Noto Sans KR","Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+.en,.eyebrow,.section-label,.english-label,.card-top,.art-top,.art-caption,.hero-foot,.ticker,.stats b,.contact-fields>div>span,.kind{font-family:"Saira","Noto Sans KR",sans-serif}
+
+/* 점 → 화살촉 */
+.dot{width:11px;height:10px;flex:0 0 11px;border-radius:0;background:var(--orange);clip-path:polygon(0 0,100% 50%,0 100%,32% 50%)}
+.status .dot{width:9px;height:8px;flex-basis:9px}
+
+/* 스크롤 진행 막대 */
+.progress{position:fixed;left:0;top:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--orange);z-index:100}
+
+/* 헤더: 스크롤하면 고정 + 흐림 + 축소 */
+.header{position:sticky;top:0;z-index:40;background:#f7f6f2e6;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:height .3s var(--ease),box-shadow .3s}
+.header.is-scrolled{height:70px;box-shadow:0 6px 24px #0000000f}
+.header .brand{transition:width .3s var(--ease)}
+.header.is-scrolled .brand{width:150px}
+.header.is-scrolled .nav-item{height:70px}
+.header.is-scrolled .nav-sub{top:58px}
+.brand{position:relative}
+.header nav>a:not(.nav-contact),.nav-parent{position:relative}
+.header nav>a:not(.nav-contact)::after,.nav-parent::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:2px;background:var(--orange);transform:scaleX(0);transform-origin:0 50%;transition:transform .25s var(--ease)}
+.header nav>a:not(.nav-contact):hover::after,.nav-item:hover .nav-parent::after{transform:scaleX(1)}
+.nav-contact{transition:background .2s,color .2s}
+.nav-contact:hover{background:var(--ink);color:#fff!important}
+
+/* 버튼: 주황이 비스듬히 밀려 들어오고 화살이 앞으로 */
+.button{position:relative;overflow:hidden;isolation:isolate;transition:color .25s}
+.button::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--orange);clip-path:polygon(0 0,0 0,-20% 100%,0 100%);transition:clip-path .4s var(--ease)}
+.button:hover::before{clip-path:polygon(0 0,120% 0,100% 100%,0 100%)}
+.button:hover{background:inherit}
+.button.dark:hover{background:var(--ink);color:var(--ink)}
+.button.light:hover{background:transparent;color:var(--ink);border-color:var(--orange)}
+.button span{transition:transform .3s var(--ease)}
+.button:hover span{transform:translateX(5px)}
+
+/* ===== 히어로 비주얼: 발사대 ===== */
+.launch{position:relative;height:540px;border-radius:14px;overflow:hidden;background:#151515;isolation:isolate;--mx:0;--my:0}
+.launch .grid{position:absolute;inset:-40px;background-image:radial-gradient(#ffffff1c 1.2px,transparent 1.3px);background-size:26px 26px;transform:translate(calc(var(--mx)*-10px),calc(var(--my)*-10px))}
+.launch .halo{position:absolute;width:560px;height:560px;left:50%;top:50%;margin:-280px 0 0 -280px;border-radius:50%;background:radial-gradient(circle,#ff681e66 0,#ff681e1a 42%,#ff681e00 68%);transform:translate(calc(var(--mx)*18px),calc(var(--my)*18px));animation:breathe 6s ease-in-out infinite}
+.launch .rings{position:absolute;left:50%;top:50%;width:0;height:0}
+.launch .rings i{position:absolute;border:1px solid #ffffff1f;border-radius:28%;transform:translate(-50%,-50%) rotate(var(--r));animation:spin var(--t) linear infinite}
+.launch .rings i:nth-child(1){width:300px;height:300px;--r:8deg;--t:60s}
+.launch .rings i:nth-child(2){width:420px;height:420px;--r:-6deg;--t:90s;animation-direction:reverse}
+.launch .rings i:nth-child(3){width:560px;height:560px;--r:14deg;--t:120s}
+.launch .emblem{position:absolute;left:50%;top:50%;width:300px;margin:-118px 0 0 -170px;transform:translate(calc(var(--mx)*-26px),calc(var(--my)*-20px));filter:drop-shadow(0 18px 40px #ff681e55);z-index:3}
+.launch .emblem svg{display:block;width:100%;overflow:visible}
+.emblem .head,.emblem .tail{fill:var(--orange);stroke:var(--orange);stroke-width:3;stroke-linejoin:round}
+.launch .emblem .head{animation:draw 1.6s var(--ease) .2s both,fly 4.8s ease-in-out 1.8s infinite}
+.launch .emblem .tail{animation:draw 1.6s var(--ease) .45s both,fly 4.8s ease-in-out 1.95s infinite}
+.launch .trails{position:absolute;inset:0;z-index:2;pointer-events:none}
+.launch .trails b{position:absolute;left:-30%;height:2px;border-radius:2px;background:linear-gradient(90deg,#ff681e00,#ff681e);animation:trail var(--d) linear infinite;animation-delay:var(--w);top:var(--y);width:var(--l)}
+.launch .bigd{position:absolute;right:-70px;bottom:-60px;width:330px;opacity:.09;z-index:1}
+.launch .bigd path{fill:none;stroke:#fff;stroke-width:3}
+.launch .cap,.launch .top{position:absolute;left:28px;right:28px;display:flex;justify-content:space-between;align-items:center;z-index:5;font-family:"Saira",sans-serif;letter-spacing:1.4px}
+.launch .top{top:22px;color:#d7d7d0;font-size:10px}
+.launch .top b{color:var(--orange);font-weight:700}
+.launch .cap{bottom:22px;color:#9c9c96;font-size:10px}
+.launch .cap strong{font-family:"Noto Sans KR",sans-serif;letter-spacing:0;color:#f1f1ec;font-size:13px;font-weight:600}
+.launch .chip{position:absolute;z-index:4;background:#fff;color:#151515;font-size:12px;font-weight:700;border-radius:999px;padding:8px 14px;display:flex;gap:8px;align-items:center;box-shadow:0 12px 30px #0006;transform:translate(calc(var(--mx)*14px),calc(var(--my)*14px));animation:float 5s ease-in-out infinite}
+.launch .chip .dot{width:9px;height:8px;flex-basis:9px}
+.launch .c1{left:9%;top:24%}
+.launch .c2{right:8%;top:62%;animation-delay:-1.6s}
+.launch .c3{left:14%;bottom:18%;animation-delay:-3.1s;background:var(--orange)}
+.launch .c3 .dot{background:#151515}
+
+@keyframes draw{from{stroke-dasharray:1400;stroke-dashoffset:1400;fill-opacity:0}60%{fill-opacity:0}to{stroke-dasharray:1400;stroke-dashoffset:0;fill-opacity:1}}
+@keyframes fly{0%,100%{transform:translateX(0)}50%{transform:translateX(14px)}}
+@keyframes trail{from{transform:translateX(0)}to{transform:translateX(260%)}}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(calc(var(--r) + 360deg))}}
+@keyframes breathe{0%,100%{opacity:.85;scale:1}50%{opacity:1;scale:1.06}}
+@keyframes float{0%,100%{translate:0 0}50%{translate:0 -8px}}
+
+/* 제목 강조 밑줄(로고 D의 절단 각도) */
+.hero h1 span{position:relative;display:inline-block}
+.hero h1 span::after{content:"";position:absolute;left:0;right:6%;bottom:.06em;height:.12em;background:var(--orange);opacity:.18;clip-path:polygon(0 0,100% 0,97% 100%,0 100%);transform:scaleX(0);transform-origin:0 50%;animation:under 1s var(--ease) .9s forwards}
+@keyframes under{to{transform:scaleX(1)}}
+
+/* 띠: 계속 흐르는 마퀴 + 화살 구분자 */
+.ticker{position:relative}
+.ticker>div{justify-content:flex-start;min-width:max-content;gap:0;animation:marquee 32s linear infinite}
+.ticker .item{display:inline-flex;align-items:center;gap:30px;padding-right:30px}
+.ticker .chev{width:16px;height:15px;background:#151515;clip-path:polygon(0 0,100% 50%,0 100%,32% 50%);font-size:0}
+@keyframes marquee{to{transform:translateX(-50%)}}
+
+/* 카드: 위로 살짝 + 갈라진 D 모서리 */
+.focus-card,.service-card,.product-row{transition:transform .35s var(--ease),box-shadow .35s var(--ease),border-color .35s}
+.focus-card{position:relative;overflow:hidden;border-radius:14px 14px 14px 4px}
+.focus-card::after{content:"";position:absolute;left:0;top:0;height:3px;width:100%;background:var(--orange);transform:scaleX(0);transform-origin:0 50%;transition:transform .45s var(--ease)}
+.focus-card:hover{transform:translateY(-6px);box-shadow:0 22px 44px #00000014}
+.focus-card:hover::after{transform:scaleX(1)}
+.orange-card::after{background:var(--ink)}
+.focus-card .line-icon{transition:transform .45s var(--ease)}
+.focus-card:hover .line-icon{transform:translateX(4px) rotate(-6deg)}
+.focus-card .emblem-icon{width:34px;display:block}
+.focus-card .emblem-icon path{fill:#151515}
+.card-bottom>span{transition:transform .3s var(--ease)}
+.focus-card:hover .card-bottom>span{transform:translate(4px,-4px)}
+a.product-row:hover{transform:translateX(6px)}
+a.product-row .go{transition:transform .3s var(--ease)}
+a.product-row:hover .go{transform:translateX(4px)}
+
+/* 원칙 아코디언 */
+.principles summary{transition:color .2s}
+.principles summary:hover{color:var(--orange-deep)}
+
+/* 문의: 엠블럼이 날아들어옴 */
+.contact{position:relative;overflow:hidden}
+.contact-emblem{position:absolute;right:4%;top:30px;width:200px;opacity:0;transform:translateX(-160px);transition:transform 1.2s var(--ease),opacity 1.2s}
+.contact-emblem path{fill:var(--orange)}
+.contact.is-in .contact-emblem{opacity:1;transform:none}
+.contact-emblem.en{animation:fly 4.8s ease-in-out 1.4s infinite}
+.contact .wrap.contact-bottom a{transition:color .2s}
+.contact .wrap.contact-bottom a:hover{color:var(--orange)}
+.footer .tagline{font-family:"Saira",sans-serif;letter-spacing:1.6px;color:#999;font-size:10px}
+
+/* 등장 효과: 아래에서 + 비스듬한 절단 마스크 */
+.reveal{opacity:0;transform:translateY(26px);clip-path:polygon(0 0,100% 0,100% 100%,0 100%);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--delay,0s)}
+.reveal.is-in{opacity:1;transform:none}
+.reveal-cut{clip-path:polygon(0 0,0 0,0 100%,0 100%);transition:clip-path 1s var(--ease);transition-delay:var(--delay,0s)}
+.reveal-cut.is-in{clip-path:polygon(0 0,110% 0,100% 100%,0 100%)}
+
+/* 게임 페이지(어두운 영역) */
+.g-dark .section-label .dot,.game-block .dot{background:var(--orange)}
+
+@media(max-width:760px){
+  .header.is-scrolled{height:64px}.header.is-scrolled .brand{width:130px}
+  .launch{height:420px}.launch .emblem{width:220px;margin:-86px 0 0 -124px}
+  .launch .rings i:nth-child(3){display:none}
+  .launch .c2{right:4%}.launch .c1{left:5%}
+  .launch .top span:last-child,.launch .cap span{display:none}
+  .contact-emblem{width:90px;top:60px;right:0}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal,.reveal-cut{opacity:1;transform:none;clip-path:none}
+  .contact-emblem{opacity:1;transform:none}
+  .hero h1 span::after{transform:scaleX(1)}
+}

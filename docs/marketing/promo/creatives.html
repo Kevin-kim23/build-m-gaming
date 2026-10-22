@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>부대 키우기 홍보물 원본</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+@font-face{font-family:"BHS";src:url(../../../public/fonts/black-han-sans/BlackHanSans-Regular.woff2) format("woff2")}
+:root{--ink:#121212;--ink2:#1c1c1c;--orange:#ff681e;--white:#fff;--mute:#bdbdbd}
+*{box-sizing:border-box;margin:0}
+body{background:#444;font-family:Pretendard,"Malgun Gothic",sans-serif;display:flex;flex-wrap:wrap;gap:40px;padding:40px;align-items:flex-start}
+.c{position:relative;overflow:hidden;background:var(--ink);color:var(--white);flex:none}
+.h{font-family:BHS,sans-serif;font-weight:400;letter-spacing:-.02em;line-height:1.12}
+.h em{font-style:normal;color:var(--orange)}
+.tag{display:inline-flex;align-items:center;gap:14px;font-weight:800;letter-spacing:.14em;color:var(--orange);text-transform:uppercase}
+.tag::before{content:"";width:14px;height:14px;border-radius:50%;background:var(--orange)}
+.phone{position:absolute;border-radius:72px;border:16px solid #050505;box-shadow:0 0 0 3px #333,0 40px 90px #000c;overflow:hidden;background:#000}
+.phone img{display:block;width:100%}
+.glow{position:absolute;border-radius:50%;background:radial-gradient(circle,#ff681e66 0%,#ff681e1f 40%,#ff681e00 70%)}
+.chip{position:absolute;background:var(--orange);color:#111;font-weight:900;border-radius:999px;box-shadow:0 14px 30px #0008;white-space:nowrap}
+.chip.w{background:#fff}
+.stripe{position:absolute;left:0;right:0;height:10px;background:var(--orange)}
+.brand{position:absolute;display:flex;align-items:center;gap:12px;color:#fff;font-weight:800;letter-spacing:.2em}
+.brand i{width:12px;height:12px;background:var(--orange);border-radius:50%}
+
+/* 스토어 스크린샷 1080x1920 */
+.store{width:1080px;height:1920px}
+.store .top{position:absolute;left:84px;right:84px;top:110px;z-index:3}
+.store .tag{font-size:30px}
+.store .h{font-size:108px;margin-top:34px}
+.store .sub{font-size:38px;color:var(--mute);margin-top:28px;line-height:1.5;font-weight:500}
+.store .phone{width:660px;left:210px;top:690px}
+.store .glow{width:1300px;height:1300px;left:-110px;top:620px}
+.store .chip{font-size:40px;padding:22px 38px;z-index:4}
+.store .stripe{bottom:0}
+
+/* 피처 그래픽 1024x500 */
+.feature{width:1024px;height:500px}
+.feature .bg{position:absolute;right:0;top:0;width:640px;height:100%;background:url(../../../public/opening/title-screen.webp) 50% 58%/cover}
+.feature .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#121212 0%,#121212cc 22%,#12121200 60%)}
+.feature .lettering{position:absolute;left:54px;top:62px;width:300px}
+.feature .h{position:absolute;left:58px;top:330px;font-size:38px}
+.feature .stripe{top:0;height:8px}
+
+/* SNS 1080x1080 */
+.sq{width:1080px;height:1080px}
+/* 스토리 1080x1920 */
+.story{width:1080px;height:1920px;background:#121212 url(../../../public/opening/title-screen.webp) center 30%/cover}
+.story::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#121212f0 0%,#12121266 26%,#12121200 45%,#121212aa 66%,#121212 84%)}
+.story>*{z-index:2}
+.cta{position:absolute;display:flex;align-items:center;justify-content:center;gap:18px;background:var(--orange);color:#111;font-weight:900;border-radius:20px}
+.logo-pill{position:absolute;background:#fff;border-radius:999px;display:flex;align-items:center}
+.logo-pill img{display:block}
+</style>
+</head>
+<body>
+
+<!-- ========== 스토어 스크린샷 ========== -->
+<section class="c store" id="store-1">
+  <div class="glow"></div>
+  <div class="top"><span class="tag">부대 키우기</span><h1 class="h">이등병에서,<br><em>은하 원수</em>까지.</h1><p class="sub">35개 계급을 올라가는 부대 성장 게임</p></div>
+  <div class="phone" style="width:560px;left:70px;top:820px;transform:rotate(-7deg);filter:brightness(.8)"><img src="screens/home-early.webp"></div>
+  <div class="phone" style="width:600px;left:420px;top:700px;transform:rotate(4deg)"><img src="screens/home-galaxy.webp"></div>
+  <div class="chip w" style="left:88px;top:760px;transform:rotate(-7deg)">상병</div>
+  <div class="chip" style="right:70px;top:640px;transform:rotate(4deg)">은하 준장</div>
+  <div class="stripe"></div>
+</section>
+
+<section class="c store" id="store-2">
+  <div class="glow"></div>
+  <div class="top"><span class="tag">01 · 모집</span><h1 class="h">터치 한 번이<br><em>부대</em>가 된다.</h1><p class="sub">병력을 모으고 시설을 지어 수입을 키우세요</p></div>
+  <div class="phone"><img src="screens/home-mid.webp"></div>
+  <div class="chip" style="right:60px;top:880px;transform:rotate(5deg)">초당 수입 자동 증가</div>
+  <div class="chip w" style="left:56px;top:1340px;transform:rotate(-5deg)">시설 19종</div>
+  <div class="stripe"></div>
+</section>
+
+<section class="c store" id="store-3">
+  <div class="glow"></div>
+  <div class="top"><span class="tag">02 · 진급</span><h1 class="h">오늘부로,<br><em>대장</em> 진급.</h1><p class="sub">계급이 오를 때마다 펼쳐지는 진급식</p></div>
+  <div class="phone"><img src="screens/promotion.webp"></div>
+  <div class="chip" style="right:70px;top:900px;transform:rotate(5deg)">계급장 · 진급식 연출</div>
+  <div class="stripe"></div>
+</section>
+
+<section class="c store" id="store-4">
+  <div class="glow"></div>
+  <div class="top"><span class="tag">03 · 전투</span><h1 class="h"><em>200개</em> 전장을<br>점령하라.</h1><p class="sub">진격 로드를 따라 세 개의 대륙으로</p></div>
+  <div class="phone" style="width:540px;left:60px;top:800px;transform:rotate(-6deg);filter:brightness(.8)"><img src="screens/road.webp"></div>
+  <div class="phone" style="width:600px;left:420px;top:720px;transform:rotate(4deg)"><img src="screens/battle2.webp"></div>
+  <div class="chip" style="left:70px;top:1460px;transform:rotate(-5deg)">실시간 3레인 전투</div>
+  <div class="stripe"></div>
+</section>
+
+<section class="c store" id="store-5">
+  <div class="glow"></div>
+  <div class="top"><span class="tag">04 · 장비</span><h1 class="h">견인포에서<br><em>노바 캐논</em>까지.</h1><p class="sub">군사 장비 17종, 강화할수록 강해지는 부대</p></div>
+  <div class="phone"><img src="screens/equip.webp"></div>
+  <div class="chip" style="right:60px;top:860px;transform:rotate(5deg)">장비 17종</div>
+  <div class="stripe"></div>
+</section>
+
+<section class="c store" id="store-6">
+  <div class="glow"></div>
+  <div class="top"><span class="tag">05 · 방치 수익</span><h1 class="h">자리를 비워도<br><em>부대는 일한다.</em></h1><p class="sub">돌아오면 그동안 모인 골드를 한 번에</p></div>
+  <div class="phone"><img src="screens/offline.webp"></div>
+  <div class="chip" style="left:60px;top:900px;transform:rotate(-5deg)">최대 8시간 정산</div>
+  <div class="stripe"></div>
+</section>
+
+<section class="c store" id="store-7">
+  <div class="glow"></div>
+  <div class="top"><span class="tag">06 · 특별 대원</span><h1 class="h">전리품으로<br><em>특별 대원</em> 영입.</h1><p class="sub">당직병·정찰병·보급장교·병참관·특수공작원</p></div>
+  <div class="phone"><img src="screens/loot.webp"></div>
+  <div class="chip" style="right:60px;top:880px;transform:rotate(5deg)">대원 5명</div>
+  <div class="stripe"></div>
+</section>
+
+<!-- ========== 피처 그래픽 ========== -->
+<section class="c feature" id="feature">
+  <div class="bg"></div><div class="stripe"></div>
+  <img class="lettering" src="../../../public/opening/title-lettering-gold.webp" alt="부대 키우기">
+  <p class="h">이등병에서, <em>은하 원수</em>까지.</p>
+  <div class="brand" style="left:60px;bottom:40px;font-size:15px"><i></i>DONGRAMCO</div>
+</section>
+
+<!-- ========== SNS 정사각 ========== -->
+<section class="c sq" id="sns-numbers">
+  <div class="glow" style="width:1100px;height:1100px;left:-10px;top:300px"></div>
+  <div style="position:absolute;left:80px;top:90px"><span class="tag" style="font-size:28px">부대 키우기</span></div>
+  <div class="h" style="position:absolute;left:80px;top:170px;font-size:150px">+1 G</div>
+  <div style="position:absolute;left:80px;top:350px;font-size:34px;color:#bdbdbd;font-weight:600">첫 터치에서 시작한 부대가</div>
+  <div class="h" style="position:absolute;left:80px;top:420px;font-size:150px;color:var(--orange)">8,945경 G</div>
+  <div style="position:absolute;left:80px;top:600px;font-size:34px;color:#bdbdbd;font-weight:600">은하 군단이 되기까지.</div>
+  <div class="phone" style="width:380px;left:660px;top:560px;border-width:12px;border-radius:50px;transform:rotate(6deg)"><img src="screens/home-galaxy.webp"></div>
+  <div class="cta" style="left:80px;top:850px;width:520px;height:110px;font-size:38px">Google Play 출시 예정</div>
+  <div class="stripe" style="bottom:0"></div>
+</section>
+
+<section class="c sq" id="sns-promotion">
+  <div style="position:absolute;inset:0;background:url(screens/promotion.webp) center 32%/100% auto"></div>
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 52% 46% at 50% 46%,#0e1612f0 0%,#0e161200 0%) ,radial-gradient(ellipse 58% 50% at 50% 50%,#0e161200 62%,#0e1612f2 86%)"></div><div style="position:absolute;inset:0;background:linear-gradient(180deg,#121212 0%,#121212cc 18%,#12121200 40%,#12121200 70%,#121212 92%)"></div>
+  <div style="position:absolute;left:0;right:0;top:80px;text-align:center"><span class="tag" style="font-size:28px">부대 키우기 · 진급식</span><h2 class="h" style="font-size:96px;margin-top:22px">오늘부로, <em>대장</em>.</h2></div>
+  <div style="position:absolute;left:0;right:0;bottom:84px;text-align:center;font-size:36px;font-weight:700">이등병부터 은하단 원수까지 <span style="color:var(--orange)">35개 계급</span></div>
+  <div class="stripe" style="bottom:0"></div>
+</section>
+
+<section class="c sq" id="sns-cta" style="background:#121212 url(../../../public/opening/title-screen.webp) center 60%/cover">
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,#121212e6 0%,#12121244 40%,#12121299 70%,#121212 100%)"></div>
+  <img src="../../../public/opening/title-lettering-gold.webp" style="position:absolute;left:50%;top:70px;width:420px;transform:translateX(-50%)" alt="">
+  <div class="h" style="position:absolute;left:0;right:0;top:700px;text-align:center;font-size:62px">이등병에서, <em>은하 원수</em>까지.</div>
+  <div class="cta" style="left:270px;top:830px;width:540px;height:112px;font-size:40px">출시 알림 받기</div>
+  <div class="stripe" style="bottom:0"></div>
+</section>
+
+<!-- ========== 세로 스토리/릴스 커버 ========== -->
+<section class="c story" id="story">
+  <img src="../../../public/opening/title-lettering-gold.webp" style="position:absolute;left:50%;top:120px;width:640px;transform:translateX(-50%)" alt="">
+  <div class="h" style="position:absolute;left:0;right:0;top:1250px;text-align:center;font-size:84px">이등병에서,<br><em>은하 원수</em>까지.</div>
+  <div style="position:absolute;left:0;right:0;top:1480px;display:flex;justify-content:center;gap:18px">
+    <span style="border:2px solid #ffffff66;border-radius:999px;padding:14px 28px;font-size:32px;font-weight:700">35개 계급</span>
+    <span style="border:2px solid #ffffff66;border-radius:999px;padding:14px 28px;font-size:32px;font-weight:700">200개 전장</span>
+    <span style="border:2px solid #ffffff66;border-radius:999px;padding:14px 28px;font-size:32px;font-weight:700">장비 17종</span>
+  </div>
+  <div class="cta" style="left:190px;top:1620px;width:700px;height:120px;font-size:42px">Google Play 출시 알림 받기</div>
+  <div class="logo-pill" style="left:50%;bottom:44px;transform:translateX(-50%);padding:14px 30px"><img src="../brand/dongramco-logo.png" style="height:44px" alt="Dongramco"></div>
+</section>
+
+</body>
+</html>
